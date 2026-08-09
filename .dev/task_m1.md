@@ -64,15 +64,16 @@
 
 ---
 
-## Batch 4 — SmokeClient M1 受け入れパス
+## Batch 4 — SmokeClient M1 受け入れパス（ブランチ: `m1/batch-4-smoke`）
 
-- [ ] Launch 経路を拡張: Handshake →（任意）Screenshot → invoke(SampleButton) → GetTree で StatusText 確認
-- [ ] Screenshot をファイルに保存するオプション（例 `--screenshot-out <path>`）。デフォルトは一時ファイル or 検証のみでも可
-- [ ] 成功時 exit 0、失敗時は安定 `GraftErrorCodes` を stderr に出して非 0
-- [ ] Connect でも同じ操作列が使えること（起動だけ Launch 固有）
+- [x] Launch / Connect 共通: Handshake → Screenshot → invoke(SampleButton) → GetTree で StatusText=`Clicked 1`
+- [x] `--screenshot-out <path>`（未指定時は temp PNG）。PNG シグネチャも検証
+- [x] 成功時 exit 0、失敗時は安定 `GraftErrorCodes` を stderr に出して非 0
+- [x] Connect でも同じ操作列（起動だけ Launch 固有）
 
 **完了条件:** SmokeClient Launch 一本で「スクショ取得 + クリックで TextBlock 変化」を再現できる。  
-**確認:** `dotnet run --project tools/Graft.SmokeClient -- launch`（M1 フラグ or デフォルトで invoke まで実行）
+**確認:** `dotnet run --project tools/Graft.SmokeClient -- launch`  
+**次:** レビュー OK なら Batch 5（`setValue`・推奨）または M1 完了チェックへ。
 
 ---
 

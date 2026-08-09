@@ -52,10 +52,8 @@ static async Task<int> RunAsync(CliOptions options)
             await using var client = await AgentClient
                 .ConnectAsync(pipeName, TimeSpan.FromSeconds(options.TimeoutSec), cancellationToken)
                 .ConfigureAwait(false);
-            await client.HandshakeAsync(token, cancellationToken).ConfigureAwait(false);
-            var button = await WaitForSampleButtonAsync(client, cancellationToken)
+            await RunM1ScenarioAsync(client, options, token, cancellationToken)
                 .ConfigureAwait(false);
-            PrintSampleButton(button);
             return 0;
         }
         finally
@@ -75,12 +73,57 @@ static async Task<int> RunAsync(CliOptions options)
             .ConfigureAwait(false)
     )
     {
-        await client.HandshakeAsync(options.Token, cancellationToken).ConfigureAwait(false);
-        var button = await WaitForSampleButtonAsync(client, cancellationToken)
+        await RunM1ScenarioAsync(client, options, options.Token, cancellationToken)
             .ConfigureAwait(false);
-        PrintSampleButton(button);
         return 0;
     }
+}
+
+static async Task RunM1ScenarioAsync(
+    AgentClient client,
+    CliOptions options,
+    string token,
+    CancellationToken cancellationToken
+)
+{
+    await client.HandshakeAsync(token, cancellationToken).ConfigureAwait(false);
+
+    var button = await WaitForSampleButtonAsync(client, cancellationToken).ConfigureAwait(false);
+    PrintSampleButton(button);
+
+    var (meta, pngBytes) = await client.ScreenshotAsync(cancellationToken).ConfigureAwait(false);
+    var screenshotPath = ResolveScreenshotPath(options.ScreenshotOut);
+    await File.WriteAllBytesAsync(screenshotPath, pngBytes, cancellationToken)
+        .ConfigureAwait(false);
+    Console.WriteLine(
+        $"Screenshot format={meta.Format} size={meta.Width}x{meta.Height} bytes={meta.ByteLength} path={screenshotPath}"
+    );
+
+    await client
+        .InvokeAsync(TreeSearch.SampleButtonAutomationId, cancellationToken)
+        .ConfigureAwait(false);
+    Console.WriteLine($"Invoked {TreeSearch.SampleButtonAutomationId}");
+
+    var status = await WaitForStatusTextAsync(client, "Clicked 1", cancellationToken)
+        .ConfigureAwait(false);
+    Console.WriteLine($"StatusText name={status.Name}");
+}
+
+static string ResolveScreenshotPath(string? screenshotOut)
+{
+    if (!string.IsNullOrWhiteSpace(screenshotOut))
+    {
+        var full = Path.GetFullPath(screenshotOut);
+        var dir = Path.GetDirectoryName(full);
+        if (!string.IsNullOrEmpty(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+
+        return full;
+    }
+
+    return Path.Combine(Path.GetTempPath(), $"graft-smoke-{Guid.NewGuid():N}.png");
 }
 
 static async Task<TreeNode> WaitForSampleButtonAsync(
@@ -125,6 +168,57 @@ static async Task<TreeNode> WaitForSampleButtonAsync(
             $"Element '{TreeSearch.SampleButtonAutomationId}' not found."
         );
 }
+
+static async Task<TreeNode> WaitForStatusTextAsync(
+    AgentClient client,
+    string expectedName,
+    CancellationToken cancellationToken
+)
+{
+    SmokeException? last = null;
+    for (var attempt = 0; attempt < 50; attempt++)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        try
+        {
+            var tree = await client.GetTreeAsync(cancellationToken).ConfigureAwait(false);
+            var status = TreeSearch.FindByAutomationId(
+                tree.Root,
+                TreeSearch.StatusTextAutomationId
+            );
+            if (
+                status is not null
+                && string.Equals(status.Name, expectedName, StringComparison.Ordinal)
+            )
+            {
+                return status;
+            }
+
+            var message = status is null
+                ? $"Element '{TreeSearch.StatusTextAutomationId}' was not in the tree yet."
+                : $"StatusText name was '{status.Name}', expected '{expectedName}'.";
+            last = new SmokeException(GraftErrorCodes.ExpectFailed, message);
+        }
+        catch (SmokeException ex) when (IsRetryableStatusError(ex.Code))
+        {
+            last = ex;
+        }
+
+        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+    }
+
+    throw last
+        ?? new SmokeException(
+            GraftErrorCodes.ExpectFailed,
+            $"StatusText did not become '{expectedName}'."
+        );
+}
+
+static bool IsRetryableStatusError(string code) =>
+    code
+        is GraftErrorCodes.ActionFailed
+            or GraftErrorCodes.ElementNotFound
+            or GraftErrorCodes.ExpectFailed;
 
 static void PrintSampleButton(TreeNode button)
 {
