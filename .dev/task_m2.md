@@ -85,26 +85,26 @@
 
 ## Batch 5 — xUnit 受け入れ 1 本（ブランチ: `m2/batch-5-xunit-acceptance`）
 
-- [ ] `Graft.Core.Tests`（または専用テスト）に **統合テスト 1 本**: Launch(SampleWpfApp) → invoke(SampleButton) → Expect StatusText=`Clicked 1`
-- [ ] SmokeClient を呼ばない（主経路は Core）
-- [ ] ビルド: Sample は `-p:GraftTest=true` / `-c GraftTest` で起動できること（既存 props）
-- [ ] `Graft.TestUtilities` パッケージ化は任意・後回し（xUnit 生でよい）
-- [ ] 必要なら `task_m2.md` / 短い利用メモを `.dev` に追記
+- [x] `M2AcceptanceTests`: Launch(SampleWpfApp) → invoke(SampleButton) → Expect StatusText=`Clicked 1`
+- [x] SmokeClient を呼ばない（主経路は Core）
+- [x] Sample は既存 props の `-c GraftTest` / `GraftTest=true`（Launch が付与）
+- [x] `Graft.TestUtilities` は作らない（xUnit 生）
+- [x] 利用メモ: [graft-core.md](./graft-core.md)
 
 **完了条件:** SmokeClient 無しで、Core Launch 経由の xUnit 1 本が緑。  
-**確認:** `dotnet test tests/Graft.Core.Tests --filter <受け入れテスト名>`  
+**確認:** `dotnet test tests/Graft.Core.Tests --filter M2Acceptance`  
 **次:** M2 完了チェックへ。
 
 ---
 
 ## M2 完了チェック（全 Batch 後）
 
-- [ ] `Graft.Core` がソリューションにあり Protocol のみに依存する
-- [ ] `Application.Launch`（相当）で Sample を起動し Handshake できる
-- [ ] Core 側スコアリングセレクタ（少なくとも automationId ショートハンド）が動く
-- [ ] Wait / Expect が Core 側で動き、安定エラーコードを返す
-- [ ] xUnit 1 本が Launch → invoke → StatusText 変化で緑（SmokeClient 非依存）
-- [ ] Avalonia / Scenario / MCP / 自己修復は **含めない**
+- [x] `Graft.Core` がソリューションにあり Protocol のみに依存する
+- [x] `Application.Launch`（相当）で Sample を起動し Handshake できる
+- [x] Core 側スコアリングセレクタ（少なくとも automationId ショートハンド）が動く
+- [x] Wait / Expect が Core 側で動き、安定エラーコードを返す
+- [x] xUnit 1 本が Launch → invoke → StatusText 変化で緑（SmokeClient 非依存）
+- [x] Avalonia / Scenario / MCP / 自己修復は **含めない**
 
 ---
 
@@ -123,7 +123,7 @@
 
 | 項目 | 仮決め（実装時に task / コードで確定） |
 | ---- | -------------------------------------- |
-| 公開入口型名 | `Application.LaunchAsync` + 戻り値 `IGraftSession` / `GraftApp` 等（Batch 2 で固定） |
+| 公開入口型名 | `Application.LaunchAsync` → `GraftSession`（Batch 2 で固定） |
 | 要素 API | `session.GetBy` / `GetByAutomationId` → `InvokeAsync` / `ExpectNameAsync`（Batch 4 で固定） |
 | 近傍パススコア | `NearAutomationId`（祖先 automationId）で +20。本格パスは後続 |
 | Launch の exe/csproj | SmokeClient と同様、csproj なら `dotnet run` / 既存ビルド成果物パスを踏襲（Batch 2） |
