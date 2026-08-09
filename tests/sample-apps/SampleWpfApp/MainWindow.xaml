@@ -3,10 +3,25 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SampleWpfApp"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
-    </Grid>
+        Title="Graft Sample WPF App"
+        Height="320"
+        Width="480">
+    <StackPanel Margin="24" VerticalAlignment="Center">
+        <TextBlock x:Name="StatusText"
+                   AutomationProperties.AutomationId="StatusText"
+                   Text="Ready"
+                   FontSize="16"
+                   Margin="0,0,0,16" />
+        <TextBox x:Name="SampleTextBox"
+                 AutomationProperties.AutomationId="SampleTextBox"
+                 Text=""
+                 Margin="0,0,0,16" />
+        <Button x:Name="SampleButton"
+                AutomationProperties.AutomationId="SampleButton"
+                Content="Click Me"
+                Padding="12,6"
+                HorizontalAlignment="Left"
+                Click="SampleButton_OnClick" />
+    </StackPanel>
 </Window>

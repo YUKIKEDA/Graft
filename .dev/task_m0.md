@@ -28,14 +28,16 @@
 
 ---
 
-## Batch 1 — SampleWpfApp UI
+## Batch 1 — SampleWpfApp UI（ブランチ: `m0/batch-1-sample-ui`）
 
-- [ ] ウィンドウに Button（`AutomationId=SampleButton`）+ TextBox + TextBlock
-- [ ] Button クリックで TextBlock 文言が変わる
-- [ ] `GraftTest` 構成または手動 `DefineConstants=GRAFT_TEST` でビルドできる土台（Agent 接続は次以降）
-- [ ] アプリ単体で起動して UI を目視確認
+- [x] ウィンドウに Button（`AutomationId=SampleButton`）+ TextBox + TextBlock
+- [x] Button クリックで TextBlock 文言が変わる（`Clicked N`）
+- [x] `Configuration=GraftTest` または `-p:GraftTest=true` で `GRAFT_TEST` が付く土台（Agent 接続は次以降）
+- [ ] アプリ単体で起動して UI を目視確認（レビュー時）
 
-**完了条件:** サンプルが手起動でき、クリック反応が見える。
+**完了条件:** サンプルが手起動でき、クリック反応が見える。  
+**起動:** `dotnet run --project tests/sample-apps/SampleWpfApp`  
+**GraftTest ビルド確認:** `dotnet build tests/sample-apps/SampleWpfApp -c GraftTest` または `-p:GraftTest=true`
 
 ---
 
