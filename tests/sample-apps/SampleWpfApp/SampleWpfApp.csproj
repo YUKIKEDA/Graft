@@ -5,5 +5,15 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <RootNamespace>SampleWpfApp</RootNamespace>
+    <AssemblyName>SampleWpfApp</AssemblyName>
+  </PropertyGroup>
+  <!-- Batch 1: local GraftTest configuration. Full Graft.props/targets arrive in M1. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'GraftTest'">
+    <DefineConstants>$(DefineConstants);GRAFT_TEST</DefineConstants>
+  </PropertyGroup>
+  <!-- Also allow: dotnet build -p:GraftTest=true -->
+  <PropertyGroup Condition="'$(GraftTest)' == 'true'">
+    <DefineConstants>$(DefineConstants);GRAFT_TEST</DefineConstants>
   </PropertyGroup>
 </Project>
