@@ -23,16 +23,17 @@
 
 ---
 
-## Batch 1 — Screenshot（プロトコル + WPF 取得）
+## Batch 1 — Screenshot（プロトコル + WPF 取得）（ブランチ: `m1/batch-1-screenshot`）
 
-- [ ] wire method: `screenshot`（camelCase、既存 `handshake` / `getTree` に合わせる）
-- [ ] 成功時: JSON 応答（メタ: 例 `format=png`, `width`, `height`, `byteLength` 等）の **直後** に raw バイナリフレーム（PNG バイト）（project.md Q17/Q18）
-- [ ] デフォルト対象: メインウィンドウ全体。JPEG / 要素クロップは API 口だけ先に空けても実装は後回し可
-- [ ] UI ディスパッチャへマーシャリングして取得（WPF: `RenderTargetBitmap` 等）
-- [ ] 単体 / STA テストで「メタ + raw が読める・PNG シグネチャがある」を確認
+- [x] wire method: `screenshot`（camelCase、既存 `handshake` / `getTree` に合わせる）
+- [x] 成功時: JSON 応答（メタ: `format` / `width` / `height` / `byteLength`）の **直後** に raw バイナリフレーム（PNG バイト）
+- [x] デフォルト対象: メインウィンドウ全体（JPEG / 要素クロップは後回し）
+- [x] UI ディスパッチャへマーシャリングして取得（`RenderTargetBitmap`）
+- [x] ワイヤテスト + STA テストでメタ + raw / PNG シグネチャを確認
 
 **完了条件:** Handshake 後 `screenshot` で PNG raw が取れる。  
-**確認:** `dotnet test tests/Graft.Instrumentation.Wpf.Tests`（または Screenshot 専用テスト）
+**確認:** `dotnet test tests/Graft.Instrumentation.Tests --filter Screenshot` / `dotnet test tests/Graft.Instrumentation.Wpf.Tests`  
+**次:** レビュー OK なら Batch 2（要素解決）へ。
 
 ---
 

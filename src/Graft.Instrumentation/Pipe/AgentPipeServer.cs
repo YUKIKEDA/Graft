@@ -1,5 +1,6 @@
 using System.IO.Pipes;
 using System.Text.Json;
+using Graft.Instrumentation.Screenshot;
 using Graft.Instrumentation.Tree;
 using Graft.Protocol;
 using Graft.Protocol.Framing;
@@ -127,7 +128,7 @@ internal sealed class AgentPipeServer : IDisposable
                 break;
             }
 
-            var (response, closeAfterWrite) = Dispatch(request, handshaken);
+            var (response, closeAfterWrite, binaryFollowUp) = Dispatch(request, handshaken);
             if (response.Ok && request.Method == ProtocolMethods.Handshake)
             {
                 handshaken = true;
@@ -138,6 +139,13 @@ internal sealed class AgentPipeServer : IDisposable
                 await JsonMessageCodec
                     .WriteResponseAsync(server, response, cancellationToken)
                     .ConfigureAwait(false);
+
+                if (binaryFollowUp is { Length: > 0 })
+                {
+                    await FrameIO
+                        .WriteAsync(server, binaryFollowUp, cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+                }
             }
             catch (IOException)
             {
@@ -151,7 +159,7 @@ internal sealed class AgentPipeServer : IDisposable
         }
     }
 
-    private (ResponseMessage Response, bool CloseAfterWrite) Dispatch(
+    private (ResponseMessage Response, bool CloseAfterWrite, byte[]? BinaryFollowUp) Dispatch(
         RequestMessage request,
         bool handshaken
     )
@@ -164,7 +172,8 @@ internal sealed class AgentPipeServer : IDisposable
                     GraftErrorCodes.ProtocolVersionMismatch,
                     $"Protocol version mismatch. Agent expects v={ProtocolVersion.Current}."
                 ),
-                CloseAfterWrite: true
+                CloseAfterWrite: true,
+                BinaryFollowUp: null
             );
         }
 
@@ -178,7 +187,8 @@ internal sealed class AgentPipeServer : IDisposable
                         GraftErrorCodes.HandshakeRejected,
                         "Handshake is required before other methods."
                     ),
-                    CloseAfterWrite: true
+                    CloseAfterWrite: true,
+                    BinaryFollowUp: null
                 );
             }
 
@@ -187,11 +197,12 @@ internal sealed class AgentPipeServer : IDisposable
             {
                 return (
                     Error(request.Id, GraftErrorCodes.HandshakeRejected, "Connect token rejected."),
-                    CloseAfterWrite: true
+                    CloseAfterWrite: true,
+                    BinaryFollowUp: null
                 );
             }
 
-            return (Ok(request.Id), CloseAfterWrite: false);
+            return (Ok(request.Id), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
         if (request.Method == ProtocolMethods.Handshake)
@@ -201,16 +212,22 @@ internal sealed class AgentPipeServer : IDisposable
             {
                 return (
                     Error(request.Id, GraftErrorCodes.HandshakeRejected, "Connect token rejected."),
-                    CloseAfterWrite: true
+                    CloseAfterWrite: true,
+                    BinaryFollowUp: null
                 );
             }
 
-            return (Ok(request.Id), CloseAfterWrite: false);
+            return (Ok(request.Id), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
         if (request.Method == ProtocolMethods.GetTree)
         {
-            return (HandleGetTree(request), CloseAfterWrite: false);
+            return (HandleGetTree(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
+        if (request.Method == ProtocolMethods.Screenshot)
+        {
+            return HandleScreenshot(request);
         }
 
         return (
@@ -219,7 +236,8 @@ internal sealed class AgentPipeServer : IDisposable
                 GraftErrorCodes.ActionFailed,
                 $"Method '{request.Method}' is not implemented."
             ),
-            CloseAfterWrite: false
+            CloseAfterWrite: false,
+            BinaryFollowUp: null
         );
     }
 
@@ -245,6 +263,54 @@ internal sealed class AgentPipeServer : IDisposable
         catch (Exception ex)
         {
             return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static (
+        ResponseMessage Response,
+        bool CloseAfterWrite,
+        byte[]? BinaryFollowUp
+    ) HandleScreenshot(RequestMessage request)
+    {
+        var provider = AgentServices.ScreenshotProvider;
+        if (provider is null)
+        {
+            return (
+                Error(
+                    request.Id,
+                    GraftErrorCodes.ActionFailed,
+                    "No screenshot provider is registered. Call WpfGraft.Use() before Agent.Start()."
+                ),
+                CloseAfterWrite: false,
+                BinaryFollowUp: null
+            );
+        }
+
+        try
+        {
+            var capture = provider.Capture(ScreenshotOptions.Default);
+            var resultJson = JsonSerializer.SerializeToElement(
+                capture.Meta,
+                JsonMessageCodec.Options
+            );
+            return (Ok(request.Id, resultJson), CloseAfterWrite: false, capture.PngBytes);
+        }
+        catch (InvalidOperationException ex)
+            when (ex.Message.Contains("Main window", StringComparison.OrdinalIgnoreCase))
+        {
+            return (
+                Error(request.Id, GraftErrorCodes.WindowNotFound, ex.Message),
+                CloseAfterWrite: false,
+                BinaryFollowUp: null
+            );
+        }
+        catch (Exception ex)
+        {
+            return (
+                Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message),
+                CloseAfterWrite: false,
+                BinaryFollowUp: null
+            );
         }
     }
 

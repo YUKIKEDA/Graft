@@ -15,4 +15,9 @@ public static class ProtocolMethods
     /// Returns the UI visual tree for the main window (Phase 1).
     /// </summary>
     public const string GetTree = "getTree";
+
+    /// <summary>
+    /// Captures a window screenshot: JSON meta result followed by a raw PNG frame.
+    /// </summary>
+    public const string Screenshot = "screenshot";
 }

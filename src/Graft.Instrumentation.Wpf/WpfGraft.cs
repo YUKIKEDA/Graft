@@ -10,7 +10,7 @@ public static class WpfGraft
     private static int _registered;
 
     /// <summary>
-    /// Registers the WPF UI tree provider for <c>getTree</c>.
+    /// Registers WPF providers for <c>getTree</c> and <c>screenshot</c>.
     /// </summary>
     /// <remarks>
     /// Call once before <see cref="Agent.Start"/> (typically from <c>OnStartup</c>).
@@ -23,6 +23,7 @@ public static class WpfGraft
         }
 
         AgentServices.RegisterTreeProvider(new WpfUiTreeProvider());
+        AgentServices.RegisterScreenshotProvider(new WpfScreenshotProvider());
     }
 
     /// <summary>
