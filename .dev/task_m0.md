@@ -69,13 +69,14 @@
 
 ---
 
-## Batch 4 — Analyzer `GRAFT001`
+## Batch 4 — Analyzer `GRAFT001`（ブランチ: `m0/batch-4-analyzer`）
 
-- [ ] `GRAFT_TEST` 未定義での `Agent.Start` 参照を Error
-- [ ] Instrumentation.Wpf から Analyzer を自動導入
-- [ ] 違反サンプル or テストで検知を確認
+- [x] `GRAFT_TEST` 未定義での `Agent.Start` 参照を Error
+- [x] Instrumentation.Wpf から Analyzer を自動導入
+- [x] 違反サンプル or テストで検知を確認（`tests/Graft.Instrumentation.Analyzer.Tests`）
 
-**完了条件:** 記号なしコンパイルで `GRAFT001` が出る。
+**完了条件:** 記号なしコンパイルで `GRAFT001` が出る。  
+**確認:** `dotnet test tests/Graft.Instrumentation.Analyzer.Tests`
 
 ---
 

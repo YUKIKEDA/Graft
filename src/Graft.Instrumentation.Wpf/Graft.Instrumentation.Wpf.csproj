@@ -8,5 +8,11 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Graft.Instrumentation\Graft.Instrumentation.csproj" />
+    <!-- Consumers of the WPF package get GRAFT001 automatically (project.md Q33). -->
+    <ProjectReference
+      Include="..\Graft.Instrumentation.Analyzer\Graft.Instrumentation.Analyzer.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+    />
   </ItemGroup>
 </Project>
