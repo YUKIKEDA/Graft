@@ -22,10 +22,10 @@
 
 ## Batch 1 — Scenario 実行ツール（ブランチ: `phase3/batch-1-mcp-scenario-run`）
 
-- [ ] `graft_run_scenario`（JSON 文字列またはパス → `ScenarioJson` + `ScenarioRunner`）
-- [ ] 成功時: 簡潔な ok テキスト
-- [ ] 失敗時: `GraftException` / `FailureReport` を JSON テキストで返す（握りつぶさない）
-- [ ] Sample scenario を MCP クライアント経由で 1 経路緑（または同等の結合テスト）
+- [x] `graft_run_scenario`（JSON 文字列またはパス → `ScenarioJson` + `ScenarioRunner`）
+- [x] 成功時: 簡潔な ok JSON（`CallToolResult`）
+- [x] 失敗時: `GraftException` / `FailureReport` を JSON テキストで返す（`IsError=true`）
+- [x] Sample scenario を MCP クライアント経由で 1 経路緑（`McpScenarioRunTests`）
 
 **完了条件:** LLM が Scenario JSON を渡して Sample を走らせられる。  
 **次:** Batch 2（Fluent 相当の原子ツール）へ。
