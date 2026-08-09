@@ -54,15 +54,18 @@
 
 ---
 
-## Batch 3 — Agent 起動ゲート（パイプはまだスタブ可）
+## Batch 3 — Agent 起動ゲート（パイプはまだスタブ可）（ブランチ: `m0/batch-3-agent-gate`）
 
-- [ ] `Agent.Start` / `Stop`（`#if GRAFT_TEST` で API 自体を消す）
-- [ ] 実行時: `GRAFT_ENABLE` が無いなら何もしない
-- [ ] `GRAFT_PIPE_NAME` / `GRAFT_CONNECT_TOKEN` を読む口
-- [ ] SampleWpfApp から `GRAFT_TEST` 時のみ `Agent.Start()` 呼び出し
-- [ ] Wpf パッケージ参照を Sample に追加
+- [x] `Agent.Start` / `Stop`（`#if GRAFT_TEST` で API を囲む。Instrumentation パッケージは GRAFT_TEST 付きでビルド）
+- [x] 実行時: `GRAFT_ENABLE` が無いなら何もしない
+- [x] `GRAFT_PIPE_NAME` / `GRAFT_CONNECT_TOKEN` を読む口（`GraftEnvironment` / `AgentSession`）
+- [x] SampleWpfApp から `GRAFT_TEST` 時のみ `Agent.Start()` / `Stop()` 呼び出し
+- [x] Wpf パッケージ参照を Sample に追加
+- [x] `tests/Graft.Instrumentation.Tests` でゲートを検証
 
-**完了条件:** 記号付きビルドで Start が呼ばれ、記号なしビルドでは Start が存在しない／呼べない。
+**完了条件:** 記号付きビルドで Start が呼ばれ、記号なしビルドでは呼び出し側から呼べない（`#if GRAFT_TEST`）。  
+**確認:** `dotnet test tests/Graft.Instrumentation.Tests`  
+**Sample (GraftTest):** `dotnet build tests/sample-apps/SampleWpfApp -c GraftTest`
 
 ---
 

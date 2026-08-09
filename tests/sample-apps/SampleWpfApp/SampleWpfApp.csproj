@@ -16,4 +16,7 @@
   <PropertyGroup Condition="'$(GraftTest)' == 'true'">
     <DefineConstants>$(DefineConstants);GRAFT_TEST</DefineConstants>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Graft.Instrumentation.Wpf\Graft.Instrumentation.Wpf.csproj" />
+  </ItemGroup>
 </Project>
