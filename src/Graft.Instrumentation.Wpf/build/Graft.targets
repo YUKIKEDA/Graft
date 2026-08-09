@@ -1,0 +1,10 @@
+<Project>
+  <!--
+    Graft MSBuild entry (source name). Packaged as buildTransitive/Graft.Instrumentation.Wpf.targets.
+    DefineConstants are applied here so csproj PropertyGroup GraftTest=true is visible
+    (NuGet .targets import after the project body).
+  -->
+  <PropertyGroup Condition="'$(GraftTest)' == 'true'">
+    <DefineConstants>$(DefineConstants);GRAFT_TEST</DefineConstants>
+  </PropertyGroup>
+</Project>
