@@ -1,0 +1,155 @@
+using Graft.Protocol;
+
+namespace Graft.Core.Scenario;
+
+/// <summary>
+/// Executes a compiled <see cref="ScenarioDocument"/> via <see cref="Application.LaunchAsync"/>
+/// and Fluent GetBy operations.
+/// </summary>
+/// <remarks>
+/// Failures from Expect / Invoke / SetValue surface as <see cref="GraftException"/> with
+/// <see cref="GraftException.Report"/> when Core attaches diagnostics.
+/// </remarks>
+public static class ScenarioRunner
+{
+    /// <summary>
+    /// Runs all operations in order, disposing the launched session afterwards.
+    /// </summary>
+    /// <param name="scenario">Compiled scenario.</param>
+    /// <param name="options">Optional path overrides for launch.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when the scenario finishes successfully.</returns>
+    /// <exception cref="GraftException">Validation, launch, or step execution failed.</exception>
+    public static async Task RunAsync(
+        ScenarioDocument scenario,
+        ScenarioRunOptions? options = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(scenario);
+        if (scenario.Operations.Count == 0)
+        {
+            throw new GraftException(
+                GraftErrorCodes.ActionFailed,
+                "Scenario has no operations to run."
+            );
+        }
+
+        if (scenario.Operations[0] is not LaunchOperation)
+        {
+            throw new GraftException(
+                GraftErrorCodes.ActionFailed,
+                "Scenario must start with a launch step."
+            );
+        }
+
+        GraftSession? session = null;
+        try
+        {
+            foreach (var operation in scenario.Operations)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                switch (operation)
+                {
+                    case LaunchOperation launch:
+                        if (session is not null)
+                        {
+                            throw new GraftException(
+                                GraftErrorCodes.ActionFailed,
+                                "Scenario may contain only one launch step."
+                            );
+                        }
+
+                        session = await Application
+                            .LaunchAsync(ToLaunchOptions(launch, options), cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case InvokeOperation invoke:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(invoke.AutomationId)
+                            .InvokeAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case SetValueOperation setValue:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(setValue.AutomationId)
+                            .SetValueAsync(setValue.Value, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case ExpectNameOperation expectName:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(expectName.AutomationId)
+                            .ExpectNameAsync(expectName.Name, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    default:
+                        throw new GraftException(
+                            GraftErrorCodes.ActionFailed,
+                            $"Unsupported Scenario operation '{operation.Action}'."
+                        );
+                }
+            }
+        }
+        finally
+        {
+            if (session is not null)
+            {
+                await session.DisposeAsync().ConfigureAwait(false);
+            }
+        }
+    }
+
+    private static void EnsureSession(GraftSession? session)
+    {
+        if (session is null)
+        {
+            throw new GraftException(
+                GraftErrorCodes.ActionFailed,
+                "Scenario step requires an active session; launch must run first."
+            );
+        }
+    }
+
+    private static LaunchOptions ToLaunchOptions(
+        LaunchOperation launch,
+        ScenarioRunOptions? options
+    )
+    {
+        var appPath = ResolveAppPath(launch.AppPath, options);
+        return new LaunchOptions
+        {
+            AppPath = appPath,
+            Configuration = string.IsNullOrWhiteSpace(launch.Configuration)
+                ? "GraftTest"
+                : launch.Configuration!,
+            Timeout = launch.Timeout ?? LaunchOptions.DefaultTimeout,
+        };
+    }
+
+    private static string ResolveAppPath(string scenarioAppPath, ScenarioRunOptions? options)
+    {
+        if (!string.IsNullOrWhiteSpace(options?.AppPath))
+        {
+            return Path.GetFullPath(options.AppPath);
+        }
+
+        if (Path.IsPathRooted(scenarioAppPath))
+        {
+            return scenarioAppPath;
+        }
+
+        if (!string.IsNullOrWhiteSpace(options?.WorkingDirectory))
+        {
+            return Path.GetFullPath(Path.Combine(options.WorkingDirectory, scenarioAppPath));
+        }
+
+        return Path.GetFullPath(scenarioAppPath);
+    }
+}

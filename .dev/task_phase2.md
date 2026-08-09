@@ -56,10 +56,10 @@
 
 ## Batch 4 — Scenario 実行器 + Sample 1 本（ブランチ: `phase2/batch-4-scenario-runner`）
 
-- [ ] Scenario を `Application.Launch` + GetBy 操作に実行
-- [ ] 失敗時は Batch 1/2 の FailureReport を返す
-- [ ] SampleWpfApp 向け Scenario JSON 1 本（ボタン → StatusText）を `tests/sample-apps` に置く
-- [ ] xUnit から Scenario 実行して緑
+- [x] Scenario を `Application.Launch` + GetBy 操作に実行（`ScenarioRunner`）
+- [x] 失敗時は Batch 1/2 の FailureReport を返す（ElementQuery 経由で伝播）
+- [x] SampleWpfApp 向け Scenario JSON 1 本（`tests/sample-apps/SampleWpfApp.Tests/Scenarios/`）
+- [x] xUnit から Scenario 実行して緑（`ScenarioE2ETests`）
 
 **完了条件:** SmokeClient 無しで Scenario JSON 経由の受け入れが 1 本緑。  
 **次:** Phase 2 完了チェックへ。
@@ -68,11 +68,11 @@
 
 ## Phase 2 完了チェック
 
-- [ ] 失敗時に必須最小の FailureReport が取れる
-- [ ] （推奨）操作ログ / ツリー or スクショが添付できる
-- [ ] Scenario JSON スキーマと実行器がある
-- [ ] Sample 向け Scenario 1 本が緑
-- [ ] Avalonia / MCP / 自己修復 / toggle・キー本格化は **含めない**
+- [x] 失敗時に必須最小の FailureReport が取れる
+- [x] （推奨）操作ログ / ツリー or スクショが添付できる
+- [x] Scenario JSON スキーマと実行器がある
+- [x] Sample 向け Scenario 1 本が緑
+- [x] Avalonia / MCP / 自己修復 / toggle・キー本格化は **含めない**
 
 ---
 
