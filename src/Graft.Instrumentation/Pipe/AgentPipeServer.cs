@@ -1,5 +1,6 @@
 using System.IO.Pipes;
 using System.Text.Json;
+using Graft.Instrumentation.Tree;
 using Graft.Protocol;
 using Graft.Protocol.Framing;
 using Graft.Protocol.Messages;
@@ -207,7 +208,11 @@ internal sealed class AgentPipeServer : IDisposable
             return (Ok(request.Id), CloseAfterWrite: false);
         }
 
-        // GetTree and other methods arrive in later batches.
+        if (request.Method == ProtocolMethods.GetTree)
+        {
+            return (HandleGetTree(request), CloseAfterWrite: false);
+        }
+
         return (
             Error(
                 request.Id,
@@ -216,6 +221,60 @@ internal sealed class AgentPipeServer : IDisposable
             ),
             CloseAfterWrite: false
         );
+    }
+
+    private static ResponseMessage HandleGetTree(RequestMessage request)
+    {
+        var provider = AgentServices.TreeProvider;
+        if (provider is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No UI tree provider is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var options = ReadGetTreeOptions(request.Params);
+            var result = provider.GetTree(options);
+            var resultJson = JsonSerializer.SerializeToElement(result, JsonMessageCodec.Options);
+            return Ok(request.Id, resultJson);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static GetTreeOptions ReadGetTreeOptions(JsonElement? paramsElement)
+    {
+        var maxDepth = GetTreeOptions.DefaultMaxDepth;
+        var maxNodes = GetTreeOptions.DefaultMaxNodes;
+
+        if (paramsElement is { } element && element.ValueKind == JsonValueKind.Object)
+        {
+            if (
+                element.TryGetProperty("depth", out var depthProperty)
+                && depthProperty.TryGetInt32(out var depth)
+                && depth >= 0
+            )
+            {
+                maxDepth = depth;
+            }
+
+            if (
+                element.TryGetProperty("maxNodes", out var maxNodesProperty)
+                && maxNodesProperty.TryGetInt32(out var nodes)
+                && nodes > 0
+            )
+            {
+                maxNodes = nodes;
+            }
+        }
+
+        return new GetTreeOptions { MaxDepth = maxDepth, MaxNodes = maxNodes };
     }
 
     private static string ReadToken(JsonElement? paramsElement)
@@ -238,12 +297,13 @@ internal sealed class AgentPipeServer : IDisposable
         };
     }
 
-    private static ResponseMessage Ok(string id) =>
+    private static ResponseMessage Ok(string id, JsonElement? result = null) =>
         new()
         {
             V = ProtocolVersion.Current,
             Id = id,
             Ok = true,
+            Result = result,
         };
 
     private static ResponseMessage Error(string id, string code, string message) =>
