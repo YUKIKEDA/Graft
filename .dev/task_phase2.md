@@ -32,10 +32,10 @@
 
 ## Batch 2 — 診断添付の拡充（推奨）（ブランチ: `phase2/batch-2-failure-attachments`）
 
-- [ ] 直近 N 操作ログ（Core 側リングバッファ）
-- [ ] 失敗時ツリー（全文 or 差分の簡易版）。JSON Patch は後回し
-- [ ] 失敗時スクショ参照（`screenshot` RPC → 一時ファイル or byte 参照）。常時添付はしない
-- [ ] Sample / Core.Tests で 1 経路確認
+- [x] 直近 N 操作ログ（`OperationLog` リングバッファ、セッション単位）
+- [x] 失敗時ツリー（全文 `tree` ルート。JSON Patch は後回し）
+- [x] 失敗時スクショ参照（`screenshot` RPC → temp PNG パス。常時添付はしない）
+- [x] Core.Tests で 1 経路確認（`WaitActionTests`）
 
 **完了条件:** Expect 失敗時に「セレクタ + 期待/実際 + ツリー or スクショ」が揃う。  
 **次:** Batch 3（Scenario JSON）へ。

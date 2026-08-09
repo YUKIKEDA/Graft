@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Graft.Core.Diagnostics;
 using Graft.Core.Selectors;
 
 namespace Graft.Core;
@@ -13,6 +14,7 @@ public sealed class GraftSession : IAsyncDisposable
 {
     private readonly Process _process;
     private readonly AgentConnection _connection;
+    private readonly OperationLog _operationLog = new();
     private bool _disposed;
 
     internal GraftSession(Process process, AgentConnection connection)
@@ -39,7 +41,7 @@ public sealed class GraftSession : IAsyncDisposable
     public ElementQuery GetBy(Selector selector)
     {
         ArgumentNullException.ThrowIfNull(selector);
-        return new ElementQuery(_connection, selector, WaitOptions);
+        return new ElementQuery(_connection, selector, WaitOptions, _operationLog);
     }
 
     /// <summary>

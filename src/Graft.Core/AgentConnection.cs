@@ -178,6 +178,72 @@ public sealed class AgentConnection : IAsyncDisposable
         EnsureOk(response, "setValue failed.");
     }
 
+    /// <summary>
+    /// Calls <c>screenshot</c> and reads the following raw PNG frame.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Screenshot meta and PNG bytes.</returns>
+    /// <exception cref="GraftException">RPC failed or frame mismatch.</exception>
+    public async Task<(ScreenshotResult Meta, byte[] PngBytes)> ScreenshotAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.Screenshot,
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "screenshot failed.");
+        if (response.Result is not { } resultElement)
+        {
+            throw new GraftException(
+                GraftErrorCodes.ActionFailed,
+                "screenshot returned no result."
+            );
+        }
+
+        var meta =
+            resultElement.Deserialize<ScreenshotResult>(JsonMessageCodec.Options)
+            ?? throw new GraftException(
+                GraftErrorCodes.ActionFailed,
+                "screenshot result deserialized to null."
+            );
+
+        byte[] pngBytes;
+        try
+        {
+            pngBytes = await FrameIO
+                .ReadAsync(_stream, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (IOException ex)
+        {
+            throw new GraftException(
+                GraftErrorCodes.PipeDisconnected,
+                "Named pipe connection was lost while reading screenshot bytes.",
+                ex
+            );
+        }
+
+        if (pngBytes.Length != meta.ByteLength)
+        {
+            throw new GraftException(
+                GraftErrorCodes.ActionFailed,
+                $"screenshot byteLength mismatch: meta={meta.ByteLength}, frame={pngBytes.Length}."
+            );
+        }
+
+        return (meta, pngBytes);
+    }
+
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {

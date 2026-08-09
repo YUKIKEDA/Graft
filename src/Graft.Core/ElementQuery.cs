@@ -13,12 +13,19 @@ public sealed class ElementQuery
     private readonly AgentConnection _connection;
     private readonly Selector _selector;
     private readonly WaitOptions _waitOptions;
+    private readonly OperationLog _operationLog;
 
-    internal ElementQuery(AgentConnection connection, Selector selector, WaitOptions waitOptions)
+    internal ElementQuery(
+        AgentConnection connection,
+        Selector selector,
+        WaitOptions waitOptions,
+        OperationLog operationLog
+    )
     {
         _connection = connection;
         _selector = selector;
         _waitOptions = waitOptions;
+        _operationLog = operationLog;
     }
 
     /// <summary>
@@ -32,11 +39,13 @@ public sealed class ElementQuery
         var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(node.AutomationId))
         {
-            throw CreateFailure(
-                GraftErrorCodes.ActionFailed,
-                "Resolved element has no automationId; cannot invoke over the wire.",
-                FailureSteps.Invoke
-            );
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot invoke over the wire.",
+                    FailureSteps.Invoke,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
         }
 
         try
@@ -44,10 +53,18 @@ public sealed class ElementQuery
             await _connection
                 .InvokeAsync(node.AutomationId, cancellationToken)
                 .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.Invoke, node.AutomationId);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw CreateFailure(ex.Code, ex.Message, FailureSteps.Invoke, innerException: ex);
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.Invoke,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
         }
     }
 
@@ -65,11 +82,14 @@ public sealed class ElementQuery
         var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(node.AutomationId))
         {
-            throw CreateFailure(
-                GraftErrorCodes.ActionFailed,
-                "Resolved element has no automationId; cannot setValue over the wire.",
-                FailureSteps.SetValue
-            );
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot setValue over the wire.",
+                    FailureSteps.SetValue,
+                    expected: value,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
         }
 
         try
@@ -77,16 +97,19 @@ public sealed class ElementQuery
             await _connection
                 .SetValueAsync(node.AutomationId, value, cancellationToken)
                 .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.SetValue, $"{node.AutomationId}={value}");
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw CreateFailure(
-                ex.Code,
-                ex.Message,
-                FailureSteps.SetValue,
-                expected: value,
-                innerException: ex
-            );
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.SetValue,
+                    expected: value,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
         }
     }
 
@@ -99,7 +122,7 @@ public sealed class ElementQuery
     /// <exception cref="GraftException">
     /// <c>expect.failed</c> when the name differs after the element is found;
     /// <c>action.timeout</c> when the element never qualifies in time.
-    /// Includes <see cref="GraftException.Report"/> with minimum diagnostics.
+    /// Includes <see cref="GraftException.Report"/> with diagnostics attachments when available.
     /// </exception>
     public async Task<TreeNode> ExpectNameAsync(
         string expectedName,
@@ -116,6 +139,7 @@ public sealed class ElementQuery
         var deadline = DateTime.UtcNow + timeout;
 
         string? lastActual = null;
+        TreeNode? lastRoot = null;
         var sawElement = false;
 
         while (DateTime.UtcNow < deadline)
@@ -124,10 +148,12 @@ public sealed class ElementQuery
             try
             {
                 var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
+                lastRoot = tree.Root;
                 var node = TreeSelector.Resolve(tree.Root, _selector);
                 sawElement = true;
                 if (string.Equals(node.Name, expectedName, StringComparison.Ordinal))
                 {
+                    _operationLog.Record(FailureSteps.ExpectName, expectedName);
                     return node;
                 }
 
@@ -151,23 +177,29 @@ public sealed class ElementQuery
 
         if (sawElement && lastActual is not null)
         {
-            throw CreateFailure(
-                GraftErrorCodes.ExpectFailed,
-                $"Expected name '{expectedName}' but was '{lastActual}'.",
-                FailureSteps.ExpectName,
-                expected: expectedName,
-                actual: lastActual,
-                timedOut: true
-            );
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ExpectFailed,
+                    $"Expected name '{expectedName}' but was '{lastActual}'.",
+                    FailureSteps.ExpectName,
+                    expected: expectedName,
+                    actual: lastActual,
+                    timedOut: true,
+                    treeRoot: lastRoot,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
         }
 
-        throw CreateFailure(
-            GraftErrorCodes.ActionTimeout,
-            $"Timed out after {timeout.TotalSeconds:0.###}s waiting for name '{expectedName}'.",
-            FailureSteps.ExpectName,
-            expected: expectedName,
-            timedOut: true
-        );
+        throw await CreateFailureAsync(
+                GraftErrorCodes.ActionTimeout,
+                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for name '{expectedName}'.",
+                FailureSteps.ExpectName,
+                expected: expectedName,
+                timedOut: true,
+                treeRoot: lastRoot,
+                cancellationToken: cancellationToken
+            )
+            .ConfigureAwait(false);
     }
 
     private async Task<TreeNode> WaitForActionableAsync(CancellationToken cancellationToken)
@@ -180,7 +212,8 @@ public sealed class ElementQuery
         var deadline = DateTime.UtcNow + timeout;
 
         string? lastActual = null;
-        GraftException? lastNotActionable = null;
+        TreeNode? lastRoot = null;
+        var sawNotActionable = false;
 
         while (DateTime.UtcNow < deadline)
         {
@@ -188,6 +221,7 @@ public sealed class ElementQuery
             try
             {
                 var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
+                lastRoot = tree.Root;
                 var node = TreeSelector.Resolve(tree.Root, _selector);
                 if (node.Enabled && node.Visible)
                 {
@@ -195,13 +229,7 @@ public sealed class ElementQuery
                 }
 
                 lastActual = $"enabled={node.Enabled}, visible={node.Visible}";
-                lastNotActionable = CreateFailure(
-                    GraftErrorCodes.ElementNotActionable,
-                    $"Element '{node.AutomationId}' is not actionable ({lastActual}).",
-                    FailureSteps.Wait,
-                    actual: lastActual,
-                    timedOut: true
-                );
+                sawNotActionable = true;
             }
             catch (GraftException ex)
                 when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
@@ -219,29 +247,76 @@ public sealed class ElementQuery
                 .ConfigureAwait(false);
         }
 
-        if (lastNotActionable is not null)
+        if (sawNotActionable && lastActual is not null)
         {
-            throw lastNotActionable;
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ElementNotActionable,
+                    $"Element is not actionable ({lastActual}).",
+                    FailureSteps.Wait,
+                    actual: lastActual,
+                    timedOut: true,
+                    treeRoot: lastRoot,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
         }
 
-        throw CreateFailure(
-            GraftErrorCodes.ActionTimeout,
-            $"Timed out after {timeout.TotalSeconds:0.###}s waiting for an actionable element.",
-            FailureSteps.Wait,
-            timedOut: true
-        );
+        throw await CreateFailureAsync(
+                GraftErrorCodes.ActionTimeout,
+                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for an actionable element.",
+                FailureSteps.Wait,
+                timedOut: true,
+                treeRoot: lastRoot,
+                cancellationToken: cancellationToken
+            )
+            .ConfigureAwait(false);
     }
 
-    private GraftException CreateFailure(
+    private async Task<GraftException> CreateFailureAsync(
         string code,
         string message,
         string step,
         string? expected = null,
         string? actual = null,
         bool timedOut = false,
-        Exception? innerException = null
-    ) =>
-        new(
+        TreeNode? treeRoot = null,
+        Exception? innerException = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var tree = treeRoot;
+        if (tree is null)
+        {
+            try
+            {
+                tree = (
+                    await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false)
+                ).Root;
+            }
+            catch (GraftException)
+            {
+                // Best-effort attachment.
+            }
+        }
+
+        string? screenshotPath = null;
+        try
+        {
+            var (_, pngBytes) = await _connection
+                .ScreenshotAsync(cancellationToken)
+                .ConfigureAwait(false);
+            screenshotPath = Path.Combine(Path.GetTempPath(), $"graft-fail-{Guid.NewGuid():N}.png");
+            await File.WriteAllBytesAsync(screenshotPath, pngBytes, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            // Best-effort attachment; keep the original failure.
+            screenshotPath = null;
+        }
+
+        var recent = _operationLog.Snapshot();
+        return new GraftException(
             code,
             message,
             new FailureReport
@@ -251,9 +326,13 @@ public sealed class ElementQuery
                 Actual = actual,
                 TimedOut = timedOut,
                 Selector = FailureReportSelector.FromSelector(_selector),
+                RecentOperations = recent.Count == 0 ? null : recent,
+                Tree = tree,
+                ScreenshotPath = screenshotPath,
             },
             innerException
         );
+    }
 
     private static TimeSpan PositiveOrDefault(TimeSpan value, TimeSpan fallback) =>
         value <= TimeSpan.Zero ? fallback : value;
