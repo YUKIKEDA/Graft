@@ -92,15 +92,16 @@
 
 ---
 
-## Batch 6 — GetTree（WPF）
+## Batch 6 — GetTree（WPF）（ブランチ: `m0/batch-6-gettree-wpf`）
 
-- [ ] UI ディスパッチャへマーシャリング
-- [ ] Phase 1 必須フィールド（runtimeId, controlType, name, automationId, bounds, enabled, visible, focused, children）
-- [ ] bounds はウィンドウクライアント論理 DIP
-- [ ] デフォルト上限 深さ25 / ノード2000、`truncated`
-- [ ] `SampleButton` が木に出る
+- [x] UI ディスパッチャへマーシャリング
+- [x] Phase 1 必須フィールド（runtimeId, controlType, name, automationId, bounds, enabled, visible, focused, children）
+- [x] bounds はウィンドウクライアント論理 DIP
+- [x] デフォルト上限 深さ25 / ノード2000、`truncated`
+- [x] `SampleButton` が木に出る
 
-**完了条件:** Handshake 後 GetTree で SampleButton の name/bounds が取れる（一時クライアントでも可）。
+**完了条件:** Handshake 後 GetTree で SampleButton の name/bounds が取れる（一時クライアントでも可）。  
+**確認:** `dotnet test tests/Graft.Instrumentation.Wpf.Tests` / `dotnet test tests/Graft.Instrumentation.Tests`
 
 ---
 

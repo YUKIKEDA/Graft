@@ -13,6 +13,7 @@ public partial class App : Application
         base.OnStartup(e);
 
 #if GRAFT_TEST
+        Graft.Instrumentation.Wpf.WpfGraft.Use();
         Graft.Instrumentation.Agent.Start();
 #endif
     }

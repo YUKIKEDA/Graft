@@ -10,4 +10,9 @@ public static class ProtocolMethods
     /// <c>GRAFT_CONNECT_TOKEN</c>.
     /// </summary>
     public const string Handshake = "handshake";
+
+    /// <summary>
+    /// Returns the UI visual tree for the main window (Phase 1).
+    /// </summary>
+    public const string GetTree = "getTree";
 }

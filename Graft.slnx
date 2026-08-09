@@ -8,6 +8,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/Graft.Instrumentation.Analyzer.Tests/Graft.Instrumentation.Analyzer.Tests.csproj" />
     <Project Path="tests/Graft.Instrumentation.Tests/Graft.Instrumentation.Tests.csproj" />
+    <Project Path="tests/Graft.Instrumentation.Wpf.Tests/Graft.Instrumentation.Wpf.Tests.csproj" />
     <Project Path="tests/Graft.Protocol.Tests/Graft.Protocol.Tests.csproj" />
   </Folder>
   <Folder Name="/tests/sample-apps/">
