@@ -8,17 +8,18 @@
 
 ---
 
-## Batch 0 — `Graft.props` / `Graft.targets`（今ここ）
+## Batch 0 — `Graft.props` / `Graft.targets`（ブランチ: `m1/batch-0-props-targets`）
 
-- [ ] `Graft.Instrumentation.Wpf`（または共有 pack 入口）に `build/Graft.props` / `build/Graft.targets` を同梱する土台
-- [ ] 有効化の正本: プロパティ `GraftTest=true`（`/p:GraftTest=true` または csproj）→ `DefineConstants` に `GRAFT_TEST`
-- [ ] Debug 構成への自動紐づけはしない（project.md Q55）
-- [ ] SampleWpfApp のローカル `GraftTest` Configuration は、targets 経由で `GraftTest=true` が立つ形に寄せる（重複 Define を整理）
-- [ ] 利用例を短く残す（README 断片 or `.dev` メモ。長文 README は任意）
+- [x] `Graft.Instrumentation.Wpf` に `build/Graft.props` / `build/Graft.targets` を同梱（NuGet は `buildTransitive/Graft.Instrumentation.Wpf.*`）
+- [x] 有効化の正本: プロパティ `GraftTest=true`（`/p:GraftTest=true` または csproj）→ `DefineConstants` に `GRAFT_TEST`
+- [x] Debug 構成への自動紐づけはしない（project.md Q55）
+- [x] SampleWpfApp のローカル Define をやめ、明示 Import + Configuration=`GraftTest`→`GraftTest=true` に寄せる
+- [x] 利用例: [graft-msbuild.md](./graft-msbuild.md)
 
 **完了条件:** Sample を `-p:GraftTest=true` または `-c GraftTest` でビルドすると `GRAFT_TEST` が付き、Agent API が使える。  
 **確認:** `dotnet build tests/sample-apps/SampleWpfApp -p:GraftTest=true`  
-**レビューポイント:** MSBuild 断片・Sample の移行だけ。プロトコル変更なし。
+**レビューポイント:** MSBuild 断片・Sample の移行だけ。プロトコル変更なし。  
+**次:** レビュー OK なら Batch 1（Screenshot）へ。
 
 ---
 

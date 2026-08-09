@@ -1,4 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- ProjectReference does not auto-import NuGet buildTransitive; import Graft MSBuild explicitly. -->
+  <Import Project="..\..\..\src\Graft.Instrumentation.Wpf\build\Graft.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -8,15 +10,8 @@
     <RootNamespace>SampleWpfApp</RootNamespace>
     <AssemblyName>SampleWpfApp</AssemblyName>
   </PropertyGroup>
-  <!-- Batch 1: local GraftTest configuration. Full Graft.props/targets arrive in M1. -->
-  <PropertyGroup Condition="'$(Configuration)' == 'GraftTest'">
-    <DefineConstants>$(DefineConstants);GRAFT_TEST</DefineConstants>
-  </PropertyGroup>
-  <!-- Also allow: dotnet build -p:GraftTest=true -->
-  <PropertyGroup Condition="'$(GraftTest)' == 'true'">
-    <DefineConstants>$(DefineConstants);GRAFT_TEST</DefineConstants>
-  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Graft.Instrumentation.Wpf\Graft.Instrumentation.Wpf.csproj" />
   </ItemGroup>
+  <Import Project="..\..\..\src\Graft.Instrumentation.Wpf\build\Graft.targets" />
 </Project>

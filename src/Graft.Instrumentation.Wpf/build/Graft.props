@@ -1,0 +1,9 @@
+<Project>
+  <!--
+    Graft MSBuild entry (source name). Packaged as buildTransitive/Graft.Instrumentation.Wpf.props.
+    Enablement authority: GraftTest=true. Debug is never auto-linked (project.md Q55).
+  -->
+  <PropertyGroup Condition="'$(Configuration)' == 'GraftTest' AND '$(GraftTest)' == ''">
+    <GraftTest>true</GraftTest>
+  </PropertyGroup>
+</Project>
