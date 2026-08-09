@@ -4,8 +4,8 @@
     "documentationRules": {
       "companyName": "Graft",
       "xmlHeader": false,
-      "documentExposedElements": false,
-      "documentInterfaces": false,
+      "documentExposedElements": true,
+      "documentInterfaces": true,
       "documentInternalElements": false,
       "documentPrivateElements": false,
       "documentPrivateFields": false

@@ -18,10 +18,12 @@ alwaysApply: false
 
 - Referenced for all `.csproj` via `Directory.Build.props`.
 - Settings: `stylecop.json` + `.editorconfig`.
-- XML documentation rules are disabled for now (`SA0001` silenced as expected).
-- `SA1101` (`this.` prefix), `SA1502` (single-line empty elements), `SA1009` / `SA1111` (paren placement) are off to avoid fighting modern C# / CSharpier.
+- **`src/**` public API requires XML docs** (warning): `SA1600` and related enabled under `[src/**/*.cs]`.
+- `src/Directory.Build.props` sets `GenerateDocumentationFile=true`.
+- `tests/`, `tools/`, sample-apps: documentation rules stay off.
+- File-header rules stay off. `SA1101`, `SA1502`, `SA1009`, `SA1111` stay off (CSharpier / modern C#).
 - Severity is **warning** for now; do not treat StyleCop as build-breaking unless explicitly upgrading later.
-- Prefer fixing real StyleCop warnings in touched files; avoid repo-wide cleanup drive-bys unless asked.
+- When adding/changing public members under `src/`, include XML docs in the same change.
 
 ## Interaction
 

@@ -1,0 +1,8 @@
+<Project>
+  <!-- Import repo-root Directory.Build.props (this file shadows the upward search). -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  <PropertyGroup>
+    <!-- Public API docs: warning-level via StyleCop; escalate to error later. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+</Project>

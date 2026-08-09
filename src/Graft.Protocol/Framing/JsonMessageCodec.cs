@@ -8,6 +8,9 @@ namespace Graft.Protocol.Framing;
 /// </summary>
 public static class JsonMessageCodec
 {
+    /// <summary>
+    /// Shared serializer options for wire JSON.
+    /// </summary>
     public static readonly JsonSerializerOptions Options = new()
     {
         PropertyNamingPolicy = null,
@@ -15,20 +18,47 @@ public static class JsonMessageCodec
         WriteIndented = false,
     };
 
+    /// <summary>
+    /// Serializes a request envelope to UTF-8 JSON bytes.
+    /// </summary>
+    /// <param name="message">Request message.</param>
+    /// <returns>UTF-8 JSON payload.</returns>
     public static byte[] EncodeRequest(RequestMessage message) =>
         JsonSerializer.SerializeToUtf8Bytes(message, Options);
 
+    /// <summary>
+    /// Serializes a response envelope to UTF-8 JSON bytes.
+    /// </summary>
+    /// <param name="message">Response message.</param>
+    /// <returns>UTF-8 JSON payload.</returns>
     public static byte[] EncodeResponse(ResponseMessage message) =>
         JsonSerializer.SerializeToUtf8Bytes(message, Options);
 
+    /// <summary>
+    /// Deserializes a request envelope from UTF-8 JSON.
+    /// </summary>
+    /// <param name="utf8Json">UTF-8 JSON bytes.</param>
+    /// <returns>The request message.</returns>
     public static RequestMessage DecodeRequest(ReadOnlySpan<byte> utf8Json) =>
         JsonSerializer.Deserialize<RequestMessage>(utf8Json, Options)
         ?? throw new InvalidOperationException("Request JSON deserialized to null.");
 
+    /// <summary>
+    /// Deserializes a response envelope from UTF-8 JSON.
+    /// </summary>
+    /// <param name="utf8Json">UTF-8 JSON bytes.</param>
+    /// <returns>The response message.</returns>
     public static ResponseMessage DecodeResponse(ReadOnlySpan<byte> utf8Json) =>
         JsonSerializer.Deserialize<ResponseMessage>(utf8Json, Options)
         ?? throw new InvalidOperationException("Response JSON deserialized to null.");
 
+    /// <summary>
+    /// Encodes and writes a length-prefixed request frame.
+    /// </summary>
+    /// <param name="stream">Destination stream.</param>
+    /// <param name="message">Request message.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when the frame has been written.</returns>
     public static async Task WriteRequestAsync(
         Stream stream,
         RequestMessage message,
@@ -41,6 +71,13 @@ public static class JsonMessageCodec
             .ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Encodes and writes a length-prefixed response frame.
+    /// </summary>
+    /// <param name="stream">Destination stream.</param>
+    /// <param name="message">Response message.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when the frame has been written.</returns>
     public static async Task WriteResponseAsync(
         Stream stream,
         ResponseMessage message,
@@ -53,6 +90,12 @@ public static class JsonMessageCodec
             .ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Reads and decodes a length-prefixed request frame.
+    /// </summary>
+    /// <param name="stream">Source stream.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The decoded request message.</returns>
     public static async Task<RequestMessage> ReadRequestAsync(
         Stream stream,
         CancellationToken cancellationToken = default
@@ -64,6 +107,12 @@ public static class JsonMessageCodec
         return DecodeRequest(payload);
     }
 
+    /// <summary>
+    /// Reads and decodes a length-prefixed response frame.
+    /// </summary>
+    /// <param name="stream">Source stream.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The decoded response message.</returns>
     public static async Task<ResponseMessage> ReadResponseAsync(
         Stream stream,
         CancellationToken cancellationToken = default

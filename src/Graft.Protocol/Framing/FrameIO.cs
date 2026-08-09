@@ -7,6 +7,9 @@ namespace Graft.Protocol.Framing;
 /// </summary>
 public static class FrameIO
 {
+    /// <summary>
+    /// Size of the length prefix in bytes.
+    /// </summary>
     public const int LengthPrefixSize = 4;
 
     /// <summary>
@@ -14,6 +17,15 @@ public static class FrameIO
     /// </summary>
     public const int DefaultMaxPayloadBytes = 16 * 1024 * 1024;
 
+    /// <summary>
+    /// Writes a length-prefixed payload to <paramref name="stream"/>.
+    /// </summary>
+    /// <param name="stream">Destination stream.</param>
+    /// <param name="payload">Frame payload bytes.</param>
+    /// <param name="maxPayloadBytes">Maximum allowed payload length.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when the frame has been written.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the payload exceeds <paramref name="maxPayloadBytes"/>.</exception>
     public static async Task WriteAsync(
         Stream stream,
         ReadOnlyMemory<byte> payload,
@@ -39,6 +51,15 @@ public static class FrameIO
         }
     }
 
+    /// <summary>
+    /// Reads one length-prefixed payload from <paramref name="stream"/>.
+    /// </summary>
+    /// <param name="stream">Source stream.</param>
+    /// <param name="maxPayloadBytes">Maximum allowed payload length.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The payload bytes (empty array when length is 0).</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the length is negative or exceeds <paramref name="maxPayloadBytes"/>.</exception>
+    /// <exception cref="EndOfStreamException">Thrown when the stream ends before the full frame is read.</exception>
     public static async Task<byte[]> ReadAsync(
         Stream stream,
         int maxPayloadBytes = DefaultMaxPayloadBytes,
