@@ -67,6 +67,19 @@ internal static class WpfVisualTreeWalker
     )
     {
         var childCount = VisualTreeHelper.GetChildrenCount(parent);
+        if (childCount == 0)
+        {
+            return;
+        }
+
+        // Apply before FE / non-FE branching so non-FrameworkElement chains cannot
+        // recurse past MaxDepth (they are flattened at the same childDepth).
+        if (childDepth > state.Options.MaxDepth)
+        {
+            state.Truncated = true;
+            return;
+        }
+
         for (var i = 0; i < childCount; i++)
         {
             if (state.NodeCount >= state.Options.MaxNodes)
@@ -78,12 +91,6 @@ internal static class WpfVisualTreeWalker
             var child = VisualTreeHelper.GetChild(parent, i);
             if (child is FrameworkElement frameworkChild)
             {
-                if (childDepth > state.Options.MaxDepth)
-                {
-                    state.Truncated = true;
-                    continue;
-                }
-
                 sink.Add(BuildNode(frameworkChild, window, boundsOrigin, childDepth, state));
             }
             else
