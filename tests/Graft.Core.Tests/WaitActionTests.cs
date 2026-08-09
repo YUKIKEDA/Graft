@@ -6,20 +6,20 @@ namespace Graft.Core.Tests;
 public sealed class WaitActionTests
 {
     /// <summary>
-    /// ExpectNameAsync fails with expect.failed and a populated FailureReport.
+    /// ExpectNameAsync fails with expect.failed and attachments on FailureReport.
     /// </summary>
     /// <remarks>
     /// Preconditions:
     /// - SampleWpfApp launched; StatusText initial text is "Ready"
     ///
     /// Steps:
-    /// - ExpectNameAsync("Ready") to ensure the element is present
+    /// - ExpectNameAsync("Ready") to ensure the element is present (records operation)
     /// - Set a short ExpectTimeout
     /// - ExpectNameAsync("never-matches")
     ///
     /// Expected:
     /// - GraftException with expect.failed
-    /// - Report: step expectName, expected never-matches, actual Ready, timedOut true, selector StatusText
+    /// - Report minimum fields plus tree and/or screenshotPath, and recentOperations
     /// </remarks>
     [Fact]
     public async Task ExpectName_WrongValue_ThrowsExpectFailedWithFailureReport()
@@ -52,5 +52,28 @@ public sealed class WaitActionTests
         Assert.Equal("Ready", ex.Report.Actual);
         Assert.True(ex.Report.TimedOut);
         Assert.Equal("StatusText", ex.Report.Selector.AutomationId);
+
+        Assert.NotNull(ex.Report.Tree);
+        Assert.False(string.IsNullOrWhiteSpace(ex.Report.Tree.ControlType));
+        Assert.NotNull(ex.Report.RecentOperations);
+        Assert.Contains(
+            ex.Report.RecentOperations,
+            op => op.Action == FailureSteps.ExpectName && op.Detail == "Ready"
+        );
+        Assert.False(string.IsNullOrWhiteSpace(ex.Report.ScreenshotPath));
+        Assert.True(File.Exists(ex.Report.ScreenshotPath));
+        try
+        {
+            var png = await File.ReadAllBytesAsync(ex.Report.ScreenshotPath);
+            Assert.True(png.Length >= 8);
+            Assert.Equal(0x89, png[0]);
+            Assert.Equal((byte)'P', png[1]);
+            Assert.Equal((byte)'N', png[2]);
+            Assert.Equal((byte)'G', png[3]);
+        }
+        finally
+        {
+            File.Delete(ex.Report.ScreenshotPath);
+        }
     }
 }

@@ -1,14 +1,15 @@
 using System.Text.Json.Serialization;
+using Graft.Protocol.Messages;
 
 namespace Graft.Core.Diagnostics;
 
 /// <summary>
-/// Structured failure diagnostics (project.md Phase 2 minimum fields).
+/// Structured failure diagnostics (project.md Phase 2).
 /// </summary>
 /// <remarks>
 /// Assembled by <c>Graft.Core</c> when Expect / Wait / actions fail.
 /// The in-process agent does not attach this on every RPC response.
-/// Optional attachments (operation log, tree, screenshot) are reserved for later batches.
+/// Optional attachments (operation log, tree, screenshot path) are best-effort on failure.
 /// </remarks>
 public sealed class FailureReport
 {
@@ -41,4 +42,22 @@ public sealed class FailureReport
     /// </summary>
     [JsonPropertyName("selector")]
     public required FailureReportSelector Selector { get; init; }
+
+    /// <summary>
+    /// Gets recent controller operations leading up to the failure (oldest first).
+    /// </summary>
+    [JsonPropertyName("recentOperations")]
+    public IReadOnlyList<OperationLogEntry>? RecentOperations { get; init; }
+
+    /// <summary>
+    /// Gets the UI tree root captured around the failure, when available.
+    /// </summary>
+    [JsonPropertyName("tree")]
+    public TreeNode? Tree { get; init; }
+
+    /// <summary>
+    /// Gets a temp-file path to a PNG screenshot captured on failure, when available.
+    /// </summary>
+    [JsonPropertyName("screenshotPath")]
+    public string? ScreenshotPath { get; init; }
 }
