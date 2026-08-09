@@ -26,8 +26,9 @@ public static class Agent
     /// Starts the agent when <c>GRAFT_ENABLE=1</c> and required environment variables are present.
     /// </summary>
     /// <remarks>
-    /// Without <c>GRAFT_ENABLE=1</c> this method returns without starting (no pipe server yet in Batch 3).
-    /// Pipe listening arrives in a later batch; this batch only captures configuration.
+    /// Without <c>GRAFT_ENABLE=1</c> this method returns without starting.
+    /// When enabled, listens on <c>GRAFT_PIPE_NAME</c> with same-user ACL and accepts a single
+    /// client (reconnect after disconnect is allowed).
     /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// Thrown when enabled but <c>GRAFT_PIPE_NAME</c> is missing or empty.
@@ -52,17 +53,19 @@ public static class Agent
 
         lock (Sync)
         {
+            Current?.Dispose();
             Current = new AgentSession(pipeName, token);
         }
     }
 
     /// <summary>
-    /// Stops the agent and clears <see cref="Current"/>.
+    /// Stops the agent, closes the pipe server, and clears <see cref="Current"/>.
     /// </summary>
     public static void Stop()
     {
         lock (Sync)
         {
+            Current?.Dispose();
             Current = null;
         }
     }
