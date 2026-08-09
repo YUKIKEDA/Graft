@@ -37,15 +37,16 @@
 
 ---
 
-## Batch 2 — 要素解決（invoke の前提）
+## Batch 2 — 要素解決（invoke の前提）（ブランチ: `m1/batch-2-element-resolve`）
 
-- [ ] `invoke` / 将来の `setValue` が共有するセレクタ解決（当面: `automationId` 必須。`runtimeId` は任意）
-- [ ] 見つからない → `element.notFound`、同点複数は将来 `element.ambiguous`（M1 は automationId 一意前提でよい）
-- [ ] GetTree と同一の Visual Tree 走査口を再利用（二重実装を避ける）
-- [ ] テスト: SampleButton / 存在しない ID
+- [x] `invoke` / 将来の `setValue` が共有するセレクタ解決（`automationId` 必須。`runtimeId` は任意）
+- [x] 見つからない → `element.notFound`、複数一致 → `element.ambiguous`、空 id → `selector.invalid`
+- [x] GetTree と同一の Visual Tree 走査口（`WpfVisualTreeWalker.CollectFrameworkChildren`）を再利用
+- [x] テスト: SampleButton / 存在しない ID / 重複 ID（内部 API、wire は Batch 3）
 
 **完了条件:** automationId で要素を解決できる（内部 API または薄い wire でも可。公開 method は Batch 3 で `invoke` に載せてもよい）。  
-**確認:** Instrumentation.Wpf.Tests
+**確認:** `dotnet test tests/Graft.Instrumentation.Wpf.Tests`  
+**次:** レビュー OK なら Batch 3（`invoke`）へ。
 
 ---
 

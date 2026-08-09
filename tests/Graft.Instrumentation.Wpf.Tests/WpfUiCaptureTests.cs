@@ -1,15 +1,17 @@
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using Graft.Instrumentation.Elements;
 using Graft.Instrumentation.Screenshot;
 using Graft.Instrumentation.Tree;
 using Graft.Instrumentation.Wpf;
+using Graft.Protocol;
 using Graft.Protocol.Messages;
 
 namespace Graft.Instrumentation.Wpf.Tests;
 
 /// <summary>
-/// WPF capture tests share one STA + <see cref="Application"/> lifetime
+/// WPF capture / resolve tests share one STA + <see cref="Application"/> lifetime
 /// (WPF allows only one Application per AppDomain; StaFact threads differ per method).
 /// </summary>
 public sealed class WpfUiCaptureTests
@@ -17,7 +19,7 @@ public sealed class WpfUiCaptureTests
     private static readonly byte[] PngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
     /// <summary>
-    /// GetTree and screenshot capture succeed against a shown Sample-like window.
+    /// GetTree, screenshot, and element resolve succeed against a Sample-like window.
     /// </summary>
     /// <remarks>
     /// Preconditions:
@@ -28,13 +30,15 @@ public sealed class WpfUiCaptureTests
     /// Steps:
     /// - Call IUiTreeProvider.GetTree and find SampleButton
     /// - Call IScreenshotProvider.Capture
+    /// - Resolve SampleButton; resolve a missing automationId; resolve duplicate ids
     ///
     /// Expected:
     /// - SampleButton name/bounds are present
     /// - screenshot meta is png with positive size; raw bytes have PNG signature
+    /// - resolve returns Button for SampleButton; missing id → element.notFound; duplicates → element.ambiguous
     /// </remarks>
     [StaFact]
-    public void GetTreeAndScreenshot_OnShownWindow_Succeed()
+    public void GetTreeScreenshotAndResolve_OnShownWindow_Succeed()
     {
         var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         Window? window = null;
@@ -53,12 +57,12 @@ public sealed class WpfUiCaptureTests
                 ?? throw new InvalidOperationException("Tree provider was not registered.");
             var tree = treeProvider.GetTree(new GetTreeOptions());
             Assert.False(tree.Truncated);
-            var button = FindByAutomationId(tree.Root, "SampleButton");
-            Assert.NotNull(button);
-            Assert.Equal("Click Me", button.Name);
-            Assert.Equal("Button", button.ControlType);
-            Assert.True(button.Bounds.Width > 0, "Expected positive width.");
-            Assert.True(button.Bounds.Height > 0, "Expected positive height.");
+            var buttonNode = FindByAutomationId(tree.Root, "SampleButton");
+            Assert.NotNull(buttonNode);
+            Assert.Equal("Click Me", buttonNode.Name);
+            Assert.Equal("Button", buttonNode.ControlType);
+            Assert.True(buttonNode.Bounds.Width > 0, "Expected positive width.");
+            Assert.True(buttonNode.Bounds.Height > 0, "Expected positive height.");
 
             var screenshotProvider =
                 AgentServices.ScreenshotProvider
@@ -73,6 +77,40 @@ public sealed class WpfUiCaptureTests
                 capture.PngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature),
                 "Expected PNG signature on captured bytes."
             );
+
+            var resolver =
+                AgentServices.ElementResolver
+                ?? throw new InvalidOperationException("Element resolver was not registered.");
+            var resolved = resolver.Resolve(new ElementSelector { AutomationId = "SampleButton" });
+            Assert.Equal("SampleButton", resolved.AutomationId);
+            Assert.Equal("Button", resolved.ControlType);
+            Assert.IsType<Button>(resolved.Target);
+            Assert.True(resolved.RuntimeId > 0);
+
+            var notFound = Assert.Throws<ElementResolveException>(() =>
+                resolver.Resolve(new ElementSelector { AutomationId = "DoesNotExist" })
+            );
+            Assert.Equal(GraftErrorCodes.ElementNotFound, notFound.Code);
+
+            var invalid = Assert.Throws<ElementResolveException>(() =>
+                resolver.Resolve(new ElementSelector { AutomationId = "  " })
+            );
+            Assert.Equal(GraftErrorCodes.SelectorInvalid, invalid.Code);
+
+            // Duplicate automationIds → ambiguous.
+            var dupA = new Button { Content = "A" };
+            AutomationProperties.SetAutomationId(dupA, "DupId");
+            var dupB = new Button { Content = "B" };
+            AutomationProperties.SetAutomationId(dupB, "DupId");
+            var panel = (StackPanel)window.Content;
+            panel.Children.Add(dupA);
+            panel.Children.Add(dupB);
+            window.UpdateLayout();
+
+            var ambiguous = Assert.Throws<ElementResolveException>(() =>
+                resolver.Resolve(new ElementSelector { AutomationId = "DupId" })
+            );
+            Assert.Equal(GraftErrorCodes.ElementAmbiguous, ambiguous.Code);
         }
         finally
         {

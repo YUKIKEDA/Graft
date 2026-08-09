@@ -2,13 +2,15 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Graft.Instrumentation.Elements;
 using Graft.Instrumentation.Tree;
+using Graft.Protocol;
 using Graft.Protocol.Messages;
 
 namespace Graft.Instrumentation.Wpf;
 
 /// <summary>
-/// Walks the WPF visual tree into Protocol <see cref="TreeNode"/> graphs.
+/// Walks the WPF visual tree into Protocol <see cref="TreeNode"/> graphs or live element matches.
 /// </summary>
 internal static class WpfVisualTreeWalker
 {
@@ -30,6 +32,89 @@ internal static class WpfVisualTreeWalker
         return new GetTreeResult { Root = treeRoot, Truncated = state.Truncated };
     }
 
+    /// <summary>
+    /// Resolves a live <see cref="FrameworkElement"/> using the same visual-tree walk as <see cref="Capture"/>.
+    /// </summary>
+    /// <param name="root">Window to search.</param>
+    /// <param name="selector">automationId required; runtimeId optional.</param>
+    /// <returns>The unique match.</returns>
+    /// <exception cref="ElementResolveException">Invalid selector, not found, or ambiguous.</exception>
+    public static ResolvedElement Resolve(Window root, ElementSelector selector)
+    {
+        ArgumentNullException.ThrowIfNull(root);
+        ArgumentNullException.ThrowIfNull(selector);
+
+        if (string.IsNullOrWhiteSpace(selector.AutomationId))
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.automationId is required."
+            );
+        }
+
+        var automationId = selector.AutomationId.Trim();
+
+        // Resolve walks without GetTree truncation so invoke targets are not missed.
+        var state = new WalkState(
+            new GetTreeOptions { MaxDepth = int.MaxValue / 4, MaxNodes = int.MaxValue / 4 }
+        );
+        var matches = new List<(FrameworkElement Element, int RuntimeId)>();
+        CollectMatches(root, depth: 0, state, automationId, selector.RuntimeId, matches);
+
+        if (matches.Count == 0)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.ElementNotFound,
+                $"No element matched automationId '{automationId}'."
+            );
+        }
+
+        if (matches.Count > 1)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.ElementAmbiguous,
+                $"Multiple elements matched automationId '{automationId}' ({matches.Count})."
+            );
+        }
+
+        var (element, runtimeId) = matches[0];
+        return new ResolvedElement
+        {
+            Target = element,
+            AutomationId = automationId,
+            RuntimeId = runtimeId,
+            ControlType = element.GetType().Name,
+        };
+    }
+
+    private static void CollectMatches(
+        FrameworkElement element,
+        int depth,
+        WalkState state,
+        string automationId,
+        int? runtimeIdFilter,
+        List<(FrameworkElement Element, int RuntimeId)> matches
+    )
+    {
+        state.NodeCount++;
+        var runtimeId = state.NextRuntimeId++;
+        var elementAutomationId = AutomationProperties.GetAutomationId(element) ?? string.Empty;
+        if (
+            string.Equals(elementAutomationId, automationId, StringComparison.Ordinal)
+            && (runtimeIdFilter is null || runtimeIdFilter == runtimeId)
+        )
+        {
+            matches.Add((element, runtimeId));
+        }
+
+        CollectFrameworkChildren(
+            element,
+            depth + 1,
+            state,
+            child => CollectMatches(child, depth + 1, state, automationId, runtimeIdFilter, matches)
+        );
+    }
+
     private static TreeNode BuildNode(
         FrameworkElement element,
         Window window,
@@ -41,7 +126,12 @@ internal static class WpfVisualTreeWalker
         state.NodeCount++;
         var runtimeId = state.NextRuntimeId++;
         var children = new List<TreeNode>();
-        CollectFrameworkChildren(element, window, boundsOrigin, depth + 1, state, children);
+        CollectFrameworkChildren(
+            element,
+            depth + 1,
+            state,
+            child => children.Add(BuildNode(child, window, boundsOrigin, depth + 1, state))
+        );
 
         return new TreeNode
         {
@@ -59,11 +149,9 @@ internal static class WpfVisualTreeWalker
 
     private static void CollectFrameworkChildren(
         DependencyObject parent,
-        Window window,
-        Visual boundsOrigin,
         int childDepth,
         WalkState state,
-        List<TreeNode> sink
+        Action<FrameworkElement> onFrameworkChild
     )
     {
         var childCount = VisualTreeHelper.GetChildrenCount(parent);
@@ -91,12 +179,12 @@ internal static class WpfVisualTreeWalker
             var child = VisualTreeHelper.GetChild(parent, i);
             if (child is FrameworkElement frameworkChild)
             {
-                sink.Add(BuildNode(frameworkChild, window, boundsOrigin, childDepth, state));
+                onFrameworkChild(frameworkChild);
             }
             else
             {
                 // Non-FrameworkElement visuals are skipped as nodes but children are flattened.
-                CollectFrameworkChildren(child, window, boundsOrigin, childDepth, state, sink);
+                CollectFrameworkChildren(child, childDepth, state, onFrameworkChild);
             }
         }
     }
