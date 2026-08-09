@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Graft.Core</RootNamespace>
+    <AssemblyName>Graft.Core</AssemblyName>
+    <Description>Framework-independent controller SDK for Graft (Launch, selectors, wait).</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Graft.Protocol\Graft.Protocol.csproj" />
+  </ItemGroup>
+</Project>

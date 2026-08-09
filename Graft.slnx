@@ -1,11 +1,13 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/Graft.Core/Graft.Core.csproj" />
     <Project Path="src/Graft.Instrumentation.Analyzer/Graft.Instrumentation.Analyzer.csproj" />
     <Project Path="src/Graft.Instrumentation.Wpf/Graft.Instrumentation.Wpf.csproj" />
     <Project Path="src/Graft.Instrumentation/Graft.Instrumentation.csproj" />
     <Project Path="src/Graft.Protocol/Graft.Protocol.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Graft.Core.Tests/Graft.Core.Tests.csproj" />
     <Project Path="tests/Graft.Instrumentation.Analyzer.Tests/Graft.Instrumentation.Analyzer.Tests.csproj" />
     <Project Path="tests/Graft.Instrumentation.Tests/Graft.Instrumentation.Tests.csproj" />
     <Project Path="tests/Graft.Instrumentation.Wpf.Tests/Graft.Instrumentation.Wpf.Tests.csproj" />
