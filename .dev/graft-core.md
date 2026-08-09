@@ -72,5 +72,5 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - テキスト入力: `GetByAutomationId(…).SetValueAsync(value)`（エージェント wire `setValue`）
 - 失敗診断: Expect / Wait / Invoke / SetValue 失敗時に `GraftException.Report`（最小: step / expected / actual / timedOut / selector。添付: `recentOperations` / `tree` / `screenshotPath`）。エージェントは RPC ごとに常時添付しない。添付は失敗時ベストエフォート
 - Scenario JSON: `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync`（`launch` / `invoke` / `setValue` / `expectName`）。契約は `.dev/scenario.schema.json`。例: `tests/sample-apps/SampleWpfApp.Tests/Scenarios/`
-- MCP: `Graft.McpServer`（stdio）。`graft_ping` / `graft_run_scenario`（失敗時は `IsError` + FailureReport JSON）
+- MCP: `Graft.McpServer`（stdio）。`graft_ping` / `graft_run_scenario` / 原子ツール（`graft_launch`・`graft_invoke`・`graft_set_value`・`graft_expect_name`・`graft_dispose`）。失敗時は `IsError` + FailureReport JSON
 - 未実装（Phase 1 余り / 後続）: `toggle`、キー入力、SendInput フォールバック
