@@ -1,3 +1,4 @@
+using Graft.Core.Diagnostics;
 using Graft.Core.Selectors;
 using Graft.Protocol;
 using Graft.Protocol.Messages;
@@ -25,19 +26,29 @@ public sealed class ElementQuery
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when invoke succeeds.</returns>
-    /// <exception cref="GraftException">Wait, resolve, or invoke failed.</exception>
+    /// <exception cref="GraftException">Wait, resolve, or invoke failed (may include <see cref="GraftException.Report"/>).</exception>
     public async Task InvokeAsync(CancellationToken cancellationToken = default)
     {
         var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(node.AutomationId))
         {
-            throw new GraftException(
+            throw CreateFailure(
                 GraftErrorCodes.ActionFailed,
-                "Resolved element has no automationId; cannot invoke over the wire."
+                "Resolved element has no automationId; cannot invoke over the wire.",
+                FailureSteps.Invoke
             );
         }
 
-        await _connection.InvokeAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await _connection
+                .InvokeAsync(node.AutomationId, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw CreateFailure(ex.Code, ex.Message, FailureSteps.Invoke, innerException: ex);
+        }
     }
 
     /// <summary>
@@ -46,7 +57,7 @@ public sealed class ElementQuery
     /// <param name="value">Replacement text (empty string clears).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when setValue succeeds.</returns>
-    /// <exception cref="GraftException">Wait, resolve, or setValue failed.</exception>
+    /// <exception cref="GraftException">Wait, resolve, or setValue failed (may include <see cref="GraftException.Report"/>).</exception>
     public async Task SetValueAsync(string value, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -54,15 +65,29 @@ public sealed class ElementQuery
         var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(node.AutomationId))
         {
-            throw new GraftException(
+            throw CreateFailure(
                 GraftErrorCodes.ActionFailed,
-                "Resolved element has no automationId; cannot setValue over the wire."
+                "Resolved element has no automationId; cannot setValue over the wire.",
+                FailureSteps.SetValue
             );
         }
 
-        await _connection
-            .SetValueAsync(node.AutomationId, value, cancellationToken)
-            .ConfigureAwait(false);
+        try
+        {
+            await _connection
+                .SetValueAsync(node.AutomationId, value, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw CreateFailure(
+                ex.Code,
+                ex.Message,
+                FailureSteps.SetValue,
+                expected: value,
+                innerException: ex
+            );
+        }
     }
 
     /// <summary>
@@ -74,6 +99,7 @@ public sealed class ElementQuery
     /// <exception cref="GraftException">
     /// <c>expect.failed</c> when the name differs after the element is found;
     /// <c>action.timeout</c> when the element never qualifies in time.
+    /// Includes <see cref="GraftException.Report"/> with minimum diagnostics.
     /// </exception>
     public async Task<TreeNode> ExpectNameAsync(
         string expectedName,
@@ -89,7 +115,7 @@ public sealed class ElementQuery
         var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
         var deadline = DateTime.UtcNow + timeout;
 
-        GraftException? lastExpect = null;
+        string? lastActual = null;
         var sawElement = false;
 
         while (DateTime.UtcNow < deadline)
@@ -105,10 +131,7 @@ public sealed class ElementQuery
                     return node;
                 }
 
-                lastExpect = new GraftException(
-                    GraftErrorCodes.ExpectFailed,
-                    $"Expected name '{expectedName}' but was '{node.Name}'."
-                );
+                lastActual = node.Name;
             }
             catch (GraftException ex)
                 when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
@@ -126,14 +149,24 @@ public sealed class ElementQuery
                 .ConfigureAwait(false);
         }
 
-        if (sawElement && lastExpect is not null)
+        if (sawElement && lastActual is not null)
         {
-            throw lastExpect;
+            throw CreateFailure(
+                GraftErrorCodes.ExpectFailed,
+                $"Expected name '{expectedName}' but was '{lastActual}'.",
+                FailureSteps.ExpectName,
+                expected: expectedName,
+                actual: lastActual,
+                timedOut: true
+            );
         }
 
-        throw new GraftException(
+        throw CreateFailure(
             GraftErrorCodes.ActionTimeout,
-            $"Timed out after {timeout.TotalSeconds:0.###}s waiting for name '{expectedName}'."
+            $"Timed out after {timeout.TotalSeconds:0.###}s waiting for name '{expectedName}'.",
+            FailureSteps.ExpectName,
+            expected: expectedName,
+            timedOut: true
         );
     }
 
@@ -146,6 +179,7 @@ public sealed class ElementQuery
         var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
         var deadline = DateTime.UtcNow + timeout;
 
+        string? lastActual = null;
         GraftException? lastNotActionable = null;
 
         while (DateTime.UtcNow < deadline)
@@ -160,9 +194,13 @@ public sealed class ElementQuery
                     return node;
                 }
 
-                lastNotActionable = new GraftException(
+                lastActual = $"enabled={node.Enabled}, visible={node.Visible}";
+                lastNotActionable = CreateFailure(
                     GraftErrorCodes.ElementNotActionable,
-                    $"Element '{node.AutomationId}' is not actionable (enabled={node.Enabled}, visible={node.Visible})."
+                    $"Element '{node.AutomationId}' is not actionable ({lastActual}).",
+                    FailureSteps.Wait,
+                    actual: lastActual,
+                    timedOut: true
                 );
             }
             catch (GraftException ex)
@@ -186,11 +224,36 @@ public sealed class ElementQuery
             throw lastNotActionable;
         }
 
-        throw new GraftException(
+        throw CreateFailure(
             GraftErrorCodes.ActionTimeout,
-            $"Timed out after {timeout.TotalSeconds:0.###}s waiting for an actionable element."
+            $"Timed out after {timeout.TotalSeconds:0.###}s waiting for an actionable element.",
+            FailureSteps.Wait,
+            timedOut: true
         );
     }
+
+    private GraftException CreateFailure(
+        string code,
+        string message,
+        string step,
+        string? expected = null,
+        string? actual = null,
+        bool timedOut = false,
+        Exception? innerException = null
+    ) =>
+        new(
+            code,
+            message,
+            new FailureReport
+            {
+                Step = step,
+                Expected = expected,
+                Actual = actual,
+                TimedOut = timedOut,
+                Selector = FailureReportSelector.FromSelector(_selector),
+            },
+            innerException
+        );
 
     private static TimeSpan PositiveOrDefault(TimeSpan value, TimeSpan fallback) =>
         value <= TimeSpan.Zero ? fallback : value;

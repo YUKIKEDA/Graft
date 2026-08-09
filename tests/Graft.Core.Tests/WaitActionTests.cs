@@ -1,9 +1,12 @@
+using Graft.Core.Diagnostics;
+using Graft.Protocol;
+
 namespace Graft.Core.Tests;
 
 public sealed class WaitActionTests
 {
     /// <summary>
-    /// ExpectNameAsync fails with expect.failed when the name never matches.
+    /// ExpectNameAsync fails with expect.failed and a populated FailureReport.
     /// </summary>
     /// <remarks>
     /// Preconditions:
@@ -16,9 +19,10 @@ public sealed class WaitActionTests
     ///
     /// Expected:
     /// - GraftException with expect.failed
+    /// - Report: step expectName, expected never-matches, actual Ready, timedOut true, selector StatusText
     /// </remarks>
     [Fact]
-    public async Task ExpectName_WrongValue_ThrowsExpectFailed()
+    public async Task ExpectName_WrongValue_ThrowsExpectFailedWithFailureReport()
     {
         var appPath = SampleAppPaths.ResolveSampleWpfAppProject();
         await using var session = await Application.LaunchAsync(
@@ -41,6 +45,12 @@ public sealed class WaitActionTests
         var ex = await Assert.ThrowsAsync<GraftException>(() =>
             session.GetByAutomationId("StatusText").ExpectNameAsync("never-matches")
         );
-        Assert.Equal(Graft.Protocol.GraftErrorCodes.ExpectFailed, ex.Code);
+        Assert.Equal(GraftErrorCodes.ExpectFailed, ex.Code);
+        Assert.NotNull(ex.Report);
+        Assert.Equal(FailureSteps.ExpectName, ex.Report.Step);
+        Assert.Equal("never-matches", ex.Report.Expected);
+        Assert.Equal("Ready", ex.Report.Actual);
+        Assert.True(ex.Report.TimedOut);
+        Assert.Equal("StatusText", ex.Report.Selector.AutomationId);
     }
 }

@@ -58,5 +58,5 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - Wait / Expect タイムアウトは `app.WaitOptions`（アクション 5s / Expect 10s 既定）
 - セレクタ: `GetBy(Selector.…)` または `GetByAutomationId`
 - テキスト入力: `GetByAutomationId(…).SetValueAsync(value)`（エージェント wire `setValue`）
-- 失敗診断: `Graft.Core.Diagnostics.FailureReport`（step / expected / actual / timedOut / selector）。**Core が Expect・Wait・アクション失敗時に組み立てる**想定。エージェントは RPC ごとに常時添付しない。発行は Phase 2 Batch 1
+- 失敗診断: Expect / Wait / Invoke / SetValue 失敗時に `GraftException.Report`（`FailureReport`: step / expected / actual / timedOut / selector）。エージェントは RPC ごとに常時添付しない。操作ログ・ツリー・スクショは Batch 2
 - 未実装（Phase 1 余り / 後続）: `toggle`、キー入力、SendInput フォールバック
