@@ -157,7 +157,7 @@ TestComplete相当の精度を狙う、という位置づけ。
 - よくある型は対応表（Button→invoke、TextBox→setValue 等）。未知型は Peer パターン有無を見て汎用処理し、
   だめなら SendInput。ホワイトリスト制限はしない
 - Phase 1 完了条件の論理操作: `invoke` / `setValue`。続けて `toggle` とキー入力。
-  `scrollIntoView` / `select` / `expandCollapse` は後続
+  `scrollIntoView` / `select` / `expand`・`collapse` は **Phase 5**（詳細は Q66〜 / `task_phase5.md`）
 - `setValue`: ネイティブ代入（置き換え）優先。失敗時はクリア＋SendInput。
   `append` / `typeHuman` は後付けオプション
 - SendInput クリック点: Peer のクリック可能点 → なければ bounds 中心。オフセットはオプション
@@ -334,6 +334,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 2  | 構造化失敗診断 + 宣言的 JSON シナリオ                | LLM が使える中核。操作モデルを Core に集約 |
 | Phase 3  | `Graft.McpServer`                                    | Phase 1〜2 の薄い公開層                    |
 | Phase 4  | 自己修復セレクタ                                     | Core 側で精度を磨き込む                    |
+| Phase 5  | WPF 残アクション（scroll / select / expand）         | 仮想化対応を含む操作面の穴埋め             |
+| （次）   | ツリー `selected`/`expanded` → Avalonia → Inspector  | Phase 5 直後から順に                       |
 
 ## 9. 未検討・今後の課題
 
@@ -342,6 +344,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - よくある型の対応表の具体行（WPF/Avalonia それぞれの型名）
 - セレクタ重みの実測チューニング、`details` スキーマのフィールド確定
 - 診断向けツリー差分 JSON のフィールド名の確定
+- Phase 5 直後: ツリーへ `selected` / `expanded` を載せ Expect 可能にする（`task_phase5.md`）
+- scroll/select の項目キー・表示名指定（index 正本の次候補）
 - MessagePack 評価用の実測ログ形式
 - .NET Framework WPF 対応の要否（需要が固まってから）
 - 多言語バインディング / gRPC（v1 スコープ外。再検討は操作モデル安定後）
