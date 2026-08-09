@@ -79,15 +79,16 @@ public sealed class AgentTests : IDisposable
     [Fact]
     public void Start_WithEnableAndPipeName_SetsCurrentSession()
     {
+        var pipeName = "graft-gate-" + Guid.NewGuid().ToString("N");
         Environment.SetEnvironmentVariable(GraftEnvironment.Enable, "1");
-        Environment.SetEnvironmentVariable(GraftEnvironment.PipeName, "graft-test-pipe");
+        Environment.SetEnvironmentVariable(GraftEnvironment.PipeName, pipeName);
         Environment.SetEnvironmentVariable(GraftEnvironment.ConnectToken, "secret");
 
         Agent.Start();
 
         Assert.True(Agent.IsRunning);
         Assert.NotNull(Agent.Current);
-        Assert.Equal("graft-test-pipe", Agent.Current.PipeName);
+        Assert.Equal(pipeName, Agent.Current.PipeName);
         Assert.Equal("secret", Agent.Current.ConnectToken);
     }
 
@@ -107,8 +108,9 @@ public sealed class AgentTests : IDisposable
     [Fact]
     public void Stop_AfterStart_ClearsSession()
     {
+        var pipeName = "graft-gate-" + Guid.NewGuid().ToString("N");
         Environment.SetEnvironmentVariable(GraftEnvironment.Enable, "1");
-        Environment.SetEnvironmentVariable(GraftEnvironment.PipeName, "graft-test-pipe");
+        Environment.SetEnvironmentVariable(GraftEnvironment.PipeName, pipeName);
         Agent.Start();
 
         Agent.Stop();

@@ -80,14 +80,15 @@
 
 ---
 
-## Batch 5 — パイプサーバー + Handshake
+## Batch 5 — パイプサーバー + Handshake（ブランチ: `m0/batch-5-pipe-handshake`）
 
-- [ ] 同一ユーザー ACL の名前付きパイプ待受
-- [ ] 単一クライアント（切断後再接続可）
-- [ ] Handshake: `v` 一致 + `GRAFT_CONNECT_TOKEN`
-- [ ] 失敗時コード: `handshake.rejected` / `protocol.versionMismatch` 等
+- [x] 同一ユーザー ACL の名前付きパイプ待受（`PipeOptions.CurrentUserOnly`）
+- [x] 単一クライアント（切断後再接続可）
+- [x] Handshake: `v` 一致 + `GRAFT_CONNECT_TOKEN`（method `handshake`, params `{ token }`）
+- [x] 失敗時コード: `handshake.rejected` / `protocol.versionMismatch` 等
 
-**完了条件:** 別プロセスから Handshake 成功/失敗を確認できる。
+**完了条件:** クライアントから Handshake 成功/失敗を確認できる。  
+**確認:** `dotnet test tests/Graft.Instrumentation.Tests`
 
 ---
 
