@@ -5,6 +5,7 @@ namespace SampleWpfApp.Tests;
 /// <summary>
 /// Scenario JSON acceptance for SampleWpfApp (Phase 2 Batch 4).
 /// </summary>
+[Collection(SampleUiCollection.Name)]
 public sealed class ScenarioE2ETests
 {
     /// <summary>

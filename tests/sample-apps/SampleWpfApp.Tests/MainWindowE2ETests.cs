@@ -23,6 +23,7 @@ namespace SampleWpfApp.Tests;
 /// </item>
 /// </list>
 /// </remarks>
+[Collection(SampleUiCollection.Name)]
 public sealed class MainWindowE2ETests
 {
     /// <summary>
