@@ -14,10 +14,10 @@ public static class Application
     /// </summary>
     /// <param name="pipeName">Named pipe name (<c>GRAFT_PIPE_NAME</c>).</param>
     /// <param name="token">Connect token (<c>GRAFT_CONNECT_TOKEN</c>).</param>
-    /// <param name="timeout">Overall connect + handshake budget.</param>
+    /// <param name="timeout">Overall connect + handshake budget (both phases share this).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>An open, handshaken <see cref="AgentConnection"/>.</returns>
-    /// <exception cref="GraftException">Connection or handshake failed.</exception>
+    /// <exception cref="GraftException">Connection, handshake, or overall timeout failed.</exception>
     public static Task<AgentConnection> ConnectAsync(
         string pipeName,
         string token,

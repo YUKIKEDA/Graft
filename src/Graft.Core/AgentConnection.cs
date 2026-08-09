@@ -29,10 +29,10 @@ public sealed class AgentConnection : IAsyncDisposable
     /// </summary>
     /// <param name="pipeName">Named pipe name (<c>GRAFT_PIPE_NAME</c>).</param>
     /// <param name="token">Connect token (<c>GRAFT_CONNECT_TOKEN</c>).</param>
-    /// <param name="timeout">Overall connect + handshake budget.</param>
+    /// <param name="timeout">Overall connect + handshake budget (both phases share this).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>An open, handshaken connection.</returns>
-    /// <exception cref="GraftException">Connection or handshake failed.</exception>
+    /// <exception cref="GraftException">Connection, handshake, or overall timeout failed.</exception>
     public static async Task<AgentConnection> ConnectAsync(
         string pipeName,
         string token,
@@ -42,19 +42,42 @@ public sealed class AgentConnection : IAsyncDisposable
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(pipeName);
         ArgumentException.ThrowIfNullOrWhiteSpace(token);
+        if (timeout <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(timeout),
+                timeout,
+                "Timeout must be positive."
+            );
+        }
 
-        var stream = await ConnectPipeAsync(pipeName, timeout, cancellationToken)
-            .ConfigureAwait(false);
-        var connection = new AgentConnection(stream);
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutCts.CancelAfter(timeout);
+        var budgetToken = timeoutCts.Token;
+
+        AgentConnection? connection = null;
         try
         {
-            await connection.HandshakeAsync(token, cancellationToken).ConfigureAwait(false);
-            return connection;
+            var stream = await ConnectPipeAsync(pipeName, budgetToken).ConfigureAwait(false);
+            connection = new AgentConnection(stream);
+            await connection.HandshakeAsync(token, budgetToken).ConfigureAwait(false);
+            var result = connection;
+            connection = null;
+            return result;
         }
-        catch
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            await connection.DisposeAsync().ConfigureAwait(false);
-            throw;
+            throw new GraftException(
+                GraftErrorCodes.ActionTimeout,
+                $"Connect + handshake timed out after {timeout.TotalSeconds:0.###}s."
+            );
+        }
+        finally
+        {
+            if (connection is not null)
+            {
+                await connection.DisposeAsync().ConfigureAwait(false);
+            }
         }
     }
 
@@ -156,7 +179,6 @@ public sealed class AgentConnection : IAsyncDisposable
 
     private static async Task<NamedPipeClientStream> ConnectPipeAsync(
         string pipeName,
-        TimeSpan timeout,
         CancellationToken cancellationToken
     )
     {
@@ -167,32 +189,28 @@ public sealed class AgentConnection : IAsyncDisposable
             PipeOptions.Asynchronous
         );
 
-        var deadline = DateTime.UtcNow + timeout;
-        Exception? last = null;
-        while (DateTime.UtcNow < deadline)
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
+            while (true)
             {
-                var remaining = deadline - DateTime.UtcNow;
-                var sliceMs = (int)Math.Clamp(remaining.TotalMilliseconds, 1, 200);
-                await stream.ConnectAsync(sliceMs, cancellationToken).ConfigureAwait(false);
-                return stream;
-            }
-            catch (Exception ex)
-                when (ex is TimeoutException or IOException or UnauthorizedAccessException)
-            {
-                last = ex;
-                await Task.Delay(50, cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+                try
+                {
+                    await stream.ConnectAsync(200, cancellationToken).ConfigureAwait(false);
+                    return stream;
+                }
+                catch (Exception ex)
+                    when (ex is TimeoutException or IOException or UnauthorizedAccessException)
+                {
+                    await Task.Delay(50, cancellationToken).ConfigureAwait(false);
+                }
             }
         }
-
-        await stream.DisposeAsync().ConfigureAwait(false);
-        throw new GraftException(
-            GraftErrorCodes.PipeDisconnected,
-            $"Could not connect to pipe '{pipeName}' within {timeout.TotalSeconds:0}s.",
-            last
-        );
+        catch
+        {
+            await stream.DisposeAsync().ConfigureAwait(false);
+            throw;
+        }
     }
 
     private async Task<ResponseMessage> SendAsync(
