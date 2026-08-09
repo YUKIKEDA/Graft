@@ -1,26 +1,57 @@
-# Graft.Core — コントローラ利用メモ（M2）
+# Graft.Core — 利用側ガイド（M2）
 
-主経路は **Launch**（SmokeClient は診断用）。対象アプリは `GraftTest=true` / `-c GraftTest` で `GRAFT_TEST` 付きビルドであること。
+## 役割分担
+
+| 側 | プロジェクト例 | 参照するパッケージ | やること |
+| -- | -------------- | ------------------ | -------- |
+| **対象アプリ** | `SampleWpfApp` | `Graft.Instrumentation.Wpf` | `GRAFT_TEST` ビルドで `WpfGraft.Use()` + `Agent.Start()` |
+| **E2E テスト** | `SampleWpfApp.Tests` | **`Graft.Core` のみ** | `Application.LaunchAsync` → `GetBy…` で操作・検証 |
+
+SmokeClient / `Graft.Core.Tests` はライブラリ自身の検証用。**プロダクト側の書き方の正本は `tests/sample-apps/SampleWpfApp.Tests`。**
+
+## 対象アプリ側（組み込み）
+
+`GraftTest=true` または `-c GraftTest` でビルドし、起動時だけ Agent を立てる:
 
 ```csharp
-await using var session = await Application.LaunchAsync(
+#if GRAFT_TEST
+Graft.Instrumentation.Wpf.WpfGraft.Use();
+Graft.Instrumentation.Agent.Start();
+#endif
+```
+
+（実装例: `tests/sample-apps/SampleWpfApp/App.xaml.cs`）
+
+## テスト側（コントローラ）
+
+```csharp
+using Graft.Core;
+
+await using var app = await Application.LaunchAsync(
     new LaunchOptions
     {
         AppPath = @"path\to\YourApp.csproj", // or .exe
-        // Timeout 既定 30s（起動+Handshake）
+        Configuration = "GraftTest",         // csproj のとき GRAFT_TEST 付きで起動
+        Timeout = TimeSpan.FromSeconds(60),  // 起動+Handshake（既定 30s）
     }
 );
 
-await session.GetByAutomationId("SampleButton").InvokeAsync();
-await session.GetByAutomationId("StatusText").ExpectNameAsync("Clicked 1");
+await app.GetByAutomationId("SampleButton").InvokeAsync();
+await app.GetByAutomationId("StatusText").ExpectNameAsync("Clicked 1");
+// Dispose でパイプ切断 + 対象プロセス終了
 ```
 
-- `ConnectAsync` は既起動エージェント向けの低レベル API
-- Wait / Expect のタイムアウトは `session.WaitOptions`（アクション 5s / Expect 10s 既定）
-- セレクタは Core 側スコアリング（`Selector` / `TreeSelector`）。ショートハンドは `ByAutomationId`
+実ファイル: [`tests/sample-apps/SampleWpfApp.Tests/MainWindowE2ETests.cs`](../tests/sample-apps/SampleWpfApp.Tests/MainWindowE2ETests.cs)
 
-受け入れ確認:
+## 実行
 
 ```bash
-dotnet test tests/Graft.Core.Tests --filter M2Acceptance
+dotnet test tests/sample-apps/SampleWpfApp.Tests
 ```
+
+## 補足
+
+- `ConnectAsync` は既にパイプが立っているプロセス向けの低レベル API（ドキュメント第一級ではない）
+- Wait / Expect タイムアウトは `app.WaitOptions`（アクション 5s / Expect 10s 既定）
+- セレクタ: `GetBy(Selector.…)` または `GetByAutomationId`
+- `ElementQuery.SetValueAsync` などは後続。wire の `setValue` はエージェント側にあり
