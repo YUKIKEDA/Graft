@@ -70,15 +70,15 @@
 
 ## Batch 4 — 待機 / Expect / 要素操作 API（ブランチ: `m2/batch-4-wait-actions`）
 
-- [ ] Wait / Expect は **Core 側**（ポーリング + GetTree）。エージェントに wait method は足さない
-- [ ] 既定タイムアウト: アクション前待ち **5s** / Expect **10s**（Options で上書き）
-- [ ] アクション前: 要素が存在するまで待ち → wire `invoke`（必要なら enabled/visible も見る）
-- [ ] Expect: 例）StatusText の `name` が期待値になるまで待ち。失敗は `expect.failed` / タイムアウトは `action.timeout`
-- [ ] 公開 API の薄い面（名前は仮）: `GetBy(...).InvokeAsync()` / `ExpectNameAsync(...)` 程度で M2 受け入れに足りれば十分
-- [ ] Fluent 全面・Scenario・自己修復は含めない
+- [x] Wait / Expect は **Core 側**（ポーリング + GetTree）。エージェントに wait method は足さない
+- [x] 既定タイムアウト: アクション前待ち **5s** / Expect **10s**（`WaitOptions` / `session.WaitOptions`）
+- [x] アクション前: 要素が存在し enabled+visible になるまで待ち → wire `invoke`（automationId）
+- [x] `ExpectNameAsync`: name 一致まで待ち。不一致のまま期限 → `expect.failed`、要素不出 → `action.timeout`
+- [x] 公開 API: `session.GetBy(selector)` / `GetByAutomationId` → `InvokeAsync` / `ExpectNameAsync`
+- [x] Fluent 全面・Scenario・自己修復は含めない
 
 **完了条件:** Launch 済みセッションに対し、Core API だけで「ボタン invoke → StatusText 期待」が書ける。  
-**確認:** `dotnet test tests/Graft.Core.Tests`（統合 or フェイク）  
+**確認:** `dotnet test tests/Graft.Core.Tests --filter WaitAction`  
 **次:** レビュー OK なら Batch 5（xUnit 受け入れ）へ。
 
 ---
@@ -124,7 +124,7 @@
 | 項目 | 仮決め（実装時に task / コードで確定） |
 | ---- | -------------------------------------- |
 | 公開入口型名 | `Application.LaunchAsync` + 戻り値 `IGraftSession` / `GraftApp` 等（Batch 2 で固定） |
-| 要素 API | `session.GetBy(selector).InvokeAsync()` + `ExpectNameAsync` 最小面（Batch 4） |
+| 要素 API | `session.GetBy` / `GetByAutomationId` → `InvokeAsync` / `ExpectNameAsync`（Batch 4 で固定） |
 | 近傍パススコア | `NearAutomationId`（祖先 automationId）で +20。本格パスは後続 |
 | Launch の exe/csproj | SmokeClient と同様、csproj なら `dotnet run` / 既存ビルド成果物パスを踏襲（Batch 2） |
 | 統合テストの配置 | 既定は `tests/Graft.Core.Tests`。遅延・排他が必要なら後で分離 |
