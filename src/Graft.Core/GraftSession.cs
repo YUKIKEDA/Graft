@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Graft.Core.Selectors;
 
 namespace Graft.Core;
 
@@ -24,6 +25,30 @@ public sealed class GraftSession : IAsyncDisposable
     /// Gets the handshaken agent connection for this session.
     /// </summary>
     public AgentConnection Connection => _connection;
+
+    /// <summary>
+    /// Gets or sets wait / expect timeouts used by <see cref="GetBy"/>.
+    /// </summary>
+    public WaitOptions WaitOptions { get; set; } = new();
+
+    /// <summary>
+    /// Creates an element query for the given selector (resolved via getTree scoring).
+    /// </summary>
+    /// <param name="selector">Composite selector.</param>
+    /// <returns>A query that can invoke or expect against the live tree.</returns>
+    public ElementQuery GetBy(Selector selector)
+    {
+        ArgumentNullException.ThrowIfNull(selector);
+        return new ElementQuery(_connection, selector, WaitOptions);
+    }
+
+    /// <summary>
+    /// Creates an element query for <paramref name="automationId"/>.
+    /// </summary>
+    /// <param name="automationId">Automation id shorthand.</param>
+    /// <returns>A query that can invoke or expect against the live tree.</returns>
+    public ElementQuery GetByAutomationId(string automationId) =>
+        GetBy(Selector.ByAutomationId(automationId));
 
     /// <summary>
     /// Gets the child process id (0 if unavailable).
