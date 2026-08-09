@@ -59,4 +59,5 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - セレクタ: `GetBy(Selector.…)` または `GetByAutomationId`
 - テキスト入力: `GetByAutomationId(…).SetValueAsync(value)`（エージェント wire `setValue`）
 - 失敗診断: Expect / Wait / Invoke / SetValue 失敗時に `GraftException.Report`（最小: step / expected / actual / timedOut / selector。添付: `recentOperations` / `tree` / `screenshotPath`）。エージェントは RPC ごとに常時添付しない。添付は失敗時ベストエフォート
+- Scenario JSON（パースのみ）: `ScenarioJson.Parse` / `ParseFile` → `ScenarioDocument.Operations`。契約は `.dev/scenario.schema.json`。実行は Phase 2 Batch 4
 - 未実装（Phase 1 余り / 後続）: `toggle`、キー入力、SendInput フォールバック
