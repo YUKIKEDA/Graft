@@ -1,0 +1,30 @@
+---
+description: CSharpier formatting and StyleCop analyzer conventions for C# work
+globs: "**/*.{cs,csproj,props,targets}"
+alwaysApply: false
+---
+
+# C# formatting and linting
+
+## Formatter: CSharpier
+
+- CSharpier is the only C# formatter. Do not fight it with hand-formatting or alternate formatters.
+- Local tool is pinned in `.config/dotnet-tools.json`. After clone: `dotnet tool restore`.
+- Format: `dotnet csharpier format .` (or path). Check: `dotnet csharpier check .` (CI later).
+- Editor: install recommended `csharpier.csharpier-vscode`; format on save is enabled via `.vscode/settings.json`.
+- Config: `.csharpierrc.json`.
+
+## Linter: StyleCop.Analyzers
+
+- Referenced for all `.csproj` via `Directory.Build.props`.
+- Settings: `stylecop.json` + `.editorconfig`.
+- XML documentation rules are disabled for now (`SA0001` silenced as expected).
+- `SA1101` (`this.` prefix) and `SA1502` (single-line empty elements) are off to avoid fighting modern C# / CSharpier.
+- Severity is **warning** for now; do not treat StyleCop as build-breaking unless explicitly upgrading later.
+- Prefer fixing real StyleCop warnings in touched files; avoid repo-wide cleanup drive-bys unless asked.
+
+## Interaction
+
+- Let CSharpier own whitespace/layout.
+- Let StyleCop own naming, ordering, and readability rules that do not conflict with CSharpier.
+- If a StyleCop rule conflicts with CSharpier output, disable or downgrade that StyleCop rule in `.editorconfig` rather than disabling format on save.

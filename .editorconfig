@@ -1,0 +1,60 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+[*.{csproj,props,targets,json,yml,yaml,md,xml,config}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.cs]
+# Formatting ownership: CSharpier. Prefer IDE / csharpier over conflicting style fixes.
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
+# Expected when XML docs are intentionally off.
+dotnet_diagnostic.SA0001.severity = none
+
+# Modern C# style: do not require this. prefixes.
+dotnet_diagnostic.SA1101.severity = none
+
+# CSharpier may emit empty types on one line; prefer formatter over SA1502.
+dotnet_diagnostic.SA1502.severity = none
+
+# StyleCop: documentation noise off (also covered by stylecop.json)
+dotnet_diagnostic.SA1600.severity = none
+dotnet_diagnostic.SA1601.severity = none
+dotnet_diagnostic.SA1602.severity = none
+dotnet_diagnostic.SA1604.severity = none
+dotnet_diagnostic.SA1605.severity = none
+dotnet_diagnostic.SA1606.severity = none
+dotnet_diagnostic.SA1607.severity = none
+dotnet_diagnostic.SA1608.severity = none
+dotnet_diagnostic.SA1611.severity = none
+dotnet_diagnostic.SA1615.severity = none
+dotnet_diagnostic.SA1618.severity = none
+dotnet_diagnostic.SA1623.severity = none
+dotnet_diagnostic.SA1629.severity = none
+dotnet_diagnostic.SA1633.severity = none
+dotnet_diagnostic.SA1634.severity = none
+dotnet_diagnostic.SA1635.severity = none
+dotnet_diagnostic.SA1636.severity = none
+dotnet_diagnostic.SA1637.severity = none
+dotnet_diagnostic.SA1638.severity = none
+dotnet_diagnostic.SA1640.severity = none
+dotnet_diagnostic.SA1641.severity = none
+dotnet_diagnostic.SA1642.severity = none
+dotnet_diagnostic.SA1643.severity = none
+dotnet_diagnostic.SA1648.severity = none
+dotnet_diagnostic.SA1649.severity = none
+dotnet_diagnostic.SA1651.severity = none
+
+# Keep StyleCop as warning for now (do not fail the build).
+dotnet_analyzer_diagnostic.category-StyleCop.Analyzers.severity = warning

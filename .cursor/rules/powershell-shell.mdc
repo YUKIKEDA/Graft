@@ -1,0 +1,54 @@
+---
+description: PowerShell-safe shell usage for git/gh/dotnet on Windows (avoid bash-only syntax)
+alwaysApply: true
+---
+
+# PowerShell shell (Windows)
+
+This repo’s agent shell is **PowerShell**. Do **not** use bash-only constructs.
+
+## Forbidden (bash-only)
+
+- Heredoc: `$(cat <<'EOF' ... EOF)`
+- Unquoted git upstream: `@{u}` (PowerShell parses `@{...}` as a hashtable)
+- Bash arrays / `export FOO=bar` style assuming bash
+
+## Use instead
+
+### Multi-line commit / PR body
+
+```powershell
+git commit -m @"
+type(scope): subject
+
+body
+"@
+
+$body = @"
+## Summary
+- item
+
+## Test plan
+- [ ] item
+"@
+gh pr create --title "type(scope): subject" --body $body
+```
+
+### Upstream / tracking
+
+```powershell
+git rev-parse --abbrev-ref --symbolic-full-name '@{u}'
+git status -sb
+```
+
+### Chaining
+
+Prefer `;` between independent commands. Use separate Shell calls when a failure must stop the sequence.
+
+### Paths
+
+Prefer repo-relative or full Windows paths. Quoting paths with spaces is required.
+
+## Reminder
+
+User-facing commit rules still follow Conventional Commits (`.cursor/rules/conventional-commits.mdc`). Only the **shell syntax** for creating the commit differs on Windows.
