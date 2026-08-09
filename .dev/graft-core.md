@@ -38,6 +38,9 @@ await using var app = await Application.LaunchAsync(
 
 await app.GetByAutomationId("SampleButton").InvokeAsync();
 await app.GetByAutomationId("StatusText").ExpectNameAsync("Clicked 1");
+
+await app.GetByAutomationId("SampleTextBox").SetValueAsync("hello-graft");
+await app.GetByAutomationId("SampleTextBox").ExpectNameAsync("hello-graft");
 // Dispose でパイプ切断 + 対象プロセス終了
 ```
 
@@ -54,4 +57,5 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - `ConnectAsync` は既にパイプが立っているプロセス向けの低レベル API（ドキュメント第一級ではない）
 - Wait / Expect タイムアウトは `app.WaitOptions`（アクション 5s / Expect 10s 既定）
 - セレクタ: `GetBy(Selector.…)` または `GetByAutomationId`
-- `ElementQuery.SetValueAsync` などは後続。wire の `setValue` はエージェント側にあり
+- テキスト入力: `GetByAutomationId(…).SetValueAsync(value)`（エージェント wire `setValue`）
+- 未実装（Phase 1 余り / 後続）: `toggle`、キー入力、SendInput フォールバック

@@ -41,6 +41,31 @@ public sealed class ElementQuery
     }
 
     /// <summary>
+    /// Waits until the element is present and actionable, then replaces its value.
+    /// </summary>
+    /// <param name="value">Replacement text (empty string clears).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when setValue succeeds.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or setValue failed.</exception>
+    public async Task SetValueAsync(string value, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw new GraftException(
+                GraftErrorCodes.ActionFailed,
+                "Resolved element has no automationId; cannot setValue over the wire."
+            );
+        }
+
+        await _connection
+            .SetValueAsync(node.AutomationId, value, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Waits until the element's <c>name</c> equals <paramref name="expectedName"/>.
     /// </summary>
     /// <param name="expectedName">Expected tree node name.</param>

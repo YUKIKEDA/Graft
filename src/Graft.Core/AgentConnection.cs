@@ -145,6 +145,39 @@ public sealed class AgentConnection : IAsyncDisposable
         EnsureOk(response, "invoke failed.");
     }
 
+    /// <summary>
+    /// Calls <c>setValue</c> for the element with the given automation id.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="value">Replacement text (empty string clears).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when setValue succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task SetValueAsync(
+        string automationId,
+        string value,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ArgumentNullException.ThrowIfNull(value);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.SetValue,
+                    Params = JsonSerializer.SerializeToElement(new { automationId, value }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "setValue failed.");
+    }
+
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {

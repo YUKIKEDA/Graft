@@ -111,6 +111,37 @@ public sealed class ConnectTests : IDisposable
         Assert.Equal("SampleButton", fake.LastAutomationId);
     }
 
+    /// <summary>
+    /// setValue after Connect dispatches to the registered value setter.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Fake IElementValueSetter registered; Agent started
+    ///
+    /// Steps:
+    /// - ConnectAsync then SetValueAsync(SampleTextBox, hello)
+    ///
+    /// Expected:
+    /// - Fake received automationId SampleTextBox and value hello
+    /// </remarks>
+    [Fact]
+    public async Task Connect_ThenSetValue_CallsFakeValueSetter()
+    {
+        var fake = new FakeElementValueSetter();
+        AgentServices.RegisterElementValueSetter(fake);
+        StartAgent();
+
+        await using var connection = await Application.ConnectAsync(
+            _pipeName,
+            Token,
+            TimeSpan.FromSeconds(5)
+        );
+        await connection.SetValueAsync("SampleTextBox", "hello");
+
+        Assert.Equal("SampleTextBox", fake.LastAutomationId);
+        Assert.Equal("hello", fake.LastValue);
+    }
+
     private void StartAgent()
     {
         Environment.SetEnvironmentVariable(GraftEnvironment.Enable, "1");
@@ -158,5 +189,18 @@ public sealed class ConnectTests : IDisposable
         public string? LastAutomationId { get; private set; }
 
         public void Invoke(ElementSelector selector) => LastAutomationId = selector.AutomationId;
+    }
+
+    private sealed class FakeElementValueSetter : IElementValueSetter
+    {
+        public string? LastAutomationId { get; private set; }
+
+        public string? LastValue { get; private set; }
+
+        public void SetValue(ElementSelector selector, string value)
+        {
+            LastAutomationId = selector.AutomationId;
+            LastValue = value;
+        }
     }
 }

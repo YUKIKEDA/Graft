@@ -17,7 +17,8 @@ namespace SampleWpfApp.Tests;
 /// <item>
 /// <description>
 /// Test project (this assembly): references <c>Graft.Core</c> only, launches the app,
-/// then drives UI with <c>GetByAutomationId</c> / <c>InvokeAsync</c> / <c>ExpectNameAsync</c>.
+/// then drives UI with <c>GetByAutomationId</c> /
+/// <c>InvokeAsync</c> / <c>SetValueAsync</c> / <c>ExpectNameAsync</c>.
 /// </description>
 /// </item>
 /// </list>
@@ -53,5 +54,37 @@ public sealed class MainWindowE2ETests
 
         await app.GetByAutomationId("SampleButton").InvokeAsync();
         await app.GetByAutomationId("StatusText").ExpectNameAsync("Clicked 1");
+    }
+
+    /// <summary>
+    /// setValue replaces SampleTextBox text and ExpectName sees the new value.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Sibling SampleWpfApp.csproj can build with Configuration=GraftTest
+    ///
+    /// Steps:
+    /// - Launch sample
+    /// - GetByAutomationId("SampleTextBox").SetValueAsync("hello-graft")
+    /// - ExpectNameAsync("hello-graft")
+    ///
+    /// Expected:
+    /// - TextBox name in the tree equals the set value
+    /// </remarks>
+    [Fact]
+    public async Task SetValue_SampleTextBox_UpdatesName()
+    {
+        await using var app = await Application.LaunchAsync(
+            new LaunchOptions
+            {
+                AppPath = SampleAppLocator.ResolveProjectPath(),
+                Configuration = "GraftTest",
+                Timeout = TimeSpan.FromSeconds(60),
+            }
+        );
+
+        const string typed = "hello-graft";
+        await app.GetByAutomationId("SampleTextBox").SetValueAsync(typed);
+        await app.GetByAutomationId("SampleTextBox").ExpectNameAsync(typed);
     }
 }
