@@ -7,10 +7,12 @@ using Graft.Protocol.Messages;
 namespace Graft.SmokeClient;
 
 /// <summary>
-/// Minimal named-pipe client for handshake + getTree.
+/// Minimal named-pipe client for handshake, getTree, screenshot, and invoke.
 /// </summary>
 internal sealed class AgentClient : IAsyncDisposable
 {
+    private static readonly byte[] PngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+
     private readonly NamedPipeClientStream _stream;
     private int _nextId = 1;
 
@@ -105,6 +107,80 @@ internal sealed class AgentClient : IAsyncDisposable
                 GraftErrorCodes.ActionFailed,
                 "getTree result deserialized to null."
             );
+    }
+
+    public async Task<(ScreenshotResult Meta, byte[] PngBytes)> ScreenshotAsync(
+        CancellationToken cancellationToken
+    )
+    {
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.Screenshot,
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "screenshot failed.");
+        if (response.Result is not { } resultElement)
+        {
+            throw new SmokeException(
+                GraftErrorCodes.ActionFailed,
+                "screenshot returned no result."
+            );
+        }
+
+        var meta =
+            resultElement.Deserialize<ScreenshotResult>(JsonMessageCodec.Options)
+            ?? throw new SmokeException(
+                GraftErrorCodes.ActionFailed,
+                "screenshot result deserialized to null."
+            );
+
+        var pngBytes = await FrameIO
+            .ReadAsync(_stream, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        if (pngBytes.Length != meta.ByteLength)
+        {
+            throw new SmokeException(
+                GraftErrorCodes.ActionFailed,
+                $"screenshot byteLength mismatch: meta={meta.ByteLength}, frame={pngBytes.Length}."
+            );
+        }
+
+        if (
+            pngBytes.Length < PngSignature.Length
+            || !pngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature)
+        )
+        {
+            throw new SmokeException(
+                GraftErrorCodes.ActionFailed,
+                "screenshot raw frame does not start with a PNG signature."
+            );
+        }
+
+        return (meta, pngBytes);
+    }
+
+    public async Task InvokeAsync(string automationId, CancellationToken cancellationToken)
+    {
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.Invoke,
+                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "invoke failed.");
     }
 
     public async ValueTask DisposeAsync() => await _stream.DisposeAsync().ConfigureAwait(false);

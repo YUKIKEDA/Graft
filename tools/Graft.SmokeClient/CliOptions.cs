@@ -18,6 +18,11 @@ internal sealed class CliOptions
 
     public int TimeoutSec { get; init; } = 30;
 
+    /// <summary>
+    /// Optional path to write the screenshot PNG. When null, a temp file is used.
+    /// </summary>
+    public string? ScreenshotOut { get; init; }
+
     public static bool TryParse(string[] args, out CliOptions? options, out string? error)
     {
         options = null;
@@ -46,6 +51,7 @@ internal sealed class CliOptions
 
         string? app = null;
         string? pipeName = null;
+        string? screenshotOut = null;
         var token = "graft-smoke-token";
         var timeoutSec = 30;
 
@@ -117,6 +123,14 @@ internal sealed class CliOptions
                     }
 
                     break;
+                case "--screenshot-out":
+                    if (!ReadValue(args, ref i, out var shotValue, out error))
+                    {
+                        return false;
+                    }
+
+                    screenshotOut = shotValue;
+                    break;
                 default:
                     error = $"Unknown option '{arg}'.";
                     return false;
@@ -136,19 +150,20 @@ internal sealed class CliOptions
             PipeName = pipeName,
             Token = token,
             TimeoutSec = timeoutSec,
+            ScreenshotOut = screenshotOut,
         };
         return true;
     }
 
     public static string Usage { get; } =
         """
-            Graft.SmokeClient — M0 Handshake + GetTree smoke tool
+            Graft.SmokeClient — M1 Handshake + Screenshot + invoke smoke tool
 
             Usage:
-              Graft.SmokeClient launch [--app <csproj|exe>] [--pipe-name <name>] [--token <secret>] [--timeout-sec <n>]
-              Graft.SmokeClient connect --pipe-name <name> [--token <secret>] [--timeout-sec <n>]
+              Graft.SmokeClient launch [--app <csproj|exe>] [--pipe-name <name>] [--token <secret>] [--timeout-sec <n>] [--screenshot-out <path>]
+              Graft.SmokeClient connect --pipe-name <name> [--token <secret>] [--timeout-sec <n>] [--screenshot-out <path>]
 
-            Launch is the M0 demo path: starts SampleWpfApp (GraftTest) with GRAFT_* env vars,
-            then Handshake + GetTree and prints SampleButton name/bounds.
+            Launch starts SampleWpfApp (GraftTest) with GRAFT_* env vars, then:
+            Handshake → screenshot (PNG) → invoke(SampleButton) → GetTree StatusText == "Clicked 1".
             """;
 }
