@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Graft.Instrumentation.Analyzer/Graft.Instrumentation.Analyzer.csproj" />
+    <Project Path="src/Graft.Instrumentation.Wpf/Graft.Instrumentation.Wpf.csproj" />
+    <Project Path="src/Graft.Instrumentation/Graft.Instrumentation.csproj" />
+    <Project Path="src/Graft.Protocol/Graft.Protocol.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/sample-apps/">
+    <Project Path="tests/sample-apps/SampleWpfApp/SampleWpfApp.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Graft.SmokeClient/Graft.SmokeClient.csproj" />
+  </Folder>
+</Solution>

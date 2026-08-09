@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Graft.Protocol</RootNamespace>
+    <AssemblyName>Graft.Protocol</AssemblyName>
+    <Description>Shared wire models for Graft controller and agent.</Description>
+  </PropertyGroup>
+
+</Project>

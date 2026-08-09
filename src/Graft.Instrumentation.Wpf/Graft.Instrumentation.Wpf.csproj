@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Graft.Instrumentation.Wpf</RootNamespace>
+    <AssemblyName>Graft.Instrumentation.Wpf</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Graft.Instrumentation\Graft.Instrumentation.csproj" />
+  </ItemGroup>
+
+</Project>
