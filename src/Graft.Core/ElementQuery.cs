@@ -114,6 +114,91 @@ public sealed class ElementQuery
     }
 
     /// <summary>
+    /// Waits until the element is present and actionable, then toggles it.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when toggle succeeds.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or toggle failed (may include <see cref="GraftException.Report"/>).</exception>
+    public async Task ToggleAsync(CancellationToken cancellationToken = default)
+    {
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot toggle over the wire.",
+                    FailureSteps.Toggle,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .ToggleAsync(node.AutomationId, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.Toggle, node.AutomationId);
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.Toggle,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Waits until the element is present and actionable, then types literal text.
+    /// </summary>
+    /// <param name="text">Literal text (no chord DSL).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when sendKeys succeeds.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or sendKeys failed (may include <see cref="GraftException.Report"/>).</exception>
+    public async Task SendKeysAsync(string text, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot sendKeys over the wire.",
+                    FailureSteps.SendKeys,
+                    expected: text,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .SendKeysAsync(node.AutomationId, text, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.SendKeys, $"{node.AutomationId}={text}");
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.SendKeys,
+                    expected: text,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
     /// Waits until the element's <c>name</c> equals <paramref name="expectedName"/>.
     /// </summary>
     /// <param name="expectedName">Expected tree node name.</param>

@@ -3,6 +3,7 @@ using Graft.Protocol.Messages;
 
 namespace Graft.Core.Tests;
 
+[Collection(SampleUiCollection.Name)]
 public sealed class LaunchTests
 {
     /// <summary>

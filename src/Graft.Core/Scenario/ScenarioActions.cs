@@ -16,6 +16,12 @@ public static class ScenarioActions
     /// <summary>Replace an element's value.</summary>
     public const string SetValue = FailureSteps.SetValue;
 
+    /// <summary>Toggle an element (e.g. CheckBox).</summary>
+    public const string Toggle = FailureSteps.Toggle;
+
+    /// <summary>Type literal text into an element.</summary>
+    public const string SendKeys = FailureSteps.SendKeys;
+
     /// <summary>Expect an element's tree name.</summary>
     public const string ExpectName = FailureSteps.ExpectName;
 }

@@ -3,6 +3,7 @@ using Graft.Protocol;
 
 namespace Graft.Core.Tests;
 
+[Collection(SampleUiCollection.Name)]
 public sealed class WaitActionTests
 {
     /// <summary>

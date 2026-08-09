@@ -29,6 +29,8 @@
         { "$ref": "#/$defs/launch" },
         { "$ref": "#/$defs/invoke" },
         { "$ref": "#/$defs/setValue" },
+        { "$ref": "#/$defs/toggle" },
+        { "$ref": "#/$defs/sendKeys" },
         { "$ref": "#/$defs/expectName" }
       ]
     },
@@ -60,6 +62,25 @@
         "action": { "const": "setValue" },
         "automationId": { "type": "string", "minLength": 1 },
         "value": { "type": "string" }
+      }
+    },
+    "toggle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId"],
+      "properties": {
+        "action": { "const": "toggle" },
+        "automationId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "sendKeys": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "text"],
+      "properties": {
+        "action": { "const": "sendKeys" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "text": { "type": "string" }
       }
     },
     "expectName": {

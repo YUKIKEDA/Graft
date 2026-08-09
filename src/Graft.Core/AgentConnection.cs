@@ -179,6 +179,69 @@ public sealed class AgentConnection : IAsyncDisposable
     }
 
     /// <summary>
+    /// Calls <c>toggle</c> for the element with the given automation id.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when toggle succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task ToggleAsync(
+        string automationId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.Toggle,
+                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "toggle failed.");
+    }
+
+    /// <summary>
+    /// Calls <c>sendKeys</c> for the element with the given automation id.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="text">Literal text to type.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when sendKeys succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task SendKeysAsync(
+        string automationId,
+        string text,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ArgumentNullException.ThrowIfNull(text);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.SendKeys,
+                    Params = JsonSerializer.SerializeToElement(new { automationId, text }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "sendKeys failed.");
+    }
+
+    /// <summary>
     /// Calls <c>screenshot</c> and reads the following raw PNG frame.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>

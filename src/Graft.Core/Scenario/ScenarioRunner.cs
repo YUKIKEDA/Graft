@@ -81,6 +81,22 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case ToggleOperation toggle:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(toggle.AutomationId)
+                            .ToggleAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case SendKeysOperation sendKeys:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(sendKeys.AutomationId)
+                            .SendKeysAsync(sendKeys.Text, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     case ExpectNameOperation expectName:
                         EnsureSession(session);
                         await session!
