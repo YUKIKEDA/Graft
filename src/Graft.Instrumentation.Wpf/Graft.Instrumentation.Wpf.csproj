@@ -4,6 +4,7 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>Graft.Instrumentation.Wpf</RootNamespace>
     <AssemblyName>Graft.Instrumentation.Wpf</AssemblyName>
+    <DefineConstants>$(DefineConstants);GRAFT_TEST</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Graft.Instrumentation\Graft.Instrumentation.csproj" />
