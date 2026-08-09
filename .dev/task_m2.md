@@ -12,10 +12,10 @@
 
 ## Batch 0 — `Graft.Core` / `Graft.Core.Tests` 土台（ブランチ: `m2/batch-0-core-skeleton`）
 
-- [ ] `src/Graft.Core` を追加（`net8.0`、FW 非依存）。参照: `Graft.Protocol` のみ
-- [ ] `tests/Graft.Core.Tests` を追加（xUnit）。空の Fact 1 本でも可
-- [ ] `Graft.slnx` に両プロジェクトを登録
-- [ ] Avalonia / McpServer / TestUtilities / Scenario の空スケルトンは作らない
+- [x] `src/Graft.Core` を追加（`net8.0`、FW 非依存）。参照: `Graft.Protocol` のみ
+- [x] `tests/Graft.Core.Tests` を追加（xUnit）。`Application` 型の存在確認 Fact 1 本
+- [x] `Graft.slnx` に両プロジェクトを登録
+- [x] Avalonia / McpServer / TestUtilities / Scenario の空スケルトンは作らない
 
 **完了条件:** `dotnet build Graft.slnx` が通る。挙動はまだ不要。  
 **確認:** `dotnet build src/Graft.Core` / `dotnet test tests/Graft.Core.Tests`  
