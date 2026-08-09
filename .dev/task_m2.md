@@ -40,12 +40,12 @@
 
 ## Batch 2 — `Application.Launch`（ブランチ: `m2/batch-2-launch`）
 
-- [ ] 公開主経路: `Application.LaunchAsync(LaunchOptions)`（名前は仮。Process 起動 + 環境変数付与 + Connect + Handshake）
-- [ ] 起動時に付与: `GRAFT_ENABLE=1`, `GRAFT_PIPE_NAME`（ランナー生成）、`GRAFT_CONNECT_TOKEN`
-- [ ] 既定タイムアウト: 起動+Handshake **30s**（Options で上書き可）
-- [ ] 既定寿命: Dispose / using 終了で対象プロセスを終了（セッション再利用はオプトイン・後回し可）
-- [ ] SampleWpfApp パス解決（SmokeClient `SampleLauncher` 相当を Core またはテストヘルパへ）
-- [ ] 低レベル `Connect` は残すがドキュメント第一級にはしない（コメント / XML で明示）
+- [x] 公開主経路: `Application.LaunchAsync(LaunchOptions)` → `GraftSession`（Process 起動 + 環境変数 + Connect + Handshake）
+- [x] 起動時に付与: `GRAFT_ENABLE=1`, `GRAFT_PIPE_NAME`（未指定時生成）、`GRAFT_CONNECT_TOKEN`（未指定時生成）
+- [x] 既定タイムアウト: 起動+Handshake **30s**（`LaunchOptions.Timeout` で上書き可）
+- [x] 既定寿命: `GraftSession.DisposeAsync` でパイプ切断 + 対象プロセス終了（再利用は後回し）
+- [x] SampleWpfApp パス解決はテストヘルパ（`SampleAppPaths`）。Core は汎用 `AppPath` のみ
+- [x] 低レベル `ConnectAsync` は残し、XML で主経路でない旨を明示
 
 **完了条件:** Core の Launch 一本で SampleWpfApp に接続し getTree まで取れる（テストまたは薄い手動）。  
 **確認:** `dotnet test tests/Graft.Core.Tests --filter Launch`  
