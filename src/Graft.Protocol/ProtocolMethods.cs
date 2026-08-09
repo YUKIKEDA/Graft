@@ -25,4 +25,9 @@ public static class ProtocolMethods
     /// Invokes an element (e.g. button click) selected by <c>params.automationId</c>.
     /// </summary>
     public const string Invoke = "invoke";
+
+    /// <summary>
+    /// Replaces an element's value (e.g. TextBox) via <c>params.automationId</c> and <c>params.value</c>.
+    /// </summary>
+    public const string SetValue = "setValue";
 }
