@@ -77,26 +77,26 @@
 
 ---
 
-## Batch 5 — `setValue`（M1 期間・推奨）
+## Batch 5 — `setValue`（M1 期間・推奨）（ブランチ: `m1/batch-5-setvalue`）
 
-- [ ] wire method: `setValue`、TextBox（`SampleTextBox`）へ文字列置換
-- [ ] ネイティブ代入優先、失敗時クリア + SendInput（project.md Q51）。append / typeHuman は後付け
-- [ ] テスト: setValue → GetTree（または再読取）で値が一致
-- [ ] SmokeClient に任意サブコマンド or Launch オプションで 1 往復追加（必須ではない）
+- [x] wire method: `setValue`、params `{ automationId, value }`（任意 `runtimeId`）
+- [x] WPF TextBox: ネイティブ `Text` 代入優先 → `IValueProvider`。SendInput は未実装で `action.failed`
+- [x] テスト: setValue → GetTree で SampleTextBox name 一致（STA）+ ワイヤ fake
+- [x] SmokeClient への追加は見送り（任意項目）
 
 **完了条件:** SampleTextBox に値をセットして読める。  
-**確認:** Wpf.Tests /（任意）SmokeClient
+**確認:** `dotnet test tests/Graft.Instrumentation.Wpf.Tests` / `dotnet test tests/Graft.Instrumentation.Tests --filter SetValue`
 
 ---
 
 ## M1 完了チェック（全 Batch 後）
 
-- [ ] `GraftTest=true` / props・targets で `GRAFT_TEST` が付く
-- [ ] Handshake 後 `screenshot` でウィンドウ PNG（メタ+raw）が取れる
-- [ ] `invoke` で SampleButton クリック → StatusText が変化する
-- [ ] SmokeClient Launch で上記を再現できる
-- [ ] Core Launch / xUnit / Avalonia / Scenario / MCP は **含めない**（M2 以降）
-- [ ] （推奨）`setValue` が動く
+- [x] `GraftTest=true` / props・targets で `GRAFT_TEST` が付く
+- [x] Handshake 後 `screenshot` でウィンドウ PNG（メタ+raw）が取れる
+- [x] `invoke` で SampleButton クリック → StatusText が変化する
+- [x] SmokeClient Launch で上記を再現できる
+- [x] Core Launch / xUnit / Avalonia / Scenario / MCP は **含めない**（M2 以降）
+- [x] （推奨）`setValue` が動く
 
 ---
 

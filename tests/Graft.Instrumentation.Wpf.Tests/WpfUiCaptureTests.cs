@@ -20,26 +20,28 @@ public sealed class WpfUiCaptureTests
     private static readonly byte[] PngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
     /// <summary>
-    /// GetTree, screenshot, resolve, and invoke succeed against a Sample-like window.
+    /// GetTree, screenshot, resolve, invoke, and setValue succeed against a Sample-like window.
     /// </summary>
     /// <remarks>
     /// Preconditions:
     /// - STA thread; single Application for this method
-    /// - Window with AutomationId=SampleButton / StatusText is shown as MainWindow
+    /// - Window with SampleButton / StatusText / SampleTextBox is shown as MainWindow
     /// - WpfGraft.Use registered
     ///
     /// Steps:
     /// - Call GetTree / screenshot / resolve as before
     /// - Invoke SampleButton then GetTree StatusText
+    /// - setValue SampleTextBox then GetTree name
     /// - Invoke a disabled button
     ///
     /// Expected:
     /// - SampleButton name/bounds and PNG signature as before
     /// - After invoke, StatusText name is "Clicked 1"
+    /// - After setValue, SampleTextBox name matches the set text
     /// - Disabled button → element.notActionable
     /// </remarks>
     [StaFact]
-    public void GetTreeScreenshotResolveAndInvoke_OnShownWindow_Succeed()
+    public void GetTreeScreenshotResolveInvokeAndSetValue_OnShownWindow_Succeed()
     {
         var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         Window? window = null;
@@ -107,6 +109,17 @@ public sealed class WpfUiCaptureTests
             var status = FindByAutomationId(afterInvoke.Root, "StatusText");
             Assert.NotNull(status);
             Assert.Equal("Clicked 1", status.Name);
+
+            var valueSetter =
+                AgentServices.ElementValueSetter
+                ?? throw new InvalidOperationException("Element value setter was not registered.");
+            const string typed = "hello-graft";
+            valueSetter.SetValue(new ElementSelector { AutomationId = "SampleTextBox" }, typed);
+
+            var afterSetValue = treeProvider.GetTree(new GetTreeOptions());
+            var textBoxNode = FindByAutomationId(afterSetValue.Root, "SampleTextBox");
+            Assert.NotNull(textBoxNode);
+            Assert.Equal(typed, textBoxNode.Name);
 
             var disabled = new Button { Content = "Nope", IsEnabled = false };
             AutomationProperties.SetAutomationId(disabled, "DisabledButton");

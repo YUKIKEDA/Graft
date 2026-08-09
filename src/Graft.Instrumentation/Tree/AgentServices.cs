@@ -15,6 +15,7 @@ public static class AgentServices
     private static IScreenshotProvider? _screenshotProvider;
     private static IElementResolver? _elementResolver;
     private static IElementInvoker? _elementInvoker;
+    private static IElementValueSetter? _elementValueSetter;
 
     /// <summary>
     /// Gets the registered UI tree provider, if any.
@@ -35,6 +36,11 @@ public static class AgentServices
     /// Gets the registered element invoker, if any.
     /// </summary>
     public static IElementInvoker? ElementInvoker => _elementInvoker;
+
+    /// <summary>
+    /// Gets the registered element value setter, if any.
+    /// </summary>
+    public static IElementValueSetter? ElementValueSetter => _elementValueSetter;
 
     /// <summary>
     /// Registers the UI tree provider used for <c>getTree</c>.
@@ -77,6 +83,16 @@ public static class AgentServices
     }
 
     /// <summary>
+    /// Registers the element value setter used for <c>setValue</c>.
+    /// </summary>
+    /// <param name="setter">Framework-specific setter.</param>
+    public static void RegisterElementValueSetter(IElementValueSetter setter)
+    {
+        ArgumentNullException.ThrowIfNull(setter);
+        _elementValueSetter = setter;
+    }
+
+    /// <summary>
     /// Clears registered services (tests).
     /// </summary>
     public static void Reset()
@@ -85,6 +101,7 @@ public static class AgentServices
         _screenshotProvider = null;
         _elementResolver = null;
         _elementInvoker = null;
+        _elementValueSetter = null;
     }
 }
 

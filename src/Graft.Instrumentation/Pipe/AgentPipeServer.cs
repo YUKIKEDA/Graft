@@ -237,6 +237,11 @@ internal sealed class AgentPipeServer : IDisposable
             return (HandleInvoke(request), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
+        if (request.Method == ProtocolMethods.SetValue)
+        {
+            return (HandleSetValue(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
         return (
             Error(
                 request.Id,
@@ -353,6 +358,38 @@ internal sealed class AgentPipeServer : IDisposable
         }
     }
 
+    private static ResponseMessage HandleSetValue(RequestMessage request)
+    {
+        var setter = AgentServices.ElementValueSetter;
+        if (setter is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No element value setter is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var (selector, value) = ReadSetValueParams(request.Params);
+            setter.SetValue(selector, value);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
     private static ElementSelector ReadElementSelector(JsonElement? paramsElement)
     {
         string? automationId = null;
@@ -378,6 +415,40 @@ internal sealed class AgentPipeServer : IDisposable
         }
 
         return new ElementSelector { AutomationId = automationId, RuntimeId = runtimeId };
+    }
+
+    private static (ElementSelector Selector, string Value) ReadSetValueParams(
+        JsonElement? paramsElement
+    )
+    {
+        var selector = ReadElementSelector(paramsElement);
+        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.value is required."
+            );
+        }
+
+        if (!element.TryGetProperty("value", out var valueProperty))
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.value is required."
+            );
+        }
+
+        var value = valueProperty.ValueKind switch
+        {
+            JsonValueKind.String => valueProperty.GetString() ?? string.Empty,
+            JsonValueKind.Null => string.Empty,
+            _ => throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.value must be a string."
+            ),
+        };
+
+        return (selector, value);
     }
 
     private static GetTreeOptions ReadGetTreeOptions(JsonElement? paramsElement)
