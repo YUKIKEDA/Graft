@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Graft Sample WPF App"
+        AutomationProperties.AutomationId="Main"
         Height="420"
         Width="480">
     <StackPanel Margin="24" VerticalAlignment="Center">

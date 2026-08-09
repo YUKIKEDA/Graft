@@ -88,4 +88,51 @@ public sealed class FailureReportTests
         Assert.Equal("Hello", fromComposite.Name);
         Assert.Equal("TextBox", fromComposite.ControlType);
     }
+
+    /// <summary>
+    /// HealingCandidates round-trip through FailureReport JSON.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Report with one healing candidate (score, selector, reason)
+    ///
+    /// Steps:
+    /// - Serialize then Deserialize via FailureReportJson
+    ///
+    /// Expected:
+    /// - healingCandidates preserved (score / automationId / reason)
+    /// </remarks>
+    [Fact]
+    public void Serialize_ThenDeserialize_PreservesHealingCandidates()
+    {
+        var original = new FailureReport
+        {
+            Step = FailureSteps.Wait,
+            TimedOut = true,
+            Selector = new FailureReportSelector { AutomationId = "Gone" },
+            HealingCandidates =
+            [
+                new HealingCandidate
+                {
+                    Score = 75,
+                    Selector = new FailureReportSelector
+                    {
+                        Name = "Click Me",
+                        ControlType = "Button",
+                        NearAutomationId = "Main",
+                    },
+                    Reason = "stableIdentity",
+                },
+            ],
+        };
+
+        var decoded = FailureReportJson.Deserialize(FailureReportJson.Serialize(original));
+        Assert.NotNull(decoded.HealingCandidates);
+        Assert.Single(decoded.HealingCandidates);
+        Assert.Equal(75, decoded.HealingCandidates[0].Score);
+        Assert.Equal("Click Me", decoded.HealingCandidates[0].Selector.Name);
+        Assert.Equal("Button", decoded.HealingCandidates[0].Selector.ControlType);
+        Assert.Equal("Main", decoded.HealingCandidates[0].Selector.NearAutomationId);
+        Assert.Equal("stableIdentity", decoded.HealingCandidates[0].Reason);
+    }
 }
