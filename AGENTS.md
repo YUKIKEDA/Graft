@@ -12,6 +12,7 @@ In-process UI testing for WPF & AvaloniaUI. Design source of truth: `.dev/projec
 | Formatter | CSharpier | `.config/dotnet-tools.json`, `.csharpierrc.json`, format on save via `.vscode/` |
 | Linter | StyleCop.Analyzers | `Directory.Build.props`, `stylecop.json`, `.editorconfig` (warnings for now) |
 | XML docs | Required on `src/**` public API | Warning via StyleCop; `GenerateDocumentationFile` in `src/Directory.Build.props` |
+| Test docs | Required on Fact/Theory methods | `.cursor/rules/testing.mdc` — `summary` + `remarks` (Preconditions/Steps/Expected); no Analyzer yet |
 
 ## Quick commands
 
@@ -34,7 +35,8 @@ dotnet build Graft.slnx
 - Format with CSharpier only; do not hand-warp layout against it
 - StyleCop is warning-level overall
 - **Public API in `src/`** must have XML docs (`summary` / `param` / `returns` as needed) — warning for now, escalate later
-- `tests/`, `tools/`, sample-apps: XML docs not required
+- **Tests (`tests/**`):** every Fact/Theory needs `summary` + `remarks` with `Preconditions` / `Steps` / `Expected` (English headings, Japanese body OK). Theory: one remarks block per method. See `.cursor/rules/testing.mdc`
+- `tools/`, sample-apps: XML docs not required
 - Escalate StyleCop / docs to errors later after the codebase settles
 
 ## Branches

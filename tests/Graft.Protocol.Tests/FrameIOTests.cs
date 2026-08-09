@@ -4,6 +4,21 @@ namespace Graft.Protocol.Tests;
 
 public sealed class FrameIOTests
 {
+    /// <summary>
+    /// WriteAsync/ReadAsync round-trips a non-empty payload on a MemoryStream.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Empty MemoryStream
+    /// - UTF-8 payload bytes for "hello-graft"
+    ///
+    /// Steps:
+    /// - FrameIO.WriteAsync then seek to 0
+    /// - FrameIO.ReadAsync
+    ///
+    /// Expected:
+    /// - Read bytes equal the original payload
+    /// </remarks>
     [Fact]
     public async Task WriteThenRead_RoundTripsPayload()
     {
@@ -17,6 +32,20 @@ public sealed class FrameIOTests
         Assert.Equal(payload, read);
     }
 
+    /// <summary>
+    /// Empty payloads are valid frames (length prefix 0).
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Empty MemoryStream
+    /// - Empty payload
+    ///
+    /// Steps:
+    /// - WriteAsync empty payload, seek to 0, ReadAsync
+    ///
+    /// Expected:
+    /// - Read result is an empty byte array
+    /// </remarks>
     [Fact]
     public async Task WriteThenRead_EmptyPayload_Succeeds()
     {
@@ -29,6 +58,20 @@ public sealed class FrameIOTests
         Assert.Empty(read);
     }
 
+    /// <summary>
+    /// WriteAsync rejects payloads larger than maxPayloadBytes.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Empty MemoryStream
+    /// - 8-byte payload with maxPayloadBytes = 4
+    ///
+    /// Steps:
+    /// - Call FrameIO.WriteAsync
+    ///
+    /// Expected:
+    /// - Throws InvalidOperationException
+    /// </remarks>
     [Fact]
     public async Task Write_WhenPayloadExceedsMax_Throws()
     {
@@ -40,6 +83,21 @@ public sealed class FrameIOTests
         );
     }
 
+    /// <summary>
+    /// ReadAsync rejects frames whose declared length exceeds maxPayloadBytes.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Stream containing a valid 16-byte frame written with default max
+    /// - Read with maxPayloadBytes = 8
+    ///
+    /// Steps:
+    /// - Write 16-byte frame, seek to 0
+    /// - ReadAsync with a smaller max
+    ///
+    /// Expected:
+    /// - Throws InvalidOperationException
+    /// </remarks>
     [Fact]
     public async Task Read_WhenLengthExceedsMax_Throws()
     {

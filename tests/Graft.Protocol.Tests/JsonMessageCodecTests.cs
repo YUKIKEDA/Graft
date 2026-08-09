@@ -6,6 +6,20 @@ namespace Graft.Protocol.Tests;
 
 public sealed class JsonMessageCodecTests
 {
+    /// <summary>
+    /// Request envelopes survive length-prefixed JSON round-trip.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Empty MemoryStream
+    /// - Request with v=Current, id, method getTree, params.depth=25
+    ///
+    /// Steps:
+    /// - WriteRequestAsync, seek to 0, ReadRequestAsync
+    ///
+    /// Expected:
+    /// - Fields and params.depth match the original request
+    /// </remarks>
     [Fact]
     public async Task Request_RoundTrip_OverMemoryStream()
     {
@@ -29,6 +43,20 @@ public sealed class JsonMessageCodecTests
         Assert.Equal(25, decoded.Params.Value.GetProperty("depth").GetInt32());
     }
 
+    /// <summary>
+    /// Successful response envelopes round-trip with result and without error.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Empty MemoryStream
+    /// - Ok response with result.truncated=false
+    ///
+    /// Steps:
+    /// - WriteResponseAsync, seek to 0, ReadResponseAsync
+    ///
+    /// Expected:
+    /// - Ok is true, Error is null, result.truncated is false
+    /// </remarks>
     [Fact]
     public async Task Response_Ok_RoundTrip_OverMemoryStream()
     {
@@ -51,6 +79,20 @@ public sealed class JsonMessageCodecTests
         Assert.False(decoded.Result.Value.GetProperty("truncated").GetBoolean());
     }
 
+    /// <summary>
+    /// Error responses preserve code, message, and details.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Empty MemoryStream
+    /// - Ok=false response with protocol.versionMismatch and details.actual=2
+    ///
+    /// Steps:
+    /// - WriteResponseAsync, seek to 0, ReadResponseAsync
+    ///
+    /// Expected:
+    /// - Ok is false; Error.Code/Message/Details match
+    /// </remarks>
     [Fact]
     public async Task Response_Error_RoundTrip_IncludesCodeAndMessage()
     {
@@ -80,6 +122,19 @@ public sealed class JsonMessageCodecTests
         Assert.Equal(2, decoded.Error.Details.Value.GetProperty("actual").GetInt32());
     }
 
+    /// <summary>
+    /// ProtocolVersion.Current is fixed at 1 for v1 wire compatibility.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - None
+    ///
+    /// Steps:
+    /// - Read ProtocolVersion.Current
+    ///
+    /// Expected:
+    /// - Value equals 1
+    /// </remarks>
     [Fact]
     public void ProtocolVersion_Current_IsOne()
     {

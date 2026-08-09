@@ -1,0 +1,62 @@
+---
+description: Structured XML docs required on unit tests (summary + remarks template)
+globs: tests/**/*.cs
+alwaysApply: false
+---
+
+# Test documentation
+
+Every `[Fact]` / `[Theory]` method MUST have XML docs in this shape.
+Analyzer enforcement is deferred; follow by convention and review.
+
+## Template
+
+Headings in **English**; body text may be Japanese.
+
+```csharp
+/// <summary>
+/// One-line intent: what behavior is guarded.
+/// </summary>
+/// <remarks>
+/// Preconditions:
+/// - ...
+///
+/// Steps:
+/// - ...
+///
+/// Expected:
+/// - ...
+/// </remarks>
+[Fact]
+public void MethodName_Scenario_Expected()
+{
+}
+```
+
+## Rules
+
+- Required on **all** Fact/Theory methods (no “too simple to document” exception).
+- `[Theory]`: document once on the method; list cases / `InlineData` intent under Preconditions or Steps (do not duplicate per row unless a case is special).
+- Do **not** invent custom XML tags (`<preconditions>`, `<expected>`, etc.).
+- Keep remarks short; link to `project.md` / Batch notes when the why is non-obvious.
+- Method names stay descriptive (`Method_Scenario_Expected`); comments do not replace good names.
+
+## Example
+
+```csharp
+/// <summary>
+/// WriteAsync/ReadAsync round-trips a non-empty payload on a MemoryStream.
+/// </summary>
+/// <remarks>
+/// Preconditions:
+/// - Empty MemoryStream
+/// - UTF-8 payload bytes
+///
+/// Steps:
+/// - FrameIO.WriteAsync then seek to 0
+/// - FrameIO.ReadAsync
+///
+/// Expected:
+/// - Read bytes equal the original payload
+/// </remarks>
+```
