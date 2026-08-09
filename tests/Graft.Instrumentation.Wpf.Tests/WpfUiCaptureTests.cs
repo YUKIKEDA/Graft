@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Elements;
 using Graft.Instrumentation.Screenshot;
 using Graft.Instrumentation.Tree;
@@ -11,7 +12,7 @@ using Graft.Protocol.Messages;
 namespace Graft.Instrumentation.Wpf.Tests;
 
 /// <summary>
-/// WPF capture / resolve tests share one STA + <see cref="Application"/> lifetime
+/// WPF capture / resolve / invoke tests share one STA + <see cref="Application"/> lifetime
 /// (WPF allows only one Application per AppDomain; StaFact threads differ per method).
 /// </summary>
 public sealed class WpfUiCaptureTests
@@ -19,26 +20,26 @@ public sealed class WpfUiCaptureTests
     private static readonly byte[] PngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
     /// <summary>
-    /// GetTree, screenshot, and element resolve succeed against a Sample-like window.
+    /// GetTree, screenshot, resolve, and invoke succeed against a Sample-like window.
     /// </summary>
     /// <remarks>
     /// Preconditions:
     /// - STA thread; single Application for this method
-    /// - Window with AutomationId=SampleButton is shown as MainWindow
+    /// - Window with AutomationId=SampleButton / StatusText is shown as MainWindow
     /// - WpfGraft.Use registered
     ///
     /// Steps:
-    /// - Call IUiTreeProvider.GetTree and find SampleButton
-    /// - Call IScreenshotProvider.Capture
-    /// - Resolve SampleButton; resolve a missing automationId; resolve duplicate ids
+    /// - Call GetTree / screenshot / resolve as before
+    /// - Invoke SampleButton then GetTree StatusText
+    /// - Invoke a disabled button
     ///
     /// Expected:
-    /// - SampleButton name/bounds are present
-    /// - screenshot meta is png with positive size; raw bytes have PNG signature
-    /// - resolve returns Button for SampleButton; missing id → element.notFound; duplicates → element.ambiguous
+    /// - SampleButton name/bounds and PNG signature as before
+    /// - After invoke, StatusText name is "Clicked 1"
+    /// - Disabled button → element.notActionable
     /// </remarks>
     [StaFact]
-    public void GetTreeScreenshotAndResolve_OnShownWindow_Succeed()
+    public void GetTreeScreenshotResolveAndInvoke_OnShownWindow_Succeed()
     {
         var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         Window? window = null;
@@ -97,6 +98,26 @@ public sealed class WpfUiCaptureTests
             );
             Assert.Equal(GraftErrorCodes.SelectorInvalid, invalid.Code);
 
+            var invoker =
+                AgentServices.ElementInvoker
+                ?? throw new InvalidOperationException("Element invoker was not registered.");
+            invoker.Invoke(new ElementSelector { AutomationId = "SampleButton" });
+
+            var afterInvoke = treeProvider.GetTree(new GetTreeOptions());
+            var status = FindByAutomationId(afterInvoke.Root, "StatusText");
+            Assert.NotNull(status);
+            Assert.Equal("Clicked 1", status.Name);
+
+            var disabled = new Button { Content = "Nope", IsEnabled = false };
+            AutomationProperties.SetAutomationId(disabled, "DisabledButton");
+            ((StackPanel)window.Content).Children.Add(disabled);
+            window.UpdateLayout();
+
+            var notActionable = Assert.Throws<ElementActionException>(() =>
+                invoker.Invoke(new ElementSelector { AutomationId = "DisabledButton" })
+            );
+            Assert.Equal(GraftErrorCodes.ElementNotActionable, notActionable.Code);
+
             // Duplicate automationIds → ambiguous.
             var dupA = new Button { Content = "A" };
             AutomationProperties.SetAutomationId(dupA, "DupId");
@@ -128,6 +149,7 @@ public sealed class WpfUiCaptureTests
         var textBox = new TextBox();
         AutomationProperties.SetAutomationId(textBox, "SampleTextBox");
 
+        var clickCount = 0;
         var button = new Button
         {
             Content = "Click Me",
@@ -135,6 +157,11 @@ public sealed class WpfUiCaptureTests
             HorizontalAlignment = HorizontalAlignment.Left,
         };
         AutomationProperties.SetAutomationId(button, "SampleButton");
+        button.Click += (_, _) =>
+        {
+            clickCount++;
+            status.Text = $"Clicked {clickCount}";
+        };
 
         var panel = new StackPanel { Margin = new Thickness(24) };
         panel.Children.Add(status);
