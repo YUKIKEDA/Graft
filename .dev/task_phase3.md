@@ -34,10 +34,10 @@
 
 ## Batch 2 — 原子ツール（推奨）（ブランチ: `phase3/batch-2-mcp-atomic-tools`）
 
-- [ ] セッション付き原子ツール: `graft_launch` / `graft_invoke` / `graft_set_value` / `graft_expect_name` / `graft_dispose`（名前は実装時に固定）
-- [ ] サーバ内で `GraftSession` を保持（1 セッション想定で開始）
-- [ ] 失敗時は Batch 1 と同様に FailureReport を返す
-- [ ] テスト: launch → invoke → expect → dispose の 1 経路
+- [x] セッション付き原子ツール: `graft_launch` / `graft_invoke` / `graft_set_value` / `graft_expect_name` / `graft_dispose`
+- [x] サーバ内で `GraftSession` を保持（`GraftSessionHub`、1 セッション）
+- [x] 失敗時は Batch 1 と同様に FailureReport を返す（`ToolResults`）
+- [x] テスト: launch → invoke → expect → dispose の 1 経路（`McpAtomicToolsTests`）
 
 **完了条件:** Scenario 無しでも MCP だけで短い UI 操作が完走する。  
 **次:** Phase 3 完了チェックへ。
@@ -46,11 +46,11 @@
 
 ## Phase 3 完了チェック
 
-- [ ] `Graft.McpServer` が stdio で起動する
-- [ ] Scenario 実行ツールがある
-- [ ] （推奨）原子ツールでセッション操作ができる
-- [ ] 失敗時に FailureReport 相当がツール結果から読める
-- [ ] Avalonia / HTTP MCP / 自己修復 / toggle・キー本格化は **含めない**
+- [x] `Graft.McpServer` が stdio で起動する
+- [x] Scenario 実行ツールがある
+- [x] （推奨）原子ツールでセッション操作ができる
+- [x] 失敗時に FailureReport 相当がツール結果から読める
+- [x] Avalonia / HTTP MCP / 自己修復 / toggle・キー本格化は **含めない**
 
 ---
 

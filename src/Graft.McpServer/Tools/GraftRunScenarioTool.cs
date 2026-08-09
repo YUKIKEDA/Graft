@@ -1,8 +1,6 @@
 using System.ComponentModel;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using Graft.Core;
-using Graft.Core.Diagnostics;
 using Graft.Core.Scenario;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
@@ -15,12 +13,6 @@ namespace Graft.McpServer.Tools;
 [McpServerToolType]
 public static class GraftRunScenarioTool
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy = null,
-        WriteIndented = false,
-    };
-
     /// <summary>
     /// Parses and runs a Scenario (JSON text or file path).
     /// </summary>
@@ -47,7 +39,7 @@ public static class GraftRunScenarioTool
         var hasPath = !string.IsNullOrWhiteSpace(scenarioPath);
         if (hasJson == hasPath)
         {
-            return ErrorResult(
+            return ToolResults.Error(
                 "action.failed",
                 "Provide exactly one of scenarioJson or scenarioPath."
             );
@@ -67,17 +59,17 @@ public static class GraftRunScenarioTool
                 .RunAsync(document, options, cancellationToken)
                 .ConfigureAwait(false);
 
-            var ok = new JsonObject
-            {
-                ["ok"] = true,
-                ["name"] = document.Name,
-                ["operations"] = document.Operations.Count,
-            };
-            return TextResult(ok.ToJsonString(JsonOptions), isError: false);
+            return ToolResults.Ok(
+                new JsonObject
+                {
+                    ["name"] = document.Name,
+                    ["operations"] = document.Operations.Count,
+                }
+            );
         }
         catch (GraftException ex)
         {
-            return ErrorResult(ex.Code, ex.Message, ex.Report);
+            return ToolResults.FromException(ex);
         }
         catch (OperationCanceledException)
         {
@@ -85,31 +77,7 @@ public static class GraftRunScenarioTool
         }
         catch (Exception ex)
         {
-            return ErrorResult("action.failed", ex.Message);
+            return ToolResults.Error("action.failed", ex.Message);
         }
     }
-
-    private static CallToolResult ErrorResult(
-        string code,
-        string message,
-        FailureReport? report = null
-    )
-    {
-        var node = new JsonObject
-        {
-            ["ok"] = false,
-            ["code"] = code,
-            ["message"] = message,
-        };
-
-        if (report is not null)
-        {
-            node["report"] = JsonNode.Parse(FailureReportJson.Serialize(report));
-        }
-
-        return TextResult(node.ToJsonString(JsonOptions), isError: true);
-    }
-
-    private static CallToolResult TextResult(string text, bool isError) =>
-        new() { IsError = isError, Content = [new TextContentBlock { Text = text }] };
 }
