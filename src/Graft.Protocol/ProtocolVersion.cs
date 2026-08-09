@@ -5,5 +5,8 @@ namespace Graft.Protocol;
 /// </summary>
 public static class ProtocolVersion
 {
+    /// <summary>
+    /// Current protocol version accepted by agents and controllers.
+    /// </summary>
     public const int Current = 1;
 }

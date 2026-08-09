@@ -5,7 +5,9 @@
     <Project Path="src/Graft.Instrumentation/Graft.Instrumentation.csproj" />
     <Project Path="src/Graft.Protocol/Graft.Protocol.csproj" />
   </Folder>
-  <Folder Name="/tests/" />
+  <Folder Name="/tests/">
+    <Project Path="tests/Graft.Protocol.Tests/Graft.Protocol.Tests.csproj" />
+  </Folder>
   <Folder Name="/tests/sample-apps/">
     <Project Path="tests/sample-apps/SampleWpfApp/SampleWpfApp.csproj" />
   </Folder>

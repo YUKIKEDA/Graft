@@ -30,5 +30,6 @@
 - [ ] `dotnet build Graft.slnx` succeeds
 - [ ] CSharpier applied to touched C# (format on save or `dotnet csharpier format`)
 - [ ] No unintentional new StyleCop warnings in touched files
+- [ ] New/changed tests include `summary` + `remarks` (Preconditions/Steps/Expected) — or N/A
 - [ ] If M0 work: linked the relevant Batch in **Related** / `task_m0.md` updated if needed
 - [ ] Docs updated when behavior or workflow changed (`AGENTS.md`, `.dev/*`, rules) — or N/A

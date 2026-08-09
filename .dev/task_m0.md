@@ -41,15 +41,16 @@
 
 ---
 
-## Batch 2 — Protocol（エンベロープのみ）
+## Batch 2 — Protocol（エンベロープのみ）（ブランチ: `m0/batch-2-protocol`）
 
-- [ ] 長さプレフィックス + JSON の読み書きヘルパ
-- [ ] 要求/応答モデル `{ v, id, method, params }` / `{ v, id, ok, result|error }`
-- [ ] `error`: `{ code, message, details? }`
-- [ ] `v = 1` 定数
-- [ ] 単体テスト（Protocol だけで完結する範囲）
+- [x] 長さプレフィックス + JSON の読み書きヘルパ（`FrameIO` / `JsonMessageCodec`）
+- [x] 要求/応答モデル `{ v, id, method, params }` / `{ v, id, ok, result|error }`
+- [x] `error`: `{ code, message, details? }` + `GraftErrorCodes`
+- [x] `v = 1` 定数（`ProtocolVersion.Current`）
+- [x] 単体テスト（`tests/Graft.Protocol.Tests`、MemoryStream 往復）
 
-**完了条件:** フレームの往復をメモリストリーム等で検証できる。
+**完了条件:** フレームの往復をメモリストリーム等で検証できる。  
+**確認:** `dotnet test tests/Graft.Protocol.Tests`
 
 ---
 
