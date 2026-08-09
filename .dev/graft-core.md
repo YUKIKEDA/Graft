@@ -69,8 +69,10 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - `ConnectAsync` は既にパイプが立っているプロセス向けの低レベル API（ドキュメント第一級ではない）
 - Wait / Expect タイムアウトは `app.WaitOptions`（アクション 5s / Expect 10s 既定）
 - セレクタ: `GetBy(Selector.…)` または `GetByAutomationId`
-- テキスト入力: `GetByAutomationId(…).SetValueAsync(value)`（エージェント wire `setValue`）
-- 失敗診断: Expect / Wait / Invoke / SetValue 失敗時に `GraftException.Report`（最小: step / expected / actual / timedOut / selector。添付: `recentOperations` / `tree` / `screenshotPath`）。エージェントは RPC ごとに常時添付しない。添付は失敗時ベストエフォート
-- Scenario JSON: `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync`（`launch` / `invoke` / `setValue` / `expectName`）。契約は `.dev/scenario.schema.json`。例: `tests/sample-apps/SampleWpfApp.Tests/Scenarios/`
-- MCP: `Graft.McpServer`（stdio）。`graft_ping` / `graft_run_scenario` / 原子ツール（`graft_launch`・`graft_invoke`・`graft_set_value`・`graft_expect_name`・`graft_dispose`）。失敗時は `IsError` + FailureReport JSON
-- 未実装（Phase 1 余り / 後続）: `toggle`、キー入力、SendInput フォールバック
+- テキスト入力: `GetByAutomationId(…).SetValueAsync(value)`（エージェント wire `setValue`）。キー入力: `SendKeysAsync(text)`（リテラル、chord DSL なし）
+- トグル: `GetByAutomationId(…).ToggleAsync()`（状態フリップ）
+- 失敗診断: Expect / Wait / Invoke / SetValue / Toggle / SendKeys 失敗時に `GraftException.Report`（最小: step / expected / actual / timedOut / selector。添付: `recentOperations` / `tree` / `screenshotPath`）。エージェントは RPC ごとに常時添付しない。添付は失敗時ベストエフォート
+- Scenario JSON: `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync`（`launch` / `invoke` / `setValue` / `toggle` / `sendKeys` / `expectName`）。契約は `.dev/scenario.schema.json`。例: `tests/sample-apps/SampleWpfApp.Tests/Scenarios/`
+- MCP: `Graft.McpServer`（stdio）。`graft_ping` / `graft_run_scenario` / 原子ツール（`graft_launch`・`graft_invoke`・`graft_set_value`・`graft_toggle`・`graft_send_keys`・`graft_expect_name`・`graft_dispose`）。失敗時は `IsError` + FailureReport JSON
+- invoke / setValue はネイティブ → Peer → SendInput フォールバック（クリック / クリア+タイプ）
+- 未実装（後続）: Avalonia、`typeHuman` / chord DSL、`scroll` / `select` / `expand`

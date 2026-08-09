@@ -181,6 +181,8 @@ public static class ScenarioJson
             ScenarioActions.Launch => CompileLaunch(step, index),
             ScenarioActions.Invoke => CompileInvoke(step, index),
             ScenarioActions.SetValue => CompileSetValue(step, index),
+            ScenarioActions.Toggle => CompileToggle(step, index),
+            ScenarioActions.SendKeys => CompileSendKeys(step, index),
             ScenarioActions.ExpectName => CompileExpectName(step, index),
             _ => throw Invalid($"steps[{index}] has unknown action '{action}'."),
         };
@@ -230,6 +232,23 @@ public static class ScenarioJson
         }
 
         return new SetValueOperation(automationId, valueElement.GetString() ?? string.Empty);
+    }
+
+    private static ToggleOperation CompileToggle(JsonElement step, int index) =>
+        new(RequireNonEmptyString(step, "automationId", index));
+
+    private static SendKeysOperation CompileSendKeys(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        if (
+            !step.TryGetProperty("text", out var textElement)
+            || textElement.ValueKind != JsonValueKind.String
+        )
+        {
+            throw Invalid($"steps[{index}] sendKeys requires string property 'text'.");
+        }
+
+        return new SendKeysOperation(automationId, textElement.GetString() ?? string.Empty);
     }
 
     private static ExpectNameOperation CompileExpectName(JsonElement step, int index)

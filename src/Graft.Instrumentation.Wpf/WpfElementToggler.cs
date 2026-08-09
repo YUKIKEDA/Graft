@@ -11,35 +11,34 @@ using Graft.Protocol;
 namespace Graft.Instrumentation.Wpf;
 
 /// <summary>
-/// Sets WPF element values on the UI dispatcher (TextBox native replace first).
+/// Toggles WPF elements on the UI dispatcher (TogglePattern / CheckBox first).
 /// </summary>
-internal sealed class WpfElementValueSetter : IElementValueSetter
+internal sealed class WpfElementToggler : IElementToggler
 {
     /// <inheritdoc />
-    public void SetValue(ElementSelector selector, string value)
+    public void Toggle(ElementSelector selector)
     {
         ArgumentNullException.ThrowIfNull(selector);
-        ArgumentNullException.ThrowIfNull(value);
 
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
             throw new ElementActionException(
                 GraftErrorCodes.ActionFailed,
-                "WPF Application.Current is not available; cannot setValue."
+                "WPF Application.Current is not available; cannot toggle."
             );
         }
 
         if (dispatcher.CheckAccess())
         {
-            SetValueOnUiThread(selector, value);
+            ToggleOnUiThread(selector);
             return;
         }
 
-        dispatcher.Invoke(() => SetValueOnUiThread(selector, value), DispatcherPriority.Normal);
+        dispatcher.Invoke(() => ToggleOnUiThread(selector), DispatcherPriority.Normal);
     }
 
-    private static void SetValueOnUiThread(ElementSelector selector, string value)
+    private static void ToggleOnUiThread(ElementSelector selector)
     {
         var resolver =
             AgentServices.ElementResolver
@@ -65,31 +64,21 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
             );
         }
 
-        // Native replace first (project.md Q51).
-        if (element is TextBox textBox)
-        {
-            if (textBox.IsReadOnly)
-            {
-                throw new ElementActionException(
-                    GraftErrorCodes.ElementNotActionable,
-                    $"Element '{resolved.AutomationId}' is read-only."
-                );
-            }
-
-            textBox.Text = value;
-            return;
-        }
-
-        if (TrySetValueViaAutomationPeer(element, value))
+        if (TryToggleViaAutomationPeer(element))
         {
             return;
         }
 
-        // Clear + SendInput type (project.md Q51).
-        WpfInputInjection.FocusAndType(element, value, clearFirst: true);
+        if (element is CheckBox checkBox)
+        {
+            checkBox.IsChecked = checkBox.IsChecked != true;
+            return;
+        }
+
+        WpfInputInjection.LeftClickElement(element);
     }
 
-    private static bool TrySetValueViaAutomationPeer(FrameworkElement element, string value)
+    private static bool TryToggleViaAutomationPeer(FrameworkElement element)
     {
         AutomationPeer? peer = UIElementAutomationPeer.FromElement(element);
         if (peer is null && element is UIElement uiElement)
@@ -97,21 +86,13 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
             peer = UIElementAutomationPeer.CreatePeerForElement(uiElement);
         }
 
-        if (peer?.GetPattern(PatternInterface.Value) is not IValueProvider valueProvider)
+        if (peer?.GetPattern(PatternInterface.Toggle) is IToggleProvider toggleProvider)
         {
-            return false;
+            toggleProvider.Toggle();
+            element.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
+            return true;
         }
 
-        if (valueProvider.IsReadOnly)
-        {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotActionable,
-                "Element ValuePattern is read-only."
-            );
-        }
-
-        valueProvider.SetValue(value);
-        element.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
-        return true;
+        return false;
     }
 }

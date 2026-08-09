@@ -30,4 +30,14 @@ public static class ProtocolMethods
     /// Replaces an element's value (e.g. TextBox) via <c>params.automationId</c> and <c>params.value</c>.
     /// </summary>
     public const string SetValue = "setValue";
+
+    /// <summary>
+    /// Toggles an element (e.g. CheckBox) selected by <c>params.automationId</c>.
+    /// </summary>
+    public const string Toggle = "toggle";
+
+    /// <summary>
+    /// Types literal text into a focused element via <c>params.automationId</c> and <c>params.text</c>.
+    /// </summary>
+    public const string SendKeys = "sendKeys";
 }

@@ -87,4 +87,98 @@ public sealed class MainWindowE2ETests
         await app.GetByAutomationId("SampleTextBox").SetValueAsync(typed);
         await app.GetByAutomationId("SampleTextBox").ExpectNameAsync(typed);
     }
+
+    /// <summary>
+    /// toggle flips SampleCheckBox Content from Off to On.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Sibling SampleWpfApp.csproj can build with Configuration=GraftTest
+    ///
+    /// Steps:
+    /// - Launch sample
+    /// - GetByAutomationId("SampleCheckBox").ToggleAsync()
+    /// - ExpectNameAsync("On")
+    ///
+    /// Expected:
+    /// - CheckBox tree name is On
+    /// </remarks>
+    [Fact]
+    public async Task Toggle_SampleCheckBox_UpdatesName()
+    {
+        await using var app = await Application.LaunchAsync(
+            new LaunchOptions
+            {
+                AppPath = SampleAppLocator.ResolveProjectPath(),
+                Configuration = "GraftTest",
+                Timeout = TimeSpan.FromSeconds(60),
+            }
+        );
+
+        await app.GetByAutomationId("SampleCheckBox").ToggleAsync();
+        await app.GetByAutomationId("SampleCheckBox").ExpectNameAsync("On");
+    }
+
+    /// <summary>
+    /// sendKeys appends text into SampleTextBox.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Sibling SampleWpfApp.csproj can build with Configuration=GraftTest
+    ///
+    /// Steps:
+    /// - Launch sample
+    /// - GetByAutomationId("SampleTextBox").SendKeysAsync("keys-graft")
+    /// - ExpectNameAsync("keys-graft")
+    ///
+    /// Expected:
+    /// - TextBox name equals the typed value
+    /// </remarks>
+    [Fact]
+    public async Task SendKeys_SampleTextBox_UpdatesName()
+    {
+        await using var app = await Application.LaunchAsync(
+            new LaunchOptions
+            {
+                AppPath = SampleAppLocator.ResolveProjectPath(),
+                Configuration = "GraftTest",
+                Timeout = TimeSpan.FromSeconds(60),
+            }
+        );
+
+        const string typed = "keys-graft";
+        await app.GetByAutomationId("SampleTextBox").SendKeysAsync(typed);
+        await app.GetByAutomationId("SampleTextBox").ExpectNameAsync(typed);
+    }
+
+    /// <summary>
+    /// invoke on SampleMouseTarget uses SendInput fallback and updates StatusText.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Sibling SampleWpfApp.csproj can build with Configuration=GraftTest
+    ///
+    /// Steps:
+    /// - Launch sample
+    /// - GetByAutomationId("SampleMouseTarget").InvokeAsync()
+    /// - ExpectNameAsync("MouseHit") on StatusText
+    ///
+    /// Expected:
+    /// - StatusText name is MouseHit
+    /// </remarks>
+    [Fact]
+    public async Task Invoke_SampleMouseTarget_ViaSendInput_UpdatesStatus()
+    {
+        await using var app = await Application.LaunchAsync(
+            new LaunchOptions
+            {
+                AppPath = SampleAppLocator.ResolveProjectPath(),
+                Configuration = "GraftTest",
+                Timeout = TimeSpan.FromSeconds(60),
+            }
+        );
+
+        await app.GetByAutomationId("SampleMouseTarget").InvokeAsync();
+        await app.GetByAutomationId("StatusText").ExpectNameAsync("MouseHit");
+    }
 }

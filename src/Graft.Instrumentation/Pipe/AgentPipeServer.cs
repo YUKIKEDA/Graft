@@ -242,6 +242,16 @@ internal sealed class AgentPipeServer : IDisposable
             return (HandleSetValue(request), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
+        if (request.Method == ProtocolMethods.Toggle)
+        {
+            return (HandleToggle(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
+        if (request.Method == ProtocolMethods.SendKeys)
+        {
+            return (HandleSendKeys(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
         return (
             Error(
                 request.Id,
@@ -390,6 +400,70 @@ internal sealed class AgentPipeServer : IDisposable
         }
     }
 
+    private static ResponseMessage HandleToggle(RequestMessage request)
+    {
+        var toggler = AgentServices.ElementToggler;
+        if (toggler is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No element toggler is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var selector = ReadElementSelector(request.Params);
+            toggler.Toggle(selector);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleSendKeys(RequestMessage request)
+    {
+        var keySender = AgentServices.ElementKeySender;
+        if (keySender is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No element key sender is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var (selector, text) = ReadSendKeysParams(request.Params);
+            keySender.SendKeys(selector, text);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
     private static ElementSelector ReadElementSelector(JsonElement? paramsElement)
     {
         string? automationId = null;
@@ -449,6 +523,40 @@ internal sealed class AgentPipeServer : IDisposable
         };
 
         return (selector, value);
+    }
+
+    private static (ElementSelector Selector, string Text) ReadSendKeysParams(
+        JsonElement? paramsElement
+    )
+    {
+        var selector = ReadElementSelector(paramsElement);
+        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.text is required."
+            );
+        }
+
+        if (!element.TryGetProperty("text", out var textProperty))
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.text is required."
+            );
+        }
+
+        var text = textProperty.ValueKind switch
+        {
+            JsonValueKind.String => textProperty.GetString() ?? string.Empty,
+            JsonValueKind.Null => string.Empty,
+            _ => throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.text must be a string."
+            ),
+        };
+
+        return (selector, text);
     }
 
     private static GetTreeOptions ReadGetTreeOptions(JsonElement? paramsElement)

@@ -148,6 +148,58 @@ public sealed class GraftAtomicTools
         );
 
     /// <summary>
+    /// Toggles an element by automation id.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_toggle")]
+    [Description("Toggle an element by automationId in the open session.")]
+    public Task<CallToolResult> Toggle(
+        [Description("Target automation id.")] string automationId,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .ToggleAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Types literal text into an element by automation id.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="text">Literal text (no chord DSL).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_send_keys")]
+    [Description("sendKeys (literal text) to an element by automationId in the open session.")]
+    public Task<CallToolResult> SendKeys(
+        [Description("Target automation id.")] string automationId,
+        [Description("Literal text to type.")] string text,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .SendKeysAsync(text, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject { ["automationId"] = automationId, ["text"] = text }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Expects an element's tree name.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>

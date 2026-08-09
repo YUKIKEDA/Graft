@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Graft Sample WPF App"
-        Height="320"
+        Height="420"
         Width="480">
     <StackPanel Margin="24" VerticalAlignment="Center">
         <TextBlock x:Name="StatusText"
@@ -22,6 +22,25 @@
                 Content="Click Me"
                 Padding="12,6"
                 HorizontalAlignment="Left"
+                Margin="0,0,0,16"
                 Click="SampleButton_OnClick" />
+        <CheckBox x:Name="SampleCheckBox"
+                  AutomationProperties.AutomationId="SampleCheckBox"
+                  Content="Off"
+                  Margin="0,0,0,16"
+                  Checked="SampleCheckBox_OnChecked"
+                  Unchecked="SampleCheckBox_OnUnchecked" />
+        <Border x:Name="SampleMouseTarget"
+                AutomationProperties.AutomationId="SampleMouseTarget"
+                AutomationProperties.Name="MouseReady"
+                Background="#FFDDDDDD"
+                Height="36"
+                Margin="0,0,0,8"
+                Cursor="Hand"
+                MouseLeftButtonDown="SampleMouseTarget_OnMouseLeftButtonDown">
+            <TextBlock Text="Mouse target"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center" />
+        </Border>
     </StackPanel>
 </Window>

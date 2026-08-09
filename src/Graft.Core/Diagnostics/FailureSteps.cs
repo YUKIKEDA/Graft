@@ -14,6 +14,12 @@ public static class FailureSteps
     /// <summary>setValue action failed.</summary>
     public const string SetValue = "setValue";
 
+    /// <summary>toggle action failed.</summary>
+    public const string Toggle = "toggle";
+
+    /// <summary>sendKeys action failed.</summary>
+    public const string SendKeys = "sendKeys";
+
     /// <summary>Expect on element name failed or timed out.</summary>
     public const string ExpectName = "expectName";
 }

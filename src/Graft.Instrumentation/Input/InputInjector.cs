@@ -1,0 +1,163 @@
+using System.Runtime.InteropServices;
+using Graft.Instrumentation.Actions;
+using Graft.Protocol;
+
+namespace Graft.Instrumentation.Input;
+
+#if GRAFT_TEST
+
+/// <summary>
+/// Win32 <c>SendInput</c> helpers for mouse click and Unicode text (agent-side).
+/// </summary>
+public static class InputInjector
+{
+    /// <summary>
+    /// Attempts to bring <paramref name="windowHandle"/> to the foreground.
+    /// </summary>
+    /// <param name="windowHandle">HWND.</param>
+    public static void SetForegroundWindow(IntPtr windowHandle)
+    {
+        if (windowHandle == IntPtr.Zero)
+        {
+            return;
+        }
+
+        NativeMethods.SetForegroundWindow(windowHandle);
+    }
+
+    /// <summary>
+    /// Moves the cursor to screen coordinates and performs a left click.
+    /// </summary>
+    /// <param name="screenX">Screen X in pixels.</param>
+    /// <param name="screenY">Screen Y in pixels.</param>
+    public static void LeftClick(int screenX, int screenY)
+    {
+        if (!NativeMethods.SetCursorPos(screenX, screenY))
+        {
+            throw CreateFailed($"SetCursorPos failed at ({screenX},{screenY}).");
+        }
+
+        var screenWidth = Math.Max(1, NativeMethods.GetSystemMetrics(NativeMethods.SmCxScreen));
+        var screenHeight = Math.Max(1, NativeMethods.GetSystemMetrics(NativeMethods.SmCyScreen));
+        var absX = (int)Math.Round(screenX * 65535.0 / (screenWidth - 1));
+        var absY = (int)Math.Round(screenY * 65535.0 / (screenHeight - 1));
+
+        const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute;
+        var inputs = new NativeMethods.INPUT[]
+        {
+            CreateMouse(absX, absY, moveAbsolute | NativeMethods.MouseEventFLeftDown),
+            CreateMouse(absX, absY, moveAbsolute | NativeMethods.MouseEventFLeftUp),
+        };
+
+        Send(inputs);
+    }
+
+    /// <summary>
+    /// Types <paramref name="text"/> via Unicode key events (no chord DSL).
+    /// </summary>
+    /// <param name="text">Literal text to type (may be empty).</param>
+    public static void TypeText(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        if (text.Length == 0)
+        {
+            return;
+        }
+
+        var inputs = new NativeMethods.INPUT[text.Length * 2];
+        var index = 0;
+        foreach (var ch in text)
+        {
+            inputs[index++] = CreateUnicodeKey(ch, keyUp: false);
+            inputs[index++] = CreateUnicodeKey(ch, keyUp: true);
+        }
+
+        Send(inputs);
+    }
+
+    /// <summary>
+    /// Sends Ctrl+A then Delete (select-all + clear) via virtual keys.
+    /// </summary>
+    public static void SelectAllAndDelete()
+    {
+        var inputs = new NativeMethods.INPUT[]
+        {
+            CreateVk(NativeMethods.VkControl, keyUp: false),
+            CreateVk(NativeMethods.VkA, keyUp: false),
+            CreateVk(NativeMethods.VkA, keyUp: true),
+            CreateVk(NativeMethods.VkControl, keyUp: true),
+            CreateVk(NativeMethods.VkDelete, keyUp: false),
+            CreateVk(NativeMethods.VkDelete, keyUp: true),
+        };
+        Send(inputs);
+    }
+
+    private static void Send(NativeMethods.INPUT[] inputs)
+    {
+        var sent = NativeMethods.SendInput(
+            (uint)inputs.Length,
+            inputs,
+            Marshal.SizeOf<NativeMethods.INPUT>()
+        );
+        if (sent != inputs.Length)
+        {
+            throw CreateFailed(
+                $"SendInput injected {sent}/{inputs.Length} events (Win32={Marshal.GetLastWin32Error()})."
+            );
+        }
+    }
+
+    private static NativeMethods.INPUT CreateMouse(int absX, int absY, uint flags) =>
+        new()
+        {
+            Type = NativeMethods.InputMouse,
+            Data = new NativeMethods.InputUnion
+            {
+                Mouse = new NativeMethods.MOUSEINPUT
+                {
+                    Dx = absX,
+                    Dy = absY,
+                    DwFlags = flags,
+                },
+            },
+        };
+
+    private static NativeMethods.INPUT CreateUnicodeKey(char ch, bool keyUp) =>
+        new()
+        {
+            Type = NativeMethods.InputKeyboard,
+            Data = new NativeMethods.InputUnion
+            {
+                Keyboard = new NativeMethods.KEYBDINPUT
+                {
+                    WVk = 0,
+                    WScan = ch,
+                    DwFlags =
+                        NativeMethods.KeyEventFUnicode | (keyUp ? NativeMethods.KeyEventFKeyUp : 0),
+                },
+            },
+        };
+
+    private static NativeMethods.INPUT CreateVk(byte vk, bool keyUp)
+    {
+        var scan = (ushort)NativeMethods.MapVirtualKey(vk, NativeMethods.MapVkToVsc);
+        return new NativeMethods.INPUT
+        {
+            Type = NativeMethods.InputKeyboard,
+            Data = new NativeMethods.InputUnion
+            {
+                Keyboard = new NativeMethods.KEYBDINPUT
+                {
+                    WVk = vk,
+                    WScan = scan,
+                    DwFlags = keyUp ? NativeMethods.KeyEventFKeyUp : 0,
+                },
+            },
+        };
+    }
+
+    private static ElementActionException CreateFailed(string message) =>
+        new(GraftErrorCodes.ActionFailed, message);
+}
+
+#endif

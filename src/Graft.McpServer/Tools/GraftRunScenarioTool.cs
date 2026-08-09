@@ -26,7 +26,7 @@ public static class GraftRunScenarioTool
     /// </returns>
     [McpServerTool(Name = "graft_run_scenario")]
     [Description(
-        "Run a Graft Scenario JSON (launch/invoke/setValue/expectName). Provide either scenarioJson or scenarioPath. Optional appPath overrides launch.appPath."
+        "Run a Graft Scenario JSON (launch/invoke/setValue/toggle/sendKeys/expectName). Provide either scenarioJson or scenarioPath. Optional appPath overrides launch.appPath."
     )]
     public static async Task<CallToolResult> RunScenario(
         [Description("Scenario JSON document text.")] string? scenarioJson = null,

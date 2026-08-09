@@ -16,6 +16,8 @@ public static class AgentServices
     private static IElementResolver? _elementResolver;
     private static IElementInvoker? _elementInvoker;
     private static IElementValueSetter? _elementValueSetter;
+    private static IElementToggler? _elementToggler;
+    private static IElementKeySender? _elementKeySender;
 
     /// <summary>
     /// Gets the registered UI tree provider, if any.
@@ -41,6 +43,16 @@ public static class AgentServices
     /// Gets the registered element value setter, if any.
     /// </summary>
     public static IElementValueSetter? ElementValueSetter => _elementValueSetter;
+
+    /// <summary>
+    /// Gets the registered element toggler, if any.
+    /// </summary>
+    public static IElementToggler? ElementToggler => _elementToggler;
+
+    /// <summary>
+    /// Gets the registered element key sender, if any.
+    /// </summary>
+    public static IElementKeySender? ElementKeySender => _elementKeySender;
 
     /// <summary>
     /// Registers the UI tree provider used for <c>getTree</c>.
@@ -93,6 +105,26 @@ public static class AgentServices
     }
 
     /// <summary>
+    /// Registers the element toggler used for <c>toggle</c>.
+    /// </summary>
+    /// <param name="toggler">Framework-specific toggler.</param>
+    public static void RegisterElementToggler(IElementToggler toggler)
+    {
+        ArgumentNullException.ThrowIfNull(toggler);
+        _elementToggler = toggler;
+    }
+
+    /// <summary>
+    /// Registers the element key sender used for <c>sendKeys</c>.
+    /// </summary>
+    /// <param name="keySender">Framework-specific key sender.</param>
+    public static void RegisterElementKeySender(IElementKeySender keySender)
+    {
+        ArgumentNullException.ThrowIfNull(keySender);
+        _elementKeySender = keySender;
+    }
+
+    /// <summary>
     /// Clears registered services (tests).
     /// </summary>
     public static void Reset()
@@ -102,6 +134,8 @@ public static class AgentServices
         _elementResolver = null;
         _elementInvoker = null;
         _elementValueSetter = null;
+        _elementToggler = null;
+        _elementKeySender = null;
     }
 }
 

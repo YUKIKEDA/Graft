@@ -76,11 +76,8 @@ internal sealed class WpfElementInvoker : IElementInvoker
             return;
         }
 
-        // SendInput fallback is deferred; surface a stable failure for unsupported types.
-        throw new ElementActionException(
-            GraftErrorCodes.ActionFailed,
-            $"Invoke is not supported for control type '{resolved.ControlType}' (SendInput fallback not implemented)."
-        );
+        // Native / Peer failed — SendInput click (project.md Q40 / Q52).
+        WpfInputInjection.LeftClickElement(element);
     }
 
     private static bool TryInvokeViaAutomationPeer(FrameworkElement element)

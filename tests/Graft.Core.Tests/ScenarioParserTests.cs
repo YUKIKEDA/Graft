@@ -82,6 +82,41 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// toggle / sendKeys steps compile with expected fields.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with launch + toggle + sendKeys
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - ToggleOperation and SendKeysOperation with matching fields
+    /// </remarks>
+    [Fact]
+    public void Parse_ToggleAndSendKeys_CompileOperations()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "toggle", "automationId": "SampleCheckBox" },
+                { "action": "sendKeys", "automationId": "SampleTextBox", "text": "abc" }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var toggle = Assert.IsType<ToggleOperation>(scenario.Operations[1]);
+        Assert.Equal("SampleCheckBox", toggle.AutomationId);
+        var sendKeys = Assert.IsType<SendKeysOperation>(scenario.Operations[2]);
+        Assert.Equal("SampleTextBox", sendKeys.AutomationId);
+        Assert.Equal("abc", sendKeys.Text);
+    }
+
+    /// <summary>
     /// Unknown action fails with action.failed.
     /// </summary>
     /// <remarks>

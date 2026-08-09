@@ -20,24 +20,28 @@ public sealed class WpfUiCaptureTests
     private static readonly byte[] PngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
     /// <summary>
-    /// GetTree, screenshot, resolve, invoke, and setValue succeed against a Sample-like window.
+    /// GetTree, screenshot, resolve, invoke, setValue, toggle, SendInput invoke succeed.
     /// </summary>
     /// <remarks>
     /// Preconditions:
     /// - STA thread; single Application for this method
-    /// - Window with SampleButton / StatusText / SampleTextBox is shown as MainWindow
+    /// - Window with Sample controls is shown as MainWindow
     /// - WpfGraft.Use registered
     ///
     /// Steps:
     /// - Call GetTree / screenshot / resolve as before
     /// - Invoke SampleButton then GetTree StatusText
     /// - setValue SampleTextBox then GetTree name
+    /// - Toggle SampleCheckBox then expect name On
+    /// - Invoke SampleMouseTarget (SendInput fallback) then StatusText MouseHit
     /// - Invoke a disabled button
     ///
     /// Expected:
     /// - SampleButton name/bounds and PNG signature as before
     /// - After invoke, StatusText name is "Clicked 1"
     /// - After setValue, SampleTextBox name matches the set text
+    /// - After toggle, SampleCheckBox name is On
+    /// - After mouse-target invoke, StatusText is MouseHit
     /// - Disabled button → element.notActionable
     /// </remarks>
     [StaFact]
@@ -121,6 +125,22 @@ public sealed class WpfUiCaptureTests
             Assert.NotNull(textBoxNode);
             Assert.Equal(typed, textBoxNode.Name);
 
+            var toggler =
+                AgentServices.ElementToggler
+                ?? throw new InvalidOperationException("Element toggler was not registered.");
+            toggler.Toggle(new ElementSelector { AutomationId = "SampleCheckBox" });
+            var afterToggle = treeProvider.GetTree(new GetTreeOptions());
+            var checkBoxNode = FindByAutomationId(afterToggle.Root, "SampleCheckBox");
+            Assert.NotNull(checkBoxNode);
+            Assert.Equal("On", checkBoxNode.Name);
+
+            // Border has no Invoke pattern — exercises SendInput click fallback.
+            invoker.Invoke(new ElementSelector { AutomationId = "SampleMouseTarget" });
+            var afterMouse = treeProvider.GetTree(new GetTreeOptions());
+            var statusAfterMouse = FindByAutomationId(afterMouse.Root, "StatusText");
+            Assert.NotNull(statusAfterMouse);
+            Assert.Equal("MouseHit", statusAfterMouse.Name);
+
             var disabled = new Button { Content = "Nope", IsEnabled = false };
             AutomationProperties.SetAutomationId(disabled, "DisabledButton");
             ((StackPanel)window.Content).Children.Add(disabled);
@@ -176,16 +196,37 @@ public sealed class WpfUiCaptureTests
             status.Text = $"Clicked {clickCount}";
         };
 
+        var checkBox = new CheckBox { Content = "Off" };
+        AutomationProperties.SetAutomationId(checkBox, "SampleCheckBox");
+        checkBox.Checked += (_, _) => checkBox.Content = "On";
+        checkBox.Unchecked += (_, _) => checkBox.Content = "Off";
+
+        var mouseTarget = new Border
+        {
+            Background = System.Windows.Media.Brushes.LightGray,
+            Height = 36,
+            Focusable = true,
+        };
+        AutomationProperties.SetAutomationId(mouseTarget, "SampleMouseTarget");
+        AutomationProperties.SetName(mouseTarget, "MouseReady");
+        mouseTarget.MouseLeftButtonDown += (_, _) =>
+        {
+            status.Text = "MouseHit";
+            AutomationProperties.SetName(mouseTarget, "MouseHit");
+        };
+
         var panel = new StackPanel { Margin = new Thickness(24) };
         panel.Children.Add(status);
         panel.Children.Add(textBox);
         panel.Children.Add(button);
+        panel.Children.Add(checkBox);
+        panel.Children.Add(mouseTarget);
 
         return new Window
         {
             Title = "Graft Sample WPF App",
             Width = 480,
-            Height = 320,
+            Height = 420,
             Content = panel,
         };
     }
