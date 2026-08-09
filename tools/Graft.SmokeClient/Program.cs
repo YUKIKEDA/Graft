@@ -194,10 +194,20 @@ static async Task<TreeNode> WaitForStatusTextAsync(
                 return status;
             }
 
-            var message = status is null
-                ? $"Element '{TreeSearch.StatusTextAutomationId}' was not in the tree yet."
-                : $"StatusText name was '{status.Name}', expected '{expectedName}'.";
-            last = new SmokeException(GraftErrorCodes.ExpectFailed, message);
+            if (status is null)
+            {
+                last = new SmokeException(
+                    GraftErrorCodes.ElementNotFound,
+                    $"Element '{TreeSearch.StatusTextAutomationId}' was not in the tree yet."
+                );
+            }
+            else
+            {
+                last = new SmokeException(
+                    GraftErrorCodes.ExpectFailed,
+                    $"StatusText name was '{status.Name}', expected '{expectedName}'."
+                );
+            }
         }
         catch (SmokeException ex) when (IsRetryableStatusError(ex.Code))
         {
