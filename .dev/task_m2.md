@@ -26,14 +26,14 @@
 
 ## Batch 1 — パイプクライアント + Handshake / Connect（ブランチ: `m2/batch-1-pipe-client`）
 
-- [ ] SmokeClient の接続ロジックを Core に昇格（`AgentConnection` 等）。Protocol の `FrameIO` / `JsonMessageCodec` を再利用
-- [ ] 低レベル API: `ConnectAsync(pipeName, token, timeout)` → Handshake 成功まで
-- [ ] ワイヤ RPC 薄いラッパ: 最低 `getTree` / `invoke`（後続 Batch で使う）。`screenshot` / `setValue` は任意
-- [ ] 失敗時は安定 `GraftErrorCodes` を載せた例外（`GraftException` 等）。新規コードは Protocol に足す場合のみ
-- [ ] 単体: 既存 Instrumentation Agent（fake or 実パイプ）への Handshake + 1 RPC
+- [x] SmokeClient 相当を Core に追加（`AgentConnection`）。Protocol の `FrameIO` / `JsonMessageCodec` を再利用
+- [x] 低レベル API: `Application.ConnectAsync` / `AgentConnection.ConnectAsync` → Handshake 成功まで
+- [x] ワイヤ RPC: `getTree` / `invoke`（`screenshot` / `setValue` は見送り）
+- [x] 失敗時は `GraftException` + 安定 `GraftErrorCodes`
+- [x] 単体: Instrumentation Agent + fake provider で Handshake + getTree / invoke / 拒否トークン
 
 **完了条件:** Core から Handshake + getTree（または invoke）が通る。Launch はまだ不要。  
-**確認:** `dotnet test tests/Graft.Core.Tests --filter Connect`（名前は実装時に確定）  
+**確認:** `dotnet test tests/Graft.Core.Tests --filter Connect`  
 **次:** レビュー OK なら Batch 2（Launch）へ。
 
 ---
