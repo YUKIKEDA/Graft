@@ -21,9 +21,9 @@
 
 ## Batch 1 — Core が FailureReport を発行（ブランチ: `phase2/batch-1-failure-report-emit`）
 
-- [ ] `ExpectNameAsync` / `InvokeAsync` / `SetValueAsync` 失敗時に `GraftException` へレポートを載せられる（`Details` または専用例外）
-- [ ] デフォルト添付の土台: 対象セレクタ + 期待/実際 + タイムアウトフラグ（操作ログ・スクショは Batch 2）
-- [ ] テスト: 誤 Expect でレポートフィールドが埋まる
+- [x] `ExpectNameAsync` / `InvokeAsync` / `SetValueAsync`（および Wait）失敗時に `GraftException.Report` へ載せられる
+- [x] デフォルト添付の土台: 対象セレクタ + 期待/実際 + タイムアウトフラグ（操作ログ・スクショは Batch 2）
+- [x] テスト: 誤 Expect でレポートフィールドが埋まる（`WaitActionTests`）
 
 **完了条件:** 失敗 1 件で最小診断がプログラムから読める。  
 **次:** Batch 2（添付拡充）または Batch 3（Scenario）へ。
