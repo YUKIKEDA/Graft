@@ -1,6 +1,8 @@
 # Graft — Agent notes
 
-In-process UI testing for WPF & AvaloniaUI. Design source of truth: `.dev/project.md`. M0 breakdown: `.dev/task_m0.md`.
+In-process UI testing for WPF & AvaloniaUI. Design source of truth: `.dev/project.md`. M0/M1/M2: `.dev/task_m0.md` / `task_m1.md` / `task_m2.md`.
+
+**Consumer usage example:** `tests/sample-apps/SampleWpfApp.Tests` (see `.dev/graft-core.md`).
 
 ## Tooling (must follow)
 
@@ -20,6 +22,7 @@ In-process UI testing for WPF & AvaloniaUI. Design source of truth: `.dev/projec
 dotnet tool restore
 dotnet csharpier format .
 dotnet build Graft.slnx
+dotnet test tests/sample-apps/SampleWpfApp.Tests
 ```
 
 ## Commit style (summary)

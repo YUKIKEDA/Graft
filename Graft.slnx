@@ -15,6 +15,7 @@
   </Folder>
   <Folder Name="/tests/sample-apps/">
     <Project Path="tests/sample-apps/SampleWpfApp/SampleWpfApp.csproj" />
+    <Project Path="tests/sample-apps/SampleWpfApp.Tests/SampleWpfApp.Tests.csproj" />
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/Graft.SmokeClient/Graft.SmokeClient.csproj" />
