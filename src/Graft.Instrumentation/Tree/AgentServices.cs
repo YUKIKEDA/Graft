@@ -1,3 +1,4 @@
+using Graft.Instrumentation.Elements;
 using Graft.Instrumentation.Screenshot;
 
 namespace Graft.Instrumentation.Tree;
@@ -11,6 +12,7 @@ public static class AgentServices
 {
     private static IUiTreeProvider? _treeProvider;
     private static IScreenshotProvider? _screenshotProvider;
+    private static IElementResolver? _elementResolver;
 
     /// <summary>
     /// Gets the registered UI tree provider, if any.
@@ -21,6 +23,11 @@ public static class AgentServices
     /// Gets the registered screenshot provider, if any.
     /// </summary>
     public static IScreenshotProvider? ScreenshotProvider => _screenshotProvider;
+
+    /// <summary>
+    /// Gets the registered element resolver, if any.
+    /// </summary>
+    public static IElementResolver? ElementResolver => _elementResolver;
 
     /// <summary>
     /// Registers the UI tree provider used for <c>getTree</c>.
@@ -43,12 +50,23 @@ public static class AgentServices
     }
 
     /// <summary>
+    /// Registers the element resolver used for invoke / setValue.
+    /// </summary>
+    /// <param name="resolver">Framework-specific resolver.</param>
+    public static void RegisterElementResolver(IElementResolver resolver)
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+        _elementResolver = resolver;
+    }
+
+    /// <summary>
     /// Clears registered services (tests).
     /// </summary>
     public static void Reset()
     {
         _treeProvider = null;
         _screenshotProvider = null;
+        _elementResolver = null;
     }
 }
 
