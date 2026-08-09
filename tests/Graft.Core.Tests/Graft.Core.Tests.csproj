@@ -17,5 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Graft.Core\Graft.Core.csproj" />
+    <!-- Integration tests host the in-process agent against Core's pipe client. -->
+    <ProjectReference Include="..\..\src\Graft.Instrumentation\Graft.Instrumentation.csproj" />
   </ItemGroup>
 </Project>
