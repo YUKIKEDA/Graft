@@ -48,4 +48,17 @@ public sealed class FailureReportSelector
             NearAutomationId = selector.NearAutomationId,
         };
     }
+
+    /// <summary>
+    /// Creates a live <see cref="Selector"/> from this snapshot.
+    /// </summary>
+    /// <returns>A selector with the same criteria.</returns>
+    public Selector ToSelector() =>
+        new()
+        {
+            AutomationId = AutomationId,
+            Name = Name,
+            ControlType = ControlType,
+            NearAutomationId = NearAutomationId,
+        };
 }

@@ -14,6 +14,8 @@ public sealed class ElementQuery
     private readonly Selector _selector;
     private readonly WaitOptions _waitOptions;
     private readonly OperationLog _operationLog;
+    private Selector _effectiveSelector;
+    private bool _healApplied;
 
     internal ElementQuery(
         AgentConnection connection,
@@ -24,6 +26,7 @@ public sealed class ElementQuery
     {
         _connection = connection;
         _selector = selector;
+        _effectiveSelector = selector;
         _waitOptions = waitOptions;
         _operationLog = operationLog;
     }
@@ -234,7 +237,7 @@ public sealed class ElementQuery
             {
                 var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
                 lastRoot = tree.Root;
-                var node = TreeSelector.Resolve(tree.Root, _selector);
+                var node = ResolveNode(tree.Root);
                 sawElement = true;
                 if (string.Equals(node.Name, expectedName, StringComparison.Ordinal))
                 {
@@ -307,7 +310,7 @@ public sealed class ElementQuery
             {
                 var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
                 lastRoot = tree.Root;
-                var node = TreeSelector.Resolve(tree.Root, _selector);
+                var node = ResolveNode(tree.Root);
                 if (node.Enabled && node.Visible)
                 {
                     return node;
@@ -401,6 +404,16 @@ public sealed class ElementQuery
             screenshotPath = null;
         }
 
+        IReadOnlyList<HealingCandidate>? healingCandidates = null;
+        if (tree is not null)
+        {
+            var proposed = SelectorHealer.ProposeCandidates(tree, _selector);
+            if (proposed.Count > 0)
+            {
+                healingCandidates = proposed;
+            }
+        }
+
         var recent = _operationLog.Snapshot();
         return new GraftException(
             code,
@@ -415,9 +428,56 @@ public sealed class ElementQuery
                 RecentOperations = recent.Count == 0 ? null : recent,
                 Tree = tree,
                 ScreenshotPath = screenshotPath,
+                HealingCandidates = healingCandidates,
             },
             innerException
         );
+    }
+
+    private TreeNode ResolveNode(TreeNode root)
+    {
+        try
+        {
+            return TreeSelector.Resolve(root, _effectiveSelector);
+        }
+        catch (GraftException ex) when (ex.Code == GraftErrorCodes.ElementNotFound && !_healApplied)
+        {
+            if (!SelectorHealer.TryGetAutoHeal(root, _effectiveSelector, out var healed))
+            {
+                throw;
+            }
+
+            _effectiveSelector = healed;
+            _healApplied = true;
+            _operationLog.Record("heal", DescribeSelector(healed));
+            return TreeSelector.Resolve(root, _effectiveSelector);
+        }
+    }
+
+    private static string DescribeSelector(Selector selector)
+    {
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(selector.AutomationId))
+        {
+            parts.Add($"automationId={selector.AutomationId}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(selector.Name))
+        {
+            parts.Add($"name={selector.Name}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(selector.ControlType))
+        {
+            parts.Add($"controlType={selector.ControlType}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(selector.NearAutomationId))
+        {
+            parts.Add($"near={selector.NearAutomationId}");
+        }
+
+        return string.Join(',', parts);
     }
 
     private static TimeSpan PositiveOrDefault(TimeSpan value, TimeSpan fallback) =>

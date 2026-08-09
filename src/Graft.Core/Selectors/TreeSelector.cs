@@ -75,11 +75,18 @@ public static class TreeSelector
         ArgumentNullException.ThrowIfNull(node);
         ArgumentNullException.ThrowIfNull(selector);
 
+        // AutomationId is hard when specified: a stale id must fail closed so Phase 4
+        // self-heal can recover via relaxed Name / ControlType / Near criteria.
+        if (!string.IsNullOrWhiteSpace(selector.AutomationId))
+        {
+            if (!string.Equals(node.AutomationId, selector.AutomationId, StringComparison.Ordinal))
+            {
+                return 0;
+            }
+        }
+
         var score = 0;
-        if (
-            !string.IsNullOrWhiteSpace(selector.AutomationId)
-            && string.Equals(node.AutomationId, selector.AutomationId, StringComparison.Ordinal)
-        )
+        if (!string.IsNullOrWhiteSpace(selector.AutomationId))
         {
             score += SelectorWeights.AutomationId;
         }

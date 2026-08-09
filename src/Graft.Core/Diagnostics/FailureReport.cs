@@ -60,4 +60,10 @@ public sealed class FailureReport
     /// </summary>
     [JsonPropertyName("screenshotPath")]
     public string? ScreenshotPath { get; init; }
+
+    /// <summary>
+    /// Gets ranked alternate selectors suggested when the intended selector failed (Phase 4).
+    /// </summary>
+    [JsonPropertyName("healingCandidates")]
+    public IReadOnlyList<HealingCandidate>? HealingCandidates { get; init; }
 }

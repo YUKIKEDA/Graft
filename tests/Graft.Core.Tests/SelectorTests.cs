@@ -127,6 +127,36 @@ public sealed class SelectorTests
     }
 
     /// <summary>
+    /// A specified AutomationId that does not match hard-fails even when Name/Near match.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Sample tree with Click Me under Main
+    ///
+    /// Steps:
+    /// - Resolve with wrong AutomationId plus correct Name and NearAutomationId
+    ///
+    /// Expected:
+    /// - element.notFound (Phase 4: AutomationId is hard when present)
+    /// </remarks>
+    [Fact]
+    public void Resolve_WrongAutomationId_WithMatchingNameNear_ThrowsElementNotFound()
+    {
+        var ex = Assert.Throws<GraftException>(() =>
+            TreeSelector.Resolve(
+                SampleTree(),
+                new Selector
+                {
+                    AutomationId = "Gone",
+                    Name = "Click Me",
+                    NearAutomationId = "Main",
+                }
+            )
+        );
+        Assert.Equal(GraftErrorCodes.ElementNotFound, ex.Code);
+    }
+
+    /// <summary>
     /// Empty selector is selector.invalid.
     /// </summary>
     /// <remarks>
