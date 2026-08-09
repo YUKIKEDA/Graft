@@ -7,7 +7,7 @@ namespace Graft.Core.Scenario;
 /// Parses Scenario JSON (exchange form) into a compiled <see cref="ScenarioDocument"/>.
 /// </summary>
 /// <remarks>
-/// JSON Schema: <c>.dev/scenario.schema.json</c>. Execution is Batch 4.
+/// JSON Schema: <c>.dev/scenario.schema.json</c>. Execute with <see cref="ScenarioRunner"/>.
 /// </remarks>
 public static class ScenarioJson
 {

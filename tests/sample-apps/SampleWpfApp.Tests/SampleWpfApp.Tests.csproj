@@ -20,4 +20,9 @@
     <!-- Consumer test projects reference Graft.Core only (not Instrumentation). -->
     <ProjectReference Include="..\..\..\src\Graft.Core\Graft.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="Scenarios\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

@@ -1,7 +1,7 @@
 namespace Graft.Core.Scenario;
 
 /// <summary>
-/// Compiled Scenario: versioned document ready for the Batch 4 runner.
+/// Compiled Scenario: versioned document ready for <see cref="ScenarioRunner"/>.
 /// </summary>
 public sealed class ScenarioDocument
 {
