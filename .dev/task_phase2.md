@@ -10,9 +10,9 @@
 
 ## Batch 0 — 失敗診断の契約（モデルのみ）（ブランチ: `phase2/batch-0-failure-report-schema`）
 
-- [ ] `FailureReport`（仮名）: 失敗ステップ、期待、実際、タイムアウト有無、対象セレクタ（project.md 必須最小）
-- [ ] Protocol または Core に JSON シリアライズ可能な型 + 単体往復テスト
-- [ ] エージェント常時添付はしない（既存方針）。Core が Expect/アクション失敗時に組み立てる前提を文書化
+- [x] `FailureReport`: 失敗ステップ、期待、実際、タイムアウト有無、対象セレクタ（project.md 必須最小）— `Graft.Core.Diagnostics`
+- [x] Core に JSON シリアライズ可能な型 + 単体往復テスト（`FailureReportJson` / `FailureReportTests`）
+- [x] エージェント常時添付はしない（既存方針）。Core が Expect/アクション失敗時に組み立てる前提を文書化（型 remarks + `graft-core.md`）
 
 **完了条件:** スキーマ型とテストがある。まだ自動添付しなくてよい。  
 **次:** Batch 1（Core 発行）へ。
