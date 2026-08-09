@@ -1,5 +1,7 @@
 using System.IO.Pipes;
 using System.Text.Json;
+using Graft.Instrumentation.Actions;
+using Graft.Instrumentation.Elements;
 using Graft.Instrumentation.Screenshot;
 using Graft.Instrumentation.Tree;
 using Graft.Protocol;
@@ -230,6 +232,11 @@ internal sealed class AgentPipeServer : IDisposable
             return HandleScreenshot(request);
         }
 
+        if (request.Method == ProtocolMethods.Invoke)
+        {
+            return (HandleInvoke(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
         return (
             Error(
                 request.Id,
@@ -312,6 +319,65 @@ internal sealed class AgentPipeServer : IDisposable
                 BinaryFollowUp: null
             );
         }
+    }
+
+    private static ResponseMessage HandleInvoke(RequestMessage request)
+    {
+        var invoker = AgentServices.ElementInvoker;
+        if (invoker is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No element invoker is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var selector = ReadElementSelector(request.Params);
+            invoker.Invoke(selector);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ElementSelector ReadElementSelector(JsonElement? paramsElement)
+    {
+        string? automationId = null;
+        int? runtimeId = null;
+
+        if (paramsElement is { } element && element.ValueKind == JsonValueKind.Object)
+        {
+            if (
+                element.TryGetProperty("automationId", out var automationIdProperty)
+                && automationIdProperty.ValueKind == JsonValueKind.String
+            )
+            {
+                automationId = automationIdProperty.GetString();
+            }
+
+            if (
+                element.TryGetProperty("runtimeId", out var runtimeIdProperty)
+                && runtimeIdProperty.TryGetInt32(out var id)
+            )
+            {
+                runtimeId = id;
+            }
+        }
+
+        return new ElementSelector { AutomationId = automationId, RuntimeId = runtimeId };
     }
 
     private static GetTreeOptions ReadGetTreeOptions(JsonElement? paramsElement)

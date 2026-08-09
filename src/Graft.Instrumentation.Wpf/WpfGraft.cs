@@ -10,7 +10,7 @@ public static class WpfGraft
     private static int _registered;
 
     /// <summary>
-    /// Registers WPF providers for <c>getTree</c>, <c>screenshot</c>, and element resolve.
+    /// Registers WPF providers for tree, screenshot, resolve, and invoke.
     /// </summary>
     /// <remarks>
     /// Call once before <see cref="Agent.Start"/> (typically from <c>OnStartup</c>).
@@ -25,6 +25,7 @@ public static class WpfGraft
         AgentServices.RegisterTreeProvider(new WpfUiTreeProvider());
         AgentServices.RegisterScreenshotProvider(new WpfScreenshotProvider());
         AgentServices.RegisterElementResolver(new WpfElementResolver());
+        AgentServices.RegisterElementInvoker(new WpfElementInvoker());
     }
 
     /// <summary>

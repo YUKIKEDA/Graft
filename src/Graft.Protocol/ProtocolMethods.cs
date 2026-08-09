@@ -20,4 +20,9 @@ public static class ProtocolMethods
     /// Captures a window screenshot: JSON meta result followed by a raw PNG frame.
     /// </summary>
     public const string Screenshot = "screenshot";
+
+    /// <summary>
+    /// Invokes an element (e.g. button click) selected by <c>params.automationId</c>.
+    /// </summary>
+    public const string Invoke = "invoke";
 }

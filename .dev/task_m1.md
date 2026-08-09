@@ -50,16 +50,17 @@
 
 ---
 
-## Batch 3 — `invoke`（ボタンクリック）
+## Batch 3 — `invoke`（ボタンクリック）（ブランチ: `m1/batch-3-invoke`）
 
-- [ ] wire method: `invoke`、params にセレクタ（例 `{ "automationId": "SampleButton" }`）
-- [ ] WPF Button: ネイティブ（`IInvokeProvider` / `RaiseEvent` 等）優先。失敗時 Peer → SendInput は口だけ or 最小フォールバック
-- [ ] ディスパッチャへマーシャリング。操作パイプラインは直列（既存パイプループで十分）
-- [ ] actionable でない場合は `element.notActionable`（簡易: `IsEnabled` / `IsVisible`）
-- [ ] テスト: invoke 後に `StatusText` の name（または Text）が `Clicked 1` になることを GetTree で確認
+- [x] wire method: `invoke`、params にセレクタ（`{ "automationId": "..." }`, 任意 `runtimeId`）
+- [x] WPF: `IInvokeProvider` 優先、だめなら `ButtonBase.Click` RaiseEvent。SendInput は未実装で `action.failed`
+- [x] ディスパッチャへマーシャリング（直列パイプ処理のまま）
+- [x] actionable でない場合は `element.notActionable`（`IsEnabled` / `IsVisible`）
+- [x] テスト: invoke 後 StatusText が `Clicked 1`（STA）+ ワイヤ fake ディスパッチ
 
 **完了条件:** Handshake → invoke(SampleButton) → GetTree で StatusText 変化が検証できる。  
-**確認:** `dotnet test tests/Graft.Instrumentation.Wpf.Tests`
+**確認:** `dotnet test tests/Graft.Instrumentation.Wpf.Tests` / `dotnet test tests/Graft.Instrumentation.Tests --filter Invoke`  
+**次:** レビュー OK なら Batch 4（SmokeClient）へ。
 
 ---
 
