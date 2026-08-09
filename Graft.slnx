@@ -4,6 +4,7 @@
     <Project Path="src/Graft.Instrumentation.Analyzer/Graft.Instrumentation.Analyzer.csproj" />
     <Project Path="src/Graft.Instrumentation.Wpf/Graft.Instrumentation.Wpf.csproj" />
     <Project Path="src/Graft.Instrumentation/Graft.Instrumentation.csproj" />
+    <Project Path="src/Graft.McpServer/Graft.McpServer.csproj" />
     <Project Path="src/Graft.Protocol/Graft.Protocol.csproj" />
   </Folder>
   <Folder Name="/tests/">
@@ -11,6 +12,7 @@
     <Project Path="tests/Graft.Instrumentation.Analyzer.Tests/Graft.Instrumentation.Analyzer.Tests.csproj" />
     <Project Path="tests/Graft.Instrumentation.Tests/Graft.Instrumentation.Tests.csproj" />
     <Project Path="tests/Graft.Instrumentation.Wpf.Tests/Graft.Instrumentation.Wpf.Tests.csproj" />
+    <Project Path="tests/Graft.McpServer.Tests/Graft.McpServer.Tests.csproj" />
     <Project Path="tests/Graft.Protocol.Tests/Graft.Protocol.Tests.csproj" />
   </Folder>
   <Folder Name="/tests/sample-apps/">
