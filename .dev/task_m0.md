@@ -105,23 +105,24 @@
 
 ---
 
-## Batch 7 — SmokeClient（M0 受け入れ）
+## Batch 7 — SmokeClient（M0 受け入れ）（ブランチ: `m0/batch-7-smoke-client`）
 
-- [ ] Launch モード（環境変数付与して Sample 起動 → Handshake → GetTree）
-- [ ] Connect モード（手起動済みへ接続）
-- [ ] SampleButton を見つけて name/bounds を表示して終了コード 0
-- [ ] 失敗時は安定エラーコードを出して非 0
+- [x] Launch モード（環境変数付与して Sample 起動 → Handshake → GetTree）
+- [x] Connect モード（手起動済みへ接続）
+- [x] SampleButton を見つけて name/bounds を表示して終了コード 0
+- [x] 失敗時は安定エラーコードを出して非 0
 
-**完了条件:** SmokeClient Launch 一本で M0 受け入れを再現できる。
+**完了条件:** SmokeClient Launch 一本で M0 受け入れを再現できる。  
+**確認:** `dotnet run --project tools/Graft.SmokeClient -- launch`
 
 ---
 
 ## M0 完了チェック（全 Batch 後）
 
-- [ ] SmokeClient Launch → SampleButton の name/bounds 取得成功
-- [ ] `GRAFT_ENABLE` 無しではパイプが立たない
-- [ ] `GRAFT_TEST` 外で Start 呼び出しがビルドエラー（`GRAFT001`）
-- [ ] props/targets・Screenshot・invoke・Core は **含めない**（M1/M2）
+- [x] SmokeClient Launch → SampleButton の name/bounds 取得成功
+- [x] `GRAFT_ENABLE` 無しではパイプが立たない
+- [x] `GRAFT_TEST` 外で Start 呼び出しがビルドエラー（`GRAFT001`）
+- [x] props/targets・Screenshot・invoke・Core は **含めない**（M1/M2）
 
 ---
 
