@@ -20,4 +20,9 @@
     <!-- Integration tests host the in-process agent against Core's pipe client. -->
     <ProjectReference Include="..\..\src\Graft.Instrumentation\Graft.Instrumentation.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="Fixtures\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

@@ -44,10 +44,10 @@
 
 ## Batch 3 — Scenario JSON スキーマ（ブランチ: `phase2/batch-3-scenario-schema`）
 
-- [ ] 交換形式の正本: JSON（JSON Schema を `.dev` または `src/Graft.Core` 近傍に置く）
-- [ ] 最小ステップ: launch / invoke / setValue / expectName（名前は実装時に固定）
-- [ ] Core 内にパーサ + 内部操作モデルへのコンパイル（Fluent 全面は不要）
-- [ ] 単体: 小さな Scenario ファイルをパースできる
+- [x] 交換形式の正本: JSON（JSON Schema: `.dev/scenario.schema.json`）
+- [x] 最小ステップ: `launch` / `invoke` / `setValue` / `expectName`
+- [x] Core 内にパーサ + 内部操作モデル（`Graft.Core.Scenario` / `ScenarioJson`）
+- [x] 単体: 小さな Scenario ファイルをパースできる（`ScenarioParserTests`）
 
 **完了条件:** JSON 1 本がメモリ上のステップ列になる。実行は Batch 4。  
 **次:** Batch 4（実行）へ。
