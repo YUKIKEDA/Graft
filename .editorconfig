@@ -28,6 +28,10 @@ dotnet_diagnostic.SA1101.severity = none
 # CSharpier may emit empty types on one line; prefer formatter over SA1502.
 dotnet_diagnostic.SA1502.severity = none
 
+# CSharpier puts closing parens on their own line with trailing commas.
+dotnet_diagnostic.SA1009.severity = none
+dotnet_diagnostic.SA1111.severity = none
+
 # StyleCop: documentation noise off (also covered by stylecop.json)
 dotnet_diagnostic.SA1600.severity = none
 dotnet_diagnostic.SA1601.severity = none
