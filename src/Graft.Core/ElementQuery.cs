@@ -293,9 +293,10 @@ public sealed class ElementQuery
                     await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false)
                 ).Root;
             }
-            catch (GraftException)
+            catch (Exception)
             {
-                // Best-effort attachment.
+                // Best-effort: GraftException, OperationCanceledException, IO, etc.
+                // Must not replace the original failure being reported.
             }
         }
 
