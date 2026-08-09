@@ -20,7 +20,7 @@ public sealed class WpfUiCaptureTests
     private static readonly byte[] PngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
     /// <summary>
-    /// GetTree, screenshot, resolve, invoke, setValue, toggle, SendInput invoke succeed.
+    /// GetTree, screenshot, resolve, invoke, setValue, and toggle succeed on a Sample-like window.
     /// </summary>
     /// <remarks>
     /// Preconditions:
@@ -33,7 +33,7 @@ public sealed class WpfUiCaptureTests
     /// - Invoke SampleButton then GetTree StatusText
     /// - setValue SampleTextBox then GetTree name
     /// - Toggle SampleCheckBox then expect name On
-    /// - Invoke SampleMouseTarget (SendInput fallback) then StatusText MouseHit
+    /// - Resolve SampleMouseTarget (SendInput click is covered by SampleWpfApp.Tests E2E)
     /// - Invoke a disabled button
     ///
     /// Expected:
@@ -41,7 +41,7 @@ public sealed class WpfUiCaptureTests
     /// - After invoke, StatusText name is "Clicked 1"
     /// - After setValue, SampleTextBox name matches the set text
     /// - After toggle, SampleCheckBox name is On
-    /// - After mouse-target invoke, StatusText is MouseHit
+    /// - SampleMouseTarget resolves as Border
     /// - Disabled button → element.notActionable
     /// </remarks>
     [StaFact]
@@ -134,12 +134,11 @@ public sealed class WpfUiCaptureTests
             Assert.NotNull(checkBoxNode);
             Assert.Equal("On", checkBoxNode.Name);
 
-            // Border has no Invoke pattern — exercises SendInput click fallback.
-            invoker.Invoke(new ElementSelector { AutomationId = "SampleMouseTarget" });
-            var afterMouse = treeProvider.GetTree(new GetTreeOptions());
-            var statusAfterMouse = FindByAutomationId(afterMouse.Root, "StatusText");
-            Assert.NotNull(statusAfterMouse);
-            Assert.Equal("MouseHit", statusAfterMouse.Name);
+            // SendInput click needs a real foreground HWND; cover that in SampleWpfApp.Tests.
+            var mouseResolved = resolver.Resolve(
+                new ElementSelector { AutomationId = "SampleMouseTarget" }
+            );
+            Assert.IsType<Border>(mouseResolved.Target);
 
             var disabled = new Button { Content = "Nope", IsEnabled = false };
             AutomationProperties.SetAutomationId(disabled, "DisabledButton");
