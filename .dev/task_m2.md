@@ -55,12 +55,12 @@
 
 ## Batch 3 — スコアリングセレクタ（Core 側）（ブランチ: `m2/batch-3-selectors`）
 
-- [ ] 公開セレクタモデル（複合キー）: 最低 `automationId` / `name` / `controlType`（近傍パスは仮実装 or スタブでも可だが重み枠は用意）
-- [ ] 仮重み（project.md Q49）: automationId=100, name=40, controlType=15, 近傍パス=20, **閾値=60**
-- [ ] GetTree 結果に対して Core 側でスコアリング。最高点が閾値以上 → 採用。同点 → `element.ambiguous`。無し → `element.notFound`
-- [ ] ショートハンド: `ByAutomationId`（または同等）→ automationId 単独スコア
-- [ ] エージェント側の `automationId` 必須解決は維持（wire invoke の params）。Core は解決した `automationId` / `runtimeId` を渡してよい
-- [ ] 単体: 合成 TreeNode でのスコア・閾値・同点・ショートハンド
+- [x] 公開セレクタモデル: `Selector`（`automationId` / `name` / `controlType` / `NearAutomationId` スタブ）
+- [x] 仮重み: automationId=100, name=40, controlType=15, 近傍パス=20, **閾値=60**（`SelectorWeights`）
+- [x] `TreeSelector.Resolve`: 最高点が閾値以上 → 採用。同点 → `element.ambiguous`。無し → `element.notFound`
+- [x] ショートハンド: `Selector.ByAutomationId`
+- [x] wire invoke は従来どおり automationId（Batch 4 で Core 解決結果を渡す）。本 Batch はツリー解決のみ
+- [x] 単体: 合成 TreeNode でスコア・閾値・同点・ショートハンド・invalid
 
 **完了条件:** Core 上でセレクタ → 一意要素（または安定エラー）に解決できる。  
 **確認:** `dotnet test tests/Graft.Core.Tests --filter Selector`  
@@ -125,7 +125,7 @@
 | ---- | -------------------------------------- |
 | 公開入口型名 | `Application.LaunchAsync` + 戻り値 `IGraftSession` / `GraftApp` 等（Batch 2 で固定） |
 | 要素 API | `session.GetBy(selector).InvokeAsync()` + `ExpectNameAsync` 最小面（Batch 4） |
-| 近傍パススコア | M2 は重み定数とフックのみでも可。受け入れテストは automationId でよい |
+| 近傍パススコア | `NearAutomationId`（祖先 automationId）で +20。本格パスは後続 |
 | Launch の exe/csproj | SmokeClient と同様、csproj なら `dotnet run` / 既存ビルド成果物パスを踏襲（Batch 2） |
 | 統合テストの配置 | 既定は `tests/Graft.Core.Tests`。遅延・排他が必要なら後で分離 |
 | SmokeClient 共有化 | 必須ではない。重複許容 → 後で Core 参照に寄せる |
