@@ -13,7 +13,7 @@ public static class FrameIO
     public const int LengthPrefixSize = 4;
 
     /// <summary>
-    /// Default maximum payload size (16 MiB). Screenshots use a follow-up binary frame later.
+    /// Default maximum payload size (16 MiB). Screenshot PNG uses a follow-up binary frame.
     /// </summary>
     public const int DefaultMaxPayloadBytes = 16 * 1024 * 1024;
 
