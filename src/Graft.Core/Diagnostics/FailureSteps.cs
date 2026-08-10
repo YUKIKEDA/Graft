@@ -44,6 +44,15 @@ public static class FailureSteps
     /// <summary>Expect on element checked state failed or timed out.</summary>
     public const string ExpectChecked = "expectChecked";
 
+    /// <summary>getCellText action failed.</summary>
+    public const string GetCellText = "getCellText";
+
+    /// <summary>setCellValue action failed.</summary>
+    public const string SetCellValue = "setCellValue";
+
+    /// <summary>Expect on DataGrid cell text failed or timed out.</summary>
+    public const string ExpectCellText = "expectCellText";
+
     /// <summary>listWindows failed.</summary>
     public const string ListWindows = "listWindows";
 

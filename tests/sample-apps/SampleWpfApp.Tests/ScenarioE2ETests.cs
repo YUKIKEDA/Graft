@@ -164,4 +164,35 @@ public sealed class ScenarioE2ETests
             new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
         );
     }
+
+    /// <summary>
+    /// phase9-cell-rw.scenario.json exercises getCellText / setCellValue / expectCellText.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Scenarios/phase9-cell-rw.scenario.json is copied to the test output
+    ///
+    /// Steps:
+    /// - Parse Scenario JSON
+    /// - ScenarioRunner.RunAsync with AppPath override
+    ///
+    /// Expected:
+    /// - Scenario completes without GraftException
+    /// </remarks>
+    [Fact]
+    public async Task Phase9CellRw_Scenario_Passes()
+    {
+        var scenarioPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Scenarios",
+            "phase9-cell-rw.scenario.json"
+        );
+        Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
+
+        var scenario = ScenarioJson.ParseFile(scenarioPath);
+        await ScenarioRunner.RunAsync(
+            scenario,
+            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
+        );
+    }
 }

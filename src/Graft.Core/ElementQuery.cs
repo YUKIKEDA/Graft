@@ -375,6 +375,209 @@ public sealed class ElementQuery
     }
 
     /// <summary>
+    /// Waits until the DataGrid is actionable, then returns Text cell display text.
+    /// </summary>
+    /// <param name="row">Zero-based row index.</param>
+    /// <param name="column">Zero-based column index.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Cell display text.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or getCellText failed.</exception>
+    public async Task<string> GetCellTextAsync(
+        int row,
+        int column,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot getCellText over the wire.",
+                    FailureSteps.GetCellText,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            var text = await _connection
+                .GetCellTextAsync(node.AutomationId, row, column, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.GetCellText, $"{node.AutomationId}[{row},{column}]");
+            return text;
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.GetCellText,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Waits until the DataGrid is actionable, then sets a Text cell via BeginEdit/CommitEdit.
+    /// </summary>
+    /// <param name="row">Zero-based row index.</param>
+    /// <param name="column">Zero-based column index.</param>
+    /// <param name="value">Replacement text.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when setCellValue succeeds.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or setCellValue failed.</exception>
+    public async Task SetCellValueAsync(
+        int row,
+        int column,
+        string value,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(value);
+
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot setCellValue over the wire.",
+                    FailureSteps.SetCellValue,
+                    expected: value,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .SetCellValueAsync(node.AutomationId, row, column, value, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(
+                FailureSteps.SetCellValue,
+                $"{node.AutomationId}[{row},{column}]={value}"
+            );
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.SetCellValue,
+                    expected: value,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Waits until the DataGrid cell text equals <paramref name="expectedText"/>.
+    /// </summary>
+    /// <param name="row">Zero-based row index.</param>
+    /// <param name="column">Zero-based column index.</param>
+    /// <param name="expectedText">Expected cell display text.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when the expectation holds.</returns>
+    /// <exception cref="GraftException">
+    /// <c>expect.failed</c> when the text differs;
+    /// <c>action.timeout</c> when the cell never matches in time.
+    /// </exception>
+    public async Task ExpectCellTextAsync(
+        int row,
+        int column,
+        string expectedText,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(expectedText);
+
+        var host = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(host.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot expectCellText over the wire.",
+                    FailureSteps.ExpectCellText,
+                    expected: expectedText,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        var timeout = PositiveOrDefault(
+            _waitOptions.ExpectTimeout,
+            WaitOptions.DefaultExpectTimeout
+        );
+        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
+        var deadline = DateTime.UtcNow + timeout;
+        string? lastActual = null;
+        var sawCell = false;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                var actual = await _connection
+                    .GetCellTextAsync(host.AutomationId, row, column, cancellationToken)
+                    .ConfigureAwait(false);
+                sawCell = true;
+                if (string.Equals(actual, expectedText, StringComparison.Ordinal))
+                {
+                    _operationLog.Record(FailureSteps.ExpectCellText, expectedText);
+                    return;
+                }
+
+                lastActual = actual;
+            }
+            catch (GraftException ex)
+                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+            {
+                // Still waiting for the cell / grid to be ready.
+            }
+
+            var remaining = deadline - DateTime.UtcNow;
+            if (remaining <= TimeSpan.Zero)
+            {
+                break;
+            }
+
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        if (sawCell && lastActual is not null)
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ExpectFailed,
+                    $"Expected cell text '{expectedText}' but was '{lastActual}'.",
+                    FailureSteps.ExpectCellText,
+                    expected: expectedText,
+                    actual: lastActual,
+                    timedOut: true,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        throw await CreateFailureAsync(
+                GraftErrorCodes.ActionTimeout,
+                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for cell text '{expectedText}'.",
+                FailureSteps.ExpectCellText,
+                expected: expectedText,
+                timedOut: true,
+                cancellationToken: cancellationToken
+            )
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Waits until the element is actionable, then expands it.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>

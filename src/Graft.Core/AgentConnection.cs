@@ -323,6 +323,107 @@ public sealed class AgentConnection : IAsyncDisposable
     }
 
     /// <summary>
+    /// Calls <c>getCellText</c> for a DataGrid Text cell.
+    /// </summary>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="row">Zero-based row index.</param>
+    /// <param name="column">Zero-based column index.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Cell display text.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task<string> GetCellTextAsync(
+        string automationId,
+        int row,
+        int column,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.GetCellText,
+                    Params = JsonSerializer.SerializeToElement(
+                        new
+                        {
+                            automationId,
+                            row,
+                            column,
+                        }
+                    ),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "getCellText failed.");
+        if (response.Result is not { } resultElement)
+        {
+            throw new GraftException(
+                GraftErrorCodes.ActionFailed,
+                "getCellText returned no result."
+            );
+        }
+
+        var result =
+            resultElement.Deserialize<CellTextResult>(JsonMessageCodec.Options)
+            ?? throw new GraftException(
+                GraftErrorCodes.ActionFailed,
+                "getCellText result deserialized to null."
+            );
+        return result.Text;
+    }
+
+    /// <summary>
+    /// Calls <c>setCellValue</c> for a DataGrid Text cell.
+    /// </summary>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="row">Zero-based row index.</param>
+    /// <param name="column">Zero-based column index.</param>
+    /// <param name="value">Replacement text.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when setCellValue succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task SetCellValueAsync(
+        string automationId,
+        int row,
+        int column,
+        string value,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ArgumentNullException.ThrowIfNull(value);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.SetCellValue,
+                    Params = JsonSerializer.SerializeToElement(
+                        new
+                        {
+                            automationId,
+                            row,
+                            column,
+                            value,
+                        }
+                    ),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "setCellValue failed.");
+    }
+
+    /// <summary>
     /// Calls <c>expand</c> for the element with the given automation id.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>

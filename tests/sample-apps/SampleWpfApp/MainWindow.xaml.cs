@@ -28,9 +28,9 @@ public partial class MainWindow : Window
 
         var comboItems = new ObservableCollection<SampleListItem>
         {
-            new("ComboItem-00", "Alpha"),
-            new("ComboItem-01", "Beta"),
-            new("ComboItem-02", "Gamma"),
+            new SampleListItem("ComboItem-00", "Alpha"),
+            new SampleListItem("ComboItem-01", "Beta"),
+            new SampleListItem("ComboItem-02", "Gamma"),
         };
         SampleCombo.ItemsSource = comboItems;
 

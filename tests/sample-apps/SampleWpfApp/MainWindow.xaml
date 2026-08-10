@@ -103,7 +103,7 @@
                       Margin="0,0,0,16"
                       AutoGenerateColumns="False"
                       CanUserAddRows="False"
-                      IsReadOnly="True"
+                      IsReadOnly="False"
                       SelectionUnit="FullRow"
                       SelectionMode="Single"
                       EnableRowVirtualization="True"
@@ -113,7 +113,7 @@
                       SelectionChanged="SampleGrid_OnSelectionChanged">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Name"
-                                        Binding="{Binding Name}"
+                                        Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         Width="*" />
                 </DataGrid.Columns>
                 <DataGrid.RowStyle>

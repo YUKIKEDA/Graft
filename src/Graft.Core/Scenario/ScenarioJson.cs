@@ -191,6 +191,9 @@ public static class ScenarioJson
             ScenarioActions.ExpectSelected => CompileExpectSelected(step, index),
             ScenarioActions.ExpectExpanded => CompileExpectExpanded(step, index),
             ScenarioActions.ExpectChecked => CompileExpectChecked(step, index),
+            ScenarioActions.GetCellText => CompileGetCellText(step, index),
+            ScenarioActions.SetCellValue => CompileSetCellValue(step, index),
+            ScenarioActions.ExpectCellText => CompileExpectCellText(step, index),
             ScenarioActions.ListWindows => new ListWindowsOperation(),
             ScenarioActions.SwitchWindow => CompileSwitchWindow(step, index),
             ScenarioActions.WaitForWindow => CompileWaitForWindow(step, index),
@@ -333,6 +336,73 @@ public static class ScenarioJson
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
         return new ExpectCheckedOperation(automationId, RequireBoolean(step, "checked", index));
+    }
+
+    private static GetCellTextOperation CompileGetCellText(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        return new GetCellTextOperation(
+            automationId,
+            RequireNonNegativeInt(step, "row", index),
+            RequireNonNegativeInt(step, "column", index)
+        );
+    }
+
+    private static SetCellValueOperation CompileSetCellValue(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        if (
+            !step.TryGetProperty("value", out var valueElement)
+            || valueElement.ValueKind != JsonValueKind.String
+        )
+        {
+            throw Invalid($"steps[{index}] setCellValue requires string property 'value'.");
+        }
+
+        return new SetCellValueOperation(
+            automationId,
+            RequireNonNegativeInt(step, "row", index),
+            RequireNonNegativeInt(step, "column", index),
+            valueElement.GetString() ?? string.Empty
+        );
+    }
+
+    private static ExpectCellTextOperation CompileExpectCellText(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        if (
+            !step.TryGetProperty("text", out var textElement)
+            || textElement.ValueKind != JsonValueKind.String
+        )
+        {
+            throw Invalid($"steps[{index}] expectCellText requires string property 'text'.");
+        }
+
+        return new ExpectCellTextOperation(
+            automationId,
+            RequireNonNegativeInt(step, "row", index),
+            RequireNonNegativeInt(step, "column", index),
+            textElement.GetString() ?? string.Empty
+        );
+    }
+
+    private static int RequireNonNegativeInt(JsonElement step, string propertyName, int index)
+    {
+        if (
+            !step.TryGetProperty(propertyName, out var element)
+            || element.ValueKind != JsonValueKind.Number
+            || !element.TryGetInt32(out var value)
+        )
+        {
+            throw Invalid($"steps[{index}] requires integer property '{propertyName}'.");
+        }
+
+        if (value < 0)
+        {
+            throw Invalid($"steps[{index}].{propertyName} must be >= 0.");
+        }
+
+        return value;
     }
 
     private static SwitchWindowOperation CompileSwitchWindow(JsonElement step, int index)

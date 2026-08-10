@@ -22,6 +22,7 @@ public static class AgentServices
     private static IElementScroller? _elementScroller;
     private static IElementChooser? _elementChooser;
     private static IElementExpander? _elementExpander;
+    private static IElementCellAccessor? _elementCellAccessor;
     private static IWindowCatalog? _windowCatalog;
 
     /// <summary>
@@ -73,6 +74,11 @@ public static class AgentServices
     /// Gets the registered element expander, if any.
     /// </summary>
     public static IElementExpander? ElementExpander => _elementExpander;
+
+    /// <summary>
+    /// Gets the registered DataGrid cell accessor, if any.
+    /// </summary>
+    public static IElementCellAccessor? ElementCellAccessor => _elementCellAccessor;
 
     /// <summary>
     /// Gets the registered window catalog, if any.
@@ -180,6 +186,16 @@ public static class AgentServices
     }
 
     /// <summary>
+    /// Registers the DataGrid cell accessor used for <c>getCellText</c> / <c>setCellValue</c>.
+    /// </summary>
+    /// <param name="accessor">Framework-specific cell accessor.</param>
+    public static void RegisterElementCellAccessor(IElementCellAccessor accessor)
+    {
+        ArgumentNullException.ThrowIfNull(accessor);
+        _elementCellAccessor = accessor;
+    }
+
+    /// <summary>
     /// Registers the window catalog used for <c>listWindows</c> / <c>switchWindow</c>.
     /// </summary>
     /// <param name="catalog">Framework-specific catalog.</param>
@@ -204,6 +220,7 @@ public static class AgentServices
         _elementScroller = null;
         _elementChooser = null;
         _elementExpander = null;
+        _elementCellAccessor = null;
         _windowCatalog = null;
     }
 }
