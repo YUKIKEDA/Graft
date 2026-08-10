@@ -117,7 +117,8 @@ internal sealed class WpfElementScroller : IElementScroller
         listBox.UpdateLayout();
         listBox.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
 
-        var container = listBox.ItemContainerGenerator.ContainerFromIndex(index) as FrameworkElement;
+        var container =
+            listBox.ItemContainerGenerator.ContainerFromIndex(index) as FrameworkElement;
         if (container is null)
         {
             throw new ElementActionException(
@@ -191,7 +192,10 @@ internal sealed class WpfElementScroller : IElementScroller
         }
     }
 
-    private static ElementIdentity ToIdentity(FrameworkElement element, string? fallbackAutomationId)
+    private static ElementIdentity ToIdentity(
+        FrameworkElement element,
+        string? fallbackAutomationId
+    )
     {
         var automationId = AutomationProperties.GetAutomationId(element);
         if (string.IsNullOrWhiteSpace(automationId))

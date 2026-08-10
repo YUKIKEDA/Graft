@@ -1,0 +1,54 @@
+{
+  "v": 1,
+  "name": "phase7-windows",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "invoke",
+      "automationId": "OpenChildWindowButton"
+    },
+    {
+      "action": "listWindows"
+    },
+    {
+      "action": "waitForWindow",
+      "automationId": "ChildWindow"
+    },
+    {
+      "action": "expectName",
+      "automationId": "ChildStatus",
+      "name": "ChildReady"
+    },
+    {
+      "action": "waitForWindow",
+      "automationId": "Main"
+    },
+    {
+      "action": "invokeOpeningWindow",
+      "automationId": "OpenModalWindowButton"
+    },
+    {
+      "action": "expectName",
+      "automationId": "ModalStatus",
+      "name": "ModalReady"
+    },
+    {
+      "action": "invoke",
+      "automationId": "CloseModalButton"
+    },
+    {
+      "action": "waitForWindow",
+      "automationId": "Main"
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "ModalClosed"
+    }
+  ]
+}

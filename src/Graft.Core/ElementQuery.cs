@@ -72,6 +72,114 @@ public sealed class ElementQuery
     }
 
     /// <summary>
+    /// Invokes the element via <c>invokeOpeningWindow</c>, waits for a new window, and switches to it.
+    /// </summary>
+    /// <remarks>
+    /// Use this when the click opens a modal (<c>ShowDialog</c>). A plain <see cref="InvokeAsync"/>
+    /// may hang until the dialog closes because the agent UI thread is blocked.
+    /// </remarks>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The newly opened window (already selected as the agent target).</returns>
+    /// <exception cref="GraftException">Wait, resolve, invoke, or window wait failed.</exception>
+    public async Task<WindowInfo> InvokeOpeningWindowAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        var before = await _connection.ListWindowsAsync(cancellationToken).ConfigureAwait(false);
+        var knownIds = before.Windows.Select(w => w.WindowId).ToHashSet();
+
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot invokeOpeningWindow over the wire.",
+                    FailureSteps.InvokeOpeningWindow,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .InvokeOpeningWindowAsync(node.AutomationId, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.InvokeOpeningWindow,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+
+        var timeout = PositiveOrDefault(
+            _waitOptions.ExpectTimeout,
+            WaitOptions.DefaultExpectTimeout
+        );
+        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
+        var deadline = DateTime.UtcNow + timeout;
+
+        while (DateTime.UtcNow <= deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var listed = await _connection
+                .ListWindowsAsync(cancellationToken)
+                .ConfigureAwait(false);
+            var newborn = listed.Windows.FirstOrDefault(w => !knownIds.Contains(w.WindowId));
+            if (newborn is not null)
+            {
+                try
+                {
+                    await _connection
+                        .SwitchWindowAsync(newborn.WindowId, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                catch (GraftException ex) when (ex.Report is null)
+                {
+                    throw await CreateFailureAsync(
+                            ex.Code,
+                            ex.Message,
+                            FailureSteps.InvokeOpeningWindow,
+                            cancellationToken: cancellationToken,
+                            innerException: ex
+                        )
+                        .ConfigureAwait(false);
+                }
+
+                _operationLog.Record(
+                    FailureSteps.InvokeOpeningWindow,
+                    $"{node.AutomationId}->windowId={newborn.WindowId}"
+                );
+                return newborn;
+            }
+
+            var remaining = deadline - DateTime.UtcNow;
+            if (remaining <= TimeSpan.Zero)
+            {
+                break;
+            }
+
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        throw await CreateFailureAsync(
+                GraftErrorCodes.ActionTimeout,
+                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for a new window after invokeOpeningWindow.",
+                FailureSteps.InvokeOpeningWindow,
+                timedOut: true,
+                cancellationToken: cancellationToken
+            )
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Waits until the element is present and actionable, then replaces its value.
     /// </summary>
     /// <param name="value">Replacement text (empty string clears).</param>

@@ -39,6 +39,24 @@ internal sealed class WpfElementInvoker : IElementInvoker
         dispatcher.Invoke(() => InvokeOnUiThread(selector), DispatcherPriority.Normal);
     }
 
+    /// <inheritdoc />
+    public void BeginInvoke(ElementSelector selector)
+    {
+        ArgumentNullException.ThrowIfNull(selector);
+
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                "WPF Application.Current is not available; cannot invoke."
+            );
+        }
+
+        // Do not wait: ShowDialog inside the callback would hang a sync Invoke forever.
+        _ = dispatcher.BeginInvoke(() => InvokeOnUiThread(selector), DispatcherPriority.Normal);
+    }
+
     private static void InvokeOnUiThread(ElementSelector selector)
     {
         var resolver =

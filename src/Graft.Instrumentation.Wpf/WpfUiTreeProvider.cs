@@ -10,6 +10,17 @@ namespace Graft.Instrumentation.Wpf;
 /// </summary>
 internal sealed class WpfUiTreeProvider : IUiTreeProvider
 {
+    private readonly WpfWindowHost _windows;
+
+    /// <summary>
+    /// Initializes a new provider bound to <paramref name="windows"/>.
+    /// </summary>
+    /// <param name="windows">Window catalog / target host.</param>
+    public WpfUiTreeProvider(WpfWindowHost windows)
+    {
+        _windows = windows;
+    }
+
     /// <inheritdoc />
     public GetTreeResult GetTree(GetTreeOptions options)
     {
@@ -31,12 +42,9 @@ internal sealed class WpfUiTreeProvider : IUiTreeProvider
         return dispatcher.Invoke(() => CaptureOnUiThread(options), DispatcherPriority.Normal);
     }
 
-    private static GetTreeResult CaptureOnUiThread(GetTreeOptions options)
+    private GetTreeResult CaptureOnUiThread(GetTreeOptions options)
     {
-        var window =
-            Application.Current?.MainWindow
-            ?? throw new InvalidOperationException("Application.Current.MainWindow is null.");
-
+        var window = _windows.GetTargetWindow();
         window.UpdateLayout();
         return WpfVisualTreeWalker.Capture(window, options);
     }

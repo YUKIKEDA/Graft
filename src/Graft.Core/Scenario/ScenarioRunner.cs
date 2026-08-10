@@ -164,6 +164,40 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case ListWindowsOperation:
+                        EnsureSession(session);
+                        _ = await session!
+                            .ListWindowsAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case SwitchWindowOperation switchWindow:
+                        EnsureSession(session);
+                        await session!
+                            .SwitchToWindowAsync(switchWindow.WindowId, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case WaitForWindowOperation waitForWindow:
+                        EnsureSession(session);
+                        _ = await session!
+                            .WaitForWindowAsync(
+                                waitForWindow.Title,
+                                waitForWindow.AutomationId,
+                                waitForWindow.SwitchTo,
+                                cancellationToken
+                            )
+                            .ConfigureAwait(false);
+                        break;
+
+                    case InvokeOpeningWindowOperation invokeOpening:
+                        EnsureSession(session);
+                        _ = await session!
+                            .GetByAutomationId(invokeOpening.AutomationId)
+                            .InvokeOpeningWindowAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     default:
                         throw new GraftException(
                             GraftErrorCodes.ActionFailed,

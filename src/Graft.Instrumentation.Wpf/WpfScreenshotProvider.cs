@@ -9,10 +9,21 @@ using Graft.Protocol.Messages;
 namespace Graft.Instrumentation.Wpf;
 
 /// <summary>
-/// Captures the WPF main window as PNG on the UI dispatcher.
+/// Captures the current target WPF window as PNG on the UI dispatcher.
 /// </summary>
 internal sealed class WpfScreenshotProvider : IScreenshotProvider
 {
+    private readonly WpfWindowHost _windows;
+
+    /// <summary>
+    /// Initializes a new provider bound to <paramref name="windows"/>.
+    /// </summary>
+    /// <param name="windows">Window catalog / target host.</param>
+    public WpfScreenshotProvider(WpfWindowHost windows)
+    {
+        _windows = windows;
+    }
+
     /// <inheritdoc />
     public ScreenshotCapture Capture(ScreenshotOptions options)
     {
@@ -34,12 +45,16 @@ internal sealed class WpfScreenshotProvider : IScreenshotProvider
         return dispatcher.Invoke(CaptureOnUiThread, DispatcherPriority.Normal);
     }
 
-    private static ScreenshotCapture CaptureOnUiThread()
+    private ScreenshotCapture CaptureOnUiThread()
     {
-        var window = Application.Current?.MainWindow;
-        if (window is null)
+        Window window;
+        try
         {
-            throw new InvalidOperationException("Main window was not found.");
+            window = _windows.GetTargetWindow();
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new InvalidOperationException(ex.Message, ex);
         }
 
         window.UpdateLayout();

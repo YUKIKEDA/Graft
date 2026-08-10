@@ -145,8 +145,8 @@ TestComplete相当の精度を狙う、という位置づけ。
 - GetTree はデフォルト上限あり（深さ 25 / ノード 2,000）。超過時は切り詰め＋`truncated: true`。
   depth/maxNodes/セレクタ起点を指定可能。診断・Inspector 用に expanded（50 / 10,000）
 - 仮想化リストは実現済み Visual Tree がデフォルト。`ScrollIntoView` / 実現 API を別途提供
-- ウィンドウ: API・スキーマは最初からマルチウィンドウ（`WindowId` / 対象切替）。
-  Phase 1 実装はメインウィンドウからでよい
+- ウィンドウ: API・スキーマは最初からマルチウィンドウ（`windowId` / 対象切替）。
+  Phase 1 実装はメインウィンドウからでよい。**実装完遂は Phase 7**（詳細は Q72〜 / `task_phase7.md`）
 - ツリー差分は初期 **Core 側のみ**（エージェントは上限付き完全ツリー）。
   デフォルト出力は診断向け差分（追加/削除/変更＋要素スナップショット）。JSON Patch は後回し
 
@@ -337,7 +337,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 4  | 自己修復セレクタ                                     | Core 側で精度を磨き込む                    |
 | Phase 5  | WPF 残アクション（scroll / select / expand）         | 仮想化対応を含む操作面の穴埋め             |
 | Phase 6  | ツリー状態（`selected` / `expanded`）+ Expect        | 診断・LLM。Phase 5 操作の状態検証          |
-| （次）   | Avalonia → Inspector                                 | Phase 6 の次から順に                       |
+| Phase 7  | ウィンドウ／モーダル（list/switch/wait/開封）        | WPF カバレッジ。競合ギャップの窓面         |
+| （次）   | OS ダイアログ方針 or 複雑 UI → … → Avalonia → Inspector | Avalonia/Inspector は WPF カバレッジ後   |
 
 ## 9. 未検討・今後の課題
 
@@ -348,7 +349,9 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - 診断向けツリー差分 JSON のフィールド名の確定
 - scroll/select の項目キー・表示名指定（index 正本の次候補）
 - CheckBox 等のツリー `checked`（Phase 6 では selected に混ぜない）
-- Avalonia アダプタ → Inspector（Phase 6 の次）
+- OS 共通ダイアログ（OpenFile 等）の方針・実装（Phase 7 後候補）
+- 複雑ホスト UI（DataGrid 等）の拡充
+- Avalonia アダプタ → Inspector（WPF カバレッジ後・最後寄り）
 - MessagePack 評価用の実測ログ形式
 - .NET Framework WPF 対応の要否（需要が固まってから）
 - 多言語バインディング / gRPC（v1 スコープ外。再検討は操作モデル安定後）
@@ -430,4 +433,9 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q68 | selected は選択系のみ（項目ノード）。expanded は開閉対象（TreeViewItem/Expander）。checked は別途 |
 | Q69 | ExpectSelectedAsync / ExpectExpandedAsync。null は expect.failed。Scenario/MCP は薄い追従         |
 | Q70 | Phase 6 受け入れは ListBox 実現済み項目 + TreeViewItem。Combo 項目 Expect は完了条件外            |
-| Q71 | Phase 6 の次は Avalonia → Inspector。自己修復が selected/expanded を使うのは後回し                |
+| Q71 | Phase 6 時点の次候補は Avalonia → Inspector だったが、Q72 で WPF カバレッジを先行に改訂           |
+| Q72 | Phase 7: マルチウィンドウ + WPF モーダル。Avalonia/Inspector は WPF カバレッジ後。詳細は `task_phase7.md` |
+| Q73 | 窓はセッション内 `windowId`。List/Switch。メタ: title/automationId/isModal/isActive。既定ターゲット切替 |
+| Q74 | ShowDialog 開封は `InvokeOpeningWindow`（BeginInvoke+出現待ち、既定自動 Switch）。素の Invoke は非対応 |
+| Q75 | WaitForWindow は title および／または automationId。全窓マージツリー・OS ダイアログ実装は含めない   |
+| Q76 | Phase 7 の次は OS ダイアログ方針 or 複雑 UI。Avalonia → Inspector は最後寄り                      |

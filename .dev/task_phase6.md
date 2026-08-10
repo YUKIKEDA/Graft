@@ -73,10 +73,10 @@
 - [x] ScenarioJson / Runner / MCP 原子ツール
 - [x] Scenario E2E または既存 phase5 シナリオへの追記（薄い追従で可）
 - [x] `graft-core.md` / 本ファイル完了チェック
-- [x] 次フェーズメモ: Avalonia → Inspector
+- [x] 次フェーズメモ: Avalonia → Inspector → **改訂:** Phase 7 はウィンドウ／モーダル（[task_phase7.md](./task_phase7.md)）。Avalonia は後ろへ
 
 **完了条件:** 公開経路と文書が揃っている。  
-**次:** Phase 6 完了チェック → Avalonia へ。
+**次:** Phase 6 完了チェック → Phase 7（ウィンドウ／モーダル）へ。
 
 ---
 

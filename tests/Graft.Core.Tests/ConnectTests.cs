@@ -189,6 +189,8 @@ public sealed class ConnectTests : IDisposable
         public string? LastAutomationId { get; private set; }
 
         public void Invoke(ElementSelector selector) => LastAutomationId = selector.AutomationId;
+
+        public void BeginInvoke(ElementSelector selector) => Invoke(selector);
     }
 
     private sealed class FakeElementValueSetter : IElementValueSetter

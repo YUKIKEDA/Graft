@@ -42,4 +42,16 @@ public static class ScenarioActions
 
     /// <summary>Expect an element's expanded state.</summary>
     public const string ExpectExpanded = FailureSteps.ExpectExpanded;
+
+    /// <summary>List open windows.</summary>
+    public const string ListWindows = FailureSteps.ListWindows;
+
+    /// <summary>Switch the agent target window.</summary>
+    public const string SwitchWindow = FailureSteps.SwitchWindow;
+
+    /// <summary>Wait for a window by title and/or automation id.</summary>
+    public const string WaitForWindow = FailureSteps.WaitForWindow;
+
+    /// <summary>Invoke an element that may open a window (modal-safe).</summary>
+    public const string InvokeOpeningWindow = FailureSteps.InvokeOpeningWindow;
 }

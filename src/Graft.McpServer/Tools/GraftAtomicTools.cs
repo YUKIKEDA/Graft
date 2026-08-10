@@ -405,6 +405,137 @@ public sealed class GraftAtomicTools
         );
 
     /// <summary>
+    /// Lists open windows in the target process.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_list_windows")]
+    [Description("List open windows with session-local windowId values.")]
+    public Task<CallToolResult> ListWindows(CancellationToken cancellationToken = default) =>
+        WithSessionAsync(
+            async session =>
+            {
+                var result = await session
+                    .ListWindowsAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                var windows = new JsonArray();
+                foreach (var window in result.Windows)
+                {
+                    windows.Add(
+                        new JsonObject
+                        {
+                            ["windowId"] = window.WindowId,
+                            ["title"] = window.Title,
+                            ["automationId"] = window.AutomationId,
+                            ["isModal"] = window.IsModal,
+                            ["isActive"] = window.IsActive,
+                        }
+                    );
+                }
+
+                return ToolResults.Ok(new JsonObject { ["windows"] = windows });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Switches the agent target window.
+    /// </summary>
+    /// <param name="windowId">Session-local window id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_switch_window")]
+    [Description("Switch the agent target window by session-local windowId.")]
+    public Task<CallToolResult> SwitchWindow(
+        [Description("Session-local window id from graft_list_windows.")] int windowId,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .SwitchToWindowAsync(windowId, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["windowId"] = windowId });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Waits for a window by title and/or automation id.
+    /// </summary>
+    /// <param name="title">Optional exact title.</param>
+    /// <param name="automationId">Optional exact automation id.</param>
+    /// <param name="switchTo">When true (default), switches to the matched window.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_wait_for_window")]
+    [Description(
+        "Wait for a window by title and/or automationId. Defaults to switching the target to the match."
+    )]
+    public Task<CallToolResult> WaitForWindow(
+        [Description("Exact title (optional).")] string? title = null,
+        [Description("Exact automation id (optional).")] string? automationId = null,
+        [Description("Switch to match (default true).")] bool switchTo = true,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                var window = await session
+                    .WaitForWindowAsync(title, automationId, switchTo, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject
+                    {
+                        ["windowId"] = window.WindowId,
+                        ["title"] = window.Title,
+                        ["automationId"] = window.AutomationId,
+                        ["isModal"] = window.IsModal,
+                        ["isActive"] = window.IsActive,
+                        ["switched"] = switchTo,
+                    }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Invokes an element that may open a window (modal-safe BeginInvoke path).
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_invoke_opening_window")]
+    [Description(
+        "Invoke an element that opens a window (use for ShowDialog). Waits for the new window and switches to it. Plain graft_invoke may hang on modals."
+    )]
+    public Task<CallToolResult> InvokeOpeningWindow(
+        [Description("Target automation id.")] string automationId,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                var window = await session
+                    .GetByAutomationId(automationId)
+                    .InvokeOpeningWindowAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject
+                    {
+                        ["automationId"] = automationId,
+                        ["windowId"] = window.WindowId,
+                        ["title"] = window.Title,
+                        ["windowAutomationId"] = window.AutomationId,
+                        ["isModal"] = window.IsModal,
+                    }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Disposes the open Graft session (pipe + child process).
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>

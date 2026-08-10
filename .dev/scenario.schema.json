@@ -37,7 +37,11 @@
         { "$ref": "#/$defs/collapse" },
         { "$ref": "#/$defs/expectName" },
         { "$ref": "#/$defs/expectSelected" },
-        { "$ref": "#/$defs/expectExpanded" }
+        { "$ref": "#/$defs/expectExpanded" },
+        { "$ref": "#/$defs/listWindows" },
+        { "$ref": "#/$defs/switchWindow" },
+        { "$ref": "#/$defs/waitForWindow" },
+        { "$ref": "#/$defs/invokeOpeningWindow" }
       ]
     },
     "launch": {
@@ -155,6 +159,47 @@
         "action": { "const": "expectExpanded" },
         "automationId": { "type": "string", "minLength": 1 },
         "expanded": { "type": "boolean" }
+      }
+    },
+    "listWindows": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action"],
+      "properties": {
+        "action": { "const": "listWindows" }
+      }
+    },
+    "switchWindow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "windowId"],
+      "properties": {
+        "action": { "const": "switchWindow" },
+        "windowId": { "type": "integer" }
+      }
+    },
+    "waitForWindow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action"],
+      "properties": {
+        "action": { "const": "waitForWindow" },
+        "title": { "type": "string", "minLength": 1 },
+        "automationId": { "type": "string", "minLength": 1 },
+        "switchTo": { "type": "boolean" }
+      },
+      "anyOf": [
+        { "required": ["title"] },
+        { "required": ["automationId"] }
+      ]
+    },
+    "invokeOpeningWindow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId"],
+      "properties": {
+        "action": { "const": "invokeOpeningWindow" },
+        "automationId": { "type": "string", "minLength": 1 }
       }
     }
   }

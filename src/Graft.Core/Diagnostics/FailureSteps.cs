@@ -40,4 +40,16 @@ public static class FailureSteps
 
     /// <summary>Expect on element expanded state failed or timed out.</summary>
     public const string ExpectExpanded = "expectExpanded";
+
+    /// <summary>listWindows failed.</summary>
+    public const string ListWindows = "listWindows";
+
+    /// <summary>switchWindow failed.</summary>
+    public const string SwitchWindow = "switchWindow";
+
+    /// <summary>Wait for a window timed out or failed.</summary>
+    public const string WaitForWindow = "waitForWindow";
+
+    /// <summary>invokeOpeningWindow failed or timed out waiting for a new window.</summary>
+    public const string InvokeOpeningWindow = "invokeOpeningWindow";
 }

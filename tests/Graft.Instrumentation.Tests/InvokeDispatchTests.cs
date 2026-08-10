@@ -201,5 +201,7 @@ public sealed class InvokeDispatchTests : IDisposable
                 throw new ElementResolveException(_throwCode, "fake failure");
             }
         }
+
+        public void BeginInvoke(ElementSelector selector) => Invoke(selector);
     }
 }

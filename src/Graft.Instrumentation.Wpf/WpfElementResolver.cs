@@ -10,6 +10,17 @@ namespace Graft.Instrumentation.Wpf;
 /// </summary>
 internal sealed class WpfElementResolver : IElementResolver
 {
+    private readonly WpfWindowHost _windows;
+
+    /// <summary>
+    /// Initializes a new resolver bound to <paramref name="windows"/>.
+    /// </summary>
+    /// <param name="windows">Window catalog / target host.</param>
+    public WpfElementResolver(WpfWindowHost windows)
+    {
+        _windows = windows;
+    }
+
     /// <inheritdoc />
     public ResolvedElement Resolve(ElementSelector selector)
     {
@@ -32,15 +43,16 @@ internal sealed class WpfElementResolver : IElementResolver
         return dispatcher.Invoke(() => ResolveOnUiThread(selector), DispatcherPriority.Normal);
     }
 
-    private static ResolvedElement ResolveOnUiThread(ElementSelector selector)
+    private ResolvedElement ResolveOnUiThread(ElementSelector selector)
     {
-        var window = Application.Current?.MainWindow;
-        if (window is null)
+        Window window;
+        try
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.WindowNotFound,
-                "Main window was not found."
-            );
+            window = _windows.GetTargetWindow();
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new ElementResolveException(GraftErrorCodes.WindowNotFound, ex.Message);
         }
 
         window.UpdateLayout();
