@@ -1171,6 +1171,34 @@ public sealed partial class GraftAtomicTools
         );
 
     /// <summary>
+    /// Expects an element's open ToolTip display text.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="toolTip">Expected ToolTip text.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_expect_tooltip")]
+    [Description("Expect an element's open ToolTip text in the open session.")]
+    public partial Task<CallToolResult> ExpectToolTip(
+        [Description("Target automation id.")] string automationId,
+        [Description("Expected ToolTip text.")] string toolTip,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .ExpectToolTipAsync(toolTip, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject { ["automationId"] = automationId, ["toolTip"] = toolTip }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Expects an element's tree name contains a substring.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>

@@ -56,6 +56,7 @@
         { "$ref": "#/$defs/expectNameContains" },
         { "$ref": "#/$defs/expectNameMatches" },
         { "$ref": "#/$defs/expectValue" },
+        { "$ref": "#/$defs/expectToolTip" },
         { "$ref": "#/$defs/waitFor" },
         { "$ref": "#/$defs/expectGone" },
         { "$ref": "#/$defs/getCellText" },
@@ -379,6 +380,16 @@
         "action": { "const": "expectValue" },
         "automationId": { "type": "string", "minLength": 1 },
         "value": { "type": "string" }
+      }
+    },
+    "expectToolTip": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "toolTip"],
+      "properties": {
+        "action": { "const": "expectToolTip" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "toolTip": { "type": "string" }
       }
     },
     "waitFor": {

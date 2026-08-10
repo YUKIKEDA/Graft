@@ -108,6 +108,12 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
             return;
         }
 
+        if (element is DatePicker datePicker)
+        {
+            SetDatePickerValue(datePicker, value, resolved.AutomationId);
+            return;
+        }
+
         if (TrySetValueViaAutomationPeer(element, value))
         {
             return;
@@ -150,6 +156,28 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
 
         slider.Value = parsed;
         slider.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
+    }
+
+    private static void SetDatePickerValue(DatePicker datePicker, string value, string automationId)
+    {
+        if (
+            !DateTime.TryParseExact(
+                value,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var parsed
+            )
+        )
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                $"setValue for DatePicker '{automationId}' requires yyyy-MM-dd (got '{value}')."
+            );
+        }
+
+        datePicker.SelectedDate = parsed.Date;
+        datePicker.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
     }
 
     private static bool TrySetValueViaAutomationPeer(FrameworkElement element, string value)

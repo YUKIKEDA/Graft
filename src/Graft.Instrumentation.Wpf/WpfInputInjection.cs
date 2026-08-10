@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -65,6 +66,9 @@ internal static class WpfInputInjection
         var point = ResolveClickScreenPoint(element);
         InputInjector.MoveTo((int)Math.Round(point.X), (int)Math.Round(point.Y));
         Thread.Sleep(100);
+
+        // Ensure ToolTip opens for ExpectToolTip (SendInput alone is flaky with ToolTipService delay).
+        OpenToolTipIfPresent(element);
         FlushIdle(element);
     }
 
@@ -234,5 +238,28 @@ internal static class WpfInputInjection
 
         var local = new Point(element.ActualWidth / 2, element.ActualHeight / 2);
         return element.PointToScreen(local);
+    }
+
+    private static void OpenToolTipIfPresent(FrameworkElement element)
+    {
+        switch (element.ToolTip)
+        {
+            case ToolTip toolTip:
+                toolTip.IsOpen = true;
+                break;
+            case string text:
+            {
+                var toolTip = new ToolTip { Content = text, IsOpen = true };
+                element.ToolTip = toolTip;
+                break;
+            }
+
+            case FrameworkElement content:
+            {
+                var toolTip = new ToolTip { Content = content, IsOpen = true };
+                element.ToolTip = toolTip;
+                break;
+            }
+        }
     }
 }

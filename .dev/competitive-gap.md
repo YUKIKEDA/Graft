@@ -119,9 +119,9 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | L01 | ListBox 単一選択（index）         | Yes  | OK    | Done | —       |      |
 | L02 | ListBox 複数選択（置換）          | Yes  | OK    | Done | —       |      |
 | L03 | ComboBox 項目選択（index）        | Yes  | OK    | Done | —       |      |
-| L04 | ComboBox ドロップダウン開閉の明示 | Yes  | PART  | Must | 29b     |      |
+| L04 | ComboBox ドロップダウン開閉の明示 | Yes  | OK    | Done | 29b     | Expand/Collapse + `IsDropDownOpen` |
 | L05 | 表示名・キーで選択                | Yes  | OK    | Done | 27      | `SelectAsync(key)` |
-| L06 | ListView / GridView               | Yes  | PART  | Must | 29b     |      |
+| L06 | ListView / GridView               | Yes  | OK    | Done | 29b     | 行=ListBox API / セル Read のみ |
 | L07 | 仮想化リストの scroll+select      | Yes  | OK    | Done | —       |      |
 
 ---
@@ -179,12 +179,12 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 
 | ID  | シナリオ                           | 競合 | Graft | 優先 | 仮Phase | メモ       |
 | --- | ---------------------------------- | ---- | ----- | ---- | ------- | ---------- |
-| C01 | DatePicker / Calendar              | Yes  | NO    | Must | 29b     |            |
+| C01 | DatePicker / Calendar              | Yes  | OK    | Done | 29b     | SelectedDate `yyyy-MM-dd`（Calendar UI なし） |
 | C02 | ProgressBar 値の読み取り・完了待ち | Yes  | OK    | Done | 24      | `ExpectValue` |
-| C03 | ToolTip 表示待ち                   | Yes  | NO    | Must | 29b     | hover 依存 |
-| C04 | ToolBar / StatusBar 項目操作       | Yes  | PART  | Must | 29b     |            |
-| C05 | Popup / Flyout                     | Yes  | PART  | Must | 29b     |            |
-| C06 | Hyperlink / カスタムクリック可能   | Yes  | PART  | Must | 29b     |            |
+| C03 | ToolTip 表示待ち                   | Yes  | OK    | Done | 29b     | `ExpectToolTipAsync` |
+| C04 | ToolBar / StatusBar 項目操作       | Yes  | OK    | Done | 29b     | 専用 API なし（Sample） |
+| C05 | Popup / Flyout                     | Yes  | OK    | Done | 29b     | 開時 Child ツリー合流 |
+| C06 | Hyperlink / カスタムクリック可能   | Yes  | OK    | Done | 29b     | TextBlock 内 Hyperlink + Click |
 
 ---
 

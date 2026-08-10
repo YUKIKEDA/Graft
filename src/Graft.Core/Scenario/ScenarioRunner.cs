@@ -323,6 +323,14 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case ExpectToolTipOperation expectToolTip:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(expectToolTip.AutomationId)
+                            .ExpectToolTipAsync(expectToolTip.ToolTip, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     case WaitForOperation waitFor:
                         EnsureSession(session);
                         await session!

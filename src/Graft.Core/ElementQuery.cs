@@ -1851,6 +1851,97 @@ public sealed class ElementQuery
     }
 
     /// <summary>
+    /// Waits until the element's open ToolTip display text equals <paramref name="expectedToolTip"/>.
+    /// </summary>
+    /// <param name="expectedToolTip">Expected ToolTip text (ordinal).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The matched node when the expectation holds.</returns>
+    /// <exception cref="GraftException">
+    /// <c>expect.failed</c> when a mismatched ToolTip is observed until timeout, or
+    /// <c>action.timeout</c> when the element never qualifies in time.
+    /// </exception>
+    public async Task<TreeNode> ExpectToolTipAsync(
+        string expectedToolTip,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(expectedToolTip);
+
+        var timeout = PositiveOrDefault(
+            _waitOptions.ExpectTimeout,
+            WaitOptions.DefaultExpectTimeout
+        );
+        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
+        var deadline = DateTime.UtcNow + timeout;
+
+        string? lastActual = null;
+        TreeNode? lastRoot = null;
+        var sawElement = false;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
+                lastRoot = tree.Root;
+                var node = ResolveNode(tree.Root);
+                sawElement = true;
+                if (
+                    node.ToolTip is not null
+                    && string.Equals(node.ToolTip, expectedToolTip, StringComparison.Ordinal)
+                )
+                {
+                    _operationLog.Record(FailureSteps.ExpectToolTip, expectedToolTip);
+                    return node;
+                }
+
+                lastActual = node.ToolTip ?? "n/a";
+            }
+            catch (GraftException ex)
+                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+            {
+                // Still waiting for the element to appear / tree to be ready.
+            }
+
+            var remaining = deadline - DateTime.UtcNow;
+            if (remaining <= TimeSpan.Zero)
+            {
+                break;
+            }
+
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        if (sawElement && lastActual is not null)
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ExpectFailed,
+                    $"Expected toolTip '{expectedToolTip}' but was '{lastActual}'.",
+                    FailureSteps.ExpectToolTip,
+                    expected: expectedToolTip,
+                    actual: lastActual,
+                    timedOut: true,
+                    treeRoot: lastRoot,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        throw await CreateFailureAsync(
+                GraftErrorCodes.ActionTimeout,
+                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for toolTip '{expectedToolTip}'.",
+                FailureSteps.ExpectToolTip,
+                expected: expectedToolTip,
+                timedOut: true,
+                treeRoot: lastRoot,
+                cancellationToken: cancellationToken
+            )
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Waits until the element is present in the visual tree.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
