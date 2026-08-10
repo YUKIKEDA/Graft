@@ -273,6 +273,11 @@ internal sealed class AgentPipeServer : IDisposable
             return (HandleSelect(request), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
+        if (request.Method == ProtocolMethods.SelectMany)
+        {
+            return (HandleSelectMany(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
         if (request.Method == ProtocolMethods.GetCellText)
         {
             return (HandleGetCellText(request), CloseAfterWrite: false, BinaryFollowUp: null);
@@ -684,6 +689,38 @@ internal sealed class AgentPipeServer : IDisposable
         {
             var (selector, index) = ReadIndexParams(request.Params, requireIndex: true);
             chooser.Select(selector, index!.Value);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleSelectMany(RequestMessage request)
+    {
+        var chooser = AgentServices.ElementChooser;
+        if (chooser is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No element chooser is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var (selector, indexes) = ReadSelectManyParams(request.Params);
+            chooser.SelectMany(selector, indexes);
             return Ok(request.Id);
         }
         catch (ElementResolveException ex)
@@ -1212,6 +1249,52 @@ internal sealed class AgentPipeServer : IDisposable
         }
 
         return (selector, index);
+    }
+
+    private static (ElementSelector Selector, IReadOnlyList<int> Indexes) ReadSelectManyParams(
+        JsonElement? paramsElement
+    )
+    {
+        var selector = ReadElementSelector(paramsElement);
+        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.indexes is required."
+            );
+        }
+
+        if (!element.TryGetProperty("indexes", out var indexesProperty))
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.indexes is required."
+            );
+        }
+
+        if (indexesProperty.ValueKind != JsonValueKind.Array)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.indexes must be an array of integers."
+            );
+        }
+
+        var indexes = new List<int>(indexesProperty.GetArrayLength());
+        foreach (var entry in indexesProperty.EnumerateArray())
+        {
+            if (!entry.TryGetInt32(out var index))
+            {
+                throw new ElementResolveException(
+                    GraftErrorCodes.SelectorInvalid,
+                    "params.indexes must be an array of integers."
+                );
+            }
+
+            indexes.Add(index);
+        }
+
+        return (selector, indexes);
     }
 
     private static (ElementSelector Selector, string Text) ReadSendKeysParams(

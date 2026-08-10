@@ -188,6 +188,7 @@ public static class ScenarioJson
             ScenarioActions.Screenshot => CompileScreenshot(step, index),
             ScenarioActions.ScrollIntoView => CompileScrollIntoView(step, index),
             ScenarioActions.Select => CompileSelect(step, index),
+            ScenarioActions.SelectMany => CompileSelectMany(step, index),
             ScenarioActions.Expand => CompileExpand(step, index),
             ScenarioActions.Collapse => CompileCollapse(step, index),
             ScenarioActions.ExpectName => CompileExpectName(step, index),
@@ -330,6 +331,31 @@ public static class ScenarioJson
         }
 
         return new SelectOperation(automationId, itemIndex);
+    }
+
+    private static SelectManyOperation CompileSelectMany(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        if (
+            !step.TryGetProperty("indexes", out var indexesElement)
+            || indexesElement.ValueKind != JsonValueKind.Array
+        )
+        {
+            throw Invalid($"steps[{index}] selectMany requires array property 'indexes'.");
+        }
+
+        var indexes = new List<int>(indexesElement.GetArrayLength());
+        foreach (var entry in indexesElement.EnumerateArray())
+        {
+            if (entry.ValueKind != JsonValueKind.Number || !entry.TryGetInt32(out var itemIndex))
+            {
+                throw Invalid($"steps[{index}] selectMany.indexes must be an array of integers.");
+            }
+
+            indexes.Add(itemIndex);
+        }
+
+        return new SelectManyOperation(automationId, indexes);
     }
 
     private static ExpandOperation CompileExpand(JsonElement step, int index) =>

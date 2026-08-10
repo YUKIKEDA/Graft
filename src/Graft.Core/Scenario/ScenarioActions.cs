@@ -37,6 +37,9 @@ public static class ScenarioActions
     /// <summary>Select a list/combo item by index.</summary>
     public const string Select = FailureSteps.Select;
 
+    /// <summary>Replace ListBox multi-selection by indexes.</summary>
+    public const string SelectMany = FailureSteps.SelectMany;
+
     /// <summary>Expand an element.</summary>
     public const string Expand = FailureSteps.Expand;
 

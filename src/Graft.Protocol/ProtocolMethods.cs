@@ -77,6 +77,12 @@ public static class ProtocolMethods
     public const string Select = "select";
 
     /// <summary>
+    /// Replaces multi-selection by <c>params.indexes</c> on a ListBox (<c>params.automationId</c>).
+    /// Empty <c>indexes</c> clears selection.
+    /// </summary>
+    public const string SelectMany = "selectMany";
+
+    /// <summary>
     /// Expands an element (e.g. TreeViewItem / Expander) by <c>params.automationId</c>.
     /// </summary>
     public const string Expand = "expand";

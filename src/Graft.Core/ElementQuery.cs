@@ -505,6 +505,56 @@ public sealed class ElementQuery
     }
 
     /// <summary>
+    /// Waits until the ListBox is actionable, then replaces multi-selection with
+    /// <paramref name="indexes"/> (auto scroll/realize when needed). Empty clears.
+    /// </summary>
+    /// <param name="indexes">Zero-based item indexes.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when selectMany succeeds.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or selectMany failed.</exception>
+    public async Task SelectManyAsync(
+        IReadOnlyList<int> indexes,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(indexes);
+
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot selectMany over the wire.",
+                    FailureSteps.SelectMany,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .SelectManyAsync(node.AutomationId, indexes, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(
+                FailureSteps.SelectMany,
+                $"{node.AutomationId}[{string.Join(',', indexes)}]"
+            );
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.SelectMany,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
     /// Waits until the DataGrid is actionable, then returns Text cell display text.
     /// </summary>
     /// <param name="row">Zero-based row index.</param>

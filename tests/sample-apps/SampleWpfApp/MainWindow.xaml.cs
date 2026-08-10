@@ -28,6 +28,14 @@ public partial class MainWindow : Window
 
         SampleList.ItemsSource = items;
 
+        var multiItems = new ObservableCollection<SampleListItem>();
+        for (var i = 0; i < 20; i++)
+        {
+            multiItems.Add(new SampleListItem($"MultiListItem-{i:D2}", $"Multi {i}"));
+        }
+
+        SampleMultiList.ItemsSource = multiItems;
+
         var comboItems = new ObservableCollection<SampleListItem>
         {
             new SampleListItem("ComboItem-00", "Alpha"),
@@ -94,6 +102,14 @@ public partial class MainWindow : Window
         {
             StatusText.Text = $"Selected {item.Name}";
         }
+    }
+
+    private void SampleMultiList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        StatusText.Text = string.Create(
+            CultureInfo.InvariantCulture,
+            $"Multi {SampleMultiList.SelectedItems.Count}"
+        );
     }
 
     private void SampleGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)

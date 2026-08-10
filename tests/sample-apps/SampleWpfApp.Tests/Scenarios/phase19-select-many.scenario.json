@@ -1,0 +1,32 @@
+{
+  "v": 1,
+  "name": "phase19-select-many",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "selectMany",
+      "automationId": "SampleMultiList",
+      "indexes": [1, 3]
+    },
+    {
+      "action": "expectSelected",
+      "automationId": "MultiListItem-01",
+      "selected": true
+    },
+    {
+      "action": "expectSelected",
+      "automationId": "MultiListItem-03",
+      "selected": true
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "Multi 2"
+    }
+  ]
+}

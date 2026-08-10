@@ -265,6 +265,39 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// selectMany steps compile with automationId and indexes.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with launch + selectMany
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - Second operation is SelectManyOperation with matching fields
+    /// </remarks>
+    [Fact]
+    public void Parse_SelectManyStep_CompilesSelectManyOperation()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "selectMany", "automationId": "SampleMultiList", "indexes": [1, 3] }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var selectMany = Assert.IsType<SelectManyOperation>(scenario.Operations[1]);
+        Assert.Equal(ScenarioActions.SelectMany, selectMany.Action);
+        Assert.Equal("SampleMultiList", selectMany.AutomationId);
+        Assert.Equal(new[] { 1, 3 }, selectMany.Indexes);
+    }
+
+    /// <summary>
     /// expectSelected / expectExpanded compile with boolean fields.
     /// </summary>
     /// <remarks>

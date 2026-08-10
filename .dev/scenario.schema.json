@@ -36,6 +36,7 @@
         { "$ref": "#/$defs/screenshot" },
         { "$ref": "#/$defs/scrollIntoView" },
         { "$ref": "#/$defs/select" },
+        { "$ref": "#/$defs/selectMany" },
         { "$ref": "#/$defs/expand" },
         { "$ref": "#/$defs/collapse" },
         { "$ref": "#/$defs/expectName" },
@@ -153,6 +154,19 @@
         "action": { "const": "select" },
         "automationId": { "type": "string", "minLength": 1 },
         "index": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "selectMany": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "indexes"],
+      "properties": {
+        "action": { "const": "selectMany" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "indexes": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0 }
+        }
       }
     },
     "expand": {

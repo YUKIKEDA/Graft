@@ -149,6 +149,14 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case SelectManyOperation selectMany:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(selectMany.AutomationId)
+                            .SelectManyAsync(selectMany.Indexes, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     case ExpandOperation expand:
                         EnsureSession(session);
                         await session!
