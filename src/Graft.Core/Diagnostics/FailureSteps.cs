@@ -83,6 +83,9 @@ public static class FailureSteps
     /// <summary>Expect on element visible state failed or timed out.</summary>
     public const string ExpectVisible = "expectVisible";
 
+    /// <summary>Expect on element focused state failed or timed out.</summary>
+    public const string ExpectFocused = "expectFocused";
+
     /// <summary>Expect on element name substring failed or timed out.</summary>
     public const string ExpectNameContains = "expectNameContains";
 

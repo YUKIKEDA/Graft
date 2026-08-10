@@ -71,12 +71,13 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - セレクタ: `GetBy(Selector.…)` / `GetByAutomationId` / `GetByName` / `GetByControlType`。`AutomationId`・`Name`・`ControlType` はハード一致（不一致は `element.notFound`）。相対: `Child` / `Sibling` / `Nth`（Phase 27）
 - リストキー選択（Phase 27）: `SelectAsync("Item 35")`（wire `select` + `key`）。ツリーパス: `SelectTreeAsync("Root/Child/Leaf")`（wire `selectTree`）
 - 自己修復（Phase 4）: 解決失敗時に Core が代替セレクタ候補を算出。高信頼で一意なら同一 `ElementQuery` で一回だけ自動再解決し、以降そのセレクタを使う。失敗時は `FailureReport.healingCandidates` に候補を添付（シナリオファイルは書き換えない。ファジー一致はしない）
-- テキスト入力: `GetByAutomationId(…).SetValueAsync(value)`（エージェント wire `setValue`。TextBox 置換。**Slider** は InvariantCulture の double 文字列 → `Value`）。キー入力: `SendKeysAsync(text)`（リテラル）。chord / 特殊キー: `PressAsync("Control+A")`（wire `pressKeys`。1 呼び出し = 1 chord）
-- トグル: `GetByAutomationId(…).ToggleAsync()`（状態フリップ）
+- テキスト入力: `GetByAutomationId(…).SetValueAsync(value)`（エージェント wire `setValue`。TextBox 置換。**PasswordBox** は `Password` 代入（tree/value には載せない）。**RichTextBox** は平文全文置換。**Slider** は InvariantCulture の double 文字列 → `Value`）。キー入力: `SendKeysAsync(text)`（リテラル）。chord / 特殊キー: `PressAsync("Control+A")` / `F5` / `NumPad0` 等（wire `pressKeys`。1 呼び出し = 1 chord。**Win/Meta なし**）
+- トグル: `GetByAutomationId(…).ToggleAsync()`（CheckBox / RadioButton / ToggleButton。Radio は選択側へ）
+- フォーカス（Phase 29a）: `ExpectFocusedAsync()`（tree `focused`）
 - スクロール: `ScrollIntoViewAsync()`（実現済み要素）/ `ScrollIntoViewAsync(index)`（リスト。仮想化対応、identity 返却）
 - 選択: `SelectAsync(index)`（単一。内部で自動 scroll/realize）。ホストは ListBox / ComboBox / **DataGrid（行）** / **TabControl**。複数選択: `SelectManyAsync(indexes)`（wire `selectMany`。**ListBox** Multiple/Extended、**DataGrid** Extended+FullRow。置換。空配列でクリア）
 - 開閉: `ExpandAsync()` / `CollapseAsync()`（状態指定）
-- ツリー状態（Phase 6/8/24）: `TreeNode.selected` / `expanded` / `checked`（`bool?`、非該当は省略）、`enabled` / `visible`、任意 `value`（Slider/ProgressBar 等）。`ExpectSelectedAsync` / `ExpectExpandedAsync` / `ExpectCheckedAsync` / `ExpectEnabledAsync` / `ExpectVisibleAsync` / `ExpectValueAsync` / `ExpectNameContainsAsync` / `ExpectNameMatchesAsync`。出現 `WaitForAsync`、消失 `ExpectGoneAsync`、窓 `WaitForWindowClosedAsync`
+- ツリー状態（Phase 6/8/24/29a）: `TreeNode.selected` / `expanded` / `checked`（`bool?`、CheckBox/Radio/Toggle）、`enabled` / `visible` / `focused`、任意 `value`（Slider/ProgressBar/RichText 平文等。Password は載せない）。`ExpectSelectedAsync` / `ExpectExpandedAsync` / `ExpectCheckedAsync` / `ExpectEnabledAsync` / `ExpectVisibleAsync` / `ExpectFocusedAsync` / `ExpectValueAsync` / `ExpectNameContainsAsync` / `ExpectNameMatchesAsync`。出現 `WaitForAsync`、消失 `ExpectGoneAsync`、窓 `WaitForWindowClosedAsync`
 - DataGrid 行（Phase 8）: ホスト＋index で `ScrollIntoViewAsync` / `SelectAsync`。実現済み `DataGridRow` に `selected`
 - DataGrid セル（Phase 9/21/28）: ホスト＋`(row, column)` または `(row, columnKey)`（Header 文字列）で `GetCellTextAsync` / `SetCellValueAsync` / `ExpectCellTextAsync`。対応列: **Text** / **CheckBox** / **Template**（Get=表示テキスト、Set=単一 TextBox/CheckBox）。BeginEdit→CommitEdit。ツリーにセルは出さない
 - DataGrid 高度（Phase 28）: `SelectCellAsync(row, column|columnKey)`（SelectionUnit Cell/CellOrRowHeader）。`SelectRowAsync(columnKey, value)`（表示順非依存・曖昧は `element.ambiguous`）。`ClickColumnHeaderAsync(columnKey)`（ソート UI）。`AddRowAsync` / `DeleteSelectedRowsAsync`
@@ -95,4 +96,4 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - Scenario JSON: `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync`（上記に加え `armOpenFile` / `armSaveFile` / `armOpenFolder` / `armMessageBox` / セル・窓系）。契約は `.dev/scenario.schema.json`。例: `tests/sample-apps/SampleWpfApp.Tests/Scenarios/`
 - MCP: `Graft.McpServer`（stdio）。原子ツールにダイアログ Arm 系とセル・窓系を含む。失敗時は `IsError` + FailureReport JSON
 - invoke / setValue はネイティブ → Peer → SendInput フォールバック（クリック / クリア+タイプ）
-- 未実装（後続）: 正本は [competitive-gap.md](./competitive-gap.md)（**Must 確定済み**）。Must 例: 待ち/画面遷移、マウス高度、メニュー深さ、探索強化、DataGrid 残り、主要コントロール穴、並列対策。**Avalonia は Must 完了後**。要素クリップ / typeHuman / Inspector / 画像 diff 等は任意または非目標
+- 未実装（後続）: 正本は [competitive-gap.md](./competitive-gap.md)（**Must 確定済み**）。Must 例: Phase 29b（L04/L06/C01/C03–C06）、並列対策。**Avalonia は Must 完了後**。要素クリップ / typeHuman / Inspector / 画像 diff 等は任意または非目標

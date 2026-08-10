@@ -1573,6 +1573,24 @@ public sealed class ElementQuery
         );
 
     /// <summary>
+    /// Waits until the element's tree <c>focused</c> is <c>true</c>.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The matched node when the expectation holds.</returns>
+    /// <exception cref="GraftException">
+    /// <c>expect.failed</c> when the state differs;
+    /// <c>action.timeout</c> when the element never qualifies in time.
+    /// </exception>
+    public Task<TreeNode> ExpectFocusedAsync(CancellationToken cancellationToken = default) =>
+        ExpectBoolPropertyAsync(
+            expected: true,
+            static node => node.Focused,
+            FailureSteps.ExpectFocused,
+            "focused",
+            cancellationToken
+        );
+
+    /// <summary>
     /// Waits until the element's <c>name</c> contains <paramref name="substring"/>.
     /// </summary>
     /// <param name="substring">Expected non-empty ordinal substring.</param>

@@ -204,6 +204,7 @@ public static class ScenarioJson
             ScenarioActions.ExpectChecked => CompileExpectChecked(step, index),
             ScenarioActions.ExpectEnabled => CompileExpectEnabled(step, index),
             ScenarioActions.ExpectVisible => CompileExpectVisible(step, index),
+            ScenarioActions.ExpectFocused => CompileExpectFocused(step, index),
             ScenarioActions.ExpectNameContains => CompileExpectNameContains(step, index),
             ScenarioActions.ExpectNameMatches => CompileExpectNameMatches(step, index),
             ScenarioActions.ExpectValue => CompileExpectValue(step, index),
@@ -485,6 +486,9 @@ public static class ScenarioJson
         var automationId = RequireNonEmptyString(step, "automationId", index);
         return new ExpectVisibleOperation(automationId, RequireBoolean(step, "visible", index));
     }
+
+    private static ExpectFocusedOperation CompileExpectFocused(JsonElement step, int index) =>
+        new(RequireNonEmptyString(step, "automationId", index));
 
     private static ExpectNameContainsOperation CompileExpectNameContains(
         JsonElement step,

@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Threading;
 using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Elements;
@@ -66,7 +67,7 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
             );
         }
 
-        // Native replace first (project.md Q51 / Q114).
+        // Native replace first (project.md Q51 / Q114 / Q135).
         if (element is TextBox textBox)
         {
             if (textBox.IsReadOnly)
@@ -78,6 +79,26 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
             }
 
             textBox.Text = value;
+            return;
+        }
+
+        if (element is PasswordBox passwordBox)
+        {
+            passwordBox.Password = value;
+            return;
+        }
+
+        if (element is RichTextBox richTextBox)
+        {
+            if (richTextBox.IsReadOnly)
+            {
+                throw new ElementActionException(
+                    GraftErrorCodes.ElementNotActionable,
+                    $"Element '{resolved.AutomationId}' is read-only."
+                );
+            }
+
+            SetRichTextPlain(richTextBox, value);
             return;
         }
 
@@ -94,6 +115,12 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
 
         // Clear + SendInput type (project.md Q51).
         WpfInputInjection.FocusAndType(element, value, clearFirst: true);
+    }
+
+    private static void SetRichTextPlain(RichTextBox richTextBox, string value)
+    {
+        richTextBox.Document.Blocks.Clear();
+        richTextBox.Document.Blocks.Add(new Paragraph(new Run(value)));
     }
 
     private static void SetSliderValue(Slider slider, string value, string automationId)

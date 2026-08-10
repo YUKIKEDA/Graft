@@ -16,6 +16,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DoubleClickTarget.MouseDoubleClick += DoubleClickTarget_OnMouseDoubleClick;
+        PreviewKeyDown += MainWindow_OnPreviewKeyDown;
         LoadListItems();
     }
 
@@ -252,6 +253,23 @@ public partial class MainWindow : Window
                 CultureInfo.InvariantCulture,
                 $"Phase28Cell {row}:{col}"
             );
+        }
+    }
+
+    private void SamplePhase29aPassword_OnPasswordChanged(object sender, RoutedEventArgs e)
+    {
+        StatusText.Text = string.Create(
+            CultureInfo.InvariantCulture,
+            $"Phase29aPassword len={SamplePhase29aPassword.Password.Length}"
+        );
+    }
+
+    private void MainWindow_OnPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key is Key.F5)
+        {
+            StatusText.Text = "Phase29aKey F5";
+            e.Handled = true;
         }
     }
 

@@ -82,8 +82,8 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | --- | ----------------------------------- | ---- | ----- | ---- | ------- | -------------------------- |
 | K01 | リテラル入力（SendKeys）            | Yes  | OK    | Done | —       |                            |
 | K02 | Chord（Ctrl+A 等）                  | Yes  | OK    | Done | —       | `PressAsync` / `pressKeys` |
-| K03 | Tab / フォーカス移動の検証          | Yes  | PART  | Must | 29      | ExpectFocus 等             |
-| K04 | 特殊キー網羅（F1–F12, Win, NumPad） | Yes  | PART  | Must | 29      |                            |
+| K03 | Tab / フォーカス移動の検証          | Yes  | OK    | Done | 29a     | `ExpectFocusedAsync`       |
+| K04 | 特殊キー網羅（F1–F12, Win, NumPad） | Yes  | PART  | Done | 29a     | F1–F12 + NumPad。**Win 除外** |
 | K05 | typeHuman（遅延付き人間風）         | PART | NO    | 任意 | —       |                            |
 
 ---
@@ -94,9 +94,9 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | --- | ---------------------- | ---- | ----- | ---- | ------- | -------------------- |
 | V01 | TextBox 置換 setValue  | Yes  | OK    | Done | —       |                      |
 | V02 | クリアして再入力       | Yes  | OK    | Done | —       |                      |
-| V03 | PasswordBox 入力       | Yes  | NO    | Must | 29      |                      |
+| V03 | PasswordBox 入力       | Yes  | OK    | Done | 29a     | Set のみ（Get に載せない） |
 | V04 | Slider / 数値レンジ    | Yes  | OK    | Done | —       |                      |
-| V05 | RichTextBox / 書式付き | PART | NO    | Must | 29      | 範囲は実装時に契約化 |
+| V05 | RichTextBox / 書式付き | PART | PART  | Done | 29a     | **平文のみ**（書式なし） |
 | V06 | クリップボード経由貼付 | Yes  | NO    | 任意 | —       |                      |
 
 ---
@@ -107,8 +107,8 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | --- | ------------------------ | ---- | ----- | ---- | ------- | ---- |
 | T01 | CheckBox トグル          | Yes  | OK    | Done | —       |      |
 | T02 | ExpectChecked            | Yes  | OK    | Done | —       |      |
-| T03 | RadioButton グループ選択 | Yes  | PART  | Must | 29      |      |
-| T04 | ToggleButton             | Yes  | PART  | Must | 29      |      |
+| T03 | RadioButton グループ選択 | Yes  | OK    | Done | 29a     | Toggle + ExpectChecked |
+| T04 | ToggleButton             | Yes  | OK    | Done | 29a     | Toggle + ExpectChecked |
 
 ---
 
@@ -119,9 +119,9 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | L01 | ListBox 単一選択（index）         | Yes  | OK    | Done | —       |      |
 | L02 | ListBox 複数選択（置換）          | Yes  | OK    | Done | —       |      |
 | L03 | ComboBox 項目選択（index）        | Yes  | OK    | Done | —       |      |
-| L04 | ComboBox ドロップダウン開閉の明示 | Yes  | PART  | Must | 29      |      |
+| L04 | ComboBox ドロップダウン開閉の明示 | Yes  | PART  | Must | 29b     |      |
 | L05 | 表示名・キーで選択                | Yes  | OK    | Done | 27      | `SelectAsync(key)` |
-| L06 | ListView / GridView               | Yes  | PART  | Must | 29      |      |
+| L06 | ListView / GridView               | Yes  | PART  | Must | 29b     |      |
 | L07 | 仮想化リストの scroll+select      | Yes  | OK    | Done | —       |      |
 
 ---
@@ -179,12 +179,12 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 
 | ID  | シナリオ                           | 競合 | Graft | 優先 | 仮Phase | メモ       |
 | --- | ---------------------------------- | ---- | ----- | ---- | ------- | ---------- |
-| C01 | DatePicker / Calendar              | Yes  | NO    | Must | 29      |            |
+| C01 | DatePicker / Calendar              | Yes  | NO    | Must | 29b     |            |
 | C02 | ProgressBar 値の読み取り・完了待ち | Yes  | OK    | Done | 24      | `ExpectValue` |
-| C03 | ToolTip 表示待ち                   | Yes  | NO    | Must | 29      | hover 依存 |
-| C04 | ToolBar / StatusBar 項目操作       | Yes  | PART  | Must | 29      |            |
-| C05 | Popup / Flyout                     | Yes  | PART  | Must | 29      |            |
-| C06 | Hyperlink / カスタムクリック可能   | Yes  | PART  | Must | 29      |            |
+| C03 | ToolTip 表示待ち                   | Yes  | NO    | Must | 29b     | hover 依存 |
+| C04 | ToolBar / StatusBar 項目操作       | Yes  | PART  | Must | 29b     |            |
+| C05 | Popup / Flyout                     | Yes  | PART  | Must | 29b     |            |
+| C06 | Hyperlink / カスタムクリック可能   | Yes  | PART  | Must | 29b     |            |
 
 ---
 
@@ -277,7 +277,8 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | 26      | メニュー深さ                   | M03, U02–U04                                         |
 | 27      | 探索・パス・キー指定           | F02, F04, F05, L05, E04                              |
 | 28      | DataGrid 残り                  | G06–G10                                              |
-| 29      | コントロール / キー穴          | V03, V05, L04, L06, T03, T04, C01, C03–C06, K03, K04 |
+| 29a     | 入力・トグル・キー穴           | V03, V05, T03, T04, K03, K04                         |
+| 29b     | リスト / その他 UI 穴          | L04, L06, C01, C03–C06                               |
 | 31      | SendInput 並列対策             | X04                                                  |
 
 （P02 要素クリップは任意のため Phase 番号なし）

@@ -288,6 +288,14 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case ExpectFocusedOperation expectFocused:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(expectFocused.AutomationId)
+                            .ExpectFocusedAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     case ExpectNameContainsOperation expectNameContains:
                         EnsureSession(session);
                         await session!

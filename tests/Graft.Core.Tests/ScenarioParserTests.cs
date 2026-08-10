@@ -500,6 +500,37 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// expectFocused compiles with automationId only.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with expectFocused
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - ExpectFocusedOperation
+    /// </remarks>
+    [Fact]
+    public void Parse_ExpectFocused_CompileOperation()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "expectFocused", "automationId": "SamplePhase29aFocusB" }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var expectFocused = Assert.IsType<ExpectFocusedOperation>(scenario.Operations[1]);
+        Assert.Equal("SamplePhase29aFocusB", expectFocused.AutomationId);
+    }
+
+    /// <summary>
     /// getCellText / setCellValue / expectCellText compile with row/column.
     /// </summary>
     /// <remarks>

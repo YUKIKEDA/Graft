@@ -359,7 +359,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 26 | メニュー深さ                                         | `SelectMenuAsync` / ContextMenu サブ / U04 |
 | Phase 27 | 探索・パス・キー指定                                 | GetByName/相対/Select key/SelectTree       |
 | Phase 28 | DataGrid 残り                                        | Template/セル選択/行キー/ソート/行 CRUD    |
-| （次）   | Must 残り（Phase 29+）→ Avalonia                     | 対照表: `competitive-gap.md`。Inspector 任意 |
+| Phase 29a | 入力・トグル・キー穴                                | V03/V05/T03/T04/K03/K04（29b は別 PR）     |
+| （次）   | Must 残り（Phase 29b+）→ Avalonia                    | 対照表: `competitive-gap.md`。Inspector 任意 |
 
 ## 9. 未検討・今後の課題
 
@@ -514,7 +515,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q128 | Phase 24: Expect* 系拡張 + WaitFor/Gone + WaitForWindowClosed + TreeNode.value。`task_phase24.md`   |
 | Q129 | Sample: 進捗 Window → 同一窓内次パネル。Frame なし。Scenario/MCP 薄い追従。W11 専用 API なし          |
 | Q130 | Phase 25: DoubleClick/Hover/Drag(要素→要素)/ClickAt(DIP)/Wheel。SendInput。`task_phase25.md`       |
-| Q131 | Hover は移動+短 dwell。ToolTip 待ちは Phase 29。Sample は Mouse セクション 1 つ。Scenario/MCP 薄い追従 |
+| Q131 | Hover は移動+短 dwell。ToolTip 待ちは Phase 29b。Sample は Mouse セクション 1 つ。Scenario/MCP 薄い追従 |
 | Q132 | Phase 26: `SelectMenuAsync` パス DSL（AutomationId/`/`）。wire `selectMenu`。ContextMenu は RightClick 後。U04=`element.notActionable`。`task_phase26.md` |
 | Q133 | Phase 27: GetByName/ControlType・Child/Sibling/Nth・SelectAsync(key)・SelectTreeAsync。`task_phase27.md` |
 | Q134 | Phase 28: Template/SelectCell/SelectRow/ClickColumnHeader/AddRow/DeleteSelectedRows。G09=ソート UI のみ。`task_phase28.md` |
+| Q135 | Phase 29a: Password Set / RichText 平文 / Radio·Toggle checked / ExpectFocused / F+NumPad（Win 除外）。29b=L04/L06/C01/C03–C06。`task_phase29.md` |
