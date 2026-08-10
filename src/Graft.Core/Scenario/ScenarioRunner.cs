@@ -105,6 +105,15 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case ScreenshotOperation screenshot:
+                        EnsureSession(session);
+                        var shot = await session!
+                            .ScreenshotAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        await shot.SaveAsync(screenshot.Path, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     case ScrollIntoViewOperation scroll:
                         EnsureSession(session);
                         if (scroll.Index is { } scrollIndex)

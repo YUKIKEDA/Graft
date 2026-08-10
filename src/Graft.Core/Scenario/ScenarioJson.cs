@@ -184,6 +184,7 @@ public static class ScenarioJson
             ScenarioActions.Toggle => CompileToggle(step, index),
             ScenarioActions.SendKeys => CompileSendKeys(step, index),
             ScenarioActions.PressKeys => CompilePressKeys(step, index),
+            ScenarioActions.Screenshot => CompileScreenshot(step, index),
             ScenarioActions.ScrollIntoView => CompileScrollIntoView(step, index),
             ScenarioActions.Select => CompileSelect(step, index),
             ScenarioActions.Expand => CompileExpand(step, index),
@@ -288,6 +289,9 @@ public static class ScenarioJson
 
         return new PressKeysOperation(automationId, keys);
     }
+
+    private static ScreenshotOperation CompileScreenshot(JsonElement step, int index) =>
+        new(RequireNonEmptyString(step, "path", index));
 
     private static ScrollIntoViewOperation CompileScrollIntoView(JsonElement step, int index)
     {

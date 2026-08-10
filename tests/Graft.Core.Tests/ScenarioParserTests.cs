@@ -117,6 +117,38 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// screenshot steps compile with a required path.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with launch + screenshot
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - ScreenshotOperation with matching path
+    /// </remarks>
+    [Fact]
+    public void Parse_ScreenshotStep_CompilesScreenshotOperation()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "screenshot", "path": "out/shot.png" }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var shot = Assert.IsType<ScreenshotOperation>(scenario.Operations[1]);
+        Assert.Equal(ScenarioActions.Screenshot, shot.Action);
+        Assert.Equal("out/shot.png", shot.Path);
+    }
+
+    /// <summary>
     /// pressKeys steps compile with automationId and keys.
     /// </summary>
     /// <remarks>

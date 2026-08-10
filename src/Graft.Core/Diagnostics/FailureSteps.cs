@@ -23,6 +23,9 @@ public static class FailureSteps
     /// <summary>pressKeys action failed.</summary>
     public const string PressKeys = "pressKeys";
 
+    /// <summary>screenshot action failed.</summary>
+    public const string Screenshot = "screenshot";
+
     /// <summary>scrollIntoView action failed.</summary>
     public const string ScrollIntoView = "scrollIntoView";
 

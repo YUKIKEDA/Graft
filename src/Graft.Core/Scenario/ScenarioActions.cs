@@ -25,6 +25,9 @@ public static class ScenarioActions
     /// <summary>Press one keyboard chord on an element.</summary>
     public const string PressKeys = FailureSteps.PressKeys;
 
+    /// <summary>Capture the target window screenshot to a path.</summary>
+    public const string Screenshot = FailureSteps.Screenshot;
+
     /// <summary>Scroll an element or list item into view.</summary>
     public const string ScrollIntoView = FailureSteps.ScrollIntoView;
 

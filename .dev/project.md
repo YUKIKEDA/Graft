@@ -345,7 +345,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 12 | OpenFolder ダイアログ・シーム（同型 MVP）            | Arm + 同一 RunDialog（`FolderName`）       |
 | Phase 13 | MessageBox シーム（Runtime MVP）                     | Arm + Harmony `MessageBox.Show`            |
 | Phase 14 | キー chord / 特殊キー（`pressKeys`）                 | `PressAsync`。Avalonia は後ろへ            |
-| （次）   | 公開 Screenshot → 右クリック/Menu → … → Avalonia     | WPF ギャップ埋め優先。Inspector は最後寄り |
+| Phase 15 | 公開 Screenshot（Session / Scenario / MCP）          | 既存 wire を第一級化。要素クリップは含めない |
+| （次）   | 右クリック/Menu → … → Avalonia                       | WPF ギャップ埋め優先。Inspector は最後寄り |
 
 ## 9. 未検討・今後の課題
 
@@ -357,7 +358,6 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - scroll/select の項目キー・表示名指定（index 正本の次候補）
 - 実 OS コモンダイアログの UIA 操作（方針上非採用。必要なら別検討）
 - DataGrid セルの列キー指定 / CheckBox・Template 列（Phase 9 後の拡張）
-- 公開 Screenshot（Session / Scenario / MCP）
 - 右クリック + ContextMenu / MenuItem
 - TabControl / Slider / 複数選択 / hover・D&D
 - Avalonia アダプタ → Inspector（最後寄り）
@@ -478,3 +478,6 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q104 | `PressAsync` / wire `pressKeys`。`sendKeys` はリテラルのまま。1 呼び出し = 1 chord、フォーカス付き   |
 | Q105 | DSL: `Control`/`Alt`/`Shift` + `A`–`Z`/`0`–`9`/Enter/Tab/Escape/Backspace/Delete/Space/Arrow*      |
 | Q106 | Sample E2E: TextBox SetValue → Control+A → Delete → Expect 空。詳細は `task_phase14.md`               |
+| Q107 | Phase 15 は **公開 Screenshot**。Fluent 戻りは meta+bytes の `Screenshot` + `SaveAsync`               |
+| Q108 | 対象は現在ターゲット窓のみ。Scenario は path 必須。MCP は path 任意（省略時 temp）                    |
+| Q109 | E2E: Fluent PNG シグネチャ+size / Scenario path 書き。画像 diff・要素クリップは含めない。`task_phase15.md` |

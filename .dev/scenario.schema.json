@@ -32,6 +32,7 @@
         { "$ref": "#/$defs/toggle" },
         { "$ref": "#/$defs/sendKeys" },
         { "$ref": "#/$defs/pressKeys" },
+        { "$ref": "#/$defs/screenshot" },
         { "$ref": "#/$defs/scrollIntoView" },
         { "$ref": "#/$defs/select" },
         { "$ref": "#/$defs/expand" },
@@ -113,6 +114,15 @@
         "action": { "const": "pressKeys" },
         "automationId": { "type": "string", "minLength": 1 },
         "keys": { "type": "string", "minLength": 1 }
+      }
+    },
+    "screenshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "path"],
+      "properties": {
+        "action": { "const": "screenshot" },
+        "path": { "type": "string", "minLength": 1 }
       }
     },
     "scrollIntoView": {

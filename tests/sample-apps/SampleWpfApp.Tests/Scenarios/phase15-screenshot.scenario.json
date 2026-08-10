@@ -1,0 +1,16 @@
+{
+  "v": 1,
+  "name": "phase15-screenshot",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "screenshot",
+      "path": "Artifacts/phase15-screenshot.png"
+    }
+  ]
+}
