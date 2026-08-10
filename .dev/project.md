@@ -338,7 +338,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 5  | WPF 残アクション（scroll / select / expand）         | 仮想化対応を含む操作面の穴埋め             |
 | Phase 6  | ツリー状態（`selected` / `expanded`）+ Expect        | 診断・LLM。Phase 5 操作の状態検証          |
 | Phase 7  | ウィンドウ／モーダル（list/switch/wait/開封）        | WPF カバレッジ。競合ギャップの窓面         |
-| （次）   | OS ダイアログ方針 or 複雑 UI → … → Avalonia → Inspector | Avalonia/Inspector は WPF カバレッジ後   |
+| Phase 8  | DataGrid 行中心 MVP + `checked`                      | 複雑ホスト UI。セル R/W は次フェーズ       |
+| （次）   | DataGrid セル R/W → OS ダイアログ方針 → … → Avalonia → Inspector | Avalonia/Inspector は最後寄り   |
 
 ## 9. 未検討・今後の課題
 
@@ -348,10 +349,10 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - セレクタ重みの実測チューニング、`details` スキーマのフィールド確定
 - 診断向けツリー差分 JSON のフィールド名の確定
 - scroll/select の項目キー・表示名指定（index 正本の次候補）
-- CheckBox 等のツリー `checked`（Phase 6 では selected に混ぜない）
-- OS 共通ダイアログ（OpenFile 等）の方針・実装（Phase 7 後候補）
-- 複雑ホスト UI（DataGrid 等）の拡充
-- Avalonia アダプタ → Inspector（WPF カバレッジ後・最後寄り）
+- CheckBox 等のツリー `checked`（**Phase 8 最終 Batch**）
+- OS 共通ダイアログ（OpenFile 等）の方針・実装（Phase 8 後候補）
+- DataGrid **セル R/W**（Phase 8 行 MVP の次）
+- Avalonia アダプタ → Inspector（最後寄り）
 - MessagePack 評価用の実測ログ形式
 - .NET Framework WPF 対応の要否（需要が固まってから）
 - 多言語バインディング / gRPC（v1 スコープ外。再検討は操作モデル安定後）
@@ -439,3 +440,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q74 | ShowDialog 開封は `InvokeOpeningWindow`（BeginInvoke+出現待ち、既定自動 Switch）。素の Invoke は非対応 |
 | Q75 | WaitForWindow は title および／または automationId。全窓マージツリー・OS ダイアログ実装は含めない   |
 | Q76 | Phase 7 の次は OS ダイアログ方針 or 複雑 UI。Avalonia → Inspector は最後寄り                      |
+| Q77 | Phase 8: DataGrid **行中心 MVP** + 同一 Phase 最終 Batch で `checked`。詳細は `task_phase8.md`     |
+| Q78 | API は既存 `scrollIntoView` / `select`（ホスト＋index）。新 wire なし。Sample は FullRow+Single のみ |
+| Q79 | ツリーは実現済み `DataGridRow` + `selected`。行に安定 automationId。セル座標／編集／ソートは含めない |
+| Q80 | 公開は既存 Scenario ステップの薄い E2E。DataGrid 専用 MCP は作らない                               |
+| Q81 | Phase 8 の次は DataGrid **セル R/W**。OS ダイアログ・Avalonia・Inspector はさらに後               |
