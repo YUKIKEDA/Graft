@@ -22,7 +22,7 @@
 | Sample | **FullRow + Single のまま**。編集可能 Text 列を足す（行 MVP を壊さない） |
 | ツリー | **`DataGridCell` は出さない**。読取 SoT は `getCellText` |
 | 含めない | 列キー、CheckBox/Template 列、Cell 選択、ソート／リサイズ、複数選択、OS ダイアログ、Avalonia、Inspector |
-| Phase 9 の次 | **OS 共通ダイアログ方針** |
+| Phase 9 の次 | Phase 10 OpenFile シーム（[task_phase10.md](./task_phase10.md)） |
 
 ---
 
@@ -101,4 +101,4 @@
 - 行操作（Phase 8）と共存。セル API が正本でツリーにセルを載せない
 - 列キー指定・他列種は後続拡張
 - 設計矛盾時は `project.md` 優先
-- **次フェーズ:** OS 共通ダイアログ方針 → … → Avalonia → Inspector（最後寄り）
+- **次フェーズ:** [task_phase10.md](./task_phase10.md)（OpenFile シーム）→ SaveFile シーム → … → Avalonia → Inspector（最後寄り）

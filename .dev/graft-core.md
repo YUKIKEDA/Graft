@@ -84,4 +84,4 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - Scenario JSON: `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync`（上記に加え `getCellText` / `setCellValue` / `expectCellText` / 窓系）。契約は `.dev/scenario.schema.json`。例: `tests/sample-apps/SampleWpfApp.Tests/Scenarios/`
 - MCP: `Graft.McpServer`（stdio）。原子ツールに `graft_get_cell_text` / `graft_set_cell_value` / `graft_expect_cell_text` と窓系を含む。失敗時は `IsError` + FailureReport JSON
 - invoke / setValue はネイティブ → Peer → SendInput フォールバック（クリック / クリア+タイプ）
-- 未実装（後続）: OS 共通ダイアログ、DataGrid 列キー／他列種、Avalonia、Inspector、ファジー自己修復、シナリオ自動書き換え、`typeHuman` / chord DSL、複数選択
+- 未実装（後続）: OpenFile シーム（[task_phase10.md](./task_phase10.md)）、SaveFile 等、DataGrid 列キー／他列種、Avalonia、Inspector、ファジー自己修復、シナリオ自動書き換え、`typeHuman` / chord DSL、複数選択
