@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -36,7 +37,7 @@ internal static class WpfVisualTreeWalker
     }
 
     /// <summary>
-    /// Resolves a live <see cref="FrameworkElement"/> using the same visual-tree walk as <see cref="Capture"/>.
+    /// Resolves a live element using the same visual-tree walk as <see cref="Capture"/>.
     /// </summary>
     /// <param name="root">Window to search.</param>
     /// <param name="selector">automationId required; runtimeId optional.</param>
@@ -61,7 +62,7 @@ internal static class WpfVisualTreeWalker
         var state = new WalkState(
             new GetTreeOptions { MaxDepth = int.MaxValue / 4, MaxNodes = int.MaxValue / 4 }
         );
-        var matches = new List<(FrameworkElement Element, int RuntimeId)>();
+        var matches = new List<(object Target, int RuntimeId, string ControlType)>();
         CollectMatches(root, depth: 0, state, automationId, selector.RuntimeId, matches);
 
         if (matches.Count == 0)
@@ -80,13 +81,13 @@ internal static class WpfVisualTreeWalker
             );
         }
 
-        var (element, runtimeId) = matches[0];
+        var (target, runtimeId, controlType) = matches[0];
         return new ResolvedElement
         {
-            Target = element,
+            Target = target,
             AutomationId = automationId,
             RuntimeId = runtimeId,
-            ControlType = element.GetType().Name,
+            ControlType = controlType,
         };
     }
 
@@ -96,7 +97,7 @@ internal static class WpfVisualTreeWalker
         WalkState state,
         string automationId,
         int? runtimeIdFilter,
-        List<(FrameworkElement Element, int RuntimeId)> matches
+        List<(object Target, int RuntimeId, string ControlType)> matches
     )
     {
         state.NodeCount++;
@@ -107,7 +108,7 @@ internal static class WpfVisualTreeWalker
             && (runtimeIdFilter is null || runtimeIdFilter == runtimeId)
         )
         {
-            matches.Add((element, runtimeId));
+            matches.Add((element, runtimeId, element.GetType().Name));
         }
 
         CollectFrameworkChildren(
@@ -116,6 +117,42 @@ internal static class WpfVisualTreeWalker
             state,
             child => CollectMatches(child, depth + 1, state, automationId, runtimeIdFilter, matches)
         );
+
+        CollectHyperlinkMatches(element, state, automationId, runtimeIdFilter, matches);
+    }
+
+    private static void CollectHyperlinkMatches(
+        FrameworkElement element,
+        WalkState state,
+        string automationId,
+        int? runtimeIdFilter,
+        List<(object Target, int RuntimeId, string ControlType)> matches
+    )
+    {
+        if (element is not TextBlock textBlock)
+        {
+            return;
+        }
+
+        foreach (var hyperlink in EnumerateHyperlinks(textBlock.Inlines))
+        {
+            if (state.NodeCount >= state.Options.MaxNodes)
+            {
+                state.Truncated = true;
+                return;
+            }
+
+            state.NodeCount++;
+            var runtimeId = state.NextRuntimeId++;
+            var linkId = AutomationProperties.GetAutomationId(hyperlink) ?? string.Empty;
+            if (
+                string.Equals(linkId, automationId, StringComparison.Ordinal)
+                && (runtimeIdFilter is null || runtimeIdFilter == runtimeId)
+            )
+            {
+                matches.Add((hyperlink, runtimeId, nameof(Hyperlink)));
+            }
+        }
     }
 
     private static TreeNode BuildNode(
@@ -136,6 +173,8 @@ internal static class WpfVisualTreeWalker
             child => children.Add(BuildNode(child, window, boundsOrigin, depth + 1, state))
         );
 
+        AppendHyperlinkChildren(element, window, boundsOrigin, children, state);
+
         return new TreeNode
         {
             RuntimeId = runtimeId,
@@ -145,13 +184,95 @@ internal static class WpfVisualTreeWalker
             Bounds = ResolveBounds(element, window, boundsOrigin),
             Enabled = element.IsEnabled,
             Visible = element.IsVisible,
-            Focused = element.IsKeyboardFocused,
+            Focused = element.IsFocused,
             Selected = ResolveSelected(element),
             Expanded = ResolveExpanded(element),
             Checked = ResolveChecked(element),
             Value = ResolveValue(element),
+            ToolTip = ResolveToolTip(element),
             Children = children,
         };
+    }
+
+    private static void AppendHyperlinkChildren(
+        FrameworkElement element,
+        Window window,
+        Visual boundsOrigin,
+        List<TreeNode> children,
+        WalkState state
+    )
+    {
+        if (element is not TextBlock textBlock)
+        {
+            return;
+        }
+
+        var parentBounds = ResolveBounds(element, window, boundsOrigin);
+        foreach (var hyperlink in EnumerateHyperlinks(textBlock.Inlines))
+        {
+            if (state.NodeCount >= state.Options.MaxNodes)
+            {
+                state.Truncated = true;
+                return;
+            }
+
+            state.NodeCount++;
+            var runtimeId = state.NextRuntimeId++;
+            children.Add(
+                new TreeNode
+                {
+                    RuntimeId = runtimeId,
+                    ControlType = nameof(Hyperlink),
+                    Name = ResolveHyperlinkName(hyperlink),
+                    AutomationId = AutomationProperties.GetAutomationId(hyperlink) ?? string.Empty,
+                    Bounds = parentBounds,
+                    Enabled = hyperlink.IsEnabled,
+                    Visible = textBlock.IsVisible,
+                    Focused = false,
+                    Children = Array.Empty<TreeNode>(),
+                }
+            );
+        }
+    }
+
+    private static IEnumerable<Hyperlink> EnumerateHyperlinks(InlineCollection inlines)
+    {
+        foreach (var inline in inlines)
+        {
+            switch (inline)
+            {
+                case Hyperlink hyperlink:
+                    yield return hyperlink;
+                    break;
+                case Span span:
+                    foreach (var nested in EnumerateHyperlinks(span.Inlines))
+                    {
+                        yield return nested;
+                    }
+
+                    break;
+            }
+        }
+    }
+
+    private static string ResolveHyperlinkName(Hyperlink hyperlink)
+    {
+        var automationName = AutomationProperties.GetName(hyperlink);
+        if (!string.IsNullOrEmpty(automationName))
+        {
+            return automationName;
+        }
+
+        var builder = new StringBuilder();
+        foreach (var inline in hyperlink.Inlines)
+        {
+            if (inline is Run run)
+            {
+                builder.Append(run.Text);
+            }
+        }
+
+        return builder.ToString();
     }
 
     private static bool? ResolveSelected(FrameworkElement element) =>
@@ -170,6 +291,7 @@ internal static class WpfVisualTreeWalker
         {
             TreeViewItem treeItem => treeItem.IsExpanded,
             Expander expander => expander.IsExpanded,
+            ComboBox comboBox => comboBox.IsDropDownOpen,
             _ => null,
         };
 
@@ -186,9 +308,35 @@ internal static class WpfVisualTreeWalker
         {
             RangeBase range => range.Value.ToString("G", CultureInfo.InvariantCulture),
             RichTextBox richTextBox => ReadRichTextPlain(richTextBox),
+            DatePicker { SelectedDate: { } date } => date.ToString(
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture
+            ),
 
             // PasswordBox intentionally omitted (Phase 29a: do not expose Password over the tree).
             _ => null,
+        };
+
+    private static string? ResolveToolTip(FrameworkElement element)
+    {
+        if (element.ToolTip is ToolTip { IsOpen: true } toolTip)
+        {
+            return ReadToolTipContent(toolTip.Content);
+        }
+
+        return null;
+    }
+
+    private static string ReadToolTipContent(object? content) =>
+        content switch
+        {
+            null => string.Empty,
+            string text => text,
+            TextBlock textBlock => textBlock.Text ?? string.Empty,
+            TextBox textBox => textBox.Text ?? string.Empty,
+            ContentControl { Content: string text } => text,
+            ContentControl contentControl => ReadToolTipContent(contentControl.Content),
+            _ => Convert.ToString(content, CultureInfo.InvariantCulture) ?? string.Empty,
         };
 
     private static string ReadRichTextPlain(RichTextBox richTextBox)
@@ -234,9 +382,19 @@ internal static class WpfVisualTreeWalker
 
             var child = VisualTreeHelper.GetChild(parent, i);
 
-            // Popup content is walked via owner ContextMenu / MenuItem.IsSubmenuOpen (avoids duplicates).
-            if (child is Popup)
+            // Closed Popup skipped; open Popup Child is merged (Phase 29b C05).
+            // ContextMenu / Menu submenu content still walked via owner paths below.
+            if (child is Popup popup)
             {
+                if (
+                    popup.IsOpen
+                    && popup.Child is FrameworkElement popupChild
+                    && state.NodeCount < state.Options.MaxNodes
+                )
+                {
+                    onFrameworkChild(popupChild);
+                }
+
                 continue;
             }
 

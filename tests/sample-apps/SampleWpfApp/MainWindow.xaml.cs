@@ -17,7 +17,15 @@ public partial class MainWindow : Window
         InitializeComponent();
         DoubleClickTarget.MouseDoubleClick += DoubleClickTarget_OnMouseDoubleClick;
         PreviewKeyDown += MainWindow_OnPreviewKeyDown;
+        Loaded += MainWindow_OnLoaded;
         LoadListItems();
+    }
+
+    private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+    {
+        ToolTipService.SetInitialShowDelay(SamplePhase29bTipHost, 0);
+        ToolTipService.SetBetweenShowDelay(SamplePhase29bTipHost, 0);
+        ToolTipService.SetShowDuration(SamplePhase29bTipHost, 60000);
     }
 
     private void LoadListItems()
@@ -76,6 +84,22 @@ public partial class MainWindow : Window
         }
 
         SamplePhase28Grid.ItemsSource = phase28Items;
+
+        var phase29bCombo = new ObservableCollection<SampleListItem>
+        {
+            new SampleListItem("Phase29bCombo-00", "One"),
+            new SampleListItem("Phase29bCombo-01", "Two"),
+            new SampleListItem("Phase29bCombo-02", "Three"),
+        };
+        SamplePhase29bCombo.ItemsSource = phase29bCombo;
+
+        var phase29bList = new ObservableCollection<SampleListItem>
+        {
+            new SampleListItem("Phase29bRow-00", "Alice", notes: "A1"),
+            new SampleListItem("Phase29bRow-01", "Bob", notes: "B2"),
+            new SampleListItem("Phase29bRow-02", "Carol", notes: "C3"),
+        };
+        SamplePhase29bListView.ItemsSource = phase29bList;
     }
 
     private void SampleButton_OnClick(object sender, RoutedEventArgs e)
@@ -262,6 +286,31 @@ public partial class MainWindow : Window
             CultureInfo.InvariantCulture,
             $"Phase29aPassword len={SamplePhase29aPassword.Password.Length}"
         );
+    }
+
+    private void SamplePhase29bToolBarButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        StatusText.Text = "Phase29bToolBar";
+        SamplePhase29bStatusBarText.Text = "TB-clicked";
+        AutomationProperties.SetName(SamplePhase29bStatusBarText, "TB-clicked");
+    }
+
+    private void SamplePhase29bOpenPopup_OnClick(object sender, RoutedEventArgs e)
+    {
+        SamplePhase29bPopup.IsOpen = true;
+        StatusText.Text = "Phase29bPopupOpen";
+    }
+
+    private void SamplePhase29bPopupButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        StatusText.Text = "Phase29bPopupBtn";
+        SamplePhase29bPopup.IsOpen = false;
+    }
+
+    private void SamplePhase29bHyperlink_OnClick(object sender, RoutedEventArgs e)
+    {
+        StatusText.Text = "Phase29bHyperlink";
+        e.Handled = true;
     }
 
     private void MainWindow_OnPreviewKeyDown(object sender, KeyEventArgs e)

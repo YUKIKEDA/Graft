@@ -450,6 +450,87 @@
                          TabIndex="101" />
             </StackPanel>
 
+            <TextBlock Text="Phase 29b controls" Margin="0,8,0,4" />
+            <DatePicker x:Name="SamplePhase29bDate"
+                        AutomationProperties.AutomationId="SamplePhase29bDate"
+                        Width="200"
+                        Margin="0,0,0,8"
+                        HorizontalAlignment="Left" />
+            <ComboBox x:Name="SamplePhase29bCombo"
+                      AutomationProperties.AutomationId="SamplePhase29bCombo"
+                      Width="200"
+                      Margin="0,0,0,8"
+                      HorizontalAlignment="Left"
+                      DisplayMemberPath="Name" />
+            <ListView x:Name="SamplePhase29bListView"
+                      AutomationProperties.AutomationId="SamplePhase29bListView"
+                      Height="100"
+                      Margin="0,0,0,8"
+                      HorizontalAlignment="Left"
+                      Width="280">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Name"
+                                        Width="140"
+                                        DisplayMemberBinding="{Binding Name}" />
+                        <GridViewColumn Header="Notes"
+                                        Width="100"
+                                        DisplayMemberBinding="{Binding Notes}" />
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <Button x:Name="SamplePhase29bTipHost"
+                    AutomationProperties.AutomationId="SamplePhase29bTipHost"
+                    Content="Hover tip"
+                    Padding="12,6"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,0,8">
+                <Button.ToolTip>
+                    <ToolTip Content="Phase29bTip" />
+                </Button.ToolTip>
+            </Button>
+            <ToolBar Margin="0,0,0,8" HorizontalAlignment="Left">
+                <Button x:Name="SamplePhase29bToolBarButton"
+                        AutomationProperties.AutomationId="SamplePhase29bToolBarButton"
+                        Content="TB"
+                        Click="SamplePhase29bToolBarButton_OnClick" />
+            </ToolBar>
+            <StatusBar Margin="0,0,0,8">
+                <StatusBarItem>
+                    <TextBlock x:Name="SamplePhase29bStatusBarText"
+                               AutomationProperties.AutomationId="SamplePhase29bStatusBarText"
+                               Text="Ready29b" />
+                </StatusBarItem>
+            </StatusBar>
+            <Grid Margin="0,0,0,8" HorizontalAlignment="Left">
+                <Button x:Name="SamplePhase29bOpenPopup"
+                        AutomationProperties.AutomationId="SamplePhase29bOpenPopup"
+                        Content="Open Popup"
+                        Padding="12,6"
+                        Click="SamplePhase29bOpenPopup_OnClick" />
+                <Popup x:Name="SamplePhase29bPopup"
+                       Placement="Bottom"
+                       PlacementTarget="{Binding ElementName=SamplePhase29bOpenPopup}"
+                       StaysOpen="True">
+                    <Border Background="White"
+                            BorderBrush="Gray"
+                            BorderThickness="1"
+                            Padding="8">
+                        <Button x:Name="SamplePhase29bPopupButton"
+                                AutomationProperties.AutomationId="SamplePhase29bPopupButton"
+                                Content="PopupBtn"
+                                Click="SamplePhase29bPopupButton_OnClick" />
+                    </Border>
+                </Popup>
+            </Grid>
+            <TextBlock Margin="0,0,0,16" HorizontalAlignment="Left">
+                <Hyperlink x:Name="SamplePhase29bHyperlink"
+                           AutomationProperties.AutomationId="SamplePhase29bHyperlink"
+                           Click="SamplePhase29bHyperlink_OnClick">
+                    Phase29bLink
+                </Hyperlink>
+            </TextBlock>
+
             <TextBlock Text="Windows" Margin="0,8,0,4" />
             <Button x:Name="OpenChildWindowButton"
                     AutomationProperties.AutomationId="OpenChildWindowButton"

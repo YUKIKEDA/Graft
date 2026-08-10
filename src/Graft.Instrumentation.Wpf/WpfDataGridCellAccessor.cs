@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Graft.Instrumentation.Actions;
@@ -12,7 +13,8 @@ using Graft.Protocol;
 namespace Graft.Instrumentation.Wpf;
 
 /// <summary>
-/// Reads/writes WPF <see cref="DataGrid"/> Text/CheckBox cells by row and column index or Header.
+/// Reads/writes WPF <see cref="DataGrid"/> cells and reads <see cref="ListView"/>/<see cref="GridView"/> cells
+/// by row and column index or Header.
 /// </summary>
 internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
 {
@@ -48,7 +50,13 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         string? columnKey
     )
     {
-        var dataGrid = ResolveDataGrid(selector);
+        var host = ResolveCellHost(selector);
+        if (host is ListView listView)
+        {
+            return GetListViewCellText(listView, row, column, columnKey);
+        }
+
+        var dataGrid = (DataGrid)host;
         var columnIndex = ResolveColumnIndex(dataGrid, column, columnKey);
         EnsureRowIndex(dataGrid, row);
         var dataColumn = dataGrid.Columns[columnIndex];
@@ -79,6 +87,91 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         };
     }
 
+    private static string GetListViewCellText(
+        ListView listView,
+        int row,
+        int? column,
+        string? columnKey
+    )
+    {
+        if (listView.View is not GridView gridView)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                $"getCellText for ListView requires a GridView (got {listView.View?.GetType().Name ?? "null"})."
+            );
+        }
+
+        var columnIndex = ResolveGridViewColumnIndex(gridView, column, columnKey);
+        EnsureListItemsIndex(listView, row);
+        _ = WpfElementScroller.ScrollListItem(listView, row);
+        listView.UpdateLayout();
+        Idle(listView);
+
+        var item = listView.Items[row];
+        if (item is null)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                $"ListView row {row} is null."
+            );
+        }
+
+        var gridColumn = gridView.Columns[columnIndex];
+        if (gridColumn.DisplayMemberBinding is Binding binding)
+        {
+            return ReadBoundValue(item, binding);
+        }
+
+        if (listView.ItemContainerGenerator.ContainerFromIndex(row) is ListViewItem rowContainer)
+        {
+            listView.ScrollIntoView(item);
+            listView.UpdateLayout();
+            Idle(listView);
+            var cells = FindVisualChildren<TextBlock>(rowContainer).ToList();
+            if (columnIndex < cells.Count)
+            {
+                return cells[columnIndex].Text ?? string.Empty;
+            }
+        }
+
+        throw new ElementActionException(
+            GraftErrorCodes.ActionFailed,
+            $"Failed to read ListView cell at row {row}, column {columnIndex} (need DisplayMemberBinding or realized TextBlock)."
+        );
+    }
+
+    private static string ReadBoundValue(object item, Binding binding)
+    {
+        var path = binding.Path?.Path;
+        if (string.IsNullOrEmpty(path))
+        {
+            return Convert.ToString(item, CultureInfo.InvariantCulture) ?? string.Empty;
+        }
+
+        object? current = item;
+        foreach (var segment in path.Split('.'))
+        {
+            if (current is null)
+            {
+                return string.Empty;
+            }
+
+            var property = current.GetType().GetProperty(segment);
+            if (property is null)
+            {
+                throw new ElementActionException(
+                    GraftErrorCodes.ActionFailed,
+                    $"ListView binding path '{path}' could not resolve property '{segment}' on {current.GetType().Name}."
+                );
+            }
+
+            current = property.GetValue(current);
+        }
+
+        return Convert.ToString(current, CultureInfo.InvariantCulture) ?? string.Empty;
+    }
+
     private static void SetCellValueOnUiThread(
         ElementSelector selector,
         int row,
@@ -87,7 +180,16 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         string value
     )
     {
-        var dataGrid = ResolveDataGrid(selector);
+        var host = ResolveCellHost(selector);
+        if (host is ListView)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                "setCellValue is not supported for ListView/GridView (read-only)."
+            );
+        }
+
+        var dataGrid = (DataGrid)host;
         var columnIndex = ResolveColumnIndex(dataGrid, column, columnKey);
         EnsureRowIndex(dataGrid, row);
         var dataColumn = dataGrid.Columns[columnIndex];
@@ -282,7 +384,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         return ReadDisplayText(content);
     }
 
-    private static DataGrid ResolveDataGrid(ElementSelector selector)
+    private static FrameworkElement ResolveCellHost(ElementSelector selector)
     {
         var resolver =
             AgentServices.ElementResolver
@@ -292,15 +394,122 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
             );
 
         var resolved = resolver.Resolve(selector);
-        if (resolved.Target is not DataGrid dataGrid)
+        return resolved.Target switch
+        {
+            DataGrid dataGrid => dataGrid,
+            ListView listView => listView,
+            _ => throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                $"getCellText/setCellValue requires a DataGrid or ListView (got {resolved.Target.GetType().Name})."
+            ),
+        };
+    }
+
+    private static int ResolveGridViewColumnIndex(GridView gridView, int? column, string? columnKey)
+    {
+        var hasColumn = column is not null;
+        var hasKey = !string.IsNullOrWhiteSpace(columnKey);
+        if (hasColumn == hasKey)
         {
             throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"getCellText/setCellValue requires a DataGrid (got {resolved.Target.GetType().Name})."
+                GraftErrorCodes.SelectorInvalid,
+                "Exactly one of params.column or params.columnKey is required."
             );
         }
 
-        return dataGrid;
+        if (hasColumn)
+        {
+            var index = column!.Value;
+            if (index < 0)
+            {
+                throw new ElementActionException(
+                    GraftErrorCodes.SelectorInvalid,
+                    "params.column must be >= 0."
+                );
+            }
+
+            if (index >= gridView.Columns.Count)
+            {
+                throw new ElementActionException(
+                    GraftErrorCodes.ElementNotFound,
+                    $"Column index {index} is out of range (count={gridView.Columns.Count})."
+                );
+            }
+
+            return index;
+        }
+
+        var key = columnKey!.Trim();
+        var matches = new List<int>();
+        for (var i = 0; i < gridView.Columns.Count; i++)
+        {
+            if (
+                string.Equals(
+                    FormatHeader(gridView.Columns[i].Header),
+                    key,
+                    StringComparison.Ordinal
+                )
+            )
+            {
+                matches.Add(i);
+            }
+        }
+
+        if (matches.Count == 0)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ElementNotFound,
+                $"No GridView column Header matched columnKey '{key}'."
+            );
+        }
+
+        if (matches.Count > 1)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ElementAmbiguous,
+                $"Multiple GridView columns matched columnKey '{key}' ({matches.Count})."
+            );
+        }
+
+        return matches[0];
+    }
+
+    private static void EnsureListItemsIndex(ItemsControl itemsControl, int row)
+    {
+        if (row < 0)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.row must be >= 0."
+            );
+        }
+
+        if (row >= itemsControl.Items.Count)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ElementNotFound,
+                $"Row index {row} is out of range (count={itemsControl.Items.Count})."
+            );
+        }
+    }
+
+    private static IEnumerable<T> FindVisualChildren<T>(DependencyObject parent)
+        where T : DependencyObject
+    {
+        var count = VisualTreeHelper.GetChildrenCount(parent);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is T match)
+            {
+                yield return match;
+            }
+
+            foreach (var nested in FindVisualChildren<T>(child))
+            {
+                yield return nested;
+            }
+        }
     }
 
     private static int ResolveColumnIndex(DataGrid dataGrid, int? column, string? columnKey)

@@ -1,0 +1,87 @@
+{
+  "v": 1,
+  "name": "phase29b-controls",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "setValue",
+      "automationId": "SamplePhase29bDate",
+      "value": "2026-01-15"
+    },
+    {
+      "action": "expectValue",
+      "automationId": "SamplePhase29bDate",
+      "value": "2026-01-15"
+    },
+    {
+      "action": "expand",
+      "automationId": "SamplePhase29bCombo"
+    },
+    {
+      "action": "expectExpanded",
+      "automationId": "SamplePhase29bCombo",
+      "expanded": true
+    },
+    {
+      "action": "select",
+      "automationId": "SamplePhase29bListView",
+      "index": 0
+    },
+    {
+      "action": "expectCellText",
+      "automationId": "SamplePhase29bListView",
+      "row": 0,
+      "columnKey": "Name",
+      "text": "Alice"
+    },
+    {
+      "action": "scrollIntoView",
+      "automationId": "SamplePhase29bTipHost"
+    },
+    {
+      "action": "hover",
+      "automationId": "SamplePhase29bTipHost"
+    },
+    {
+      "action": "expectToolTip",
+      "automationId": "SamplePhase29bTipHost",
+      "toolTip": "Phase29bTip"
+    },
+    {
+      "action": "invoke",
+      "automationId": "SamplePhase29bToolBarButton"
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "Phase29bToolBar"
+    },
+    {
+      "action": "invoke",
+      "automationId": "SamplePhase29bOpenPopup"
+    },
+    {
+      "action": "invoke",
+      "automationId": "SamplePhase29bPopupButton"
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "Phase29bPopupBtn"
+    },
+    {
+      "action": "invoke",
+      "automationId": "SamplePhase29bHyperlink"
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "Phase29bHyperlink"
+    }
+  ]
+}

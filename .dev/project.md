@@ -359,8 +359,9 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 26 | メニュー深さ                                         | `SelectMenuAsync` / ContextMenu サブ / U04 |
 | Phase 27 | 探索・パス・キー指定                                 | GetByName/相対/Select key/SelectTree       |
 | Phase 28 | DataGrid 残り                                        | Template/セル選択/行キー/ソート/行 CRUD    |
-| Phase 29a | 入力・トグル・キー穴                                | V03/V05/T03/T04/K03/K04（29b は別 PR）     |
-| （次）   | Must 残り（Phase 29b+）→ Avalonia                    | 対照表: `competitive-gap.md`。Inspector 任意 |
+| Phase 29a | 入力・トグル・キー穴                                | V03/V05/T03/T04/K03/K04                    |
+| Phase 29b | リスト / その他 UI 穴                               | L04/L06/C01/C03–C06                        |
+| （次）   | Must 残り（Phase 31+）→ Avalonia                     | 対照表: `competitive-gap.md`。Inspector 任意 |
 
 ## 9. 未検討・今後の課題
 
@@ -520,3 +521,4 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q133 | Phase 27: GetByName/ControlType・Child/Sibling/Nth・SelectAsync(key)・SelectTreeAsync。`task_phase27.md` |
 | Q134 | Phase 28: Template/SelectCell/SelectRow/ClickColumnHeader/AddRow/DeleteSelectedRows。G09=ソート UI のみ。`task_phase28.md` |
 | Q135 | Phase 29a: Password Set / RichText 平文 / Radio·Toggle checked / ExpectFocused / F+NumPad（Win 除外）。29b=L04/L06/C01/C03–C06。`task_phase29.md` |
+| Q136 | Phase 29b: DatePicker yyyy-MM-dd / ComboBox Expand / ListView GridView Read / ExpectToolTip / ToolBar·StatusBar Sample / Popup 開時合流 / Hyperlink Click。`task_phase29.md` |

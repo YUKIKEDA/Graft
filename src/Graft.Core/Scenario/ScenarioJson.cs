@@ -208,6 +208,7 @@ public static class ScenarioJson
             ScenarioActions.ExpectNameContains => CompileExpectNameContains(step, index),
             ScenarioActions.ExpectNameMatches => CompileExpectNameMatches(step, index),
             ScenarioActions.ExpectValue => CompileExpectValue(step, index),
+            ScenarioActions.ExpectToolTip => CompileExpectToolTip(step, index),
             ScenarioActions.WaitFor => CompileWaitFor(step, index),
             ScenarioActions.ExpectGone => CompileExpectGone(step, index),
             ScenarioActions.GetCellText => CompileGetCellText(step, index),
@@ -547,6 +548,20 @@ public static class ScenarioJson
         }
 
         return new ExpectValueOperation(automationId, valueElement.GetString() ?? string.Empty);
+    }
+
+    private static ExpectToolTipOperation CompileExpectToolTip(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        if (
+            !step.TryGetProperty("toolTip", out var toolTipElement)
+            || toolTipElement.ValueKind != JsonValueKind.String
+        )
+        {
+            throw Invalid($"steps[{index}] expectToolTip requires string property 'toolTip'.");
+        }
+
+        return new ExpectToolTipOperation(automationId, toolTipElement.GetString() ?? string.Empty);
     }
 
     private static WaitForOperation CompileWaitFor(JsonElement step, int index) =>

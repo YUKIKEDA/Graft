@@ -86,6 +86,14 @@ public sealed class TreeNode
     public string? Value { get; init; }
 
     /// <summary>
+    /// Gets the open ToolTip display text when the host's ToolTip is showing;
+    /// <see langword="null"/> when closed or not applicable.
+    /// </summary>
+    [JsonPropertyName("toolTip")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ToolTip { get; init; }
+
+    /// <summary>
     /// Gets child nodes in visual-tree order.
     /// </summary>
     [JsonPropertyName("children")]

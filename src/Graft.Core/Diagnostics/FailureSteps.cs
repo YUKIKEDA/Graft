@@ -95,6 +95,9 @@ public static class FailureSteps
     /// <summary>Expect on element value failed or timed out.</summary>
     public const string ExpectValue = "expectValue";
 
+    /// <summary>Expect on element open ToolTip text failed or timed out.</summary>
+    public const string ExpectToolTip = "expectToolTip";
+
     /// <summary>Wait until element is present failed or timed out.</summary>
     public const string WaitFor = "waitFor";
 

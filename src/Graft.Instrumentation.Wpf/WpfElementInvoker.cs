@@ -3,6 +3,7 @@ using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Documents;
 using System.Windows.Threading;
 using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Elements;
@@ -184,6 +185,20 @@ internal sealed class WpfElementInvoker : IElementInvoker
             );
 
         var resolved = resolver.Resolve(selector);
+        if (resolved.Target is Hyperlink hyperlink)
+        {
+            if (!hyperlink.IsEnabled)
+            {
+                throw new ElementActionException(
+                    GraftErrorCodes.ElementNotActionable,
+                    $"Element '{resolved.AutomationId}' is not actionable (enabled=false)."
+                );
+            }
+
+            hyperlink.DoClick();
+            return;
+        }
+
         if (resolved.Target is not FrameworkElement element)
         {
             throw new ElementActionException(

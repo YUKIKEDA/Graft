@@ -11,7 +11,7 @@ using Graft.Protocol;
 namespace Graft.Instrumentation.Wpf;
 
 /// <summary>
-/// Expands / collapses WPF TreeViewItem and Expander controls.
+/// Expands / collapses WPF TreeViewItem, Expander, and ComboBox drop-downs.
 /// </summary>
 internal sealed class WpfElementExpander : IElementExpander
 {
@@ -84,6 +84,9 @@ internal sealed class WpfElementExpander : IElementExpander
                 break;
             case Expander expander:
                 expander.IsExpanded = expanded;
+                break;
+            case ComboBox comboBox:
+                comboBox.IsDropDownOpen = expanded;
                 break;
             default:
                 throw new ElementActionException(

@@ -97,6 +97,9 @@ public static class ScenarioActions
     /// <summary>Expect an element's tree value.</summary>
     public const string ExpectValue = FailureSteps.ExpectValue;
 
+    /// <summary>Expect an element's open ToolTip text.</summary>
+    public const string ExpectToolTip = FailureSteps.ExpectToolTip;
+
     /// <summary>Wait until an element is present.</summary>
     public const string WaitFor = FailureSteps.WaitFor;
 
