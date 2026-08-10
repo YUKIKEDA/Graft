@@ -207,40 +207,81 @@ public static class ScenarioRunner
 
                     case GetCellTextOperation getCellText:
                         EnsureSession(session);
-                        _ = await session!
-                            .GetByAutomationId(getCellText.AutomationId)
-                            .GetCellTextAsync(
-                                getCellText.Row,
-                                getCellText.Column,
-                                cancellationToken
-                            )
-                            .ConfigureAwait(false);
+                        _ = getCellText.ColumnKey is null
+                            ? await session!
+                                .GetByAutomationId(getCellText.AutomationId)
+                                .GetCellTextAsync(
+                                    getCellText.Row,
+                                    getCellText.Column!.Value,
+                                    cancellationToken
+                                )
+                                .ConfigureAwait(false)
+                            : await session!
+                                .GetByAutomationId(getCellText.AutomationId)
+                                .GetCellTextAsync(
+                                    getCellText.Row,
+                                    getCellText.ColumnKey,
+                                    cancellationToken
+                                )
+                                .ConfigureAwait(false);
                         break;
 
                     case SetCellValueOperation setCellValue:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(setCellValue.AutomationId)
-                            .SetCellValueAsync(
-                                setCellValue.Row,
-                                setCellValue.Column,
-                                setCellValue.Value,
-                                cancellationToken
-                            )
-                            .ConfigureAwait(false);
+                        if (setCellValue.ColumnKey is null)
+                        {
+                            await session!
+                                .GetByAutomationId(setCellValue.AutomationId)
+                                .SetCellValueAsync(
+                                    setCellValue.Row,
+                                    setCellValue.Column!.Value,
+                                    setCellValue.Value,
+                                    cancellationToken
+                                )
+                                .ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            await session!
+                                .GetByAutomationId(setCellValue.AutomationId)
+                                .SetCellValueAsync(
+                                    setCellValue.Row,
+                                    setCellValue.ColumnKey,
+                                    setCellValue.Value,
+                                    cancellationToken
+                                )
+                                .ConfigureAwait(false);
+                        }
+
                         break;
 
                     case ExpectCellTextOperation expectCellText:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(expectCellText.AutomationId)
-                            .ExpectCellTextAsync(
-                                expectCellText.Row,
-                                expectCellText.Column,
-                                expectCellText.Text,
-                                cancellationToken
-                            )
-                            .ConfigureAwait(false);
+                        if (expectCellText.ColumnKey is null)
+                        {
+                            await session!
+                                .GetByAutomationId(expectCellText.AutomationId)
+                                .ExpectCellTextAsync(
+                                    expectCellText.Row,
+                                    expectCellText.Column!.Value,
+                                    expectCellText.Text,
+                                    cancellationToken
+                                )
+                                .ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            await session!
+                                .GetByAutomationId(expectCellText.AutomationId)
+                                .ExpectCellTextAsync(
+                                    expectCellText.Row,
+                                    expectCellText.ColumnKey,
+                                    expectCellText.Text,
+                                    cancellationToken
+                                )
+                                .ConfigureAwait(false);
+                        }
+
                         break;
 
                     case ArmOpenFileOperation armOpenFile:

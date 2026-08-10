@@ -230,37 +230,52 @@
     "getCellText": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "row", "column"],
+      "required": ["action", "automationId", "row"],
       "properties": {
         "action": { "const": "getCellText" },
         "automationId": { "type": "string", "minLength": 1 },
         "row": { "type": "integer", "minimum": 0 },
-        "column": { "type": "integer", "minimum": 0 }
-      }
+        "column": { "type": "integer", "minimum": 0 },
+        "columnKey": { "type": "string", "minLength": 1 }
+      },
+      "oneOf": [
+        { "required": ["column"], "not": { "required": ["columnKey"] } },
+        { "required": ["columnKey"], "not": { "required": ["column"] } }
+      ]
     },
     "setCellValue": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "row", "column", "value"],
+      "required": ["action", "automationId", "row", "value"],
       "properties": {
         "action": { "const": "setCellValue" },
         "automationId": { "type": "string", "minLength": 1 },
         "row": { "type": "integer", "minimum": 0 },
         "column": { "type": "integer", "minimum": 0 },
+        "columnKey": { "type": "string", "minLength": 1 },
         "value": { "type": "string" }
-      }
+      },
+      "oneOf": [
+        { "required": ["column"], "not": { "required": ["columnKey"] } },
+        { "required": ["columnKey"], "not": { "required": ["column"] } }
+      ]
     },
     "expectCellText": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "row", "column", "text"],
+      "required": ["action", "automationId", "row", "text"],
       "properties": {
         "action": { "const": "expectCellText" },
         "automationId": { "type": "string", "minLength": 1 },
         "row": { "type": "integer", "minimum": 0 },
         "column": { "type": "integer", "minimum": 0 },
+        "columnKey": { "type": "string", "minLength": 1 },
         "text": { "type": "string" }
-      }
+      },
+      "oneOf": [
+        { "required": ["column"], "not": { "required": ["columnKey"] } },
+        { "required": ["columnKey"], "not": { "required": ["column"] } }
+      ]
     },
     "listWindows": {
       "type": "object",

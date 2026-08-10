@@ -555,17 +555,42 @@ public sealed class ElementQuery
     }
 
     /// <summary>
-    /// Waits until the DataGrid is actionable, then returns Text cell display text.
+    /// Waits until the DataGrid is actionable, then returns cell display text by column index.
     /// </summary>
     /// <param name="row">Zero-based row index.</param>
     /// <param name="column">Zero-based column index.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Cell display text.</returns>
     /// <exception cref="GraftException">Wait, resolve, or getCellText failed.</exception>
-    public async Task<string> GetCellTextAsync(
+    public Task<string> GetCellTextAsync(
         int row,
         int column,
         CancellationToken cancellationToken = default
+    ) => GetCellTextCoreAsync(row, column, columnKey: null, cancellationToken);
+
+    /// <summary>
+    /// Waits until the DataGrid is actionable, then returns cell display text by column Header.
+    /// </summary>
+    /// <param name="row">Zero-based row index.</param>
+    /// <param name="columnKey">Column Header string.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Cell display text.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or getCellText failed.</exception>
+    public Task<string> GetCellTextAsync(
+        int row,
+        string columnKey,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
+        return GetCellTextCoreAsync(row, column: null, columnKey, cancellationToken);
+    }
+
+    private async Task<string> GetCellTextCoreAsync(
+        int row,
+        int? column,
+        string? columnKey,
+        CancellationToken cancellationToken
     )
     {
         var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
@@ -582,10 +607,19 @@ public sealed class ElementQuery
 
         try
         {
-            var text = await _connection
-                .GetCellTextAsync(node.AutomationId, row, column, cancellationToken)
-                .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.GetCellText, $"{node.AutomationId}[{row},{column}]");
+            var text = columnKey is null
+                ? await _connection
+                    .GetCellTextAsync(node.AutomationId, row, column!.Value, cancellationToken)
+                    .ConfigureAwait(false)
+                : await _connection
+                    .GetCellTextAsync(node.AutomationId, row, columnKey, cancellationToken)
+                    .ConfigureAwait(false);
+            _operationLog.Record(
+                FailureSteps.GetCellText,
+                columnKey is null
+                    ? $"{node.AutomationId}[{row},{column}]"
+                    : $"{node.AutomationId}[{row},{columnKey}]"
+            );
             return text;
         }
         catch (GraftException ex) when (ex.Report is null)
@@ -602,19 +636,47 @@ public sealed class ElementQuery
     }
 
     /// <summary>
-    /// Waits until the DataGrid is actionable, then sets a Text cell via BeginEdit/CommitEdit.
+    /// Waits until the DataGrid is actionable, then sets a cell by column index.
     /// </summary>
     /// <param name="row">Zero-based row index.</param>
     /// <param name="column">Zero-based column index.</param>
-    /// <param name="value">Replacement text.</param>
+    /// <param name="value">Replacement text (CheckBox: <c>True</c>/<c>False</c>).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when setCellValue succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or setCellValue failed.</exception>
-    public async Task SetCellValueAsync(
+    public Task SetCellValueAsync(
         int row,
         int column,
         string value,
         CancellationToken cancellationToken = default
+    ) => SetCellValueCoreAsync(row, column, columnKey: null, value, cancellationToken);
+
+    /// <summary>
+    /// Waits until the DataGrid is actionable, then sets a cell by column Header.
+    /// </summary>
+    /// <param name="row">Zero-based row index.</param>
+    /// <param name="columnKey">Column Header string.</param>
+    /// <param name="value">Replacement text (CheckBox: <c>True</c>/<c>False</c>).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when setCellValue succeeds.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or setCellValue failed.</exception>
+    public Task SetCellValueAsync(
+        int row,
+        string columnKey,
+        string value,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
+        return SetCellValueCoreAsync(row, column: null, columnKey, value, cancellationToken);
+    }
+
+    private async Task SetCellValueCoreAsync(
+        int row,
+        int? column,
+        string? columnKey,
+        string value,
+        CancellationToken cancellationToken
     )
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -634,12 +696,30 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .SetCellValueAsync(node.AutomationId, row, column, value, cancellationToken)
-                .ConfigureAwait(false);
+            if (columnKey is null)
+            {
+                await _connection
+                    .SetCellValueAsync(
+                        node.AutomationId,
+                        row,
+                        column!.Value,
+                        value,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                await _connection
+                    .SetCellValueAsync(node.AutomationId, row, columnKey, value, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
             _operationLog.Record(
                 FailureSteps.SetCellValue,
-                $"{node.AutomationId}[{row},{column}]={value}"
+                columnKey is null
+                    ? $"{node.AutomationId}[{row},{column}]={value}"
+                    : $"{node.AutomationId}[{row},{columnKey}]={value}"
             );
         }
         catch (GraftException ex) when (ex.Report is null)
@@ -657,7 +737,7 @@ public sealed class ElementQuery
     }
 
     /// <summary>
-    /// Waits until the DataGrid cell text equals <paramref name="expectedText"/>.
+    /// Waits until the DataGrid cell text equals <paramref name="expectedText"/> (column index).
     /// </summary>
     /// <param name="row">Zero-based row index.</param>
     /// <param name="column">Zero-based column index.</param>
@@ -668,11 +748,48 @@ public sealed class ElementQuery
     /// <c>expect.failed</c> when the text differs;
     /// <c>action.timeout</c> when the cell never matches in time.
     /// </exception>
-    public async Task ExpectCellTextAsync(
+    public Task ExpectCellTextAsync(
         int row,
         int column,
         string expectedText,
         CancellationToken cancellationToken = default
+    ) => ExpectCellTextCoreAsync(row, column, columnKey: null, expectedText, cancellationToken);
+
+    /// <summary>
+    /// Waits until the DataGrid cell text equals <paramref name="expectedText"/> (column Header).
+    /// </summary>
+    /// <param name="row">Zero-based row index.</param>
+    /// <param name="columnKey">Column Header string.</param>
+    /// <param name="expectedText">Expected cell display text.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when the expectation holds.</returns>
+    /// <exception cref="GraftException">
+    /// <c>expect.failed</c> when the text differs;
+    /// <c>action.timeout</c> when the cell never matches in time.
+    /// </exception>
+    public Task ExpectCellTextAsync(
+        int row,
+        string columnKey,
+        string expectedText,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
+        return ExpectCellTextCoreAsync(
+            row,
+            column: null,
+            columnKey,
+            expectedText,
+            cancellationToken
+        );
+    }
+
+    private async Task ExpectCellTextCoreAsync(
+        int row,
+        int? column,
+        string? columnKey,
+        string expectedText,
+        CancellationToken cancellationToken
     )
     {
         ArgumentNullException.ThrowIfNull(expectedText);
@@ -704,9 +821,13 @@ public sealed class ElementQuery
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                var actual = await _connection
-                    .GetCellTextAsync(host.AutomationId, row, column, cancellationToken)
-                    .ConfigureAwait(false);
+                var actual = columnKey is null
+                    ? await _connection
+                        .GetCellTextAsync(host.AutomationId, row, column!.Value, cancellationToken)
+                        .ConfigureAwait(false)
+                    : await _connection
+                        .GetCellTextAsync(host.AutomationId, row, columnKey, cancellationToken)
+                        .ConfigureAwait(false);
                 sawCell = true;
                 if (string.Equals(actual, expectedText, StringComparison.Ordinal))
                 {

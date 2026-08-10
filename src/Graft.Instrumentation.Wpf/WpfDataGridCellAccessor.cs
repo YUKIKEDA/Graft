@@ -1,5 +1,7 @@
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Graft.Instrumentation.Actions;
@@ -10,68 +12,90 @@ using Graft.Protocol;
 namespace Graft.Instrumentation.Wpf;
 
 /// <summary>
-/// Reads/writes WPF <see cref="DataGrid"/> Text column cells by row/column index.
+/// Reads/writes WPF <see cref="DataGrid"/> Text/CheckBox cells by row and column index or Header.
 /// </summary>
 internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
 {
     /// <inheritdoc />
-    public string GetCellText(ElementSelector selector, int row, int column)
+    public string GetCellText(ElementSelector selector, int row, int? column, string? columnKey)
     {
         ArgumentNullException.ThrowIfNull(selector);
-        return InvokeOnUi(() => GetCellTextOnUiThread(selector, row, column));
+        return InvokeOnUi(() => GetCellTextOnUiThread(selector, row, column, columnKey));
     }
 
     /// <inheritdoc />
-    public void SetCellValue(ElementSelector selector, int row, int column, string value)
+    public void SetCellValue(
+        ElementSelector selector,
+        int row,
+        int? column,
+        string? columnKey,
+        string value
+    )
     {
         ArgumentNullException.ThrowIfNull(selector);
         ArgumentNullException.ThrowIfNull(value);
         InvokeOnUi(() =>
         {
-            SetCellValueOnUiThread(selector, row, column, value);
+            SetCellValueOnUiThread(selector, row, column, columnKey, value);
             return 0;
         });
     }
 
-    private static string GetCellTextOnUiThread(ElementSelector selector, int row, int column)
+    private static string GetCellTextOnUiThread(
+        ElementSelector selector,
+        int row,
+        int? column,
+        string? columnKey
+    )
     {
         var dataGrid = ResolveDataGrid(selector);
-        EnsureIndices(dataGrid, row, column);
-        var textColumn = RequireTextColumn(dataGrid, column);
+        var columnIndex = ResolveColumnIndex(dataGrid, column, columnKey);
+        EnsureRowIndex(dataGrid, row);
+        var dataColumn = dataGrid.Columns[columnIndex];
         _ = WpfElementScroller.ScrollListItem(dataGrid, row);
         var rowContainer = RequireRow(dataGrid, row);
-        dataGrid.ScrollIntoView(dataGrid.Items[row], textColumn);
+        dataGrid.ScrollIntoView(dataGrid.Items[row], dataColumn);
         dataGrid.UpdateLayout();
         Idle(dataGrid);
 
-        var content = textColumn.GetCellContent(rowContainer);
+        var content = dataColumn.GetCellContent(rowContainer);
         if (content is null)
         {
             throw new ElementActionException(
                 GraftErrorCodes.ActionFailed,
-                $"Failed to get cell content at row {row}, column {column}."
+                $"Failed to get cell content at row {row}, column {columnIndex}."
             );
         }
 
-        return ReadDisplayText(content);
+        return dataColumn switch
+        {
+            DataGridTextColumn => ReadDisplayText(content),
+            DataGridCheckBoxColumn => ReadCheckBoxText(content),
+            _ => throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                $"Column {columnIndex} is '{dataColumn.GetType().Name}'; only DataGridTextColumn and DataGridCheckBoxColumn are supported."
+            ),
+        };
     }
 
     private static void SetCellValueOnUiThread(
         ElementSelector selector,
         int row,
-        int column,
+        int? column,
+        string? columnKey,
         string value
     )
     {
         var dataGrid = ResolveDataGrid(selector);
-        EnsureIndices(dataGrid, row, column);
-        var textColumn = RequireTextColumn(dataGrid, column);
+        var columnIndex = ResolveColumnIndex(dataGrid, column, columnKey);
+        EnsureRowIndex(dataGrid, row);
+        var dataColumn = dataGrid.Columns[columnIndex];
 
-        if (dataGrid.IsReadOnly || textColumn.IsReadOnly)
+        if (dataGrid.IsReadOnly || dataColumn.IsReadOnly)
         {
             throw new ElementActionException(
                 GraftErrorCodes.ActionFailed,
-                $"DataGrid cell at column {column} is read-only."
+                $"DataGrid cell at column {columnIndex} is read-only."
             );
         }
 
@@ -85,50 +109,122 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
 
         _ = WpfElementScroller.ScrollListItem(dataGrid, row);
         var item = dataGrid.Items[row]!;
-        dataGrid.ScrollIntoView(item, textColumn);
+        dataGrid.ScrollIntoView(item, dataColumn);
         dataGrid.UpdateLayout();
         Idle(dataGrid);
 
-        dataGrid.CurrentCell = new DataGridCellInfo(item, textColumn);
+        dataGrid.CurrentCell = new DataGridCellInfo(item, dataColumn);
         if (!dataGrid.BeginEdit())
         {
             throw new ElementActionException(
                 GraftErrorCodes.ActionFailed,
-                $"BeginEdit failed at row {row}, column {column}."
+                $"BeginEdit failed at row {row}, column {columnIndex}."
             );
         }
 
         dataGrid.UpdateLayout();
         Idle(dataGrid);
 
-        var rowContainer = RequireRow(dataGrid, row);
-        var content = textColumn.GetCellContent(rowContainer);
+        try
+        {
+            var rowContainer = RequireRow(dataGrid, row);
+            var content = dataColumn.GetCellContent(rowContainer);
+            switch (dataColumn)
+            {
+                case DataGridTextColumn:
+                    SetTextCell(content, value, row, columnIndex, dataGrid);
+                    break;
+                case DataGridCheckBoxColumn:
+                    SetCheckBoxCell(content, value, row, columnIndex, dataGrid);
+                    break;
+                default:
+                    dataGrid.CancelEdit();
+                    throw new ElementActionException(
+                        GraftErrorCodes.ActionFailed,
+                        $"Column {columnIndex} is '{dataColumn.GetType().Name}'; only DataGridTextColumn and DataGridCheckBoxColumn are supported."
+                    );
+            }
+
+            if (
+                !dataGrid.CommitEdit(DataGridEditingUnit.Cell, true)
+                || !dataGrid.CommitEdit(DataGridEditingUnit.Row, true)
+            )
+            {
+                dataGrid.CancelEdit();
+                throw new ElementActionException(
+                    GraftErrorCodes.ActionFailed,
+                    $"CommitEdit failed at row {row}, column {columnIndex}."
+                );
+            }
+        }
+        catch
+        {
+            try
+            {
+                dataGrid.CancelEdit();
+            }
+            catch
+            {
+                // Best-effort cancel.
+            }
+
+            throw;
+        }
+
+        Idle(dataGrid);
+    }
+
+    private static void SetTextCell(
+        FrameworkElement? content,
+        string value,
+        int row,
+        int columnIndex,
+        DataGrid dataGrid
+    )
+    {
         var textBox = content as TextBox ?? FindVisualChild<TextBox>(content);
         if (textBox is null)
         {
             dataGrid.CancelEdit();
             throw new ElementActionException(
                 GraftErrorCodes.ActionFailed,
-                $"No TextBox editor found at row {row}, column {column}."
+                $"No TextBox editor found at row {row}, column {columnIndex}."
             );
         }
 
         textBox.Text = value;
         textBox.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
+    }
 
-        if (
-            !dataGrid.CommitEdit(DataGridEditingUnit.Cell, true)
-            || !dataGrid.CommitEdit(DataGridEditingUnit.Row, true)
-        )
+    private static void SetCheckBoxCell(
+        FrameworkElement? content,
+        string value,
+        int row,
+        int columnIndex,
+        DataGrid dataGrid
+    )
+    {
+        if (!TryParseCheckBoxValue(value, out var isChecked))
         {
             dataGrid.CancelEdit();
             throw new ElementActionException(
                 GraftErrorCodes.ActionFailed,
-                $"CommitEdit failed at row {row}, column {column}."
+                $"setCellValue for CheckBox requires 'True' or 'False' (got '{value}')."
             );
         }
 
-        Idle(dataGrid);
+        var checkBox = content as CheckBox ?? FindVisualChild<CheckBox>(content);
+        if (checkBox is null)
+        {
+            dataGrid.CancelEdit();
+            throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                $"No CheckBox editor found at row {row}, column {columnIndex}."
+            );
+        }
+
+        checkBox.IsChecked = isChecked;
+        checkBox.GetBindingExpression(ToggleButton.IsCheckedProperty)?.UpdateSource();
     }
 
     private static DataGrid ResolveDataGrid(ElementSelector selector)
@@ -152,21 +248,82 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         return dataGrid;
     }
 
-    private static void EnsureIndices(DataGrid dataGrid, int row, int column)
+    private static int ResolveColumnIndex(DataGrid dataGrid, int? column, string? columnKey)
+    {
+        var hasColumn = column is not null;
+        var hasKey = !string.IsNullOrWhiteSpace(columnKey);
+        if (hasColumn == hasKey)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.SelectorInvalid,
+                "Exactly one of params.column or params.columnKey is required."
+            );
+        }
+
+        if (hasColumn)
+        {
+            var index = column!.Value;
+            if (index < 0)
+            {
+                throw new ElementActionException(
+                    GraftErrorCodes.SelectorInvalid,
+                    "params.column must be >= 0."
+                );
+            }
+
+            if (index >= dataGrid.Columns.Count)
+            {
+                throw new ElementActionException(
+                    GraftErrorCodes.ElementNotFound,
+                    $"Column index {index} is out of range (count={dataGrid.Columns.Count})."
+                );
+            }
+
+            return index;
+        }
+
+        var key = columnKey!.Trim();
+        var matches = new List<int>();
+        for (var i = 0; i < dataGrid.Columns.Count; i++)
+        {
+            if (
+                string.Equals(
+                    FormatHeader(dataGrid.Columns[i].Header),
+                    key,
+                    StringComparison.Ordinal
+                )
+            )
+            {
+                matches.Add(i);
+            }
+        }
+
+        if (matches.Count == 0)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ElementNotFound,
+                $"No DataGrid column Header matched columnKey '{key}'."
+            );
+        }
+
+        if (matches.Count > 1)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ElementAmbiguous,
+                $"Multiple DataGrid columns matched columnKey '{key}' ({matches.Count})."
+            );
+        }
+
+        return matches[0];
+    }
+
+    private static void EnsureRowIndex(DataGrid dataGrid, int row)
     {
         if (row < 0)
         {
             throw new ElementActionException(
                 GraftErrorCodes.SelectorInvalid,
                 "params.row must be >= 0."
-            );
-        }
-
-        if (column < 0)
-        {
-            throw new ElementActionException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.column must be >= 0."
             );
         }
 
@@ -177,28 +334,15 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
                 $"Row index {row} is out of range (count={dataGrid.Items.Count})."
             );
         }
-
-        if (column >= dataGrid.Columns.Count)
-        {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotFound,
-                $"Column index {column} is out of range (count={dataGrid.Columns.Count})."
-            );
-        }
     }
 
-    private static DataGridTextColumn RequireTextColumn(DataGrid dataGrid, int column)
-    {
-        if (dataGrid.Columns[column] is not DataGridTextColumn textColumn)
+    private static string FormatHeader(object? header) =>
+        header switch
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"Column {column} is '{dataGrid.Columns[column].GetType().Name}'; only DataGridTextColumn is supported."
-            );
-        }
-
-        return textColumn;
-    }
+            null => string.Empty,
+            string text => text,
+            _ => Convert.ToString(header, CultureInfo.InvariantCulture) ?? string.Empty,
+        };
 
     private static DataGridRow RequireRow(DataGrid dataGrid, int row)
     {
@@ -223,6 +367,38 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
                 ?? content.ToString()
                 ?? string.Empty,
         };
+
+    private static string ReadCheckBoxText(FrameworkElement content)
+    {
+        var checkBox = content as CheckBox ?? FindVisualChild<CheckBox>(content);
+        if (checkBox is null)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                "Failed to read CheckBox cell content."
+            );
+        }
+
+        return checkBox.IsChecked == true ? "True" : "False";
+    }
+
+    private static bool TryParseCheckBoxValue(string value, out bool isChecked)
+    {
+        if (string.Equals(value, "True", StringComparison.Ordinal))
+        {
+            isChecked = true;
+            return true;
+        }
+
+        if (string.Equals(value, "False", StringComparison.Ordinal))
+        {
+            isChecked = false;
+            return true;
+        }
+
+        isChecked = false;
+        return false;
+    }
 
     private static T? FindVisualChild<T>(DependencyObject? parent)
         where T : DependencyObject

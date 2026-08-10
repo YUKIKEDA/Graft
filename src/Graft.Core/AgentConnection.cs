@@ -419,7 +419,7 @@ public sealed class AgentConnection : IAsyncDisposable
     }
 
     /// <summary>
-    /// Calls <c>getCellText</c> for a DataGrid Text cell.
+    /// Calls <c>getCellText</c> for a DataGrid cell by column index.
     /// </summary>
     /// <param name="automationId">DataGrid automation id.</param>
     /// <param name="row">Zero-based row index.</param>
@@ -427,15 +427,57 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Cell display text.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task<string> GetCellTextAsync(
+    public Task<string> GetCellTextAsync(
         string automationId,
         int row,
         int column,
         CancellationToken cancellationToken = default
+    ) => GetCellTextCoreAsync(automationId, row, column, columnKey: null, cancellationToken);
+
+    /// <summary>
+    /// Calls <c>getCellText</c> for a DataGrid cell by column Header key.
+    /// </summary>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="row">Zero-based row index.</param>
+    /// <param name="columnKey">Column Header string.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Cell display text.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public Task<string> GetCellTextAsync(
+        string automationId,
+        int row,
+        string columnKey,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
+        return GetCellTextCoreAsync(automationId, row, column: null, columnKey, cancellationToken);
+    }
+
+    private async Task<string> GetCellTextCoreAsync(
+        string automationId,
+        int row,
+        int? column,
+        string? columnKey,
+        CancellationToken cancellationToken
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
+
+        object payload = columnKey is null
+            ? new
+            {
+                automationId,
+                row,
+                column,
+            }
+            : new
+            {
+                automationId,
+                row,
+                columnKey,
+            };
 
         var response = await SendAsync(
                 new RequestMessage
@@ -443,14 +485,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.GetCellText,
-                    Params = JsonSerializer.SerializeToElement(
-                        new
-                        {
-                            automationId,
-                            row,
-                            column,
-                        }
-                    ),
+                    Params = JsonSerializer.SerializeToElement(payload),
                 },
                 cancellationToken
             )
@@ -475,7 +510,7 @@ public sealed class AgentConnection : IAsyncDisposable
     }
 
     /// <summary>
-    /// Calls <c>setCellValue</c> for a DataGrid Text cell.
+    /// Calls <c>setCellValue</c> for a DataGrid cell by column index.
     /// </summary>
     /// <param name="automationId">DataGrid automation id.</param>
     /// <param name="row">Zero-based row index.</param>
@@ -484,17 +519,72 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when setCellValue succeeds.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task SetCellValueAsync(
+    public Task SetCellValueAsync(
         string automationId,
         int row,
         int column,
         string value,
         CancellationToken cancellationToken = default
+    ) =>
+        SetCellValueCoreAsync(automationId, row, column, columnKey: null, value, cancellationToken);
+
+    /// <summary>
+    /// Calls <c>setCellValue</c> for a DataGrid cell by column Header key.
+    /// </summary>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="row">Zero-based row index.</param>
+    /// <param name="columnKey">Column Header string.</param>
+    /// <param name="value">Replacement text.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when setCellValue succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public Task SetCellValueAsync(
+        string automationId,
+        int row,
+        string columnKey,
+        string value,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
+        return SetCellValueCoreAsync(
+            automationId,
+            row,
+            column: null,
+            columnKey,
+            value,
+            cancellationToken
+        );
+    }
+
+    private async Task SetCellValueCoreAsync(
+        string automationId,
+        int row,
+        int? column,
+        string? columnKey,
+        string value,
+        CancellationToken cancellationToken
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ArgumentNullException.ThrowIfNull(value);
         ThrowIfDisposed();
+
+        object payload = columnKey is null
+            ? new
+            {
+                automationId,
+                row,
+                column,
+                value,
+            }
+            : new
+            {
+                automationId,
+                row,
+                columnKey,
+                value,
+            };
 
         var response = await SendAsync(
                 new RequestMessage
@@ -502,15 +592,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.SetCellValue,
-                    Params = JsonSerializer.SerializeToElement(
-                        new
-                        {
-                            automationId,
-                            row,
-                            column,
-                            value,
-                        }
-                    ),
+                    Params = JsonSerializer.SerializeToElement(payload),
                 },
                 cancellationToken
             )

@@ -351,7 +351,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 18 | Slider 値設定（`setValue` 拡張）                     | Invariant double → `Slider.Value`。複数選択は次 |
 | Phase 19 | ListBox 複数選択（`selectMany`）                     | 置換セマンティクス。DataGrid 複数行は含めない |
 | Phase 20 | Menu バー（既存 `invoke`）                           | トップ+1段サブ。開いたサブをツリーに       |
-| （次）   | DataGrid 列キー など → Avalonia                      | WPF ギャップ埋め優先。Inspector は最後寄り |
+| Phase 21 | DataGrid 列キー + CheckBox 列                        | Header `columnKey`。複数行選択は次         |
+| （次）   | DataGrid 複数行選択 → Avalonia                       | WPF ギャップ埋め優先。Inspector は最後寄り |
 
 ## 9. 未検討・今後の課題
 
@@ -362,8 +363,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - 診断向けツリー差分 JSON のフィールド名の確定
 - scroll/select の項目キー・表示名指定（index 正本の次候補）
 - 実 OS コモンダイアログの UIA 操作（方針上非採用。必要なら別検討）
-- DataGrid セルの列キー指定 / CheckBox・Template 列（Phase 9 後の拡張）
-- hover・D&D / DataGrid 複数行選択
+- DataGrid Template 列 / セル選択
+- hover・D&D / DataGrid 複数行選択（Phase 22）
 - ContextMenu サブメニュー / Menu 任意深さ
 - Avalonia アダプタ → Inspector（最後寄り）
 - MessagePack 評価用の実測ログ形式
@@ -497,3 +498,6 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q117 | Sample は別 `SampleMultiList`（Extended）。Single はエラー。ExpectSelected + StatusText。Scenario/MCP 薄い追従          |
 | Q118 | Phase 20: Menu バー。既存 `invoke` のみ。トップ+1段サブ。開いたサブをツリーに。`task_phase20.md`                        |
 | Q119 | Sample File→Ping。Scenario 既存 `invoke`。MCP 変更なし。任意深さ／パス DSL／新 wire は含めない                          |
+| Q120 | Phase 21: 列キーは Header（Ordinal）。wire `column` xor `columnKey`。CheckBox は `"True"`/`"False"`。`task_phase21.md` |
+| Q121 | SampleGrid に Active CheckBox 列。Scenario/MCP 薄い追従。複数行選択・Template 列は含めない                                |
+| Q122 | Phase 22 予定: DataGrid 複数行選択（`selectMany` 拡張）                                                                  |

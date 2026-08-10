@@ -751,8 +751,8 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var (selector, row, column) = ReadCellIndexParams(request.Params);
-            var text = accessor.GetCellText(selector, row, column);
+            var (selector, row, column, columnKey) = ReadCellColumnParams(request.Params);
+            var text = accessor.GetCellText(selector, row, column, columnKey);
             var resultJson = JsonSerializer.SerializeToElement(
                 new CellTextResult { Text = text },
                 JsonMessageCodec.Options
@@ -787,8 +787,8 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var (selector, row, column, value) = ReadSetCellValueParams(request.Params);
-            accessor.SetCellValue(selector, row, column, value);
+            var (selector, row, column, columnKey, value) = ReadSetCellValueParams(request.Params);
+            accessor.SetCellValue(selector, row, column, columnKey, value);
             return Ok(request.Id);
         }
         catch (ElementResolveException ex)
@@ -1133,16 +1133,19 @@ internal sealed class AgentPipeServer : IDisposable
         JsonElement? paramsElement
     ) => ReadIndexParams(paramsElement, requireIndex: false);
 
-    private static (ElementSelector Selector, int Row, int Column) ReadCellIndexParams(
-        JsonElement? paramsElement
-    )
+    private static (
+        ElementSelector Selector,
+        int Row,
+        int? Column,
+        string? ColumnKey
+    ) ReadCellColumnParams(JsonElement? paramsElement)
     {
         var selector = ReadElementSelector(paramsElement);
         if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
         {
             throw new ElementResolveException(
                 GraftErrorCodes.SelectorInvalid,
-                "params.row and params.column are required."
+                "params.row and exactly one of params.column or params.columnKey are required."
             );
         }
 
@@ -1157,28 +1160,56 @@ internal sealed class AgentPipeServer : IDisposable
             );
         }
 
-        if (
-            !element.TryGetProperty("column", out var columnProperty)
-            || !columnProperty.TryGetInt32(out var column)
-        )
+        int? column = null;
+        if (element.TryGetProperty("column", out var columnProperty))
+        {
+            if (!columnProperty.TryGetInt32(out var columnValue))
+            {
+                throw new ElementResolveException(
+                    GraftErrorCodes.SelectorInvalid,
+                    "params.column must be an integer."
+                );
+            }
+
+            column = columnValue;
+        }
+
+        string? columnKey = null;
+        if (element.TryGetProperty("columnKey", out var columnKeyProperty))
+        {
+            columnKey = columnKeyProperty.ValueKind switch
+            {
+                JsonValueKind.String => columnKeyProperty.GetString(),
+                JsonValueKind.Null => null,
+                _ => throw new ElementResolveException(
+                    GraftErrorCodes.SelectorInvalid,
+                    "params.columnKey must be a string."
+                ),
+            };
+        }
+
+        var hasColumn = column is not null;
+        var hasKey = !string.IsNullOrWhiteSpace(columnKey);
+        if (hasColumn == hasKey)
         {
             throw new ElementResolveException(
                 GraftErrorCodes.SelectorInvalid,
-                "params.column must be an integer."
+                "Exactly one of params.column or params.columnKey is required."
             );
         }
 
-        return (selector, row, column);
+        return (selector, row, column, hasKey ? columnKey : null);
     }
 
     private static (
         ElementSelector Selector,
         int Row,
-        int Column,
+        int? Column,
+        string? ColumnKey,
         string Value
     ) ReadSetCellValueParams(JsonElement? paramsElement)
     {
-        var (selector, row, column) = ReadCellIndexParams(paramsElement);
+        var (selector, row, column, columnKey) = ReadCellColumnParams(paramsElement);
         if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
         {
             throw new ElementResolveException(
@@ -1205,7 +1236,7 @@ internal sealed class AgentPipeServer : IDisposable
             ),
         };
 
-        return (selector, row, column, value);
+        return (selector, row, column, columnKey, value);
     }
 
     private static (ElementSelector Selector, int? Index) ReadIndexParams(

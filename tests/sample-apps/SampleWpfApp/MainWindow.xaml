@@ -192,6 +192,9 @@
                     <DataGridTextColumn Header="Name"
                                         Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         Width="*" />
+                    <DataGridCheckBoxColumn Header="Active"
+                                           Binding="{Binding Active, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                           Width="60" />
                 </DataGrid.Columns>
                 <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow">

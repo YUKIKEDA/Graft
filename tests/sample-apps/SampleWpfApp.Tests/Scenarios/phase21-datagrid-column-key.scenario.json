@@ -1,0 +1,33 @@
+{
+  "v": 1,
+  "name": "phase21-datagrid-column-key",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "expectCellText",
+      "automationId": "SampleGrid",
+      "row": 40,
+      "columnKey": "Name",
+      "text": "Row 40"
+    },
+    {
+      "action": "setCellValue",
+      "automationId": "SampleGrid",
+      "row": 35,
+      "columnKey": "Active",
+      "value": "True"
+    },
+    {
+      "action": "expectCellText",
+      "automationId": "SampleGrid",
+      "row": 35,
+      "columnKey": "Active",
+      "text": "True"
+    }
+  ]
+}

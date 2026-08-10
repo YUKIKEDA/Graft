@@ -47,7 +47,7 @@ public partial class MainWindow : Window
         var gridItems = new ObservableCollection<SampleListItem>();
         for (var i = 0; i < 50; i++)
         {
-            gridItems.Add(new SampleListItem($"GridRow-{i:D2}", $"Row {i}"));
+            gridItems.Add(new SampleListItem($"GridRow-{i:D2}", $"Row {i}", active: false));
         }
 
         SampleGrid.ItemsSource = gridItems;
