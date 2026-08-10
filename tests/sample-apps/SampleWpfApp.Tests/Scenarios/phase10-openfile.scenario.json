@@ -1,0 +1,39 @@
+{
+  "v": 1,
+  "name": "phase10-openfile",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "armOpenFile",
+      "path": "C:\\graft-open-file-ok.txt"
+    },
+    {
+      "action": "invokeOpeningWindow",
+      "automationId": "OpenFileButton",
+      "waitForNewWindow": false
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "OpenFile C:\\graft-open-file-ok.txt"
+    },
+    {
+      "action": "armOpenFileCancel"
+    },
+    {
+      "action": "invokeOpeningWindow",
+      "automationId": "OpenFileButton",
+      "waitForNewWindow": false
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "OpenFileCancel"
+    }
+  ]
+}

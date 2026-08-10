@@ -340,7 +340,7 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 7  | ウィンドウ／モーダル（list/switch/wait/開封）        | WPF カバレッジ。競合ギャップの窓面         |
 | Phase 8  | DataGrid 行中心 MVP + `checked`                      | 複雑ホスト UI。セル R/W は次フェーズ       |
 | Phase 9  | DataGrid セル R/W（Text 列 MVP）                     | ホスト＋(row, col)。OS ダイアログは次      |
-| Phase 10 | OpenFile ダイアログ・シーム（方針 + MVP）            | 実 OS 操作ではなく Arm + Graft ラッパ      |
+| Phase 10 | OpenFile ダイアログ・シーム（方針 + MVP）            | Arm + Harmony CommonItemDialog.RunDialog   |
 | （次）   | SaveFile シーム → … → Avalonia → Inspector           | Avalonia/Inspector は最後寄り              |
 
 ## 9. 未検討・今後の課題
@@ -452,7 +452,7 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q84 | 書込は BeginEdit→値→CommitEdit。列は DataGridTextColumn のみ。ツリーに DataGridCell は出さない     |
 | Q85 | Sample は FullRow+Single のまま編集可能 Text 列。Scenario/MCP 薄い追従                             |
 | Q86 | Phase 9 の次は **OS 共通ダイアログ方針**。列キー／他列種は後続                                     |
-| Q87 | Phase 10: OpenFile **シーム**（方針+MVP）。実 OS ダイアログ操作はしない。詳細は `task_phase10.md`  |
-| Q88 | 事前 Arm（単一パス OK / Cancel）→ Graft ラッパ。素の OpenFileDialog は非対応（未アーム時は実ダイアログへフォールバック） |
-| Q89 | 開封トリガは `InvokeOpeningWindow`。Arm は一回限り。Scenario/MCP 薄い追従                         |
+| Q87 | Phase 10: OpenFile **Runtime シーム**（方針+MVP）。実 OS UIA はしない。詳細は `task_phase10.md`     |
+| Q88 | アプリは素の `OpenFileDialog`。Harmony で `CommonItemDialog.RunDialog` を差し替え。業務コードに Graft API なし |
+| Q89 | 事前 Arm（単一パス OK / Cancel、一回限り）。未アームは実ダイアログ。開封は `waitForNewWindow:false`   |
 | Q90 | Phase 10 の次は **SaveFile シーム**。Avalonia / Inspector は後ろ                                     |

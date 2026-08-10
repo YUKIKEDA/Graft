@@ -644,14 +644,16 @@ public sealed class GraftAtomicTools
     /// Invokes an element that may open a window (modal-safe BeginInvoke path).
     /// </summary>
     /// <param name="automationId">Target automation id.</param>
+    /// <param name="waitForNewWindow">When true (default), wait for a new WPF window and switch.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_invoke_opening_window")]
     [Description(
-        "Invoke an element that opens a window (use for ShowDialog). Waits for the new window and switches to it. Plain graft_invoke may hang on modals."
+        "Invoke an element that may open a window (BeginInvoke). By default waits for a new WPF window. Set waitForNewWindow=false for Graft OpenFile seam."
     )]
     public Task<CallToolResult> InvokeOpeningWindow(
         [Description("Target automation id.")] string automationId,
+        [Description("Wait for new WPF window (default true).")] bool waitForNewWindow = true,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
@@ -659,8 +661,19 @@ public sealed class GraftAtomicTools
             {
                 var window = await session
                     .GetByAutomationId(automationId)
-                    .InvokeOpeningWindowAsync(cancellationToken)
+                    .InvokeOpeningWindowAsync(waitForNewWindow, cancellationToken)
                     .ConfigureAwait(false);
+                if (window is null)
+                {
+                    return ToolResults.Ok(
+                        new JsonObject
+                        {
+                            ["automationId"] = automationId,
+                            ["waitForNewWindow"] = false,
+                        }
+                    );
+                }
+
                 return ToolResults.Ok(
                     new JsonObject
                     {
@@ -671,6 +684,46 @@ public sealed class GraftAtomicTools
                         ["isModal"] = window.IsModal,
                     }
                 );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Arms the next Graft OpenFile seam with a file path (OK, one-shot).
+    /// </summary>
+    /// <param name="path">File path to return.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_arm_open_file")]
+    [Description(
+        "Arm the next OpenFileDialog.ShowDialog (RunDialog seam) to return a path (one-shot)."
+    )]
+    public Task<CallToolResult> ArmOpenFile(
+        [Description("File path to return.")] string path,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session.ArmOpenFileAsync(path, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["path"] = path });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Arms the next Graft OpenFile seam as cancel (one-shot).
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_arm_open_file_cancel")]
+    [Description("Arm the next OpenFileDialog.ShowDialog (RunDialog seam) as cancel (one-shot).")]
+    public Task<CallToolResult> ArmOpenFileCancel(CancellationToken cancellationToken = default) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session.ArmOpenFileCancelAsync(cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["canceled"] = true });
             },
             cancellationToken
         );

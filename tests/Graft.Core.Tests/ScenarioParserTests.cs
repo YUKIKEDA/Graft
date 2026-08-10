@@ -276,6 +276,42 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// armOpenFile / armOpenFileCancel / invokeOpeningWindow waitForNewWindow compile.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with OpenFile arm actions
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - Matching operation types
+    /// </remarks>
+    [Fact]
+    public void Parse_OpenFileArmActions_CompileOperations()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "armOpenFile", "path": "C:\\a.txt" },
+                { "action": "armOpenFileCancel" },
+                { "action": "invokeOpeningWindow", "automationId": "OpenFileButton", "waitForNewWindow": false }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var arm = Assert.IsType<ArmOpenFileOperation>(scenario.Operations[1]);
+        Assert.Equal(@"C:\a.txt", arm.Path);
+        Assert.IsType<ArmOpenFileCancelOperation>(scenario.Operations[2]);
+        var invoke = Assert.IsType<InvokeOpeningWindowOperation>(scenario.Operations[3]);
+        Assert.False(invoke.WaitForNewWindow);
+    }
+
+    /// <summary>
     /// Window actions compile to typed operations.
     /// </summary>
     /// <remarks>

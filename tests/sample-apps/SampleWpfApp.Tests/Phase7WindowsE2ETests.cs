@@ -73,6 +73,7 @@ public sealed class Phase7WindowsE2ETests
         );
 
         var modal = await app.GetByAutomationId("OpenModalWindowButton").InvokeOpeningWindowAsync();
+        Assert.NotNull(modal);
         Assert.True(modal.IsModal);
         Assert.Equal("ModalWindow", modal.AutomationId);
 

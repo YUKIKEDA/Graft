@@ -1,4 +1,5 @@
 using Graft.Instrumentation.Actions;
+using Graft.Instrumentation.Dialogs;
 using Graft.Instrumentation.Elements;
 using Graft.Instrumentation.Screenshot;
 using Graft.Instrumentation.Windows;
@@ -222,6 +223,7 @@ public static class AgentServices
         _elementExpander = null;
         _elementCellAccessor = null;
         _windowCatalog = null;
+        OpenFileArm.Reset();
     }
 }
 

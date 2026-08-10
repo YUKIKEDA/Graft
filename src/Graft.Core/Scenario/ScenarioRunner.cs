@@ -210,6 +210,20 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case ArmOpenFileOperation armOpenFile:
+                        EnsureSession(session);
+                        await session!
+                            .ArmOpenFileAsync(armOpenFile.Path, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case ArmOpenFileCancelOperation:
+                        EnsureSession(session);
+                        await session!
+                            .ArmOpenFileCancelAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     case ListWindowsOperation:
                         EnsureSession(session);
                         _ = await session!
@@ -240,7 +254,10 @@ public static class ScenarioRunner
                         EnsureSession(session);
                         _ = await session!
                             .GetByAutomationId(invokeOpening.AutomationId)
-                            .InvokeOpeningWindowAsync(cancellationToken)
+                            .InvokeOpeningWindowAsync(
+                                invokeOpening.WaitForNewWindow,
+                                cancellationToken
+                            )
                             .ConfigureAwait(false);
                         break;
 

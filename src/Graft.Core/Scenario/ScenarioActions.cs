@@ -55,6 +55,12 @@ public static class ScenarioActions
     /// <summary>Expect a DataGrid cell display text.</summary>
     public const string ExpectCellText = FailureSteps.ExpectCellText;
 
+    /// <summary>Arm the next OpenFile seam with a path (OK).</summary>
+    public const string ArmOpenFile = FailureSteps.ArmOpenFile;
+
+    /// <summary>Arm the next OpenFile seam as cancel.</summary>
+    public const string ArmOpenFileCancel = FailureSteps.ArmOpenFileCancel;
+
     /// <summary>List open windows.</summary>
     public const string ListWindows = FailureSteps.ListWindows;
 

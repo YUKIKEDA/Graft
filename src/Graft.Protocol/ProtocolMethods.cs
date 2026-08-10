@@ -85,4 +85,14 @@ public static class ProtocolMethods
     /// Sets a DataGrid Text cell via <c>params.automationId</c>, <c>row</c>, <c>column</c>, <c>value</c>.
     /// </summary>
     public const string SetCellValue = "setCellValue";
+
+    /// <summary>
+    /// Arms the next Graft OpenFile seam response with <c>params.path</c> (OK).
+    /// </summary>
+    public const string ArmOpenFile = "armOpenFile";
+
+    /// <summary>
+    /// Arms the next Graft OpenFile seam response as cancel.
+    /// </summary>
+    public const string ArmOpenFileCancel = "armOpenFileCancel";
 }
