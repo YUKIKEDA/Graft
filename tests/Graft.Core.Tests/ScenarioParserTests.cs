@@ -117,6 +117,39 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// pressKeys steps compile with automationId and keys.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with launch + pressKeys
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - PressKeysOperation with matching fields
+    /// </remarks>
+    [Fact]
+    public void Parse_PressKeysStep_CompilesPressKeysOperation()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "pressKeys", "automationId": "SampleTextBox", "keys": "Control+A" }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var press = Assert.IsType<PressKeysOperation>(scenario.Operations[1]);
+        Assert.Equal(ScenarioActions.PressKeys, press.Action);
+        Assert.Equal("SampleTextBox", press.AutomationId);
+        Assert.Equal("Control+A", press.Keys);
+    }
+
+    /// <summary>
     /// Phase 5 actions compile with expected fields (optional scroll index).
     /// </summary>
     /// <remarks>

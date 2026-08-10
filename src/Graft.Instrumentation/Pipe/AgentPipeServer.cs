@@ -253,6 +253,11 @@ internal sealed class AgentPipeServer : IDisposable
             return (HandleSendKeys(request), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
+        if (request.Method == ProtocolMethods.PressKeys)
+        {
+            return (HandlePressKeys(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
         if (request.Method == ProtocolMethods.ScrollIntoView)
         {
             return (HandleScrollIntoView(request), CloseAfterWrite: false, BinaryFollowUp: null);
@@ -545,6 +550,38 @@ internal sealed class AgentPipeServer : IDisposable
         {
             var (selector, text) = ReadSendKeysParams(request.Params);
             keySender.SendKeys(selector, text);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandlePressKeys(RequestMessage request)
+    {
+        var keySender = AgentServices.ElementKeySender;
+        if (keySender is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No element key sender is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var (selector, keys) = ReadPressKeysParams(request.Params);
+            keySender.PressKeys(selector, keys);
             return Ok(request.Id);
         }
         catch (ElementResolveException ex)
@@ -1172,6 +1209,47 @@ internal sealed class AgentPipeServer : IDisposable
         };
 
         return (selector, text);
+    }
+
+    private static (ElementSelector Selector, string Keys) ReadPressKeysParams(
+        JsonElement? paramsElement
+    )
+    {
+        var selector = ReadElementSelector(paramsElement);
+        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.keys is required."
+            );
+        }
+
+        if (!element.TryGetProperty("keys", out var keysProperty))
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.keys is required."
+            );
+        }
+
+        if (keysProperty.ValueKind != JsonValueKind.String)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.keys must be a string."
+            );
+        }
+
+        var keys = keysProperty.GetString();
+        if (string.IsNullOrWhiteSpace(keys))
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.keys must be a non-empty chord string."
+            );
+        }
+
+        return (selector, keys);
     }
 
     private static GetTreeOptions ReadGetTreeOptions(JsonElement? paramsElement)

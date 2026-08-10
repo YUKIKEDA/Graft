@@ -22,6 +22,9 @@ public static class ScenarioActions
     /// <summary>Type literal text into an element.</summary>
     public const string SendKeys = FailureSteps.SendKeys;
 
+    /// <summary>Press one keyboard chord on an element.</summary>
+    public const string PressKeys = FailureSteps.PressKeys;
+
     /// <summary>Scroll an element or list item into view.</summary>
     public const string ScrollIntoView = FailureSteps.ScrollIntoView;
 

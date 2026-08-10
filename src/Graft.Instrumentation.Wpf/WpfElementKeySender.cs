@@ -8,7 +8,7 @@ using Graft.Protocol;
 namespace Graft.Instrumentation.Wpf;
 
 /// <summary>
-/// Focuses a WPF element and types literal text via SendInput.
+/// Focuses a WPF element and types literal text or presses a keyboard chord via SendInput.
 /// </summary>
 internal sealed class WpfElementKeySender : IElementKeySender
 {
@@ -17,26 +17,50 @@ internal sealed class WpfElementKeySender : IElementKeySender
     {
         ArgumentNullException.ThrowIfNull(selector);
         ArgumentNullException.ThrowIfNull(text);
+        RunOnUiThread(() => SendKeysOnUiThread(selector, text), "sendKeys");
+    }
 
+    /// <inheritdoc />
+    public void PressKeys(ElementSelector selector, string keys)
+    {
+        ArgumentNullException.ThrowIfNull(selector);
+        ArgumentNullException.ThrowIfNull(keys);
+        RunOnUiThread(() => PressKeysOnUiThread(selector, keys), "pressKeys");
+    }
+
+    private static void RunOnUiThread(Action action, string operation)
+    {
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
             throw new ElementActionException(
                 GraftErrorCodes.ActionFailed,
-                "WPF Application.Current is not available; cannot sendKeys."
+                $"WPF Application.Current is not available; cannot {operation}."
             );
         }
 
         if (dispatcher.CheckAccess())
         {
-            SendKeysOnUiThread(selector, text);
+            action();
             return;
         }
 
-        dispatcher.Invoke(() => SendKeysOnUiThread(selector, text), DispatcherPriority.Normal);
+        dispatcher.Invoke(action, DispatcherPriority.Normal);
     }
 
     private static void SendKeysOnUiThread(ElementSelector selector, string text)
+    {
+        var element = ResolveActionableFrameworkElement(selector);
+        WpfInputInjection.FocusAndType(element, text, clearFirst: false);
+    }
+
+    private static void PressKeysOnUiThread(ElementSelector selector, string keys)
+    {
+        var element = ResolveActionableFrameworkElement(selector);
+        WpfInputInjection.FocusAndPress(element, keys);
+    }
+
+    private static FrameworkElement ResolveActionableFrameworkElement(ElementSelector selector)
     {
         var resolver =
             AgentServices.ElementResolver
@@ -62,6 +86,6 @@ internal sealed class WpfElementKeySender : IElementKeySender
             );
         }
 
-        WpfInputInjection.FocusAndType(element, text, clearFirst: false);
+        return element;
     }
 }

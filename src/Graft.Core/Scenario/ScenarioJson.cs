@@ -183,6 +183,7 @@ public static class ScenarioJson
             ScenarioActions.SetValue => CompileSetValue(step, index),
             ScenarioActions.Toggle => CompileToggle(step, index),
             ScenarioActions.SendKeys => CompileSendKeys(step, index),
+            ScenarioActions.PressKeys => CompilePressKeys(step, index),
             ScenarioActions.ScrollIntoView => CompileScrollIntoView(step, index),
             ScenarioActions.Select => CompileSelect(step, index),
             ScenarioActions.Expand => CompileExpand(step, index),
@@ -270,6 +271,22 @@ public static class ScenarioJson
         }
 
         return new SendKeysOperation(automationId, textElement.GetString() ?? string.Empty);
+    }
+
+    private static PressKeysOperation CompilePressKeys(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        var keys = RequireNonEmptyString(step, "keys", index);
+        try
+        {
+            _ = KeyChordParser.Parse(keys);
+        }
+        catch (ArgumentException ex)
+        {
+            throw Invalid($"steps[{index}] pressKeys has invalid keys: {ex.Message}");
+        }
+
+        return new PressKeysOperation(automationId, keys);
     }
 
     private static ScrollIntoViewOperation CompileScrollIntoView(JsonElement step, int index)

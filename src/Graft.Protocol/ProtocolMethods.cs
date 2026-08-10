@@ -57,6 +57,11 @@ public static class ProtocolMethods
     public const string SendKeys = "sendKeys";
 
     /// <summary>
+    /// Presses one keyboard chord on a focused element via <c>params.automationId</c> and <c>params.keys</c>.
+    /// </summary>
+    public const string PressKeys = "pressKeys";
+
+    /// <summary>
     /// Scrolls an element into view. Optional <c>params.index</c> targets a list item.
     /// </summary>
     public const string ScrollIntoView = "scrollIntoView";

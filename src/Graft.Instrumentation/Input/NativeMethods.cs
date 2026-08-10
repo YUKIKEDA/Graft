@@ -14,14 +14,26 @@ internal static class NativeMethods
     public const uint MouseEventFLeftUp = 0x0004;
     public const uint MouseEventFAbsolute = 0x8000;
 
+    public const uint KeyEventFExtendedKey = 0x0001;
     public const uint KeyEventFKeyUp = 0x0002;
     public const uint KeyEventFUnicode = 0x0004;
 
     public const uint MapVkToVsc = 0;
 
+    public const byte VkBack = 0x08;
+    public const byte VkTab = 0x09;
+    public const byte VkReturn = 0x0D;
+    public const byte VkShift = 0x10;
     public const byte VkControl = 0x11;
-    public const byte VkA = 0x41;
+    public const byte VkMenu = 0x12;
+    public const byte VkEscape = 0x1B;
+    public const byte VkSpace = 0x20;
+    public const byte VkLeft = 0x25;
+    public const byte VkUp = 0x26;
+    public const byte VkRight = 0x27;
+    public const byte VkDown = 0x28;
     public const byte VkDelete = 0x2E;
+    public const byte VkA = 0x41;
 
     [DllImport("user32.dll", SetLastError = true)]
     public static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);

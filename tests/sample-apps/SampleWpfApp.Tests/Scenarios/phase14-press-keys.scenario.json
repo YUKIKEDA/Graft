@@ -1,0 +1,37 @@
+{
+  "v": 1,
+  "name": "phase14-press-keys",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "setValue",
+      "automationId": "SampleTextBox",
+      "value": "hello"
+    },
+    {
+      "action": "expectName",
+      "automationId": "SampleTextBox",
+      "name": "hello"
+    },
+    {
+      "action": "pressKeys",
+      "automationId": "SampleTextBox",
+      "keys": "Control+A"
+    },
+    {
+      "action": "pressKeys",
+      "automationId": "SampleTextBox",
+      "keys": "Delete"
+    },
+    {
+      "action": "expectName",
+      "automationId": "SampleTextBox",
+      "name": ""
+    }
+  ]
+}

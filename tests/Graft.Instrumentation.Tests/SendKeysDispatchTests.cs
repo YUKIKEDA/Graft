@@ -83,6 +83,61 @@ public sealed class SendKeysDispatchTests : IDisposable
         Assert.Equal("typed", fake.LastText);
     }
 
+    /// <summary>
+    /// pressKeys without a registered key sender returns action.failed.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Agent started; ElementKeySender is null
+    ///
+    /// Steps:
+    /// - Handshake then pressKeys
+    ///
+    /// Expected:
+    /// - ok=false with action.failed
+    /// </remarks>
+    [Fact]
+    public async Task PressKeys_WithoutSender_ReturnsActionFailed()
+    {
+        StartAgent();
+
+        await using var client = await ConnectAsync(_pipeName);
+        Assert.True((await SendHandshakeAsync(client)).Ok);
+
+        var response = await SendPressKeysAsync(client, "SampleTextBox", "Control+A");
+        Assert.False(response.Ok);
+        Assert.Equal(GraftErrorCodes.ActionFailed, response.Error?.Code);
+    }
+
+    /// <summary>
+    /// pressKeys dispatches to the registered key sender.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Fake IElementKeySender registered
+    ///
+    /// Steps:
+    /// - Handshake then pressKeys
+    ///
+    /// Expected:
+    /// - ok=true and fake received automationId + keys
+    /// </remarks>
+    [Fact]
+    public async Task PressKeys_WithFakeSender_CallsPressKeys()
+    {
+        var fake = new FakeElementKeySender();
+        AgentServices.RegisterElementKeySender(fake);
+        StartAgent();
+
+        await using var client = await ConnectAsync(_pipeName);
+        Assert.True((await SendHandshakeAsync(client)).Ok);
+
+        var response = await SendPressKeysAsync(client, "SampleTextBox", "Control+A");
+        Assert.True(response.Ok, response.Error?.Message);
+        Assert.Equal("SampleTextBox", fake.LastPressAutomationId);
+        Assert.Equal("Control+A", fake.LastKeys);
+    }
+
     private void StartAgent()
     {
         Environment.SetEnvironmentVariable(GraftEnvironment.Enable, "1");
@@ -152,6 +207,23 @@ public sealed class SendKeysDispatchTests : IDisposable
         return await JsonMessageCodec.ReadResponseAsync(stream);
     }
 
+    private static async Task<ResponseMessage> SendPressKeysAsync(
+        Stream stream,
+        string automationId,
+        string keys
+    )
+    {
+        var request = new RequestMessage
+        {
+            V = ProtocolVersion.Current,
+            Id = "3",
+            Method = ProtocolMethods.PressKeys,
+            Params = JsonSerializer.SerializeToElement(new { automationId, keys }),
+        };
+        await JsonMessageCodec.WriteRequestAsync(stream, request);
+        return await JsonMessageCodec.ReadResponseAsync(stream);
+    }
+
     private static void ClearGraftEnvironment()
     {
         Environment.SetEnvironmentVariable(GraftEnvironment.Enable, null);
@@ -165,10 +237,20 @@ public sealed class SendKeysDispatchTests : IDisposable
 
         public string? LastText { get; private set; }
 
+        public string? LastPressAutomationId { get; private set; }
+
+        public string? LastKeys { get; private set; }
+
         public void SendKeys(ElementSelector selector, string text)
         {
             LastAutomationId = selector.AutomationId;
             LastText = text;
+        }
+
+        public void PressKeys(ElementSelector selector, string keys)
+        {
+            LastPressAutomationId = selector.AutomationId;
+            LastKeys = keys;
         }
     }
 }

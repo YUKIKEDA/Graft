@@ -80,15 +80,33 @@ public static class InputInjector
     /// </summary>
     public static void SelectAllAndDelete()
     {
-        var inputs = new NativeMethods.INPUT[]
+        PressChord(KeyChordParser.Parse("Control+A"));
+        PressChord(KeyChordParser.Parse("Delete"));
+    }
+
+    /// <summary>
+    /// Sends one keyboard chord (modifiers down → key → modifiers up).
+    /// </summary>
+    /// <param name="chord">Normalized chord.</param>
+    public static void PressChord(KeyChord chord)
+    {
+        ArgumentNullException.ThrowIfNull(chord);
+        var (mods, key, extended) = KeyChordVirtualKeys.Resolve(chord);
+        var inputs = new NativeMethods.INPUT[(mods.Length * 2) + 2];
+        var index = 0;
+        foreach (var mod in mods)
         {
-            CreateVk(NativeMethods.VkControl, keyUp: false),
-            CreateVk(NativeMethods.VkA, keyUp: false),
-            CreateVk(NativeMethods.VkA, keyUp: true),
-            CreateVk(NativeMethods.VkControl, keyUp: true),
-            CreateVk(NativeMethods.VkDelete, keyUp: false),
-            CreateVk(NativeMethods.VkDelete, keyUp: true),
-        };
+            inputs[index++] = CreateVk(mod, keyUp: false, extended: false);
+        }
+
+        inputs[index++] = CreateVk(key, keyUp: false, extended);
+        inputs[index++] = CreateVk(key, keyUp: true, extended);
+
+        for (var i = mods.Length - 1; i >= 0; i--)
+        {
+            inputs[index++] = CreateVk(mods[i], keyUp: true, extended: false);
+        }
+
         Send(inputs);
     }
 
@@ -138,9 +156,15 @@ public static class InputInjector
             },
         };
 
-    private static NativeMethods.INPUT CreateVk(byte vk, bool keyUp)
+    private static NativeMethods.INPUT CreateVk(byte vk, bool keyUp, bool extended)
     {
         var scan = (ushort)NativeMethods.MapVirtualKey(vk, NativeMethods.MapVkToVsc);
+        var flags = keyUp ? NativeMethods.KeyEventFKeyUp : 0u;
+        if (extended)
+        {
+            flags |= NativeMethods.KeyEventFExtendedKey;
+        }
+
         return new NativeMethods.INPUT
         {
             Type = NativeMethods.InputKeyboard,
@@ -150,7 +174,7 @@ public static class InputInjector
                 {
                     WVk = vk,
                     WScan = scan,
-                    DwFlags = keyUp ? NativeMethods.KeyEventFKeyUp : 0,
+                    DwFlags = flags,
                 },
             },
         };

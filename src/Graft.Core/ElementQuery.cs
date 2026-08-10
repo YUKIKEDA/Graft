@@ -345,6 +345,60 @@ public sealed class ElementQuery
     }
 
     /// <summary>
+    /// Waits until the element is present and actionable, then presses one keyboard chord.
+    /// </summary>
+    /// <param name="keys">Chord DSL (e.g. <c>Control+A</c>, <c>Delete</c>). One call = one chord.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when pressKeys succeeds.</returns>
+    /// <exception cref="GraftException">Wait, resolve, invalid chord, or pressKeys failed (may include <see cref="GraftException.Report"/>).</exception>
+    public async Task PressAsync(string keys, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(keys);
+
+        try
+        {
+            _ = KeyChordParser.Parse(keys);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new GraftException(GraftErrorCodes.ActionFailed, ex.Message, ex);
+        }
+
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot pressKeys over the wire.",
+                    FailureSteps.PressKeys,
+                    expected: keys,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .PressKeysAsync(node.AutomationId, keys, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.PressKeys, $"{node.AutomationId}={keys}");
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.PressKeys,
+                    expected: keys,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
     /// Waits until the element is present, then scrolls it into view.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
