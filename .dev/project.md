@@ -349,7 +349,6 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - セレクタ重みの実測チューニング、`details` スキーマのフィールド確定
 - 診断向けツリー差分 JSON のフィールド名の確定
 - scroll/select の項目キー・表示名指定（index 正本の次候補）
-- CheckBox 等のツリー `checked`（**Phase 8 最終 Batch**）
 - OS 共通ダイアログ（OpenFile 等）の方針・実装（Phase 8 後候補）
 - DataGrid **セル R/W**（Phase 8 行 MVP の次）
 - Avalonia アダプタ → Inspector（最後寄り）

@@ -405,6 +405,34 @@ public sealed class GraftAtomicTools
         );
 
     /// <summary>
+    /// Expects an element's tree checked state.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="checkedState">Expected checked state.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_expect_checked")]
+    [Description("Expect an element's tree checked state in the open session.")]
+    public Task<CallToolResult> ExpectChecked(
+        [Description("Target automation id.")] string automationId,
+        [Description("Expected checked state.")] bool checkedState,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .ExpectCheckedAsync(checkedState, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject { ["automationId"] = automationId, ["checked"] = checkedState }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Lists open windows in the target process.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>

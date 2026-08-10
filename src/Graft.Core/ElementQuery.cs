@@ -587,6 +587,28 @@ public sealed class ElementQuery
             cancellationToken
         );
 
+    /// <summary>
+    /// Waits until the element's tree <c>checked</c> equals <paramref name="expectedChecked"/>.
+    /// </summary>
+    /// <param name="expectedChecked">Expected checked state.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The matched node when the expectation holds.</returns>
+    /// <exception cref="GraftException">
+    /// <c>expect.failed</c> when the state differs or is not applicable;
+    /// <c>action.timeout</c> when the element never qualifies in time.
+    /// </exception>
+    public Task<TreeNode> ExpectCheckedAsync(
+        bool expectedChecked,
+        CancellationToken cancellationToken = default
+    ) =>
+        ExpectBoolPropertyAsync(
+            expectedChecked,
+            static node => node.Checked,
+            FailureSteps.ExpectChecked,
+            "checked",
+            cancellationToken
+        );
+
     private async Task<TreeNode> ExpectBoolPropertyAsync(
         bool expected,
         Func<TreeNode, bool?> getter,

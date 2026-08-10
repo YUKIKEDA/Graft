@@ -6,7 +6,7 @@
         mc:Ignorable="d"
         Title="Graft Sample WPF App"
         AutomationProperties.AutomationId="Main"
-        Height="560"
+        Height="720"
         Width="480">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="24">
@@ -95,6 +95,36 @@
                                   AutomationProperties.AutomationId="SampleTreeChildB" />
                 </TreeViewItem>
             </TreeView>
+
+            <TextBlock Text="DataGrid (row select)" Margin="0,8,0,4" />
+            <DataGrid x:Name="SampleGrid"
+                      AutomationProperties.AutomationId="SampleGrid"
+                      Height="120"
+                      Margin="0,0,0,16"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      IsReadOnly="True"
+                      SelectionUnit="FullRow"
+                      SelectionMode="Single"
+                      EnableRowVirtualization="True"
+                      VirtualizingPanel.IsVirtualizing="True"
+                      VirtualizingPanel.VirtualizationMode="Recycling"
+                      ScrollViewer.CanContentScroll="True"
+                      SelectionChanged="SampleGrid_OnSelectionChanged">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Name"
+                                        Binding="{Binding Name}"
+                                        Width="*" />
+                </DataGrid.Columns>
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="AutomationProperties.AutomationId"
+                                Value="{Binding AutomationId}" />
+                        <Setter Property="AutomationProperties.Name"
+                                Value="{Binding Name}" />
+                    </Style>
+                </DataGrid.RowStyle>
+            </DataGrid>
 
             <TextBlock Text="Windows" Margin="0,8,0,4" />
             <Button x:Name="OpenChildWindowButton"

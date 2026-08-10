@@ -70,6 +70,14 @@ public sealed class TreeNode
     public bool? Expanded { get; init; }
 
     /// <summary>
+    /// Gets checked state for checkable elements; <see langword="null"/> when not applicable
+    /// (or indeterminate for tri-state CheckBox).
+    /// </summary>
+    [JsonPropertyName("checked")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? Checked { get; init; }
+
+    /// <summary>
     /// Gets child nodes in visual-tree order.
     /// </summary>
     [JsonPropertyName("children")]

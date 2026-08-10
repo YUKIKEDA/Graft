@@ -43,6 +43,9 @@ public static class ScenarioActions
     /// <summary>Expect an element's expanded state.</summary>
     public const string ExpectExpanded = FailureSteps.ExpectExpanded;
 
+    /// <summary>Expect an element's checked state.</summary>
+    public const string ExpectChecked = FailureSteps.ExpectChecked;
+
     /// <summary>List open windows.</summary>
     public const string ListWindows = FailureSteps.ListWindows;
 

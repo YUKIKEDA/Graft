@@ -1,0 +1,51 @@
+{
+  "v": 1,
+  "name": "phase8-datagrid",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "scrollIntoView",
+      "automationId": "SampleGrid",
+      "index": 40
+    },
+    {
+      "action": "expectName",
+      "automationId": "GridRow-40",
+      "name": "Row 40"
+    },
+    {
+      "action": "select",
+      "automationId": "SampleGrid",
+      "index": 35
+    },
+    {
+      "action": "expectSelected",
+      "automationId": "GridRow-35",
+      "selected": true
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "Grid Row 35"
+    },
+    {
+      "action": "expectChecked",
+      "automationId": "SampleCheckBox",
+      "checked": false
+    },
+    {
+      "action": "toggle",
+      "automationId": "SampleCheckBox"
+    },
+    {
+      "action": "expectChecked",
+      "automationId": "SampleCheckBox",
+      "checked": true
+    }
+  ]
+}

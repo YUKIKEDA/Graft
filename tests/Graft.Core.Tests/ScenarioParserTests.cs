@@ -204,6 +204,38 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// expectChecked compiles with boolean field.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with expectChecked
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - ExpectCheckedOperation with checked value
+    /// </remarks>
+    [Fact]
+    public void Parse_ExpectChecked_CompileOperation()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "expectChecked", "automationId": "SampleCheckBox", "checked": true }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var expectChecked = Assert.IsType<ExpectCheckedOperation>(scenario.Operations[1]);
+        Assert.Equal("SampleCheckBox", expectChecked.AutomationId);
+        Assert.True(expectChecked.Checked);
+    }
+
+    /// <summary>
     /// Window actions compile to typed operations.
     /// </summary>
     /// <remarks>

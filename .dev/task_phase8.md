@@ -36,48 +36,48 @@
 
 ---
 
-## Batch 1 — Sample DataGrid + 行ツリー（ブランチ: `phase8/batch-1-datagrid-tree`）
+## Batch 1 — Sample DataGrid + 行ツリー（ブランチ: `phase8/datagrid-row-mvp`）
 
-- [ ] Sample: DataGrid（`SelectionUnit=FullRow` / `SelectionMode=Single`）、行に安定 `automationId`
-- [ ] WPF ツリー: 実現済み `DataGridRow` を列挙し `selected` を解決（`ResolveSelected` 拡張）
-- [ ] ホスト解決: DataGrid を scroll/select のホストとして認識できるようにする（必要なら）
-- [ ] ユニット／薄いホスト検証（行ノードが木に出る）
+- [x] Sample: DataGrid（`SelectionUnit=FullRow` / `SelectionMode=Single`）、行に安定 `automationId`
+- [x] WPF ツリー: 実現済み `DataGridRow` を列挙し `selected` を解決（`ResolveSelected` 拡張）
+- [x] ホスト解決: DataGrid を scroll/select のホストとして認識できるようにする（必要なら）
+- [x] ユニット／薄いホスト検証（行ノードが木に出る）— Sample E2E で担保
 
 **完了条件:** 木に行が出て、選択状態が読める。  
 **次:** Batch 2（scroll / select 行操作）へ。
 
 ---
 
-## Batch 2 — scroll / select 行操作（ブランチ: `phase8/batch-2-datagrid-actions`）
+## Batch 2 — scroll / select 行操作（ブランチ: `phase8/datagrid-row-mvp`）
 
-- [ ] `scrollIntoView`（ホスト＝DataGrid、index＝行）で仮想化行を realize
-- [ ] `select`（同）で単一行選択
-- [ ] 既存 Core Fluent / wire のまま（新メソッドなしが原則）
-- [ ] ホスト側ユニットテスト（仮想化あり／なしの最小）
+- [x] `scrollIntoView`（ホスト＝DataGrid、index＝行）で仮想化行を realize
+- [x] `select`（同）で単一行選択
+- [x] 既存 Core Fluent / wire のまま（新メソッドなしが原則）
+- [x] ホスト側ユニットテスト（仮想化あり／なしの最小）— Sample E2E で担保
 
 **完了条件:** index 指定で行を見える化し選択できる。  
 **次:** Batch 3（Expect + Sample E2E）へ。
 
 ---
 
-## Batch 3 — Expect + Sample E2E（ブランチ: `phase8/batch-3-datagrid-e2e`）
+## Batch 3 — Expect + Sample E2E（ブランチ: `phase8/datagrid-row-mvp`）
 
-- [ ] `ExpectSelectedAsync` で DataGrid 行を検証（既存 API）
-- [ ] Sample E2E: scroll → select → ExpectSelected（Scenario JSON でも薄い追従可）
-- [ ] `graft-core.md` に DataGrid 行操作の短いメモ
+- [x] `ExpectSelectedAsync` で DataGrid 行を検証（既存 API）
+- [x] Sample E2E: scroll → select → ExpectSelected（Scenario JSON でも薄い追従可）
+- [x] `graft-core.md` に DataGrid 行操作の短いメモ
 
 **完了条件:** 行中心 MVP の Sample E2E が緑。  
 **次:** Batch 4（`checked`）へ。
 
 ---
 
-## Batch 4 — `checked`（薄い最終 Batch）（ブランチ: `phase8/batch-4-checked`）
+## Batch 4 — `checked`（薄い最終 Batch）（ブランチ: `phase8/datagrid-row-mvp`）
 
-- [ ] `TreeNode.checked`（`bool?`、非該当は null/省略）
-- [ ] WPF: CheckBox（必要なら ToggleButton 系の最小）で解決
-- [ ] `ExpectCheckedAsync` + Scenario/MCP 薄い追従
-- [ ] Sample に CheckBox 1 個＋薄い E2E
-- [ ] `project.md` / 本ファイル完了チェック。次フェーズメモ: **DataGrid セル R/W**
+- [x] `TreeNode.checked`（`bool?`、非該当は null/省略）
+- [x] WPF: CheckBox（必要なら ToggleButton 系の最小）で解決
+- [x] `ExpectCheckedAsync` + Scenario/MCP 薄い追従
+- [x] Sample に CheckBox 1 個＋薄い E2E（既存 `SampleCheckBox`）
+- [x] `project.md` / 本ファイル完了チェック。次フェーズメモ: **DataGrid セル R/W**
 
 **完了条件:** `checked` が木と Expect で使える。  
 **次:** Phase 8 完了チェック → セル R/W フェーズへ。
@@ -86,11 +86,11 @@
 
 ## Phase 8 完了チェック
 
-- [ ] DataGrid 行を scrollIntoView / select できる（ホスト＋index）
-- [ ] 実現済み行の `selected` と `ExpectSelected` が動く
-- [ ] Sample E2E（FullRow / Single）が緑
-- [ ] `TreeNode.checked` + `ExpectChecked`（Scenario/MCP 薄い追従）がある
-- [ ] セル API / 編集 / ソート / 複数選択 / OS ダイアログ / Avalonia / Inspector は **含めない**
+- [x] DataGrid 行を scrollIntoView / select できる（ホスト＋index）
+- [x] 実現済み行の `selected` と `ExpectSelected` が動く
+- [x] Sample E2E（FullRow / Single）が緑
+- [x] `TreeNode.checked` + `ExpectChecked`（Scenario/MCP 薄い追従）がある
+- [x] セル API / 編集 / ソート / 複数選択 / OS ダイアログ / Avalonia / Inspector は **含めない**
 
 ---
 

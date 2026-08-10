@@ -190,6 +190,7 @@ public static class ScenarioJson
             ScenarioActions.ExpectName => CompileExpectName(step, index),
             ScenarioActions.ExpectSelected => CompileExpectSelected(step, index),
             ScenarioActions.ExpectExpanded => CompileExpectExpanded(step, index),
+            ScenarioActions.ExpectChecked => CompileExpectChecked(step, index),
             ScenarioActions.ListWindows => new ListWindowsOperation(),
             ScenarioActions.SwitchWindow => CompileSwitchWindow(step, index),
             ScenarioActions.WaitForWindow => CompileWaitForWindow(step, index),
@@ -326,6 +327,12 @@ public static class ScenarioJson
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
         return new ExpectExpandedOperation(automationId, RequireBoolean(step, "expanded", index));
+    }
+
+    private static ExpectCheckedOperation CompileExpectChecked(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        return new ExpectCheckedOperation(automationId, RequireBoolean(step, "checked", index));
     }
 
     private static SwitchWindowOperation CompileSwitchWindow(JsonElement step, int index)
