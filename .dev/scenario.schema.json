@@ -35,7 +35,9 @@
         { "$ref": "#/$defs/select" },
         { "$ref": "#/$defs/expand" },
         { "$ref": "#/$defs/collapse" },
-        { "$ref": "#/$defs/expectName" }
+        { "$ref": "#/$defs/expectName" },
+        { "$ref": "#/$defs/expectSelected" },
+        { "$ref": "#/$defs/expectExpanded" }
       ]
     },
     "launch": {
@@ -133,6 +135,26 @@
         "action": { "const": "expectName" },
         "automationId": { "type": "string", "minLength": 1 },
         "name": { "type": "string" }
+      }
+    },
+    "expectSelected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "selected"],
+      "properties": {
+        "action": { "const": "expectSelected" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "selected": { "type": "boolean" }
+      }
+    },
+    "expectExpanded": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "expanded"],
+      "properties": {
+        "action": { "const": "expectExpanded" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "expanded": { "type": "boolean" }
       }
     }
   }

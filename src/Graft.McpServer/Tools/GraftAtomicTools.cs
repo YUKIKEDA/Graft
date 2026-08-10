@@ -349,6 +349,62 @@ public sealed class GraftAtomicTools
         );
 
     /// <summary>
+    /// Expects an element's tree selected state.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="selected">Expected selection state.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_expect_selected")]
+    [Description("Expect an element's tree selected state in the open session.")]
+    public Task<CallToolResult> ExpectSelected(
+        [Description("Target automation id.")] string automationId,
+        [Description("Expected selected state.")] bool selected,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .ExpectSelectedAsync(selected, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject { ["automationId"] = automationId, ["selected"] = selected }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Expects an element's tree expanded state.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="expanded">Expected expand state.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_expect_expanded")]
+    [Description("Expect an element's tree expanded state in the open session.")]
+    public Task<CallToolResult> ExpectExpanded(
+        [Description("Target automation id.")] string automationId,
+        [Description("Expected expanded state.")] bool expanded,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .ExpectExpandedAsync(expanded, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject { ["automationId"] = automationId, ["expanded"] = expanded }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Disposes the open Graft session (pipe + child process).
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>

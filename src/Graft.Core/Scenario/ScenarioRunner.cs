@@ -148,6 +148,22 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case ExpectSelectedOperation expectSelected:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(expectSelected.AutomationId)
+                            .ExpectSelectedAsync(expectSelected.Selected, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case ExpectExpandedOperation expectExpanded:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(expectExpanded.AutomationId)
+                            .ExpectExpandedAsync(expectExpanded.Expanded, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     default:
                         throw new GraftException(
                             GraftErrorCodes.ActionFailed,

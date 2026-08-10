@@ -56,6 +56,20 @@ public sealed class TreeNode
     public bool Focused { get; init; }
 
     /// <summary>
+    /// Gets selection state for selection-capable items; <see langword="null"/> when not applicable.
+    /// </summary>
+    [JsonPropertyName("selected")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? Selected { get; init; }
+
+    /// <summary>
+    /// Gets expand/collapse state for expandable elements; <see langword="null"/> when not applicable.
+    /// </summary>
+    [JsonPropertyName("expanded")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? Expanded { get; init; }
+
+    /// <summary>
     /// Gets child nodes in visual-tree order.
     /// </summary>
     [JsonPropertyName("children")]

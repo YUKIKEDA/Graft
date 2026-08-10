@@ -34,4 +34,10 @@ public static class FailureSteps
 
     /// <summary>Expect on element name failed or timed out.</summary>
     public const string ExpectName = "expectName";
+
+    /// <summary>Expect on element selected state failed or timed out.</summary>
+    public const string ExpectSelected = "expectSelected";
+
+    /// <summary>Expect on element expanded state failed or timed out.</summary>
+    public const string ExpectExpanded = "expectExpanded";
 }

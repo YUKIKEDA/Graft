@@ -188,6 +188,8 @@ public static class ScenarioJson
             ScenarioActions.Expand => CompileExpand(step, index),
             ScenarioActions.Collapse => CompileCollapse(step, index),
             ScenarioActions.ExpectName => CompileExpectName(step, index),
+            ScenarioActions.ExpectSelected => CompileExpectSelected(step, index),
+            ScenarioActions.ExpectExpanded => CompileExpectExpanded(step, index),
             _ => throw Invalid($"steps[{index}] has unknown action '{action}'."),
         };
     }
@@ -308,6 +310,31 @@ public static class ScenarioJson
         }
 
         return new ExpectNameOperation(automationId, nameElement.GetString() ?? string.Empty);
+    }
+
+    private static ExpectSelectedOperation CompileExpectSelected(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        return new ExpectSelectedOperation(automationId, RequireBoolean(step, "selected", index));
+    }
+
+    private static ExpectExpandedOperation CompileExpectExpanded(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        return new ExpectExpandedOperation(automationId, RequireBoolean(step, "expanded", index));
+    }
+
+    private static bool RequireBoolean(JsonElement step, string propertyName, int index)
+    {
+        if (
+            !step.TryGetProperty(propertyName, out var element)
+            || (element.ValueKind != JsonValueKind.True && element.ValueKind != JsonValueKind.False)
+        )
+        {
+            throw Invalid($"steps[{index}] requires boolean property '{propertyName}'.");
+        }
+
+        return element.GetBoolean();
     }
 
     private static string RequireNonEmptyString(JsonElement step, string propertyName, int index)

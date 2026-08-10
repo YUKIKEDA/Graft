@@ -157,7 +157,8 @@ TestComplete相当の精度を狙う、という位置づけ。
 - よくある型は対応表（Button→invoke、TextBox→setValue 等）。未知型は Peer パターン有無を見て汎用処理し、
   だめなら SendInput。ホワイトリスト制限はしない
 - Phase 1 完了条件の論理操作: `invoke` / `setValue`。続けて `toggle` とキー入力。
-  `scrollIntoView` / `select` / `expand`・`collapse` は **Phase 5**（詳細は Q66〜 / `task_phase5.md`）
+  `scrollIntoView` / `select` / `expand`・`collapse` は **Phase 5**（詳細は Q66 / `task_phase5.md`）。
+  ツリー `selected` / `expanded` と状態 Expect は **Phase 6**（詳細は Q67〜 / `task_phase6.md`）
 - `setValue`: ネイティブ代入（置き換え）優先。失敗時はクリア＋SendInput。
   `append` / `typeHuman` は後付けオプション
 - SendInput クリック点: Peer のクリック可能点 → なければ bounds 中心。オフセットはオプション
@@ -335,7 +336,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 3  | `Graft.McpServer`                                    | Phase 1〜2 の薄い公開層                    |
 | Phase 4  | 自己修復セレクタ                                     | Core 側で精度を磨き込む                    |
 | Phase 5  | WPF 残アクション（scroll / select / expand）         | 仮想化対応を含む操作面の穴埋め             |
-| （次）   | ツリー `selected`/`expanded` → Avalonia → Inspector  | Phase 5 直後から順に                       |
+| Phase 6  | ツリー状態（`selected` / `expanded`）+ Expect        | 診断・LLM。Phase 5 操作の状態検証          |
+| （次）   | Avalonia → Inspector                                 | Phase 6 の次から順に                       |
 
 ## 9. 未検討・今後の課題
 
@@ -344,8 +346,9 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - よくある型の対応表の具体行（WPF/Avalonia それぞれの型名）
 - セレクタ重みの実測チューニング、`details` スキーマのフィールド確定
 - 診断向けツリー差分 JSON のフィールド名の確定
-- Phase 5 直後: ツリーへ `selected` / `expanded` を載せ Expect 可能にする（`task_phase5.md`）
 - scroll/select の項目キー・表示名指定（index 正本の次候補）
+- CheckBox 等のツリー `checked`（Phase 6 では selected に混ぜない）
+- Avalonia アダプタ → Inspector（Phase 6 の次）
 - MessagePack 評価用の実測ログ形式
 - .NET Framework WPF 対応の要否（需要が固まってから）
 - 多言語バインディング / gRPC（v1 スコープ外。再検討は操作モデル安定後）
@@ -422,3 +425,9 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q63 | Sample は Button + TextBox + クリックで変わる TextBlock                                           |
 | Q64 | 最初は M0 一式 + Directory.Build.props + tests 土台。空スケルトンは作らない                       |
 | Q65 | 実装は gitignore + 雛形から。M0 は task_m0.md の Batch 単位で進める                                |
+| Q66 | Phase 5: scrollIntoView / select / expand・collapse。詳細は `task_phase5.md`                      |
+| Q67 | Phase 6: TreeNode に `selected`/`expanded` を `bool?`（非該当は null/省略）。プロトコル v1 のまま  |
+| Q68 | selected は選択系のみ（項目ノード）。expanded は開閉対象（TreeViewItem/Expander）。checked は別途 |
+| Q69 | ExpectSelectedAsync / ExpectExpandedAsync。null は expect.failed。Scenario/MCP は薄い追従         |
+| Q70 | Phase 6 受け入れは ListBox 実現済み項目 + TreeViewItem。Combo 項目 Expect は完了条件外            |
+| Q71 | Phase 6 の次は Avalonia → Inspector。自己修復が selected/expanded を使うのは後回し                |

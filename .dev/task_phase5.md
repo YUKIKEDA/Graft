@@ -88,9 +88,9 @@
 
 ## 直後にやる（Phase 5 完了条件外・明記）
 
-- [ ] `TreeNode` に `selected` / `expanded`（または同等）を載せ、Expect 可能にする
+- [x] `TreeNode` に `selected` / `expanded`（または同等）を載せ、Expect 可能にする → **Phase 6**（[task_phase6.md](./task_phase6.md)）
 - [ ] （候補）scroll/select の **項目キー / 表示名** 指定
-- [ ] Avalonia アダプタ
+- [ ] Avalonia アダプタ（Phase 6 の次）
 - [ ] Inspector
 
 ---
