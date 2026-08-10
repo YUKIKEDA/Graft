@@ -71,6 +71,14 @@ public partial class MainWindow : Window
         StatusText.Text = "ContextMenuPing";
     }
 
+    private void SampleTabs_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (SampleTabs.SelectedItem is TabItem { Header: string header })
+        {
+            StatusText.Text = $"Tab {header}";
+        }
+    }
+
     private void SampleList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (SampleList.SelectedItem is SampleListItem item)

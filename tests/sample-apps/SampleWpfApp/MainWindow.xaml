@@ -63,6 +63,24 @@
                            HorizontalAlignment="Center" />
             </Border>
 
+            <TextBlock Text="Tabs" Margin="0,0,0,4" />
+            <TabControl x:Name="SampleTabs"
+                        AutomationProperties.AutomationId="SampleTabs"
+                        Height="100"
+                        Margin="0,0,0,16"
+                        SelectionChanged="SampleTabs_OnSelectionChanged">
+                <TabItem x:Name="SampleTabA"
+                         AutomationProperties.AutomationId="SampleTabA"
+                         Header="A">
+                    <TextBlock Text="Content A" Margin="8" />
+                </TabItem>
+                <TabItem x:Name="SampleTabB"
+                         AutomationProperties.AutomationId="SampleTabB"
+                         Header="B">
+                    <TextBlock Text="Content B" Margin="8" />
+                </TabItem>
+            </TabControl>
+
             <TextBlock Text="Virtualized list" Margin="0,0,0,4" />
             <ListBox x:Name="SampleList"
                      AutomationProperties.AutomationId="SampleList"

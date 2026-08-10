@@ -59,4 +59,4 @@
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` 優先
-- **次フェーズ:** TabControl / Slider / 複数選択 → … → Avalonia → Inspector
+- **次フェーズ:** [task_phase17.md](./task_phase17.md) → Slider / 複数選択 → … → Avalonia → Inspector
