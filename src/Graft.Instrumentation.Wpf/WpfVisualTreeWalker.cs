@@ -186,6 +186,7 @@ internal static class WpfVisualTreeWalker
         {
             RangeBase range => range.Value.ToString("G", CultureInfo.InvariantCulture),
             RichTextBox richTextBox => ReadRichTextPlain(richTextBox),
+
             // PasswordBox intentionally omitted (Phase 29a: do not expose Password over the tree).
             _ => null,
         };
