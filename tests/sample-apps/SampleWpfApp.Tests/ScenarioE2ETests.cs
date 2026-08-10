@@ -476,6 +476,37 @@ public sealed class ScenarioE2ETests
     }
 
     /// <summary>
+    /// phase22-datagrid-select-many.scenario.json multi-selects SampleMultiGrid rows.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Scenarios/phase22-datagrid-select-many.scenario.json is copied to the test output
+    ///
+    /// Steps:
+    /// - Parse Scenario JSON
+    /// - ScenarioRunner.RunAsync with AppPath override
+    ///
+    /// Expected:
+    /// - Scenario completes without GraftException
+    /// </remarks>
+    [Fact]
+    public async Task Phase22DataGridSelectMany_Scenario_Passes()
+    {
+        var scenarioPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Scenarios",
+            "phase22-datagrid-select-many.scenario.json"
+        );
+        Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
+
+        var scenario = ScenarioJson.ParseFile(scenarioPath);
+        await ScenarioRunner.RunAsync(
+            scenario,
+            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
+        );
+    }
+
+    /// <summary>
     /// phase16-context-menu.scenario.json right-clicks and invokes a MenuItem.
     /// </summary>
     /// <remarks>

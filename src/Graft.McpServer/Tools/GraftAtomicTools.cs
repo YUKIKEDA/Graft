@@ -327,17 +327,19 @@ public sealed class GraftAtomicTools
         );
 
     /// <summary>
-    /// Replaces ListBox multi-selection by indexes (empty clears).
+    /// Replaces ListBox or DataGrid multi-selection by indexes (empty clears).
     /// </summary>
-    /// <param name="automationId">ListBox automation id.</param>
-    /// <param name="indexes">Zero-based item indexes.</param>
+    /// <param name="automationId">ListBox or DataGrid automation id.</param>
+    /// <param name="indexes">Zero-based item/row indexes.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_select_many")]
-    [Description("Replace ListBox multi-selection by indexes in the open session (empty clears).")]
+    [Description(
+        "Replace ListBox or DataGrid multi-selection by indexes in the open session (empty clears)."
+    )]
     public Task<CallToolResult> SelectMany(
-        [Description("ListBox automation id.")] string automationId,
-        [Description("Zero-based item indexes (empty clears selection).")] int[] indexes,
+        [Description("ListBox or DataGrid automation id.")] string automationId,
+        [Description("Zero-based item/row indexes (empty clears selection).")] int[] indexes,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(

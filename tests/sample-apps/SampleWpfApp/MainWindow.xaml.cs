@@ -51,6 +51,14 @@ public partial class MainWindow : Window
         }
 
         SampleGrid.ItemsSource = gridItems;
+
+        var multiGridItems = new ObservableCollection<SampleListItem>();
+        for (var i = 0; i < 20; i++)
+        {
+            multiGridItems.Add(new SampleListItem($"MultiGridRow-{i:D2}", $"MultiRow {i}"));
+        }
+
+        SampleMultiGrid.ItemsSource = multiGridItems;
     }
 
     private void SampleButton_OnClick(object sender, RoutedEventArgs e)
@@ -123,6 +131,14 @@ public partial class MainWindow : Window
         {
             StatusText.Text = $"Grid {item.Name}";
         }
+    }
+
+    private void SampleMultiGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        StatusText.Text = string.Create(
+            CultureInfo.InvariantCulture,
+            $"MultiGrid {SampleMultiGrid.SelectedItems.Count}"
+        );
     }
 
     private void SampleCombo_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
