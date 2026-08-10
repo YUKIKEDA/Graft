@@ -10,7 +10,7 @@ using Graft.Protocol;
 namespace Graft.Instrumentation.Wpf;
 
 /// <summary>
-/// Selects a single WPF list/combo item by index (realizes via scroll when needed).
+/// Selects a single WPF list/combo/tab item by index (realizes via scroll when needed).
 /// </summary>
 internal sealed class WpfElementChooser : IElementChooser
 {
@@ -63,22 +63,52 @@ internal sealed class WpfElementChooser : IElementChooser
             );
         }
 
-        // Realize / scroll first (virtualized lists).
-        _ = WpfElementScroller.ScrollListItem(element, index);
-
-        // DataGrid : MultiSelector : Selector — SelectedIndex covers FullRow single-select.
         switch (element)
         {
-            case Selector sel:
-                sel.SelectedIndex = index;
+            case TabControl tab:
+                SelectTab(tab, index);
                 break;
             default:
-                throw new ElementActionException(
-                    GraftErrorCodes.ActionFailed,
-                    $"select is not supported for control type '{element.GetType().Name}'."
-                );
+                // Realize / scroll first (virtualized lists).
+                _ = WpfElementScroller.ScrollListItem(element, index);
+
+                // DataGrid : MultiSelector : Selector — SelectedIndex covers FullRow single-select.
+                if (element is Selector sel)
+                {
+                    sel.SelectedIndex = index;
+                }
+                else
+                {
+                    throw new ElementActionException(
+                        GraftErrorCodes.ActionFailed,
+                        $"select is not supported for control type '{element.GetType().Name}'."
+                    );
+                }
+
+                break;
         }
 
         element.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
+    }
+
+    private static void SelectTab(TabControl tab, int index)
+    {
+        if (index < 0)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.index must be >= 0."
+            );
+        }
+
+        if (index >= tab.Items.Count)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ElementNotFound,
+                $"Tab index {index} is out of range (count={tab.Items.Count})."
+            );
+        }
+
+        tab.SelectedIndex = index;
     }
 }

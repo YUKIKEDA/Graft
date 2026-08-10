@@ -1,0 +1,27 @@
+{
+  "v": 1,
+  "name": "phase17-tabcontrol",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "select",
+      "automationId": "SampleTabs",
+      "index": 1
+    },
+    {
+      "action": "expectSelected",
+      "automationId": "SampleTabB",
+      "selected": true
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "Tab B"
+    }
+  ]
+}

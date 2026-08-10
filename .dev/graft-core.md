@@ -73,7 +73,7 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - テキスト入力: `GetByAutomationId(…).SetValueAsync(value)`（エージェント wire `setValue`）。キー入力: `SendKeysAsync(text)`（リテラル）。chord / 特殊キー: `PressAsync("Control+A")`（wire `pressKeys`。1 呼び出し = 1 chord）
 - トグル: `GetByAutomationId(…).ToggleAsync()`（状態フリップ）
 - スクロール: `ScrollIntoViewAsync()`（実現済み要素）/ `ScrollIntoViewAsync(index)`（リスト。仮想化対応、identity 返却）
-- 選択: `SelectAsync(index)`（単一。内部で自動 scroll/realize）。ホストは ListBox / ComboBox / **DataGrid（行）**
+- 選択: `SelectAsync(index)`（単一。内部で自動 scroll/realize）。ホストは ListBox / ComboBox / **DataGrid（行）** / **TabControl**
 - 開閉: `ExpandAsync()` / `CollapseAsync()`（状態指定）
 - ツリー状態（Phase 6/8）: `TreeNode.selected` / `expanded` / `checked`（`bool?`、非該当は省略）。`ExpectSelectedAsync` / `ExpectExpandedAsync` / `ExpectCheckedAsync`（null は expect.failed）
 - DataGrid 行（Phase 8）: ホスト＋index で `ScrollIntoViewAsync` / `SelectAsync`。実現済み `DataGridRow` に `selected`
