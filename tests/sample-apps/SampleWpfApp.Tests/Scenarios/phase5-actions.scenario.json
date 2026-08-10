@@ -1,0 +1,50 @@
+{
+  "v": 1,
+  "name": "phase5-actions",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "scrollIntoView",
+      "automationId": "SampleList",
+      "index": 40
+    },
+    {
+      "action": "expectName",
+      "automationId": "ListItem-40",
+      "name": "Item 40"
+    },
+    {
+      "action": "select",
+      "automationId": "SampleList",
+      "index": 35
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "Selected Item 35"
+    },
+    {
+      "action": "expand",
+      "automationId": "SampleTreeRoot"
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "Expanded"
+    },
+    {
+      "action": "collapse",
+      "automationId": "SampleTreeRoot"
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "Collapsed"
+    }
+  ]
+}

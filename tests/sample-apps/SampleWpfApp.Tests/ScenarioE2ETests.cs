@@ -39,4 +39,36 @@ public sealed class ScenarioE2ETests
             new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
         );
     }
+
+    /// <summary>
+    /// phase5-actions.scenario.json exercises scrollIntoView / select / expand / collapse.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Scenarios/phase5-actions.scenario.json is copied to the test output
+    /// - SampleWpfApp has SampleList / SampleTreeRoot / StatusText side effects
+    ///
+    /// Steps:
+    /// - Parse Scenario JSON
+    /// - ScenarioRunner.RunAsync with AppPath override to the sample project
+    ///
+    /// Expected:
+    /// - Scenario completes without GraftException
+    /// </remarks>
+    [Fact]
+    public async Task Phase5Actions_Scenario_Passes()
+    {
+        var scenarioPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Scenarios",
+            "phase5-actions.scenario.json"
+        );
+        Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
+
+        var scenario = ScenarioJson.ParseFile(scenarioPath);
+        await ScenarioRunner.RunAsync(
+            scenario,
+            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
+        );
+    }
 }
