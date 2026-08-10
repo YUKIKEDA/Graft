@@ -53,4 +53,4 @@ ID: `F02, F04, F05, L05, E04`（[competitive-gap.md](./competitive-gap.md)）。
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` / `competitive-gap.md` 優先
-- **次フェーズ:** Phase 28 DataGrid 残り（G06–G10）
+- **次フェーズ:** [task_phase28.md](./task_phase28.md) DataGrid 残り（G06–G10）

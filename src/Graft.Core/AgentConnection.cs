@@ -760,6 +760,172 @@ public sealed class AgentConnection : IAsyncDisposable
     }
 
     /// <summary>
+    /// Calls <c>selectCell</c> by column index.
+    /// </summary>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="row">Zero-based row index.</param>
+    /// <param name="column">Zero-based column index.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when selectCell succeeds.</returns>
+    public Task SelectCellAsync(
+        string automationId,
+        int row,
+        int column,
+        CancellationToken cancellationToken = default
+    ) => SelectCellCoreAsync(automationId, row, column, columnKey: null, cancellationToken);
+
+    /// <summary>
+    /// Calls <c>selectCell</c> by column Header key.
+    /// </summary>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="row">Zero-based row index.</param>
+    /// <param name="columnKey">Column Header string.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when selectCell succeeds.</returns>
+    public Task SelectCellAsync(
+        string automationId,
+        int row,
+        string columnKey,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
+        return SelectCellCoreAsync(automationId, row, column: null, columnKey, cancellationToken);
+    }
+
+    /// <summary>
+    /// Calls <c>selectRow</c> by column Header key and cell value.
+    /// </summary>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="columnKey">Column Header string.</param>
+    /// <param name="value">Exact cell display text.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when selectRow succeeds.</returns>
+    public async Task SelectRowAsync(
+        string automationId,
+        string columnKey,
+        string value,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
+        ArgumentNullException.ThrowIfNull(value);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.SelectRow,
+                    Params = JsonSerializer.SerializeToElement(
+                        new
+                        {
+                            automationId,
+                            columnKey,
+                            value,
+                        }
+                    ),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "selectRow failed.");
+    }
+
+    /// <summary>
+    /// Calls <c>clickColumnHeader</c>.
+    /// </summary>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="columnKey">Column Header string.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when clickColumnHeader succeeds.</returns>
+    public async Task ClickColumnHeaderAsync(
+        string automationId,
+        string columnKey,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.ClickColumnHeader,
+                    Params = JsonSerializer.SerializeToElement(new { automationId, columnKey }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "clickColumnHeader failed.");
+    }
+
+    /// <summary>
+    /// Calls <c>addRow</c>.
+    /// </summary>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when addRow succeeds.</returns>
+    public async Task AddRowAsync(
+        string automationId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.AddRow,
+                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "addRow failed.");
+    }
+
+    /// <summary>
+    /// Calls <c>deleteSelectedRows</c>.
+    /// </summary>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when deleteSelectedRows succeeds.</returns>
+    public async Task DeleteSelectedRowsAsync(
+        string automationId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.DeleteSelectedRows,
+                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "deleteSelectedRows failed.");
+    }
+
+    /// <summary>
     /// Calls <c>expand</c> for the element with the given automation id.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>
@@ -1273,6 +1439,46 @@ public sealed class AgentConnection : IAsyncDisposable
             .ConfigureAwait(false);
 
         EnsureOk(response, "setCellValue failed.");
+    }
+
+    private async Task SelectCellCoreAsync(
+        string automationId,
+        int row,
+        int? column,
+        string? columnKey,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ThrowIfDisposed();
+
+        object payload = columnKey is null
+            ? new
+            {
+                automationId,
+                row,
+                column,
+            }
+            : new
+            {
+                automationId,
+                row,
+                columnKey,
+            };
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.SelectCell,
+                    Params = JsonSerializer.SerializeToElement(payload),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "selectCell failed.");
     }
 
     private async Task HandshakeAsync(string token, CancellationToken cancellationToken)

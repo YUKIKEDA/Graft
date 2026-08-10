@@ -42,6 +42,7 @@ public static class WpfGraft
         AgentServices.RegisterTreeSelector(new WpfTreeSelector());
         AgentServices.RegisterElementExpander(new WpfElementExpander());
         AgentServices.RegisterElementCellAccessor(new WpfDataGridCellAccessor());
+        AgentServices.RegisterDataGridOperator(new WpfDataGridOperator());
     }
 
     /// <summary>

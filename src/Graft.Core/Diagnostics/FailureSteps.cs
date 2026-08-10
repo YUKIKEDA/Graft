@@ -104,6 +104,21 @@ public static class FailureSteps
     /// <summary>setCellValue action failed.</summary>
     public const string SetCellValue = "setCellValue";
 
+    /// <summary>selectCell action failed.</summary>
+    public const string SelectCell = "selectCell";
+
+    /// <summary>selectRow action failed.</summary>
+    public const string SelectRow = "selectRow";
+
+    /// <summary>clickColumnHeader action failed.</summary>
+    public const string ClickColumnHeader = "clickColumnHeader";
+
+    /// <summary>addRow action failed.</summary>
+    public const string AddRow = "addRow";
+
+    /// <summary>deleteSelectedRows action failed.</summary>
+    public const string DeleteSelectedRows = "deleteSelectedRows";
+
     /// <summary>Expect on DataGrid cell text failed or timed out.</summary>
     public const string ExpectCellText = "expectCellText";
 

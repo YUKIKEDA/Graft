@@ -329,6 +329,56 @@
                 </DataGrid.RowStyle>
             </DataGrid>
 
+            <TextBlock Text="DataGrid (Phase 28)" Margin="0,0,0,4" />
+            <DataGrid x:Name="SamplePhase28Grid"
+                      AutomationProperties.AutomationId="SamplePhase28Grid"
+                      Height="140"
+                      Margin="0,0,0,16"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="True"
+                      CanUserDeleteRows="True"
+                      CanUserSortColumns="True"
+                      IsReadOnly="False"
+                      SelectionUnit="CellOrRowHeader"
+                      SelectionMode="Extended"
+                      EnableRowVirtualization="True"
+                      VirtualizingPanel.IsVirtualizing="True"
+                      SelectionChanged="SamplePhase28Grid_OnSelectionChanged"
+                      CurrentCellChanged="SamplePhase28Grid_OnCurrentCellChanged">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Name"
+                                        Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        SortMemberPath="Name"
+                                        Width="*" />
+                    <DataGridCheckBoxColumn Header="Active"
+                                           Binding="{Binding Active, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                           SortMemberPath="Active"
+                                           Width="60" />
+                    <DataGridTemplateColumn Header="Notes"
+                                            SortMemberPath="Notes"
+                                            Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Notes}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="AutomationProperties.AutomationId"
+                                Value="{Binding AutomationId}" />
+                        <Setter Property="AutomationProperties.Name"
+                                Value="{Binding Name}" />
+                    </Style>
+                </DataGrid.RowStyle>
+            </DataGrid>
+
             <TextBlock Text="DataGrid (multi-select)" Margin="0,0,0,4" />
             <DataGrid x:Name="SampleMultiGrid"
                       AutomationProperties.AutomationId="SampleMultiGrid"

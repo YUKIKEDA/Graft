@@ -323,6 +323,35 @@ internal sealed class AgentPipeServer : IDisposable
             return (HandleSetCellValue(request), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
+        if (request.Method == ProtocolMethods.SelectCell)
+        {
+            return (HandleSelectCell(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
+        if (request.Method == ProtocolMethods.SelectRow)
+        {
+            return (HandleSelectRow(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
+        if (request.Method == ProtocolMethods.ClickColumnHeader)
+        {
+            return (HandleClickColumnHeader(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
+        if (request.Method == ProtocolMethods.AddRow)
+        {
+            return (HandleAddRow(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
+        if (request.Method == ProtocolMethods.DeleteSelectedRows)
+        {
+            return (
+                HandleDeleteSelectedRows(request),
+                CloseAfterWrite: false,
+                BinaryFollowUp: null
+            );
+        }
+
         if (request.Method == ProtocolMethods.ArmOpenFile)
         {
             return (HandleArmOpenFile(request), CloseAfterWrite: false, BinaryFollowUp: null);
@@ -1040,6 +1069,169 @@ internal sealed class AgentPipeServer : IDisposable
         {
             var (selector, row, column, columnKey, value) = ReadSetCellValueParams(request.Params);
             accessor.SetCellValue(selector, row, column, columnKey, value);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleSelectCell(RequestMessage request)
+    {
+        var op = AgentServices.DataGridOperator;
+        if (op is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No DataGrid operator is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var (selector, row, column, columnKey) = ReadCellColumnParams(request.Params);
+            op.SelectCell(selector, row, column, columnKey);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleSelectRow(RequestMessage request)
+    {
+        var op = AgentServices.DataGridOperator;
+        if (op is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No DataGrid operator is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var selector = ReadElementSelector(request.Params);
+            var columnKey = ReadRequiredString(request.Params, "columnKey");
+            var value = ReadRequiredString(request.Params, "value");
+            op.SelectRow(selector, columnKey, value);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleClickColumnHeader(RequestMessage request)
+    {
+        var op = AgentServices.DataGridOperator;
+        if (op is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No DataGrid operator is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var selector = ReadElementSelector(request.Params);
+            var columnKey = ReadRequiredString(request.Params, "columnKey");
+            op.ClickColumnHeader(selector, columnKey);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleAddRow(RequestMessage request)
+    {
+        var op = AgentServices.DataGridOperator;
+        if (op is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No DataGrid operator is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var selector = ReadElementSelector(request.Params);
+            op.AddRow(selector);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleDeleteSelectedRows(RequestMessage request)
+    {
+        var op = AgentServices.DataGridOperator;
+        if (op is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No DataGrid operator is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var selector = ReadElementSelector(request.Params);
+            op.DeleteSelectedRows(selector);
             return Ok(request.Id);
         }
         catch (ElementResolveException ex)

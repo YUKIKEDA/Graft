@@ -141,6 +141,32 @@ public static class ProtocolMethods
     public const string SetCellValue = "setCellValue";
 
     /// <summary>
+    /// Selects a single DataGrid cell via <c>params.automationId</c>, <c>row</c>, and
+    /// exactly one of <c>column</c> / <c>columnKey</c>.
+    /// </summary>
+    public const string SelectCell = "selectCell";
+
+    /// <summary>
+    /// Selects a DataGrid row by <c>params.columnKey</c> + <c>params.value</c> cell match.
+    /// </summary>
+    public const string SelectRow = "selectRow";
+
+    /// <summary>
+    /// Clicks a DataGrid column header via <c>params.automationId</c> + <c>params.columnKey</c>.
+    /// </summary>
+    public const string ClickColumnHeader = "clickColumnHeader";
+
+    /// <summary>
+    /// Adds a new DataGrid row via <c>params.automationId</c>.
+    /// </summary>
+    public const string AddRow = "addRow";
+
+    /// <summary>
+    /// Deletes selected DataGrid rows via <c>params.automationId</c>.
+    /// </summary>
+    public const string DeleteSelectedRows = "deleteSelectedRows";
+
+    /// <summary>
     /// Arms the next Graft OpenFile seam response with <c>params.path</c> (OK).
     /// </summary>
     public const string ArmOpenFile = "armOpenFile";
