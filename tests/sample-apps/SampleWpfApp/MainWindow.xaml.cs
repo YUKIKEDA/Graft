@@ -82,4 +82,19 @@ public partial class MainWindow : Window
     {
         StatusText.Text = "Collapsed";
     }
+
+    private void OpenChildWindowButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        var child = new ChildWindow { Owner = this };
+        child.Show();
+        StatusText.Text = "ChildOpened";
+    }
+
+    private void OpenModalWindowButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        var modal = new ModalWindow { Owner = this };
+        StatusText.Text = "ModalOpening";
+        modal.ShowDialog();
+        StatusText.Text = "ModalClosed";
+    }
 }

@@ -383,6 +383,99 @@ public sealed class AgentConnection : IAsyncDisposable
     }
 
     /// <summary>
+    /// Calls <c>listWindows</c> and returns session-local window descriptors.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Open windows in the target process.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task<ListWindowsResult> ListWindowsAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        ThrowIfDisposed();
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.ListWindows,
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "listWindows failed.");
+        if (response.Result is not { } resultElement)
+        {
+            throw new GraftException(
+                GraftErrorCodes.ActionFailed,
+                "listWindows returned no result."
+            );
+        }
+
+        return resultElement.Deserialize<ListWindowsResult>(JsonMessageCodec.Options)
+            ?? throw new GraftException(
+                GraftErrorCodes.ActionFailed,
+                "listWindows result deserialized to null."
+            );
+    }
+
+    /// <summary>
+    /// Calls <c>switchWindow</c> to set the agent target window.
+    /// </summary>
+    /// <param name="windowId">Session-local window id from <see cref="ListWindowsAsync"/>.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when the switch succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task SwitchWindowAsync(int windowId, CancellationToken cancellationToken = default)
+    {
+        ThrowIfDisposed();
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.SwitchWindow,
+                    Params = JsonSerializer.SerializeToElement(new { windowId }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "switchWindow failed.");
+    }
+
+    /// <summary>
+    /// Calls <c>invokeOpeningWindow</c> (non-blocking UI invoke for dialogs that may open).
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when the invoke is queued.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task InvokeOpeningWindowAsync(
+        string automationId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.InvokeOpeningWindow,
+                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "invokeOpeningWindow failed.");
+    }
+
+    /// <summary>
     /// Calls <c>screenshot</c> and reads the following raw PNG frame.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>

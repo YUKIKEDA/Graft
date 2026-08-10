@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using Graft.Core.Diagnostics;
 using Graft.Core.Selectors;
+using Graft.Protocol;
+using Graft.Protocol.Messages;
 
 namespace Graft.Core;
 
@@ -53,6 +55,142 @@ public sealed class GraftSession : IAsyncDisposable
         GetBy(Selector.ByAutomationId(automationId));
 
     /// <summary>
+    /// Lists open windows with session-local <c>windowId</c> values.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Window list result.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task<ListWindowsResult> ListWindowsAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        try
+        {
+            var result = await _connection
+                .ListWindowsAsync(cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.ListWindows, $"{result.Windows.Count} window(s)");
+            return result;
+        }
+        catch (GraftException)
+        {
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Switches the agent target window used by getTree / resolve / screenshot / actions.
+    /// </summary>
+    /// <param name="windowId">Session-local window id from <see cref="ListWindowsAsync"/>.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when the switch succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task SwitchToWindowAsync(
+        int windowId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        try
+        {
+            await _connection.SwitchWindowAsync(windowId, cancellationToken).ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.SwitchWindow, $"windowId={windowId}");
+        }
+        catch (GraftException)
+        {
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Waits until a window matching <paramref name="title"/> and/or <paramref name="automationId"/> appears.
+    /// </summary>
+    /// <param name="title">Optional exact window title.</param>
+    /// <param name="automationId">Optional exact window automation id.</param>
+    /// <param name="switchTo">When true (default), switches the target to the matched window.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The matched window descriptor.</returns>
+    /// <exception cref="ArgumentException">Neither title nor automationId was provided.</exception>
+    /// <exception cref="GraftException">Timed out or RPC failed.</exception>
+    public async Task<WindowInfo> WaitForWindowAsync(
+        string? title = null,
+        string? automationId = null,
+        bool switchTo = true,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var hasTitle = !string.IsNullOrWhiteSpace(title);
+        var hasAutomationId = !string.IsNullOrWhiteSpace(automationId);
+        if (!hasTitle && !hasAutomationId)
+        {
+            throw new ArgumentException(
+                "At least one of title or automationId must be provided.",
+                nameof(title)
+            );
+        }
+
+        var timeout = PositiveOrDefault(
+            WaitOptions.ExpectTimeout,
+            WaitOptions.DefaultExpectTimeout
+        );
+        var poll = PositiveOrDefault(WaitOptions.PollInterval, WaitOptions.DefaultPollInterval);
+        var deadline = DateTime.UtcNow + timeout;
+
+        while (DateTime.UtcNow <= deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var listed = await _connection
+                .ListWindowsAsync(cancellationToken)
+                .ConfigureAwait(false);
+            var match = listed.Windows.FirstOrDefault(window =>
+                (!hasTitle || string.Equals(window.Title, title, StringComparison.Ordinal))
+                && (
+                    !hasAutomationId
+                    || string.Equals(window.AutomationId, automationId, StringComparison.Ordinal)
+                )
+            );
+
+            if (match is not null)
+            {
+                if (switchTo)
+                {
+                    await _connection
+                        .SwitchWindowAsync(match.WindowId, cancellationToken)
+                        .ConfigureAwait(false);
+                    _operationLog.Record(
+                        FailureSteps.WaitForWindow,
+                        $"windowId={match.WindowId};switched"
+                    );
+                }
+                else
+                {
+                    _operationLog.Record(FailureSteps.WaitForWindow, $"windowId={match.WindowId}");
+                }
+
+                return match;
+            }
+
+            var remaining = deadline - DateTime.UtcNow;
+            if (remaining <= TimeSpan.Zero)
+            {
+                break;
+            }
+
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        var criteria =
+            hasTitle && hasAutomationId ? $"title='{title}', automationId='{automationId}'"
+            : hasTitle ? $"title='{title}'"
+            : $"automationId='{automationId}'";
+
+        throw new GraftException(
+            GraftErrorCodes.ActionTimeout,
+            $"Timed out after {timeout.TotalSeconds:0.###}s waiting for window ({criteria})."
+        );
+    }
+
+    /// <summary>
     /// Gets the child process id (0 if unavailable).
     /// </summary>
     public int ProcessId
@@ -89,6 +227,9 @@ public sealed class GraftSession : IAsyncDisposable
             _process.Dispose();
         }
     }
+
+    private static TimeSpan PositiveOrDefault(TimeSpan value, TimeSpan fallback) =>
+        value <= TimeSpan.Zero ? fallback : value;
 
     private static void TryKill(Process process)
     {

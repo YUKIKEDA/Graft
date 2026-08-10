@@ -12,9 +12,24 @@ public static class ProtocolMethods
     public const string Handshake = "handshake";
 
     /// <summary>
-    /// Returns the UI visual tree for the main window (Phase 1).
+    /// Returns the UI visual tree for the current target window.
     /// </summary>
     public const string GetTree = "getTree";
+
+    /// <summary>
+    /// Lists open windows with session-local <c>windowId</c> values.
+    /// </summary>
+    public const string ListWindows = "listWindows";
+
+    /// <summary>
+    /// Switches the agent target window via <c>params.windowId</c>.
+    /// </summary>
+    public const string SwitchWindow = "switchWindow";
+
+    /// <summary>
+    /// Begins an invoke that may open a window (non-blocking on the UI thread).
+    /// </summary>
+    public const string InvokeOpeningWindow = "invokeOpeningWindow";
 
     /// <summary>
     /// Captures a window screenshot: JSON meta result followed by a raw PNG frame.

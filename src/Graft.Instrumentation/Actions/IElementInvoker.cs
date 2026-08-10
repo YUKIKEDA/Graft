@@ -16,6 +16,18 @@ public interface IElementInvoker
     /// <exception cref="ElementResolveException">Selector / resolve failures.</exception>
     /// <exception cref="ElementActionException">Not actionable or invoke failed.</exception>
     void Invoke(ElementSelector selector);
+
+    /// <summary>
+    /// Queues an invoke on the UI dispatcher without waiting for completion.
+    /// </summary>
+    /// <remarks>
+    /// Use when the invoke may open a modal (<c>ShowDialog</c>) that would otherwise
+    /// block a synchronous <see cref="Invoke"/> until the dialog closes.
+    /// </remarks>
+    /// <param name="selector">Element selector (automationId required).</param>
+    /// <exception cref="ElementResolveException">Selector / resolve failures before queueing.</exception>
+    /// <exception cref="ElementActionException">Dispatcher unavailable.</exception>
+    void BeginInvoke(ElementSelector selector);
 }
 
 #endif

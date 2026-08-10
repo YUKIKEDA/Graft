@@ -280,6 +280,25 @@ internal sealed class AgentPipeServer : IDisposable
             );
         }
 
+        if (request.Method == ProtocolMethods.ListWindows)
+        {
+            return (HandleListWindows(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
+        if (request.Method == ProtocolMethods.SwitchWindow)
+        {
+            return (HandleSwitchWindow(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
+        if (request.Method == ProtocolMethods.InvokeOpeningWindow)
+        {
+            return (
+                HandleInvokeOpeningWindow(request),
+                CloseAfterWrite: false,
+                BinaryFollowUp: null
+            );
+        }
+
         return (
             Error(
                 request.Id,
@@ -595,6 +614,114 @@ internal sealed class AgentPipeServer : IDisposable
         {
             return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
         }
+    }
+
+    private static ResponseMessage HandleListWindows(RequestMessage request)
+    {
+        var catalog = AgentServices.WindowCatalog;
+        if (catalog is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No window catalog is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var result = catalog.ListWindows();
+            var resultJson = JsonSerializer.SerializeToElement(result, JsonMessageCodec.Options);
+            return Ok(request.Id, resultJson);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleSwitchWindow(RequestMessage request)
+    {
+        var catalog = AgentServices.WindowCatalog;
+        if (catalog is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No window catalog is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var windowId = ReadWindowId(request.Params);
+            catalog.SwitchWindow(windowId);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleInvokeOpeningWindow(RequestMessage request)
+    {
+        var invoker = AgentServices.ElementInvoker;
+        if (invoker is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No element invoker is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var selector = ReadElementSelector(request.Params);
+            invoker.BeginInvoke(selector);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static int ReadWindowId(JsonElement? paramsElement)
+    {
+        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.windowId is required."
+            );
+        }
+
+        if (
+            !element.TryGetProperty("windowId", out var windowIdProperty)
+            || !windowIdProperty.TryGetInt32(out var windowId)
+        )
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.windowId must be an integer."
+            );
+        }
+
+        return windowId;
     }
 
     private static ElementSelector ReadElementSelector(JsonElement? paramsElement)

@@ -190,6 +190,10 @@ public static class ScenarioJson
             ScenarioActions.ExpectName => CompileExpectName(step, index),
             ScenarioActions.ExpectSelected => CompileExpectSelected(step, index),
             ScenarioActions.ExpectExpanded => CompileExpectExpanded(step, index),
+            ScenarioActions.ListWindows => new ListWindowsOperation(),
+            ScenarioActions.SwitchWindow => CompileSwitchWindow(step, index),
+            ScenarioActions.WaitForWindow => CompileWaitForWindow(step, index),
+            ScenarioActions.InvokeOpeningWindow => CompileInvokeOpeningWindow(step, index),
             _ => throw Invalid($"steps[{index}] has unknown action '{action}'."),
         };
     }
@@ -323,6 +327,61 @@ public static class ScenarioJson
         var automationId = RequireNonEmptyString(step, "automationId", index);
         return new ExpectExpandedOperation(automationId, RequireBoolean(step, "expanded", index));
     }
+
+    private static SwitchWindowOperation CompileSwitchWindow(JsonElement step, int index)
+    {
+        if (
+            !step.TryGetProperty("windowId", out var windowIdElement)
+            || windowIdElement.ValueKind != JsonValueKind.Number
+            || !windowIdElement.TryGetInt32(out var windowId)
+        )
+        {
+            throw Invalid($"steps[{index}] switchWindow requires integer property 'windowId'.");
+        }
+
+        return new SwitchWindowOperation(windowId);
+    }
+
+    private static WaitForWindowOperation CompileWaitForWindow(JsonElement step, int index)
+    {
+        string? title = null;
+        string? automationId = null;
+        if (step.TryGetProperty("title", out _))
+        {
+            title = RequireNonEmptyString(step, "title", index);
+        }
+
+        if (step.TryGetProperty("automationId", out _))
+        {
+            automationId = RequireNonEmptyString(step, "automationId", index);
+        }
+
+        if (title is null && automationId is null)
+        {
+            throw Invalid($"steps[{index}] waitForWindow requires 'title' and/or 'automationId'.");
+        }
+
+        var switchTo = true;
+        if (step.TryGetProperty("switchTo", out var switchElement))
+        {
+            if (
+                switchElement.ValueKind != JsonValueKind.True
+                && switchElement.ValueKind != JsonValueKind.False
+            )
+            {
+                throw Invalid($"steps[{index}].switchTo must be a boolean.");
+            }
+
+            switchTo = switchElement.GetBoolean();
+        }
+
+        return new WaitForWindowOperation(title, automationId, switchTo);
+    }
+
+    private static InvokeOpeningWindowOperation CompileInvokeOpeningWindow(
+        JsonElement step,
+        int index
+    ) => new(RequireNonEmptyString(step, "automationId", index));
 
     private static bool RequireBoolean(JsonElement step, string propertyName, int index)
     {

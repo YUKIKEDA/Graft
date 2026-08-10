@@ -1,0 +1,22 @@
+<Window x:Class="SampleWpfApp.ChildWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Child Window"
+        AutomationProperties.AutomationId="ChildWindow"
+        Height="200"
+        Width="320"
+        WindowStartupLocation="CenterOwner">
+    <StackPanel Margin="24">
+        <TextBlock x:Name="ChildStatus"
+                   AutomationProperties.AutomationId="ChildStatus"
+                   Text="ChildReady"
+                   FontSize="16"
+                   Margin="0,0,0,16" />
+        <Button x:Name="CloseChildButton"
+                AutomationProperties.AutomationId="CloseChildButton"
+                Content="Close"
+                Padding="12,6"
+                HorizontalAlignment="Left"
+                Click="CloseChildButton_OnClick" />
+    </StackPanel>
+</Window>

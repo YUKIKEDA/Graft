@@ -1,6 +1,7 @@
 using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Elements;
 using Graft.Instrumentation.Screenshot;
+using Graft.Instrumentation.Windows;
 
 namespace Graft.Instrumentation.Tree;
 
@@ -21,6 +22,7 @@ public static class AgentServices
     private static IElementScroller? _elementScroller;
     private static IElementChooser? _elementChooser;
     private static IElementExpander? _elementExpander;
+    private static IWindowCatalog? _windowCatalog;
 
     /// <summary>
     /// Gets the registered UI tree provider, if any.
@@ -71,6 +73,11 @@ public static class AgentServices
     /// Gets the registered element expander, if any.
     /// </summary>
     public static IElementExpander? ElementExpander => _elementExpander;
+
+    /// <summary>
+    /// Gets the registered window catalog, if any.
+    /// </summary>
+    public static IWindowCatalog? WindowCatalog => _windowCatalog;
 
     /// <summary>
     /// Registers the UI tree provider used for <c>getTree</c>.
@@ -173,6 +180,16 @@ public static class AgentServices
     }
 
     /// <summary>
+    /// Registers the window catalog used for <c>listWindows</c> / <c>switchWindow</c>.
+    /// </summary>
+    /// <param name="catalog">Framework-specific catalog.</param>
+    public static void RegisterWindowCatalog(IWindowCatalog catalog)
+    {
+        ArgumentNullException.ThrowIfNull(catalog);
+        _windowCatalog = catalog;
+    }
+
+    /// <summary>
     /// Clears registered services (tests).
     /// </summary>
     public static void Reset()
@@ -187,6 +204,7 @@ public static class AgentServices
         _elementScroller = null;
         _elementChooser = null;
         _elementExpander = null;
+        _windowCatalog = null;
     }
 }
 

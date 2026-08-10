@@ -204,6 +204,46 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// Window actions compile to typed operations.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - JSON with listWindows / waitForWindow / invokeOpeningWindow / switchWindow
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - Matching operation types and field values
+    /// </remarks>
+    [Fact]
+    public void Parse_WindowActions_CompileOperations()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "listWindows" },
+                { "action": "waitForWindow", "automationId": "ChildWindow", "switchTo": true },
+                { "action": "invokeOpeningWindow", "automationId": "OpenModalWindowButton" },
+                { "action": "switchWindow", "windowId": 2 }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        Assert.IsType<ListWindowsOperation>(scenario.Operations[1]);
+        var wait = Assert.IsType<WaitForWindowOperation>(scenario.Operations[2]);
+        Assert.Equal("ChildWindow", wait.AutomationId);
+        Assert.True(wait.SwitchTo);
+        var opening = Assert.IsType<InvokeOpeningWindowOperation>(scenario.Operations[3]);
+        Assert.Equal("OpenModalWindowButton", opening.AutomationId);
+        var switchOp = Assert.IsType<SwitchWindowOperation>(scenario.Operations[4]);
+        Assert.Equal(2, switchOp.WindowId);
+    }
+
+    /// <summary>
     /// Unknown action fails with action.failed.
     /// </summary>
     /// <remarks>

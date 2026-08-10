@@ -95,6 +95,22 @@
                                   AutomationProperties.AutomationId="SampleTreeChildB" />
                 </TreeViewItem>
             </TreeView>
+
+            <TextBlock Text="Windows" Margin="0,8,0,4" />
+            <Button x:Name="OpenChildWindowButton"
+                    AutomationProperties.AutomationId="OpenChildWindowButton"
+                    Content="Open Child Window"
+                    Padding="12,6"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,0,8"
+                    Click="OpenChildWindowButton_OnClick" />
+            <Button x:Name="OpenModalWindowButton"
+                    AutomationProperties.AutomationId="OpenModalWindowButton"
+                    Content="Open Modal Window"
+                    Padding="12,6"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,0,8"
+                    Click="OpenModalWindowButton_OnClick" />
         </StackPanel>
     </ScrollViewer>
 </Window>

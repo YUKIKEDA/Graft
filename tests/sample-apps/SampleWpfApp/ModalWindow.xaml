@@ -1,0 +1,22 @@
+<Window x:Class="SampleWpfApp.ModalWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Modal Window"
+        AutomationProperties.AutomationId="ModalWindow"
+        Height="200"
+        Width="320"
+        WindowStartupLocation="CenterOwner">
+    <StackPanel Margin="24">
+        <TextBlock x:Name="ModalStatus"
+                   AutomationProperties.AutomationId="ModalStatus"
+                   Text="ModalReady"
+                   FontSize="16"
+                   Margin="0,0,0,16" />
+        <Button x:Name="CloseModalButton"
+                AutomationProperties.AutomationId="CloseModalButton"
+                Content="Close"
+                Padding="12,6"
+                HorizontalAlignment="Left"
+                Click="CloseModalButton_OnClick" />
+    </StackPanel>
+</Window>
