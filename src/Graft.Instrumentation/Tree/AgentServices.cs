@@ -224,6 +224,7 @@ public static class AgentServices
         _elementCellAccessor = null;
         _windowCatalog = null;
         OpenFileArm.Reset();
+        SaveFileArm.Reset();
     }
 }
 

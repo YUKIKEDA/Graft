@@ -5,20 +5,20 @@ using Microsoft.Win32;
 namespace Graft.Instrumentation.Wpf.Tests;
 
 /// <summary>
-/// Verifies the shared Harmony <c>CommonItemDialog.RunDialog</c> OpenFile arm seam.
+/// Verifies the Harmony <c>CommonItemDialog.RunDialog</c> SaveFile arm seam.
 /// </summary>
-public sealed class OpenFileDialogSeamTests
+public sealed class SaveFileDialogSeamTests
 {
     /// <summary>
-    /// Armed path makes <see cref="OpenFileDialog.ShowDialog()"/> return OK without UI.
+    /// Armed path makes <see cref="SaveFileDialog.ShowDialog()"/> return OK without UI.
     /// </summary>
     /// <remarks>
     /// Preconditions:
     /// - STA thread; WpfGraft.Use installed the RunDialog patch
     ///
     /// Steps:
-    /// - OpenFileArm.ArmPath
-    /// - OpenFileDialog.ShowDialog
+    /// - SaveFileArm.ArmPath
+    /// - SaveFileDialog.ShowDialog
     ///
     /// Expected:
     /// - Result is true and FileName matches the arm
@@ -27,13 +27,13 @@ public sealed class OpenFileDialogSeamTests
     public void ArmPath_ShowDialog_ReturnsArmedFileName()
     {
         WpfGraft.ResetForTests();
-        OpenFileArm.Reset();
+        SaveFileArm.Reset();
         WpfGraft.Use();
 
-        const string path = @"C:\graft-seam-ok.txt";
-        OpenFileArm.ArmPath(path);
+        const string path = @"C:\graft-seam-save-ok.txt";
+        SaveFileArm.ArmPath(path);
 
-        var dialog = new OpenFileDialog();
+        var dialog = new SaveFileDialog();
         var result = dialog.ShowDialog();
 
         Assert.True(result);
@@ -41,15 +41,15 @@ public sealed class OpenFileDialogSeamTests
     }
 
     /// <summary>
-    /// Armed cancel makes <see cref="OpenFileDialog.ShowDialog()"/> return false without UI.
+    /// Armed cancel makes <see cref="SaveFileDialog.ShowDialog()"/> return false without UI.
     /// </summary>
     /// <remarks>
     /// Preconditions:
     /// - STA thread; WpfGraft.Use installed the RunDialog patch
     ///
     /// Steps:
-    /// - OpenFileArm.ArmCancel
-    /// - OpenFileDialog.ShowDialog
+    /// - SaveFileArm.ArmCancel
+    /// - SaveFileDialog.ShowDialog
     ///
     /// Expected:
     /// - Result is false
@@ -58,12 +58,12 @@ public sealed class OpenFileDialogSeamTests
     public void ArmCancel_ShowDialog_ReturnsFalse()
     {
         WpfGraft.ResetForTests();
-        OpenFileArm.Reset();
+        SaveFileArm.Reset();
         WpfGraft.Use();
 
-        OpenFileArm.ArmCancel();
+        SaveFileArm.ArmCancel();
 
-        var dialog = new OpenFileDialog();
+        var dialog = new SaveFileDialog();
         var result = dialog.ShowDialog();
 
         Assert.False(result);

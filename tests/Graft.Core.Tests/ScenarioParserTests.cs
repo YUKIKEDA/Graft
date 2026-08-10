@@ -312,6 +312,39 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// armSaveFile / armSaveFileCancel compile.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with SaveFile arm actions
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - Matching operation types
+    /// </remarks>
+    [Fact]
+    public void Parse_SaveFileArmActions_CompileOperations()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "armSaveFile", "path": "C:\\b.txt" },
+                { "action": "armSaveFileCancel" }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var arm = Assert.IsType<ArmSaveFileOperation>(scenario.Operations[1]);
+        Assert.Equal(@"C:\b.txt", arm.Path);
+        Assert.IsType<ArmSaveFileCancelOperation>(scenario.Operations[2]);
+    }
+
+    /// <summary>
     /// Window actions compile to typed operations.
     /// </summary>
     /// <remarks>

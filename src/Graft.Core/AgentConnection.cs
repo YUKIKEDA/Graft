@@ -629,6 +629,58 @@ public sealed class AgentConnection : IAsyncDisposable
     }
 
     /// <summary>
+    /// Calls <c>armSaveFile</c> to arm the next Graft SaveFile seam with a path (OK).
+    /// </summary>
+    /// <param name="path">File path to return from the seam.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when arming succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task ArmSaveFileAsync(string path, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.ArmSaveFile,
+                    Params = JsonSerializer.SerializeToElement(new { path }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "armSaveFile failed.");
+    }
+
+    /// <summary>
+    /// Calls <c>armSaveFileCancel</c> to arm the next Graft SaveFile seam as cancel.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when arming succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task ArmSaveFileCancelAsync(CancellationToken cancellationToken = default)
+    {
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.ArmSaveFileCancel,
+                    Params = JsonSerializer.SerializeToElement(new { }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "armSaveFileCancel failed.");
+    }
+
+    /// <summary>
     /// Calls <c>screenshot</c> and reads the following raw PNG frame.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>

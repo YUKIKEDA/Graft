@@ -25,7 +25,7 @@
 | Arm 寿命 | **一回限り**（消費後クリア。未消費の再 Arm は上書き） |
 | 公開経路 | Scenario / MCP 薄い追従（`armOpenFile` / `armOpenFileCancel`） |
 | 含めない | 実 OS UIA、アプリへの Graft 業務依存、Save/Folder/MessageBox、複数選択、Avalonia、Inspector |
-| Phase 10 の次 | **SaveFile シーム**（OpenFile と同型の薄い拡張） |
+| Phase 10 の次 | Phase 11 SaveFile シーム（[task_phase11.md](./task_phase11.md)） |
 
 ---
 
@@ -88,4 +88,4 @@
 - 実コモンダイアログ HWND は触らない（in-process Runtime シームが正本）
 - アプリは素の `OpenFileDialog` のまま（Graft ラッパ不要）
 - 設計矛盾時は `project.md` 優先
-- **次フェーズ:** SaveFile シーム → … → Avalonia → Inspector（最後寄り）
+- **次フェーズ:** [task_phase11.md](./task_phase11.md)（SaveFile）→ Folder → … → Avalonia → Inspector（最後寄り）

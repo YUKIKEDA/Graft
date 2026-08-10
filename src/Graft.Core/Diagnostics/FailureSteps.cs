@@ -59,6 +59,12 @@ public static class FailureSteps
     /// <summary>armOpenFileCancel failed.</summary>
     public const string ArmOpenFileCancel = "armOpenFileCancel";
 
+    /// <summary>armSaveFile failed.</summary>
+    public const string ArmSaveFile = "armSaveFile";
+
+    /// <summary>armSaveFileCancel failed.</summary>
+    public const string ArmSaveFileCancel = "armSaveFileCancel";
+
     /// <summary>listWindows failed.</summary>
     public const string ListWindows = "listWindows";
 

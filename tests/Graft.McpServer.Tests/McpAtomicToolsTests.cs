@@ -51,6 +51,8 @@ public sealed class McpAtomicToolsTests
         Assert.Contains(tools, t => t.Name == "graft_expect_cell_text");
         Assert.Contains(tools, t => t.Name == "graft_arm_open_file");
         Assert.Contains(tools, t => t.Name == "graft_arm_open_file_cancel");
+        Assert.Contains(tools, t => t.Name == "graft_arm_save_file");
+        Assert.Contains(tools, t => t.Name == "graft_arm_save_file_cancel");
         Assert.Contains(tools, t => t.Name == "graft_dispose");
 
         var appPath = SampleAppLocator.ResolveProjectPath();

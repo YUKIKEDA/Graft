@@ -81,8 +81,9 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - ウィンドウ（Phase 7）: `ListWindowsAsync` / `SwitchToWindowAsync(windowId)` / `WaitForWindowAsync(title:, automationId:)`（既定で自動 Switch）。getTree / resolve / screenshot / アクションは既定ターゲット窓のみ
 - モーダル開封: `GetBy…().InvokeOpeningWindowAsync()`（BeginInvoke + 既定で新窓待ち + 自動 Switch）。**素の `InvokeAsync` で `ShowDialog` を開くとハングしうる**（非対応）
 - OpenFile シーム（Phase 10）: アプリは素の `OpenFileDialog`。`WpfGraft.Use` が Harmony で `CommonItemDialog.RunDialog` を差し替え。テストは `ArmOpenFileAsync(path)` / `ArmOpenFileCancelAsync()` → `InvokeOpeningWindowAsync(waitForNewWindow: false)` → Expect。未アーム時は実ダイアログへフォールバック。業務コードに Graft ダイアログ API は不要
+- SaveFile シーム（Phase 11）: 同上で素の `SaveFileDialog`。`ArmSaveFileAsync` / `ArmSaveFileCancelAsync`（OpenFile Arm と独立）
 - 失敗診断: Expect / Wait / 各アクション失敗時に `GraftException.Report`（最小: step / expected / actual / timedOut / selector。添付: `recentOperations` / `tree` / `screenshotPath` / `healingCandidates`）。エージェントは RPC ごとに常時添付しない。添付は失敗時ベストエフォート
-- Scenario JSON: `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync`（上記に加え `armOpenFile` / `armOpenFileCancel` / セル・窓系）。契約は `.dev/scenario.schema.json`。例: `tests/sample-apps/SampleWpfApp.Tests/Scenarios/`
-- MCP: `Graft.McpServer`（stdio）。原子ツールに `graft_arm_open_file` / `graft_arm_open_file_cancel` とセル・窓系を含む。失敗時は `IsError` + FailureReport JSON
+- Scenario JSON: `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync`（上記に加え `armOpenFile` / `armSaveFile` 系 / セル・窓系）。契約は `.dev/scenario.schema.json`。例: `tests/sample-apps/SampleWpfApp.Tests/Scenarios/`
+- MCP: `Graft.McpServer`（stdio）。原子ツールに `graft_arm_open_file` / `graft_arm_save_file` 系とセル・窓系を含む。失敗時は `IsError` + FailureReport JSON
 - invoke / setValue はネイティブ → Peer → SendInput フォールバック（クリック / クリア+タイプ）
-- 未実装（後続）: SaveFile シーム、Folder/MessageBox、DataGrid 列キー／他列種、Avalonia、Inspector、ファジー自己修復、シナリオ自動書き換え、`typeHuman` / chord DSL、複数選択
+- 未実装（後続）: Folder/MessageBox シーム、DataGrid 列キー／他列種、Avalonia、Inspector、ファジー自己修復、シナリオ自動書き換え、`typeHuman` / chord DSL、複数選択

@@ -148,6 +148,13 @@
                     HorizontalAlignment="Left"
                     Margin="0,0,0,8"
                     Click="OpenFileButton_OnClick" />
+            <Button x:Name="SaveFileButton"
+                    AutomationProperties.AutomationId="SaveFileButton"
+                    Content="Save File"
+                    Padding="12,6"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,0,8"
+                    Click="SaveFileButton_OnClick" />
         </StackPanel>
     </ScrollViewer>
 </Window>

@@ -729,6 +729,46 @@ public sealed class GraftAtomicTools
         );
 
     /// <summary>
+    /// Arms the next Graft SaveFile seam with a file path (OK, one-shot).
+    /// </summary>
+    /// <param name="path">File path to return.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_arm_save_file")]
+    [Description(
+        "Arm the next SaveFileDialog.ShowDialog (RunDialog seam) to return a path (one-shot)."
+    )]
+    public Task<CallToolResult> ArmSaveFile(
+        [Description("File path to return.")] string path,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session.ArmSaveFileAsync(path, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["path"] = path });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Arms the next Graft SaveFile seam as cancel (one-shot).
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_arm_save_file_cancel")]
+    [Description("Arm the next SaveFileDialog.ShowDialog (RunDialog seam) as cancel (one-shot).")]
+    public Task<CallToolResult> ArmSaveFileCancel(CancellationToken cancellationToken = default) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session.ArmSaveFileCancelAsync(cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["canceled"] = true });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Disposes the open Graft session (pipe + child process).
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
