@@ -479,6 +479,7 @@ internal sealed class WpfDataGridOperator : IDataGridOperator
         column switch
         {
             DataGridCheckBoxColumn => ReadCheckBoxText(content),
+            DataGridTemplateColumn => ReadTemplateText(content),
             _ => ReadDisplayText(content),
         };
 
@@ -505,6 +506,17 @@ internal sealed class WpfDataGridOperator : IDataGridOperator
         }
 
         return checkBox.IsChecked == true ? "True" : "False";
+    }
+
+    private static string ReadTemplateText(FrameworkElement content)
+    {
+        var checkBox = content as CheckBox ?? FindVisualChild<CheckBox>(content);
+        if (checkBox is not null && FindVisualChild<TextBlock>(content) is null)
+        {
+            return checkBox.IsChecked == true ? "True" : "False";
+        }
+
+        return ReadDisplayText(content);
     }
 
     private static DataGridColumnHeader? FindColumnHeader(DataGrid dataGrid, DataGridColumn column)
