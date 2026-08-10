@@ -29,6 +29,9 @@ public static class WpfGraft
         AgentServices.RegisterElementValueSetter(new WpfElementValueSetter());
         AgentServices.RegisterElementToggler(new WpfElementToggler());
         AgentServices.RegisterElementKeySender(new WpfElementKeySender());
+        AgentServices.RegisterElementScroller(new WpfElementScroller());
+        AgentServices.RegisterElementChooser(new WpfElementChooser());
+        AgentServices.RegisterElementExpander(new WpfElementExpander());
     }
 
     /// <summary>

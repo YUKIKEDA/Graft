@@ -20,6 +20,18 @@ public static class FailureSteps
     /// <summary>sendKeys action failed.</summary>
     public const string SendKeys = "sendKeys";
 
+    /// <summary>scrollIntoView action failed.</summary>
+    public const string ScrollIntoView = "scrollIntoView";
+
+    /// <summary>select action failed.</summary>
+    public const string Select = "select";
+
+    /// <summary>expand action failed.</summary>
+    public const string Expand = "expand";
+
+    /// <summary>collapse action failed.</summary>
+    public const string Collapse = "collapse";
+
     /// <summary>Expect on element name failed or timed out.</summary>
     public const string ExpectName = "expectName";
 }

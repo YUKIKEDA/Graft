@@ -200,6 +200,127 @@ public sealed class GraftAtomicTools
         );
 
     /// <summary>
+    /// Scrolls an element or list item into view.
+    /// </summary>
+    /// <param name="automationId">Element or list automation id.</param>
+    /// <param name="index">Optional list item index.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result including realized identity.</returns>
+    [McpServerTool(Name = "graft_scroll_into_view")]
+    [Description(
+        "scrollIntoView for an element or list item (optional index) in the open session."
+    )]
+    public Task<CallToolResult> ScrollIntoView(
+        [Description("Target element or list automation id.")] string automationId,
+        [Description("Optional zero-based list item index.")] int? index = null,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                var query = session.GetByAutomationId(automationId);
+                var identity = index is null
+                    ? await query.ScrollIntoViewAsync(cancellationToken).ConfigureAwait(false)
+                    : await query
+                        .ScrollIntoViewAsync(index.Value, cancellationToken)
+                        .ConfigureAwait(false);
+                var payload = new JsonObject
+                {
+                    ["automationId"] = identity.AutomationId,
+                    ["listAutomationId"] = automationId,
+                };
+                if (identity.RuntimeId is { } runtimeId)
+                {
+                    payload["runtimeId"] = runtimeId;
+                }
+
+                if (index is { } itemIndex)
+                {
+                    payload["index"] = itemIndex;
+                }
+
+                return ToolResults.Ok(payload);
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Selects a list/combo item by index.
+    /// </summary>
+    /// <param name="automationId">List or combo automation id.</param>
+    /// <param name="index">Zero-based item index.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_select")]
+    [Description("Select a single list/combo item by index in the open session.")]
+    public Task<CallToolResult> Select(
+        [Description("List or combo automation id.")] string automationId,
+        [Description("Zero-based item index.")] int index,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .SelectAsync(index, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject { ["automationId"] = automationId, ["index"] = index }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Expands an element by automation id.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_expand")]
+    [Description("Expand an element by automationId in the open session.")]
+    public Task<CallToolResult> Expand(
+        [Description("Target automation id.")] string automationId,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .ExpandAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Collapses an element by automation id.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_collapse")]
+    [Description("Collapse an element by automationId in the open session.")]
+    public Task<CallToolResult> Collapse(
+        [Description("Target automation id.")] string automationId,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .CollapseAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Expects an element's tree name.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>

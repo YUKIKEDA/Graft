@@ -40,4 +40,24 @@ public static class ProtocolMethods
     /// Types literal text into a focused element via <c>params.automationId</c> and <c>params.text</c>.
     /// </summary>
     public const string SendKeys = "sendKeys";
+
+    /// <summary>
+    /// Scrolls an element into view. Optional <c>params.index</c> targets a list item.
+    /// </summary>
+    public const string ScrollIntoView = "scrollIntoView";
+
+    /// <summary>
+    /// Selects a single item by <c>params.index</c> on a list/combo (<c>params.automationId</c>).
+    /// </summary>
+    public const string Select = "select";
+
+    /// <summary>
+    /// Expands an element (e.g. TreeViewItem / Expander) by <c>params.automationId</c>.
+    /// </summary>
+    public const string Expand = "expand";
+
+    /// <summary>
+    /// Collapses an element (e.g. TreeViewItem / Expander) by <c>params.automationId</c>.
+    /// </summary>
+    public const string Collapse = "collapse";
 }

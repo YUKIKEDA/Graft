@@ -72,8 +72,11 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - 自己修復（Phase 4）: 解決失敗時に Core が代替セレクタ候補を算出。高信頼で一意なら同一 `ElementQuery` で一回だけ自動再解決し、以降そのセレクタを使う。失敗時は `FailureReport.healingCandidates` に候補を添付（シナリオファイルは書き換えない。ファジー一致はしない）
 - テキスト入力: `GetByAutomationId(…).SetValueAsync(value)`（エージェント wire `setValue`）。キー入力: `SendKeysAsync(text)`（リテラル、chord DSL なし）
 - トグル: `GetByAutomationId(…).ToggleAsync()`（状態フリップ）
-- 失敗診断: Expect / Wait / Invoke / SetValue / Toggle / SendKeys 失敗時に `GraftException.Report`（最小: step / expected / actual / timedOut / selector。添付: `recentOperations` / `tree` / `screenshotPath` / `healingCandidates`）。エージェントは RPC ごとに常時添付しない。添付は失敗時ベストエフォート
-- Scenario JSON: `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync`（`launch` / `invoke` / `setValue` / `toggle` / `sendKeys` / `expectName`）。契約は `.dev/scenario.schema.json`。例: `tests/sample-apps/SampleWpfApp.Tests/Scenarios/`
-- MCP: `Graft.McpServer`（stdio）。`graft_ping` / `graft_run_scenario` / 原子ツール（`graft_launch`・`graft_invoke`・`graft_set_value`・`graft_toggle`・`graft_send_keys`・`graft_expect_name`・`graft_dispose`）。失敗時は `IsError` + FailureReport JSON（`healingCandidates` 含む）
+- スクロール: `ScrollIntoViewAsync()`（実現済み要素）/ `ScrollIntoViewAsync(index)`（リスト。仮想化対応、identity 返却）
+- 選択: `SelectAsync(index)`（単一。内部で自動 scroll/realize）
+- 開閉: `ExpandAsync()` / `CollapseAsync()`（状態指定）
+- 失敗診断: Expect / Wait / 各アクション失敗時に `GraftException.Report`（最小: step / expected / actual / timedOut / selector。添付: `recentOperations` / `tree` / `screenshotPath` / `healingCandidates`）。エージェントは RPC ごとに常時添付しない。添付は失敗時ベストエフォート
+- Scenario JSON: `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync`（`launch` / `invoke` / `setValue` / `toggle` / `sendKeys` / `scrollIntoView` / `select` / `expand` / `collapse` / `expectName`）。契約は `.dev/scenario.schema.json`。例: `tests/sample-apps/SampleWpfApp.Tests/Scenarios/`（`sample-main-window` / `phase5-actions`）
+- MCP: `Graft.McpServer`（stdio）。`graft_ping` / `graft_run_scenario` / 原子ツール（launch・invoke・set_value・toggle・send_keys・scroll_into_view・select・expand・collapse・expect_name・dispose）。失敗時は `IsError` + FailureReport JSON
 - invoke / setValue はネイティブ → Peer → SendInput フォールバック（クリック / クリア+タイプ）
-- 未実装（後続）: Avalonia、ファジー自己修復、シナリオ自動書き換え、`typeHuman` / chord DSL、`scroll` / `select` / `expand`
+- 未実装（後続）: ツリー `selected`/`expanded`、Avalonia、Inspector、ファジー自己修復、シナリオ自動書き換え、`typeHuman` / chord DSL、複数選択

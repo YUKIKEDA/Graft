@@ -202,6 +202,151 @@ public sealed class ElementQuery
     }
 
     /// <summary>
+    /// Waits until the element is present, then scrolls it into view.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Identity of the scrolled element.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or scrollIntoView failed.</exception>
+    public Task<ElementIdentity> ScrollIntoViewAsync(
+        CancellationToken cancellationToken = default
+    ) => ScrollIntoViewCoreAsync(index: null, cancellationToken);
+
+    /// <summary>
+    /// Waits until the list/combo is present, then scrolls the item at
+    /// <paramref name="index"/> into view (realizing virtualized containers).
+    /// </summary>
+    /// <param name="index">Zero-based item index.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Identity of the realized list item.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or scrollIntoView failed.</exception>
+    public Task<ElementIdentity> ScrollIntoViewAsync(
+        int index,
+        CancellationToken cancellationToken = default
+    ) => ScrollIntoViewCoreAsync(index, cancellationToken);
+
+    /// <summary>
+    /// Waits until the list/combo is actionable, then selects the item at
+    /// <paramref name="index"/> (auto scroll/realize when needed).
+    /// </summary>
+    /// <param name="index">Zero-based item index.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when select succeeds.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or select failed.</exception>
+    public async Task SelectAsync(int index, CancellationToken cancellationToken = default)
+    {
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot select over the wire.",
+                    FailureSteps.Select,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .SelectAsync(node.AutomationId, index, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.Select, $"{node.AutomationId}[{index}]");
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.Select,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Waits until the element is actionable, then expands it.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when expand succeeds.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or expand failed.</exception>
+    public async Task ExpandAsync(CancellationToken cancellationToken = default)
+    {
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot expand over the wire.",
+                    FailureSteps.Expand,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .ExpandAsync(node.AutomationId, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.Expand, node.AutomationId);
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.Expand,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Waits until the element is actionable, then collapses it.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when collapse succeeds.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or collapse failed.</exception>
+    public async Task CollapseAsync(CancellationToken cancellationToken = default)
+    {
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot collapse over the wire.",
+                    FailureSteps.Collapse,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .CollapseAsync(node.AutomationId, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.Collapse, node.AutomationId);
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.Collapse,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
     /// Waits until the element's <c>name</c> equals <paramref name="expectedName"/>.
     /// </summary>
     /// <param name="expectedName">Expected tree node name.</param>
@@ -432,6 +577,48 @@ public sealed class ElementQuery
             },
             innerException
         );
+    }
+
+    private async Task<ElementIdentity> ScrollIntoViewCoreAsync(
+        int? index,
+        CancellationToken cancellationToken
+    )
+    {
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot scrollIntoView over the wire.",
+                    FailureSteps.ScrollIntoView,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            var identity = await _connection
+                .ScrollIntoViewAsync(node.AutomationId, index, cancellationToken)
+                .ConfigureAwait(false);
+            var detail =
+                index is null
+                    ? node.AutomationId
+                    : $"{node.AutomationId}[{index}]->{identity.AutomationId}";
+            _operationLog.Record(FailureSteps.ScrollIntoView, detail);
+            return identity;
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.ScrollIntoView,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
     }
 
     private TreeNode ResolveNode(TreeNode root)

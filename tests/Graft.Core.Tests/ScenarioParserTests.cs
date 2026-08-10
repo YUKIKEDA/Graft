@@ -117,6 +117,57 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// Phase 5 actions compile with expected fields (optional scroll index).
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with scrollIntoView / select / expand / collapse
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - Matching operation types and field values
+    /// </remarks>
+    [Fact]
+    public void Parse_Phase5Actions_CompileOperations()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "scrollIntoView", "automationId": "SampleList", "index": 40 },
+                { "action": "scrollIntoView", "automationId": "StatusText" },
+                { "action": "select", "automationId": "SampleList", "index": 35 },
+                { "action": "expand", "automationId": "SampleTreeRoot" },
+                { "action": "collapse", "automationId": "SampleTreeRoot" }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+
+        var scrollIndexed = Assert.IsType<ScrollIntoViewOperation>(scenario.Operations[1]);
+        Assert.Equal("SampleList", scrollIndexed.AutomationId);
+        Assert.Equal(40, scrollIndexed.Index);
+
+        var scrollElement = Assert.IsType<ScrollIntoViewOperation>(scenario.Operations[2]);
+        Assert.Equal("StatusText", scrollElement.AutomationId);
+        Assert.Null(scrollElement.Index);
+
+        var select = Assert.IsType<SelectOperation>(scenario.Operations[3]);
+        Assert.Equal("SampleList", select.AutomationId);
+        Assert.Equal(35, select.Index);
+
+        var expand = Assert.IsType<ExpandOperation>(scenario.Operations[4]);
+        Assert.Equal("SampleTreeRoot", expand.AutomationId);
+
+        var collapse = Assert.IsType<CollapseOperation>(scenario.Operations[5]);
+        Assert.Equal("SampleTreeRoot", collapse.AutomationId);
+    }
+
+    /// <summary>
     /// Unknown action fails with action.failed.
     /// </summary>
     /// <remarks>

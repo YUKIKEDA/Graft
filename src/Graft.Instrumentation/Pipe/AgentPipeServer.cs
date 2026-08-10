@@ -252,6 +252,34 @@ internal sealed class AgentPipeServer : IDisposable
             return (HandleSendKeys(request), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
+        if (request.Method == ProtocolMethods.ScrollIntoView)
+        {
+            return (HandleScrollIntoView(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
+        if (request.Method == ProtocolMethods.Select)
+        {
+            return (HandleSelect(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
+        if (request.Method == ProtocolMethods.Expand)
+        {
+            return (
+                HandleExpand(request, expand: true),
+                CloseAfterWrite: false,
+                BinaryFollowUp: null
+            );
+        }
+
+        if (request.Method == ProtocolMethods.Collapse)
+        {
+            return (
+                HandleExpand(request, expand: false),
+                CloseAfterWrite: false,
+                BinaryFollowUp: null
+            );
+        }
+
         return (
             Error(
                 request.Id,
@@ -464,6 +492,111 @@ internal sealed class AgentPipeServer : IDisposable
         }
     }
 
+    private static ResponseMessage HandleScrollIntoView(RequestMessage request)
+    {
+        var scroller = AgentServices.ElementScroller;
+        if (scroller is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No element scroller is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var (selector, index) = ReadScrollIntoViewParams(request.Params);
+            var identity = scroller.ScrollIntoView(selector, index);
+            var resultJson = JsonSerializer.SerializeToElement(identity, JsonMessageCodec.Options);
+            return Ok(request.Id, resultJson);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleSelect(RequestMessage request)
+    {
+        var chooser = AgentServices.ElementChooser;
+        if (chooser is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No element chooser is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var (selector, index) = ReadIndexParams(request.Params, requireIndex: true);
+            chooser.Select(selector, index!.Value);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleExpand(RequestMessage request, bool expand)
+    {
+        var expander = AgentServices.ElementExpander;
+        if (expander is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No element expander is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var selector = ReadElementSelector(request.Params);
+            if (expand)
+            {
+                expander.Expand(selector);
+            }
+            else
+            {
+                expander.Collapse(selector);
+            }
+
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
     private static ElementSelector ReadElementSelector(JsonElement? paramsElement)
     {
         string? automationId = null;
@@ -523,6 +656,53 @@ internal sealed class AgentPipeServer : IDisposable
         };
 
         return (selector, value);
+    }
+
+    private static (ElementSelector Selector, int? Index) ReadScrollIntoViewParams(
+        JsonElement? paramsElement
+    ) => ReadIndexParams(paramsElement, requireIndex: false);
+
+    private static (ElementSelector Selector, int? Index) ReadIndexParams(
+        JsonElement? paramsElement,
+        bool requireIndex
+    )
+    {
+        var selector = ReadElementSelector(paramsElement);
+        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
+        {
+            if (requireIndex)
+            {
+                throw new ElementResolveException(
+                    GraftErrorCodes.SelectorInvalid,
+                    "params.index is required."
+                );
+            }
+
+            return (selector, null);
+        }
+
+        if (!element.TryGetProperty("index", out var indexProperty))
+        {
+            if (requireIndex)
+            {
+                throw new ElementResolveException(
+                    GraftErrorCodes.SelectorInvalid,
+                    "params.index is required."
+                );
+            }
+
+            return (selector, null);
+        }
+
+        if (!indexProperty.TryGetInt32(out var index))
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.index must be an integer."
+            );
+        }
+
+        return (selector, index);
     }
 
     private static (ElementSelector Selector, string Text) ReadSendKeysParams(

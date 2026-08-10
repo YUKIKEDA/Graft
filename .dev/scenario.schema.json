@@ -31,6 +31,10 @@
         { "$ref": "#/$defs/setValue" },
         { "$ref": "#/$defs/toggle" },
         { "$ref": "#/$defs/sendKeys" },
+        { "$ref": "#/$defs/scrollIntoView" },
+        { "$ref": "#/$defs/select" },
+        { "$ref": "#/$defs/expand" },
+        { "$ref": "#/$defs/collapse" },
         { "$ref": "#/$defs/expectName" }
       ]
     },
@@ -81,6 +85,44 @@
         "action": { "const": "sendKeys" },
         "automationId": { "type": "string", "minLength": 1 },
         "text": { "type": "string" }
+      }
+    },
+    "scrollIntoView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId"],
+      "properties": {
+        "action": { "const": "scrollIntoView" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "index": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "select": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "index"],
+      "properties": {
+        "action": { "const": "select" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "index": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "expand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId"],
+      "properties": {
+        "action": { "const": "expand" },
+        "automationId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "collapse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId"],
+      "properties": {
+        "action": { "const": "collapse" },
+        "automationId": { "type": "string", "minLength": 1 }
       }
     },
     "expectName": {
