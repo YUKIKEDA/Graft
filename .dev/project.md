@@ -350,7 +350,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 17 | TabControl 選択（`select` 拡張）                     | 既存 `SelectAsync(index)`。Slider 等は次   |
 | Phase 18 | Slider 値設定（`setValue` 拡張）                     | Invariant double → `Slider.Value`。複数選択は次 |
 | Phase 19 | ListBox 複数選択（`selectMany`）                     | 置換セマンティクス。DataGrid 複数行は含めない |
-| （次）   | Menu / DataGrid 列キー など → Avalonia               | WPF ギャップ埋め優先。Inspector は最後寄り |
+| Phase 20 | Menu バー（既存 `invoke`）                           | トップ+1段サブ。開いたサブをツリーに       |
+| （次）   | DataGrid 列キー など → Avalonia                      | WPF ギャップ埋め優先。Inspector は最後寄り |
 
 ## 9. 未検討・今後の課題
 
@@ -363,7 +364,7 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - 実 OS コモンダイアログの UIA 操作（方針上非採用。必要なら別検討）
 - DataGrid セルの列キー指定 / CheckBox・Template 列（Phase 9 後の拡張）
 - hover・D&D / DataGrid 複数行選択
-- Menu バー / ContextMenu サブメニュー
+- ContextMenu サブメニュー / Menu 任意深さ
 - Avalonia アダプタ → Inspector（最後寄り）
 - MessagePack 評価用の実測ログ形式
 - .NET Framework WPF 対応の要否（需要が固まってから）
@@ -494,3 +495,5 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q115 | 検証は StatusText 副作用のみ（tree `value` なし）。Scenario 既存 `setValue`。MCP 変更なし。複数選択は含めない   |
 | Q116 | Phase 19: ListBox のみ。新 `SelectManyAsync` / wire `selectMany`（置換、空 indexes=クリア）。`task_phase19.md`          |
 | Q117 | Sample は別 `SampleMultiList`（Extended）。Single はエラー。ExpectSelected + StatusText。Scenario/MCP 薄い追従          |
+| Q118 | Phase 20: Menu バー。既存 `invoke` のみ。トップ+1段サブ。開いたサブをツリーに。`task_phase20.md`                        |
+| Q119 | Sample File→Ping。Scenario 既存 `invoke`。MCP 変更なし。任意深さ／パス DSL／新 wire は含めない                          |

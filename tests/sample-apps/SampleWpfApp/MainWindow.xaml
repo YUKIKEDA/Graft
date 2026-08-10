@@ -10,6 +10,18 @@
         Width="480">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="24">
+            <Menu x:Name="SampleMenu"
+                  AutomationProperties.AutomationId="SampleMenu"
+                  Margin="0,0,0,16">
+                <MenuItem x:Name="SampleMenuFile"
+                          AutomationProperties.AutomationId="SampleMenuFile"
+                          Header="File">
+                    <MenuItem x:Name="SampleMenuPing"
+                              AutomationProperties.AutomationId="SampleMenuPing"
+                              Header="Ping"
+                              Click="SampleMenuPing_OnClick" />
+                </MenuItem>
+            </Menu>
             <TextBlock x:Name="StatusText"
                        AutomationProperties.AutomationId="StatusText"
                        Text="Ready"
