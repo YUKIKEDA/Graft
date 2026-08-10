@@ -23,7 +23,7 @@
 | Arm 寿命 | **一回限り**（OpenFile Arm とは独立ストア） |
 | 公開経路 | Scenario / MCP 薄い追従（`armSaveFile` / `armSaveFileCancel`） |
 | 含めない | 実 OS UIA、アプリ Graft 業務依存、Folder/MessageBox、複数選択、Avalonia、Inspector |
-| Phase 11 の次 | **Folder シーム** |
+| Phase 11 の次 | Phase 12 OpenFolder シーム（[task_phase12.md](./task_phase12.md)） |
 
 ---
 
@@ -73,4 +73,4 @@
 ## 進め方メモ
 
 - OpenFile と同型。設計矛盾時は `project.md` 優先
-- **次フェーズ:** Folder シーム → … → Avalonia → Inspector（最後寄り）
+- **次フェーズ:** [task_phase12.md](./task_phase12.md)（OpenFolder）→ MessageBox → … → Avalonia → Inspector（最後寄り）

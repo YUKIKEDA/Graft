@@ -67,6 +67,12 @@ public static class ScenarioActions
     /// <summary>Arm the next SaveFile seam as cancel.</summary>
     public const string ArmSaveFileCancel = FailureSteps.ArmSaveFileCancel;
 
+    /// <summary>Arm the next OpenFolder seam with a path (OK).</summary>
+    public const string ArmOpenFolder = FailureSteps.ArmOpenFolder;
+
+    /// <summary>Arm the next OpenFolder seam as cancel.</summary>
+    public const string ArmOpenFolderCancel = FailureSteps.ArmOpenFolderCancel;
+
     /// <summary>List open windows.</summary>
     public const string ListWindows = FailureSteps.ListWindows;
 

@@ -293,6 +293,20 @@ internal sealed class AgentPipeServer : IDisposable
             return (HandleArmSaveFileCancel(request), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
+        if (request.Method == ProtocolMethods.ArmOpenFolder)
+        {
+            return (HandleArmOpenFolder(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
+        if (request.Method == ProtocolMethods.ArmOpenFolderCancel)
+        {
+            return (
+                HandleArmOpenFolderCancel(request),
+                CloseAfterWrite: false,
+                BinaryFollowUp: null
+            );
+        }
+
         if (request.Method == ProtocolMethods.Expand)
         {
             return (
@@ -729,6 +743,37 @@ internal sealed class AgentPipeServer : IDisposable
         try
         {
             SaveFileArm.ArmCancel();
+            return Ok(request.Id);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleArmOpenFolder(RequestMessage request)
+    {
+        try
+        {
+            var path = ReadRequiredString(request.Params, "path");
+            OpenFolderArm.ArmPath(path);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleArmOpenFolderCancel(RequestMessage request)
+    {
+        try
+        {
+            OpenFolderArm.ArmCancel();
             return Ok(request.Id);
         }
         catch (Exception ex)

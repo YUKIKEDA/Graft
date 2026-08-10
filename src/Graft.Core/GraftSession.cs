@@ -268,6 +268,46 @@ public sealed class GraftSession : IAsyncDisposable
     }
 
     /// <summary>
+    /// Arms the next <c>OpenFolderDialog.ShowDialog</c> (via RunDialog seam) to return <paramref name="path"/> (one-shot).
+    /// </summary>
+    /// <param name="path">Folder path to return.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when arming succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task ArmOpenFolderAsync(string path, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        try
+        {
+            await _connection.ArmOpenFolderAsync(path, cancellationToken).ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.ArmOpenFolder, path);
+        }
+        catch (GraftException)
+        {
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Arms the next <c>OpenFolderDialog.ShowDialog</c> (via RunDialog seam) as cancel (one-shot).
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when arming succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task ArmOpenFolderCancelAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _connection.ArmOpenFolderCancelAsync(cancellationToken).ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.ArmOpenFolderCancel, "cancel");
+        }
+        catch (GraftException)
+        {
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Gets the child process id (0 if unavailable).
     /// </summary>
     public int ProcessId

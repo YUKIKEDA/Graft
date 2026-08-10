@@ -1,0 +1,39 @@
+{
+  "v": 1,
+  "name": "phase12-openfolder",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "armOpenFolder",
+      "path": "C:\\graft-open-folder-ok"
+    },
+    {
+      "action": "invokeOpeningWindow",
+      "automationId": "OpenFolderButton",
+      "waitForNewWindow": false
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "OpenFolder C:\\graft-open-folder-ok"
+    },
+    {
+      "action": "armOpenFolderCancel"
+    },
+    {
+      "action": "invokeOpeningWindow",
+      "automationId": "OpenFolderButton",
+      "waitForNewWindow": false
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "OpenFolderCancel"
+    }
+  ]
+}

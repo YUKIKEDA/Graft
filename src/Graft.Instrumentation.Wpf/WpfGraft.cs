@@ -15,7 +15,7 @@ public static class WpfGraft
     /// </summary>
     /// <remarks>
     /// Call once before <see cref="Agent.Start"/> (typically from <c>OnStartup</c>).
-    /// Also installs the Open/Save File <c>CommonItemDialog.RunDialog</c> seam (Harmony) once per process.
+    /// Also installs the Open/Save/Folder <c>CommonItemDialog.RunDialog</c> seam (Harmony) once per process.
     /// </remarks>
     public static void Use()
     {

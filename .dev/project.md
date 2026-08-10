@@ -342,7 +342,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 9  | DataGrid セル R/W（Text 列 MVP）                     | ホスト＋(row, col)。OS ダイアログは次      |
 | Phase 10 | OpenFile ダイアログ・シーム（方針 + MVP）            | Arm + Harmony CommonItemDialog.RunDialog   |
 | Phase 11 | SaveFile ダイアログ・シーム（OpenFile 同型 MVP）     | Arm + 同一 RunDialog パッチ（Save のみ）   |
-| （次）   | Folder シーム → … → Avalonia → Inspector             | Avalonia/Inspector は最後寄り              |
+| Phase 12 | OpenFolder ダイアログ・シーム（同型 MVP）            | Arm + 同一 RunDialog（`FolderName`）       |
+| （次）   | MessageBox シーム → … → Avalonia → Inspector         | Avalonia/Inspector は最後寄り              |
 
 ## 9. 未検討・今後の課題
 
@@ -352,7 +353,7 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - セレクタ重みの実測チューニング、`details` スキーマのフィールド確定
 - 診断向けツリー差分 JSON のフィールド名の確定
 - scroll/select の項目キー・表示名指定（index 正本の次候補）
-- Folder / MessageBox シーム（SaveFile MVP の後続）
+- MessageBox シーム（OpenFolder MVP の後続）
 - 実 OS コモンダイアログの UIA 操作（方針上非採用。必要なら別検討）
 - DataGrid セルの列キー指定 / CheckBox・Template 列（Phase 9 後の拡張）
 - Avalonia アダプタ → Inspector（最後寄り）
@@ -461,3 +462,7 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q92 | 素の `SaveFileDialog`。同一 `CommonItemDialog.RunDialog` パッチ。`SaveFileArm` は OpenFile と独立      |
 | Q93 | `ArmSaveFile` / `ArmSaveFileCancel`、一回限り、`waitForNewWindow:false`。Scenario/MCP 薄い追従        |
 | Q94 | Phase 11 の次は **Folder シーム**。Avalonia / Inspector は後ろ                                        |
+| Q95 | Phase 12: OpenFolder **Runtime シーム**（Open/Save 同型）。詳細は `task_phase12.md`                   |
+| Q96 | 素の `OpenFolderDialog`。同一 `RunDialog` パッチ。結果は `FolderName`。`OpenFolderArm` は独立         |
+| Q97 | `ArmOpenFolder` / `ArmOpenFolderCancel`、一回限り、`waitForNewWindow:false`。Scenario/MCP 薄い追従    |
+| Q98 | Phase 12 の次は **MessageBox シーム**。Avalonia / Inspector は後ろ                                    |
