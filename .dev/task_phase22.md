@@ -19,7 +19,7 @@
 | 検証 | 行 `ExpectSelectedAsync` + StatusText。Fluent に空クリア必須 |
 | Scenario | 既存 `selectMany` 薄い追従 |
 | MCP | 新ツールなし（説明文のみ DataGrid 言及可） |
-| Phase 22 の次 | Avalonia → Inspector |
+| Phase 22 の次 | 競合ギャップ対照（Phase 23）→ Must 実装 → Avalonia |
 
 ---
 
@@ -51,4 +51,4 @@
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` 優先
-- **次フェーズ:** Avalonia → Inspector
+- **次フェーズ:** [task_phase23.md](./task_phase23.md)（対照表）→ Must 実装 → Avalonia（Inspector は任意）

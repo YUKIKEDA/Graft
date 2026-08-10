@@ -91,4 +91,4 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - Scenario JSON: `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync`（上記に加え `armOpenFile` / `armSaveFile` / `armOpenFolder` / `armMessageBox` / セル・窓系）。契約は `.dev/scenario.schema.json`。例: `tests/sample-apps/SampleWpfApp.Tests/Scenarios/`
 - MCP: `Graft.McpServer`（stdio）。原子ツールにダイアログ Arm 系とセル・窓系を含む。失敗時は `IsError` + FailureReport JSON
 - invoke / setValue はネイティブ → Peer → SendInput フォールバック（クリック / クリア+タイプ）
-- 未実装（後続）: Menu 任意深さ／パス DSL、ContextMenu サブ、DataGrid Template 列／セル選択、Avalonia、Inspector、ファジー自己修復、シナリオ自動書き換え、`typeHuman`、要素クリップ Screenshot、画像 expect/diff
+- 未実装（後続）: 正本は [competitive-gap.md](./competitive-gap.md)（**Must 確定済み**）。Must 例: 待ち/画面遷移、マウス高度、メニュー深さ、探索強化、DataGrid 残り、主要コントロール穴、並列対策。**Avalonia は Must 完了後**。要素クリップ / typeHuman / Inspector / 画像 diff 等は任意または非目標

@@ -352,8 +352,9 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 19 | ListBox 複数選択（`selectMany`）                     | 置換セマンティクス。DataGrid 複数行は含めない |
 | Phase 20 | Menu バー（既存 `invoke`）                           | トップ+1段サブ。開いたサブをツリーに       |
 | Phase 21 | DataGrid 列キー + CheckBox 列                        | Header `columnKey`。複数行選択は次         |
-| Phase 22 | DataGrid 複数行選択（`selectMany` 拡張）             | Extended + FullRow。次は Avalonia          |
-| （次）   | Avalonia → Inspector                                 | WPF ギャップ埋め後。Inspector は最後寄り   |
+| Phase 22 | DataGrid 複数行選択（`selectMany` 拡張）             | Extended + FullRow。次はギャップ洗い出し   |
+| Phase 23 | 競合シナリオ対照表（WPF Must 洗い出し）              | 文書のみ。Must 確定まで Avalonia 禁止      |
+| （次）   | 確定 Must 実装（Phase 24+）→ Avalonia                | 対照表: `competitive-gap.md`。Inspector は任意 |
 
 ## 9. 未検討・今後の課題
 
@@ -364,10 +365,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - 診断向けツリー差分 JSON のフィールド名の確定
 - scroll/select の項目キー・表示名指定（index 正本の次候補）
 - 実 OS コモンダイアログの UIA 操作（方針上非採用。必要なら別検討）
-- DataGrid Template 列 / セル選択
-- hover・D&D
-- ContextMenu サブメニュー / Menu 任意深さ
-- Avalonia アダプタ → Inspector（最後寄り）
+- WPF 競合ギャップ（正本: [competitive-gap.md](./competitive-gap.md)。Must 未確定行のレビュー）
+- Avalonia アダプタ（**Must 完了後**）。Inspector は任意（自社アプリでは getTree で代替しやすい）
 - MessagePack 評価用の実測ログ形式
 - .NET Framework WPF 対応の要否（需要が固まってから）
 - 多言語バインディング / gRPC（v1 スコープ外。再検討は操作モデル安定後）
@@ -504,3 +503,6 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q122 | Phase 22: DataGrid 複数行選択（`selectMany` 拡張）— grill 開始                                                           |
 | Q123 | Phase 22: 既存 `selectMany` を DataGrid 行に拡張。置換・空クリア・Single エラー。FullRow のみ。`task_phase22.md`          |
 | Q124 | Sample は別 `SampleMultiGrid`（Extended）。ExpectSelected + StatusText + 空クリア Fluent。Scenario 薄い追従。MCP 新ツールなし |
+| Q125 | Avalonia 前に競合シナリオ対照を正本化。FlaUI 系操作・検証面。Must 完了まで Avalonia 禁止。`competitive-gap.md` / `task_phase23.md` |
+| Q126 | Phase 23 は文書のみ。Must は表レビュー後確定。画面遷移・進捗（出現/消失）は Must候補。仮 Phase 24+ で分割実装 |
+| Q127 | Must 確定: 提示 ID 群 + X04。K05/V06/W12/A08/P02 は任意。Inspector 任意。`competitive-gap.md` 更新 |
