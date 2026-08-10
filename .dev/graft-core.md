@@ -97,4 +97,5 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - Scenario JSON: `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync`（上記に加え `armOpenFile` / `armSaveFile` / `armOpenFolder` / `armMessageBox` / セル・窓系）。契約は `.dev/scenario.schema.json`。例: `tests/sample-apps/SampleWpfApp.Tests/Scenarios/`
 - MCP: `Graft.McpServer`（stdio）。原子ツールにダイアログ Arm 系とセル・窓系を含む。失敗時は `IsError` + FailureReport JSON
 - invoke / setValue はネイティブ → Peer → SendInput フォールバック（クリック / クリア+タイプ）
-- 未実装（後続）: 正本は [competitive-gap.md](./competitive-gap.md)（**Must 確定済み**）。Must 例: Phase 31 並列対策（X04）。**Avalonia は Must 完了後**。要素クリップ / typeHuman / Inspector / 画像 diff 等は任意または非目標
+- UI セッション直列（Phase 31 / X04）: `Application.LaunchAsync` が `Local\Graft.UiSession` をセッション寿命で保持（`ConnectAsync` は対象外）。キュー待ちは既定 15 分（Launch timeout と長い方）。アセンブリ内 Collection 直列は併用可。`-m:1` は補助
+- 未実装（後続）: 正本は [competitive-gap.md](./competitive-gap.md)（**Must 確定済み**）。**Avalonia は Must 完了後**。要素クリップ / typeHuman / Inspector / 画像 diff 等は任意または非目標

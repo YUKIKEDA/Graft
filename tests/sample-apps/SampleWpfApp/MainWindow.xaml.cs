@@ -11,6 +11,7 @@ namespace SampleWpfApp;
 public partial class MainWindow : Window
 {
     private int clickCount;
+    private bool suppressStatusFromSelectionChanged = true;
 
     public MainWindow()
     {
@@ -26,6 +27,8 @@ public partial class MainWindow : Window
         ToolTipService.SetInitialShowDelay(SamplePhase29bTipHost, 0);
         ToolTipService.SetBetweenShowDelay(SamplePhase29bTipHost, 0);
         ToolTipService.SetShowDuration(SamplePhase29bTipHost, 60000);
+        // Tab/List/Grid SelectionChanged can fire during init and overwrite StatusText=Ready.
+        suppressStatusFromSelectionChanged = false;
     }
 
     private void LoadListItems()
@@ -221,6 +224,11 @@ public partial class MainWindow : Window
 
     private void SampleTabs_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (suppressStatusFromSelectionChanged)
+        {
+            return;
+        }
+
         if (SampleTabs.SelectedItem is TabItem { Header: string header })
         {
             StatusText.Text = $"Tab {header}";
@@ -229,6 +237,11 @@ public partial class MainWindow : Window
 
     private void SampleList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (suppressStatusFromSelectionChanged)
+        {
+            return;
+        }
+
         if (SampleList.SelectedItem is SampleListItem item)
         {
             StatusText.Text = $"Selected {item.Name}";
@@ -237,6 +250,11 @@ public partial class MainWindow : Window
 
     private void SampleMultiList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (suppressStatusFromSelectionChanged)
+        {
+            return;
+        }
+
         StatusText.Text = string.Create(
             CultureInfo.InvariantCulture,
             $"Multi {SampleMultiList.SelectedItems.Count}"
@@ -245,6 +263,11 @@ public partial class MainWindow : Window
 
     private void SampleGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (suppressStatusFromSelectionChanged)
+        {
+            return;
+        }
+
         if (SampleGrid.SelectedItem is SampleListItem item)
         {
             StatusText.Text = $"Grid {item.Name}";
@@ -253,6 +276,11 @@ public partial class MainWindow : Window
 
     private void SampleMultiGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (suppressStatusFromSelectionChanged)
+        {
+            return;
+        }
+
         StatusText.Text = string.Create(
             CultureInfo.InvariantCulture,
             $"MultiGrid {SampleMultiGrid.SelectedItems.Count}"
@@ -261,6 +289,11 @@ public partial class MainWindow : Window
 
     private void SamplePhase28Grid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (suppressStatusFromSelectionChanged)
+        {
+            return;
+        }
+
         StatusText.Text = string.Create(
             CultureInfo.InvariantCulture,
             $"Phase28Sel {SamplePhase28Grid.SelectedItems.Count}"
@@ -324,6 +357,11 @@ public partial class MainWindow : Window
 
     private void SampleCombo_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (suppressStatusFromSelectionChanged)
+        {
+            return;
+        }
+
         if (SampleCombo.SelectedItem is SampleListItem item)
         {
             StatusText.Text = $"Combo {item.Name}";

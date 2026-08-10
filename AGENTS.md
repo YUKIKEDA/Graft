@@ -1,6 +1,6 @@
 # Graft — Agent notes
 
-In-process UI testing for WPF & AvaloniaUI. Design source of truth: `.dev/project.md`. M0/M1/M2: `.dev/task_m0.md` / `task_m1.md` / `task_m2.md`. Phase 2–29: `.dev/task_phase2.md` … `task_phase29.md`. WPF vs competitors gap matrix: `.dev/competitive-gap.md` (Avalonia gated on Must).
+In-process UI testing for WPF & AvaloniaUI. Design source of truth: `.dev/project.md`. M0/M1/M2: `.dev/task_m0.md` / `task_m1.md` / `task_m2.md`. Phase 2–31: `.dev/task_phase2.md` … `task_phase31.md`. WPF vs competitors gap matrix: `.dev/competitive-gap.md` (Avalonia gated on Must).
 
 **Consumer usage example:** `tests/sample-apps/SampleWpfApp.Tests` (see `.dev/graft-core.md`).
 
@@ -23,9 +23,9 @@ dotnet tool restore
 dotnet csharpier format .
 dotnet build Graft.slnx
 dotnet test tests/sample-apps/SampleWpfApp.Tests
-# Full solution: SendInput UI tests can flake under cross-assembly parallel launches.
-# Prefer -m:1, or run UI projects sequentially. See .dev/project.md §9 (SendInput memo).
-dotnet test Graft.slnx -m:1
+# Full solution: LaunchAsync holds Local\Graft.UiSession (Phase 31 / X04).
+# Optional insurance if a machine still flakes: -m:1. See .dev/project.md §9.
+dotnet test Graft.slnx
 ```
 
 ## Commit style (summary)

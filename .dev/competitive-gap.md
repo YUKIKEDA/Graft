@@ -253,7 +253,7 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | X01 | 宣言的 Scenario JSON | Yes  | OK    | Done | —       |                         |
 | X02 | MCP 原子ツール       | Yes  | OK    | Done | —       |                         |
 | X03 | Codegen / レコーダー | Yes  | NO    | 任意 | —       |                         |
-| X04 | 並列 E2E の安定実行  | Yes  | PART  | Must | 31      | mutex 等。`-m:1` は暫定 |
+| X04 | 並列 E2E の安定実行  | Yes  | OK    | Done | 31      | `Local\Graft.UiSession`（Launch〜Dispose）。`-m:1` は補助 |
 
 ---
 
