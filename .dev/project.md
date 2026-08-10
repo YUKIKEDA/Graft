@@ -350,7 +350,7 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - セレクタ重みの実測チューニング、`details` スキーマのフィールド確定
 - 診断向けツリー差分 JSON のフィールド名の確定
 - scroll/select の項目キー・表示名指定（index 正本の次候補）
-- OS 共通ダイアログ（OpenFile 等）の方針・実装（**Phase 9 の次**）
+- OS 共通ダイアログ（OpenFile 等）の方針・実装（**Phase 9 の次・第一候補**）
 - DataGrid セルの列キー指定 / CheckBox・Template 列（Phase 9 後の拡張）
 - Avalonia アダプタ → Inspector（最後寄り）
 - MessagePack 評価用の実測ログ形式

@@ -75,4 +75,14 @@ public static class ProtocolMethods
     /// Collapses an element (e.g. TreeViewItem / Expander) by <c>params.automationId</c>.
     /// </summary>
     public const string Collapse = "collapse";
+
+    /// <summary>
+    /// Returns DataGrid cell display text via <c>params.automationId</c>, <c>row</c>, <c>column</c>.
+    /// </summary>
+    public const string GetCellText = "getCellText";
+
+    /// <summary>
+    /// Sets a DataGrid Text cell via <c>params.automationId</c>, <c>row</c>, <c>column</c>, <c>value</c>.
+    /// </summary>
+    public const string SetCellValue = "setCellValue";
 }

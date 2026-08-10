@@ -236,6 +236,46 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// getCellText / setCellValue / expectCellText compile with row/column.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with cell actions
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - Matching operation types and indices
+    /// </remarks>
+    [Fact]
+    public void Parse_CellTextActions_CompileOperations()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "getCellText", "automationId": "SampleGrid", "row": 1, "column": 0 },
+                { "action": "setCellValue", "automationId": "SampleGrid", "row": 2, "column": 0, "value": "x" },
+                { "action": "expectCellText", "automationId": "SampleGrid", "row": 2, "column": 0, "text": "x" }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var get = Assert.IsType<GetCellTextOperation>(scenario.Operations[1]);
+        Assert.Equal("SampleGrid", get.AutomationId);
+        Assert.Equal(1, get.Row);
+        Assert.Equal(0, get.Column);
+        var set = Assert.IsType<SetCellValueOperation>(scenario.Operations[2]);
+        Assert.Equal(2, set.Row);
+        Assert.Equal("x", set.Value);
+        var expect = Assert.IsType<ExpectCellTextOperation>(scenario.Operations[3]);
+        Assert.Equal("x", expect.Text);
+    }
+
+    /// <summary>
     /// Window actions compile to typed operations.
     /// </summary>
     /// <remarks>

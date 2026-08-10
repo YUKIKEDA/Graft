@@ -1,0 +1,32 @@
+{
+  "v": 1,
+  "name": "phase9-cell-rw",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "getCellText",
+      "automationId": "SampleGrid",
+      "row": 40,
+      "column": 0
+    },
+    {
+      "action": "setCellValue",
+      "automationId": "SampleGrid",
+      "row": 35,
+      "column": 0,
+      "value": "Edited 35"
+    },
+    {
+      "action": "expectCellText",
+      "automationId": "SampleGrid",
+      "row": 35,
+      "column": 0,
+      "text": "Edited 35"
+    }
+  ]
+}

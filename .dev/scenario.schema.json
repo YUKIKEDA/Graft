@@ -39,6 +39,9 @@
         { "$ref": "#/$defs/expectSelected" },
         { "$ref": "#/$defs/expectExpanded" },
         { "$ref": "#/$defs/expectChecked" },
+        { "$ref": "#/$defs/getCellText" },
+        { "$ref": "#/$defs/setCellValue" },
+        { "$ref": "#/$defs/expectCellText" },
         { "$ref": "#/$defs/listWindows" },
         { "$ref": "#/$defs/switchWindow" },
         { "$ref": "#/$defs/waitForWindow" },
@@ -170,6 +173,41 @@
         "action": { "const": "expectChecked" },
         "automationId": { "type": "string", "minLength": 1 },
         "checked": { "type": "boolean" }
+      }
+    },
+    "getCellText": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "row", "column"],
+      "properties": {
+        "action": { "const": "getCellText" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "row": { "type": "integer", "minimum": 0 },
+        "column": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "setCellValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "row", "column", "value"],
+      "properties": {
+        "action": { "const": "setCellValue" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "row": { "type": "integer", "minimum": 0 },
+        "column": { "type": "integer", "minimum": 0 },
+        "value": { "type": "string" }
+      }
+    },
+    "expectCellText": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "row", "column", "text"],
+      "properties": {
+        "action": { "const": "expectCellText" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "row": { "type": "integer", "minimum": 0 },
+        "column": { "type": "integer", "minimum": 0 },
+        "text": { "type": "string" }
       }
     },
     "listWindows": {

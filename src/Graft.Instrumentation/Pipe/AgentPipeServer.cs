@@ -262,6 +262,16 @@ internal sealed class AgentPipeServer : IDisposable
             return (HandleSelect(request), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
+        if (request.Method == ProtocolMethods.GetCellText)
+        {
+            return (HandleGetCellText(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
+        if (request.Method == ProtocolMethods.SetCellValue)
+        {
+            return (HandleSetCellValue(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
         if (request.Method == ProtocolMethods.Expand)
         {
             return (
@@ -576,6 +586,74 @@ internal sealed class AgentPipeServer : IDisposable
         }
     }
 
+    private static ResponseMessage HandleGetCellText(RequestMessage request)
+    {
+        var accessor = AgentServices.ElementCellAccessor;
+        if (accessor is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No element cell accessor is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var (selector, row, column) = ReadCellIndexParams(request.Params);
+            var text = accessor.GetCellText(selector, row, column);
+            var resultJson = JsonSerializer.SerializeToElement(
+                new CellTextResult { Text = text },
+                JsonMessageCodec.Options
+            );
+            return Ok(request.Id, resultJson);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleSetCellValue(RequestMessage request)
+    {
+        var accessor = AgentServices.ElementCellAccessor;
+        if (accessor is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No element cell accessor is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var (selector, row, column, value) = ReadSetCellValueParams(request.Params);
+            accessor.SetCellValue(selector, row, column, value);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
     private static ResponseMessage HandleExpand(RequestMessage request, bool expand)
     {
         var expander = AgentServices.ElementExpander;
@@ -788,6 +866,81 @@ internal sealed class AgentPipeServer : IDisposable
     private static (ElementSelector Selector, int? Index) ReadScrollIntoViewParams(
         JsonElement? paramsElement
     ) => ReadIndexParams(paramsElement, requireIndex: false);
+
+    private static (ElementSelector Selector, int Row, int Column) ReadCellIndexParams(
+        JsonElement? paramsElement
+    )
+    {
+        var selector = ReadElementSelector(paramsElement);
+        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.row and params.column are required."
+            );
+        }
+
+        if (
+            !element.TryGetProperty("row", out var rowProperty)
+            || !rowProperty.TryGetInt32(out var row)
+        )
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.row must be an integer."
+            );
+        }
+
+        if (
+            !element.TryGetProperty("column", out var columnProperty)
+            || !columnProperty.TryGetInt32(out var column)
+        )
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.column must be an integer."
+            );
+        }
+
+        return (selector, row, column);
+    }
+
+    private static (
+        ElementSelector Selector,
+        int Row,
+        int Column,
+        string Value
+    ) ReadSetCellValueParams(JsonElement? paramsElement)
+    {
+        var (selector, row, column) = ReadCellIndexParams(paramsElement);
+        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.value is required."
+            );
+        }
+
+        if (!element.TryGetProperty("value", out var valueProperty))
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.value is required."
+            );
+        }
+
+        var value = valueProperty.ValueKind switch
+        {
+            JsonValueKind.String => valueProperty.GetString() ?? string.Empty,
+            JsonValueKind.Null => string.Empty,
+            _ => throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.value must be a string."
+            ),
+        };
+
+        return (selector, row, column, value);
+    }
 
     private static (ElementSelector Selector, int? Index) ReadIndexParams(
         JsonElement? paramsElement,

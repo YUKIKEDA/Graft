@@ -46,6 +46,15 @@ public static class ScenarioActions
     /// <summary>Expect an element's checked state.</summary>
     public const string ExpectChecked = FailureSteps.ExpectChecked;
 
+    /// <summary>Read a DataGrid cell display text.</summary>
+    public const string GetCellText = FailureSteps.GetCellText;
+
+    /// <summary>Set a DataGrid Text cell value.</summary>
+    public const string SetCellValue = FailureSteps.SetCellValue;
+
+    /// <summary>Expect a DataGrid cell display text.</summary>
+    public const string ExpectCellText = FailureSteps.ExpectCellText;
+
     /// <summary>List open windows.</summary>
     public const string ListWindows = FailureSteps.ListWindows;
 

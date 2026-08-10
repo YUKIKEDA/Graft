@@ -273,6 +273,118 @@ public sealed class GraftAtomicTools
         );
 
     /// <summary>
+    /// Reads DataGrid Text cell display text by row/column index.
+    /// </summary>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="row">Zero-based row index.</param>
+    /// <param name="column">Zero-based column index.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result with text.</returns>
+    [McpServerTool(Name = "graft_get_cell_text")]
+    [Description("Get DataGrid Text cell display text by row/column in the open session.")]
+    public Task<CallToolResult> GetCellText(
+        [Description("DataGrid automation id.")] string automationId,
+        [Description("Zero-based row index.")] int row,
+        [Description("Zero-based column index.")] int column,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                var text = await session
+                    .GetByAutomationId(automationId)
+                    .GetCellTextAsync(row, column, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject
+                    {
+                        ["automationId"] = automationId,
+                        ["row"] = row,
+                        ["column"] = column,
+                        ["text"] = text,
+                    }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Sets a DataGrid Text cell value by row/column index.
+    /// </summary>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="row">Zero-based row index.</param>
+    /// <param name="column">Zero-based column index.</param>
+    /// <param name="value">Replacement text.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_set_cell_value")]
+    [Description("Set DataGrid Text cell value by row/column in the open session.")]
+    public Task<CallToolResult> SetCellValue(
+        [Description("DataGrid automation id.")] string automationId,
+        [Description("Zero-based row index.")] int row,
+        [Description("Zero-based column index.")] int column,
+        [Description("Replacement text.")] string value,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .SetCellValueAsync(row, column, value, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject
+                    {
+                        ["automationId"] = automationId,
+                        ["row"] = row,
+                        ["column"] = column,
+                        ["value"] = value,
+                    }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Expects DataGrid Text cell display text by row/column index.
+    /// </summary>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="row">Zero-based row index.</param>
+    /// <param name="column">Zero-based column index.</param>
+    /// <param name="text">Expected cell text.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_expect_cell_text")]
+    [Description("Expect DataGrid Text cell display text by row/column in the open session.")]
+    public Task<CallToolResult> ExpectCellText(
+        [Description("DataGrid automation id.")] string automationId,
+        [Description("Zero-based row index.")] int row,
+        [Description("Zero-based column index.")] int column,
+        [Description("Expected cell text.")] string text,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .ExpectCellTextAsync(row, column, text, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject
+                    {
+                        ["automationId"] = automationId,
+                        ["row"] = row,
+                        ["column"] = column,
+                        ["text"] = text,
+                    }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Expands an element by automation id.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>

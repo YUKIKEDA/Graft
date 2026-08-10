@@ -172,6 +172,44 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case GetCellTextOperation getCellText:
+                        EnsureSession(session);
+                        _ = await session!
+                            .GetByAutomationId(getCellText.AutomationId)
+                            .GetCellTextAsync(
+                                getCellText.Row,
+                                getCellText.Column,
+                                cancellationToken
+                            )
+                            .ConfigureAwait(false);
+                        break;
+
+                    case SetCellValueOperation setCellValue:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(setCellValue.AutomationId)
+                            .SetCellValueAsync(
+                                setCellValue.Row,
+                                setCellValue.Column,
+                                setCellValue.Value,
+                                cancellationToken
+                            )
+                            .ConfigureAwait(false);
+                        break;
+
+                    case ExpectCellTextOperation expectCellText:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(expectCellText.AutomationId)
+                            .ExpectCellTextAsync(
+                                expectCellText.Row,
+                                expectCellText.Column,
+                                expectCellText.Text,
+                                cancellationToken
+                            )
+                            .ConfigureAwait(false);
+                        break;
+
                     case ListWindowsOperation:
                         EnsureSession(session);
                         _ = await session!
