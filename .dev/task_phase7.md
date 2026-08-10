@@ -32,7 +32,7 @@
 | モーダル開封 | `InvokeOpeningWindowAsync`（BeginInvoke + 出現待ち、**既定で自動 Switch**）。素の Invoke で ShowDialog は非対応と明記 |
 | ツリー | 既定ターゲット窓のみ。全窓マージしない |
 | 公開経路 | Scenario/MCP 薄い追従（list/switch/wait/invokeOpeningWindow） |
-| Phase 7 の次 | OS ダイアログ方針 **または** 複雑 UI → … → Avalonia → Inspector（最後） |
+| Phase 7 の次 | Phase 8 DataGrid 行 MVP + `checked`（[task_phase8.md](./task_phase8.md)） |
 
 ---
 
@@ -87,7 +87,7 @@
 - [x] 次フェーズメモ: OS ダイアログ方針 or 複雑 UI → Avalonia → Inspector
 
 **完了条件:** 公開経路と文書が揃っている。  
-**次:** Phase 7 完了チェック → 次カバレッジ塊へ。
+**次:** Phase 7 完了チェック → Phase 8（DataGrid 行 MVP + `checked`）へ。
 
 ---
 
@@ -107,4 +107,4 @@
 - ShowDialog 開封は同期 Dispatcher.Invoke と相性が悪い → 専用 API（Q74）
 - MCP / Scenario は Core の薄いラッパー
 - 設計矛盾時は `project.md` 優先
-- **次フェーズ候補:** OS 共通ダイアログ方針 **または** 複雑ホスト UI 拡充 → … → Avalonia → Inspector（最後寄り）
+- **次フェーズ:** [task_phase8.md](./task_phase8.md)（DataGrid 行中心 MVP + `checked`）→ セル R/W → OS ダイアログ方針 → … → Avalonia → Inspector（最後寄り）
