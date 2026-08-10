@@ -398,11 +398,53 @@ public sealed class ScenarioParserTests
         Assert.Equal("SampleGrid", get.AutomationId);
         Assert.Equal(1, get.Row);
         Assert.Equal(0, get.Column);
+        Assert.Null(get.ColumnKey);
         var set = Assert.IsType<SetCellValueOperation>(scenario.Operations[2]);
         Assert.Equal(2, set.Row);
         Assert.Equal("x", set.Value);
         var expect = Assert.IsType<ExpectCellTextOperation>(scenario.Operations[3]);
         Assert.Equal("x", expect.Text);
+    }
+
+    /// <summary>
+    /// Cell actions compile with columnKey instead of column.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with columnKey cell actions
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - Matching operations with Column null and ColumnKey set
+    /// </remarks>
+    [Fact]
+    public void Parse_CellTextActions_WithColumnKey_CompileOperations()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "getCellText", "automationId": "SampleGrid", "row": 1, "columnKey": "Name" },
+                { "action": "setCellValue", "automationId": "SampleGrid", "row": 2, "columnKey": "Active", "value": "True" },
+                { "action": "expectCellText", "automationId": "SampleGrid", "row": 2, "columnKey": "Active", "text": "True" }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var get = Assert.IsType<GetCellTextOperation>(scenario.Operations[1]);
+        Assert.Null(get.Column);
+        Assert.Equal("Name", get.ColumnKey);
+        var set = Assert.IsType<SetCellValueOperation>(scenario.Operations[2]);
+        Assert.Null(set.Column);
+        Assert.Equal("Active", set.ColumnKey);
+        Assert.Equal("True", set.Value);
+        var expect = Assert.IsType<ExpectCellTextOperation>(scenario.Operations[3]);
+        Assert.Equal("Active", expect.ColumnKey);
+        Assert.Equal("True", expect.Text);
     }
 
     /// <summary>

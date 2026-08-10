@@ -18,7 +18,7 @@
 | Sample | File → Ping。`Invoke` → `Invoke` → StatusText |
 | Scenario | 既存 `invoke` で薄い追従 |
 | MCP | 変更なし |
-| Phase 20 の次 | DataGrid 列キー／他列種 など → Avalonia → Inspector |
+| Phase 20 の次 | DataGrid 列キー+CheckBox（Phase 21）→ 複数行（Phase 22）→ Avalonia |
 
 ---
 
@@ -50,4 +50,4 @@
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` 優先
-- **次フェーズ:** DataGrid 列キー など → Avalonia → Inspector
+- **次フェーズ:** [task_phase21.md](./task_phase21.md) → 複数行選択 → Avalonia → Inspector

@@ -362,116 +362,198 @@ public sealed class GraftAtomicTools
         );
 
     /// <summary>
-    /// Reads DataGrid Text cell display text by row/column index.
+    /// Reads DataGrid cell display text by row and column index or Header key.
     /// </summary>
     /// <param name="automationId">DataGrid automation id.</param>
     /// <param name="row">Zero-based row index.</param>
-    /// <param name="column">Zero-based column index.</param>
+    /// <param name="column">Zero-based column index (xor columnKey).</param>
+    /// <param name="columnKey">Column Header string (xor column).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result with text.</returns>
     [McpServerTool(Name = "graft_get_cell_text")]
-    [Description("Get DataGrid Text cell display text by row/column in the open session.")]
+    [Description(
+        "Get DataGrid cell text by row and column index or columnKey (Header) in the open session."
+    )]
     public Task<CallToolResult> GetCellText(
         [Description("DataGrid automation id.")] string automationId,
         [Description("Zero-based row index.")] int row,
-        [Description("Zero-based column index.")] int column,
+        [Description("Zero-based column index (mutually exclusive with columnKey).")]
+            int? column = null,
+        [Description("Column Header string (mutually exclusive with column).")]
+            string? columnKey = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                var text = await session
-                    .GetByAutomationId(automationId)
-                    .GetCellTextAsync(row, column, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject
-                    {
-                        ["automationId"] = automationId,
-                        ["row"] = row,
-                        ["column"] = column,
-                        ["text"] = text,
-                    }
-                );
+                EnsureColumnXor(column, columnKey);
+                var text = columnKey is null
+                    ? await session
+                        .GetByAutomationId(automationId)
+                        .GetCellTextAsync(row, column!.Value, cancellationToken)
+                        .ConfigureAwait(false)
+                    : await session
+                        .GetByAutomationId(automationId)
+                        .GetCellTextAsync(row, columnKey, cancellationToken)
+                        .ConfigureAwait(false);
+                var payload = new JsonObject
+                {
+                    ["automationId"] = automationId,
+                    ["row"] = row,
+                    ["text"] = text,
+                };
+                if (columnKey is null)
+                {
+                    payload["column"] = column;
+                }
+                else
+                {
+                    payload["columnKey"] = columnKey;
+                }
+
+                return ToolResults.Ok(payload);
             },
             cancellationToken
         );
 
     /// <summary>
-    /// Sets a DataGrid Text cell value by row/column index.
+    /// Sets a DataGrid cell value by row and column index or Header key.
     /// </summary>
     /// <param name="automationId">DataGrid automation id.</param>
     /// <param name="row">Zero-based row index.</param>
-    /// <param name="column">Zero-based column index.</param>
-    /// <param name="value">Replacement text.</param>
+    /// <param name="value">Replacement text (CheckBox: True/False).</param>
+    /// <param name="column">Zero-based column index (xor columnKey).</param>
+    /// <param name="columnKey">Column Header string (xor column).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_set_cell_value")]
-    [Description("Set DataGrid Text cell value by row/column in the open session.")]
+    [Description(
+        "Set DataGrid cell value by row and column index or columnKey (Header) in the open session."
+    )]
     public Task<CallToolResult> SetCellValue(
         [Description("DataGrid automation id.")] string automationId,
         [Description("Zero-based row index.")] int row,
-        [Description("Zero-based column index.")] int column,
-        [Description("Replacement text.")] string value,
+        [Description("Replacement text (CheckBox: True/False).")] string value,
+        [Description("Zero-based column index (mutually exclusive with columnKey).")]
+            int? column = null,
+        [Description("Column Header string (mutually exclusive with column).")]
+            string? columnKey = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .SetCellValueAsync(row, column, value, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject
-                    {
-                        ["automationId"] = automationId,
-                        ["row"] = row,
-                        ["column"] = column,
-                        ["value"] = value,
-                    }
-                );
+                EnsureColumnXor(column, columnKey);
+                if (columnKey is null)
+                {
+                    await session
+                        .GetByAutomationId(automationId)
+                        .SetCellValueAsync(row, column!.Value, value, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    await session
+                        .GetByAutomationId(automationId)
+                        .SetCellValueAsync(row, columnKey, value, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+
+                var payload = new JsonObject
+                {
+                    ["automationId"] = automationId,
+                    ["row"] = row,
+                    ["value"] = value,
+                };
+                if (columnKey is null)
+                {
+                    payload["column"] = column;
+                }
+                else
+                {
+                    payload["columnKey"] = columnKey;
+                }
+
+                return ToolResults.Ok(payload);
             },
             cancellationToken
         );
 
     /// <summary>
-    /// Expects DataGrid Text cell display text by row/column index.
+    /// Expects DataGrid cell display text by row and column index or Header key.
     /// </summary>
     /// <param name="automationId">DataGrid automation id.</param>
     /// <param name="row">Zero-based row index.</param>
-    /// <param name="column">Zero-based column index.</param>
     /// <param name="text">Expected cell text.</param>
+    /// <param name="column">Zero-based column index (xor columnKey).</param>
+    /// <param name="columnKey">Column Header string (xor column).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_cell_text")]
-    [Description("Expect DataGrid Text cell display text by row/column in the open session.")]
+    [Description(
+        "Expect DataGrid cell text by row and column index or columnKey (Header) in the open session."
+    )]
     public Task<CallToolResult> ExpectCellText(
         [Description("DataGrid automation id.")] string automationId,
         [Description("Zero-based row index.")] int row,
-        [Description("Zero-based column index.")] int column,
         [Description("Expected cell text.")] string text,
+        [Description("Zero-based column index (mutually exclusive with columnKey).")]
+            int? column = null,
+        [Description("Column Header string (mutually exclusive with column).")]
+            string? columnKey = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .ExpectCellTextAsync(row, column, text, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject
-                    {
-                        ["automationId"] = automationId,
-                        ["row"] = row,
-                        ["column"] = column,
-                        ["text"] = text,
-                    }
-                );
+                EnsureColumnXor(column, columnKey);
+                if (columnKey is null)
+                {
+                    await session
+                        .GetByAutomationId(automationId)
+                        .ExpectCellTextAsync(row, column!.Value, text, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    await session
+                        .GetByAutomationId(automationId)
+                        .ExpectCellTextAsync(row, columnKey, text, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+
+                var payload = new JsonObject
+                {
+                    ["automationId"] = automationId,
+                    ["row"] = row,
+                    ["text"] = text,
+                };
+                if (columnKey is null)
+                {
+                    payload["column"] = column;
+                }
+                else
+                {
+                    payload["columnKey"] = columnKey;
+                }
+
+                return ToolResults.Ok(payload);
             },
             cancellationToken
         );
+
+    private static void EnsureColumnXor(int? column, string? columnKey)
+    {
+        var hasColumn = column is not null;
+        var hasKey = !string.IsNullOrWhiteSpace(columnKey);
+        if (hasColumn == hasKey)
+        {
+            throw new GraftException(
+                GraftErrorCodes.SelectorInvalid,
+                "Exactly one of column or columnKey is required."
+            );
+        }
+    }
 
     /// <summary>
     /// Expands an element by automation id.

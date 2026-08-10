@@ -399,10 +399,12 @@ public static class ScenarioJson
     private static GetCellTextOperation CompileGetCellText(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
+        var (column, columnKey) = RequireColumnOrColumnKey(step, index, "getCellText");
         return new GetCellTextOperation(
             automationId,
             RequireNonNegativeInt(step, "row", index),
-            RequireNonNegativeInt(step, "column", index)
+            column,
+            columnKey
         );
     }
 
@@ -417,10 +419,12 @@ public static class ScenarioJson
             throw Invalid($"steps[{index}] setCellValue requires string property 'value'.");
         }
 
+        var (column, columnKey) = RequireColumnOrColumnKey(step, index, "setCellValue");
         return new SetCellValueOperation(
             automationId,
             RequireNonNegativeInt(step, "row", index),
-            RequireNonNegativeInt(step, "column", index),
+            column,
+            columnKey,
             valueElement.GetString() ?? string.Empty
         );
     }
@@ -436,12 +440,58 @@ public static class ScenarioJson
             throw Invalid($"steps[{index}] expectCellText requires string property 'text'.");
         }
 
+        var (column, columnKey) = RequireColumnOrColumnKey(step, index, "expectCellText");
         return new ExpectCellTextOperation(
             automationId,
             RequireNonNegativeInt(step, "row", index),
-            RequireNonNegativeInt(step, "column", index),
+            column,
+            columnKey,
             textElement.GetString() ?? string.Empty
         );
+    }
+
+    private static (int? Column, string? ColumnKey) RequireColumnOrColumnKey(
+        JsonElement step,
+        int index,
+        string action
+    )
+    {
+        int? column = null;
+        if (step.TryGetProperty("column", out var columnElement))
+        {
+            if (
+                columnElement.ValueKind != JsonValueKind.Number
+                || !columnElement.TryGetInt32(out var columnValue)
+                || columnValue < 0
+            )
+            {
+                throw Invalid($"steps[{index}] {action}.column must be a non-negative integer.");
+            }
+
+            column = columnValue;
+        }
+
+        string? columnKey = null;
+        if (step.TryGetProperty("columnKey", out var columnKeyElement))
+        {
+            if (columnKeyElement.ValueKind != JsonValueKind.String)
+            {
+                throw Invalid($"steps[{index}] {action}.columnKey must be a string.");
+            }
+
+            columnKey = columnKeyElement.GetString();
+        }
+
+        var hasColumn = column is not null;
+        var hasKey = !string.IsNullOrWhiteSpace(columnKey);
+        if (hasColumn == hasKey)
+        {
+            throw Invalid(
+                $"steps[{index}] {action} requires exactly one of 'column' or 'columnKey'."
+            );
+        }
+
+        return (column, hasKey ? columnKey : null);
     }
 
     private static int RequireNonNegativeInt(JsonElement step, string propertyName, int index)
