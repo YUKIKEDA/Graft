@@ -647,4 +647,39 @@ public sealed class ScenarioParserTests
         Assert.Equal(GraftErrorCodes.ActionFailed, ex.Code);
         Assert.Contains("unknown action", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
+
+    /// <summary>
+    /// expectNameContains rejects an empty substring.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - JSON with expectNameContains and substring ""
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - GraftException action.failed mentioning non-empty substring
+    /// </remarks>
+    [Fact]
+    public void Parse_ExpectNameContains_EmptySubstring_Throws()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                {
+                  "action": "expectNameContains",
+                  "automationId": "Status",
+                  "substring": ""
+                }
+              ]
+            }
+            """;
+
+        var ex = Assert.Throws<GraftException>(() => ScenarioJson.Parse(json));
+        Assert.Equal(GraftErrorCodes.ActionFailed, ex.Code);
+        Assert.Contains("substring", ex.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("non-empty", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
 }

@@ -80,6 +80,100 @@ internal sealed class WpfElementInvoker : IElementInvoker
         dispatcher.Invoke(() => RightClickOnUiThread(selector), DispatcherPriority.Normal);
     }
 
+    /// <inheritdoc />
+    public void DoubleClick(ElementSelector selector) =>
+        RunOnUiThread(
+            selector,
+            static s => WpfInputInjection.DoubleClickElement(ResolveActionableFrameworkElement(s)),
+            "doubleClick"
+        );
+
+    /// <inheritdoc />
+    public void Hover(ElementSelector selector) =>
+        RunOnUiThread(
+            selector,
+            static s => WpfInputInjection.HoverElement(ResolveActionableFrameworkElement(s)),
+            "hover"
+        );
+
+    /// <inheritdoc />
+    public void Drag(ElementSelector from, ElementSelector to)
+    {
+        ArgumentNullException.ThrowIfNull(from);
+        ArgumentNullException.ThrowIfNull(to);
+
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                "WPF Application.Current is not available; cannot drag."
+            );
+        }
+
+        void Action()
+        {
+            var fromElement = ResolveActionableFrameworkElement(from);
+            var toElement = ResolveActionableFrameworkElement(to);
+            WpfInputInjection.DragElement(fromElement, toElement);
+        }
+
+        if (dispatcher.CheckAccess())
+        {
+            Action();
+            return;
+        }
+
+        dispatcher.Invoke(Action, DispatcherPriority.Normal);
+    }
+
+    /// <inheritdoc />
+    public void ClickAt(ElementSelector selector, double offsetX, double offsetY) =>
+        RunOnUiThread(
+            selector,
+            s =>
+                WpfInputInjection.ClickAtElement(
+                    ResolveActionableFrameworkElement(s),
+                    offsetX,
+                    offsetY
+                ),
+            "clickAt"
+        );
+
+    /// <inheritdoc />
+    public void Wheel(ElementSelector selector, int delta) =>
+        RunOnUiThread(
+            selector,
+            s => WpfInputInjection.WheelElement(ResolveActionableFrameworkElement(s), delta),
+            "wheel"
+        );
+
+    private static void RunOnUiThread(
+        ElementSelector selector,
+        Action<ElementSelector> action,
+        string operationName
+    )
+    {
+        ArgumentNullException.ThrowIfNull(selector);
+
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                $"WPF Application.Current is not available; cannot {operationName}."
+            );
+        }
+
+        if (dispatcher.CheckAccess())
+        {
+            action(selector);
+            return;
+        }
+
+        dispatcher.Invoke(() => action(selector), DispatcherPriority.Normal);
+    }
+
     private static void InvokeOnUiThread(ElementSelector selector)
     {
         var resolver =

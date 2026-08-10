@@ -16,6 +16,21 @@ public static class ScenarioActions
     /// <summary>Right-click an element.</summary>
     public const string RightClick = FailureSteps.RightClick;
 
+    /// <summary>Double-click an element.</summary>
+    public const string DoubleClick = FailureSteps.DoubleClick;
+
+    /// <summary>Hover (move cursor) over an element.</summary>
+    public const string Hover = FailureSteps.Hover;
+
+    /// <summary>Drag from one element to another.</summary>
+    public const string Drag = FailureSteps.Drag;
+
+    /// <summary>Left-click at clickable point plus DIP offsets.</summary>
+    public const string ClickAt = FailureSteps.ClickAt;
+
+    /// <summary>Scroll the mouse wheel over an element.</summary>
+    public const string Wheel = FailureSteps.Wheel;
+
     /// <summary>Replace an element's value.</summary>
     public const string SetValue = FailureSteps.SetValue;
 

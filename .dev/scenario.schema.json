@@ -29,6 +29,11 @@
         { "$ref": "#/$defs/launch" },
         { "$ref": "#/$defs/invoke" },
         { "$ref": "#/$defs/rightClick" },
+        { "$ref": "#/$defs/doubleClick" },
+        { "$ref": "#/$defs/hover" },
+        { "$ref": "#/$defs/drag" },
+        { "$ref": "#/$defs/clickAt" },
+        { "$ref": "#/$defs/wheel" },
         { "$ref": "#/$defs/setValue" },
         { "$ref": "#/$defs/toggle" },
         { "$ref": "#/$defs/sendKeys" },
@@ -94,6 +99,55 @@
       "properties": {
         "action": { "const": "rightClick" },
         "automationId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "doubleClick": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId"],
+      "properties": {
+        "action": { "const": "doubleClick" },
+        "automationId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "hover": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId"],
+      "properties": {
+        "action": { "const": "hover" },
+        "automationId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "drag": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "toAutomationId"],
+      "properties": {
+        "action": { "const": "drag" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "toAutomationId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "clickAt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "offsetX", "offsetY"],
+      "properties": {
+        "action": { "const": "clickAt" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "offsetX": { "type": "number" },
+        "offsetY": { "type": "number" }
+      }
+    },
+    "wheel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "delta"],
+      "properties": {
+        "action": { "const": "wheel" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "delta": { "type": "integer" }
       }
     },
     "setValue": {
@@ -262,7 +316,7 @@
       "properties": {
         "action": { "const": "expectNameContains" },
         "automationId": { "type": "string", "minLength": 1 },
-        "substring": { "type": "string" }
+        "substring": { "type": "string", "minLength": 1 }
       }
     },
     "expectNameMatches": {

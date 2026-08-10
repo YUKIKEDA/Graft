@@ -250,5 +250,16 @@ public sealed class InvokeDispatchTests : IDisposable
         public void BeginInvoke(ElementSelector selector) => Invoke(selector);
 
         public void RightClick(ElementSelector selector) => Invoke(selector);
+
+        public void DoubleClick(ElementSelector selector) => Invoke(selector);
+
+        public void Hover(ElementSelector selector) => Invoke(selector);
+
+        public void Drag(ElementSelector from, ElementSelector to) => Invoke(from);
+
+        public void ClickAt(ElementSelector selector, double offsetX, double offsetY) =>
+            Invoke(selector);
+
+        public void Wheel(ElementSelector selector, int delta) => Invoke(selector);
     }
 }

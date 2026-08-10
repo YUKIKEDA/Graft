@@ -1,0 +1,73 @@
+{
+  "v": 1,
+  "name": "phase25-mouse",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "scrollIntoView",
+      "automationId": "DoubleClickTarget"
+    },
+    {
+      "action": "doubleClick",
+      "automationId": "DoubleClickTarget"
+    },
+    {
+      "action": "expectName",
+      "automationId": "DoubleClickTarget",
+      "name": "DoubleClicked"
+    },
+    {
+      "action": "hover",
+      "automationId": "HoverTarget"
+    },
+    {
+      "action": "expectName",
+      "automationId": "HoverTarget",
+      "name": "Hovered"
+    },
+    {
+      "action": "drag",
+      "automationId": "DragSource",
+      "toAutomationId": "DropTarget"
+    },
+    {
+      "action": "expectName",
+      "automationId": "DropTarget",
+      "name": "Dropped"
+    },
+    {
+      "action": "scrollIntoView",
+      "automationId": "ClickAtPad"
+    },
+    {
+      "action": "clickAt",
+      "automationId": "ClickAtPad",
+      "offsetX": -40,
+      "offsetY": 0
+    },
+    {
+      "action": "expectName",
+      "automationId": "ClickAtPad",
+      "name": "ClickAtLeft"
+    },
+    {
+      "action": "scrollIntoView",
+      "automationId": "WheelScroller"
+    },
+    {
+      "action": "wheel",
+      "automationId": "WheelScroller",
+      "delta": -360
+    },
+    {
+      "action": "expectName",
+      "automationId": "WheelBottomLabel",
+      "name": "WheelScrolled"
+    }
+  ]
+}

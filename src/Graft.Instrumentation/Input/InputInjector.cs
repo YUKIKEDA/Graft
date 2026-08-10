@@ -47,6 +47,82 @@ public static class InputInjector
         );
 
     /// <summary>
+    /// Moves the cursor to screen coordinates and performs a left double-click.
+    /// </summary>
+    /// <param name="screenX">Screen X in pixels.</param>
+    /// <param name="screenY">Screen Y in pixels.</param>
+    public static void DoubleClick(int screenX, int screenY)
+    {
+        if (!NativeMethods.SetCursorPos(screenX, screenY))
+        {
+            throw CreateFailed($"SetCursorPos failed at ({screenX},{screenY}).");
+        }
+
+        var (absX, absY) = ToAbsolute(screenX, screenY);
+        const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute;
+        Send(
+            [
+                CreateMouse(absX, absY, moveAbsolute | NativeMethods.MouseEventFLeftDown),
+                CreateMouse(absX, absY, moveAbsolute | NativeMethods.MouseEventFLeftUp),
+                CreateMouse(absX, absY, moveAbsolute | NativeMethods.MouseEventFLeftDown),
+                CreateMouse(absX, absY, moveAbsolute | NativeMethods.MouseEventFLeftUp),
+            ]
+        );
+    }
+
+    /// <summary>
+    /// Moves the cursor to screen coordinates without clicking.
+    /// </summary>
+    /// <param name="screenX">Screen X in pixels.</param>
+    /// <param name="screenY">Screen Y in pixels.</param>
+    public static void MoveTo(int screenX, int screenY)
+    {
+        if (!NativeMethods.SetCursorPos(screenX, screenY))
+        {
+            throw CreateFailed($"SetCursorPos failed at ({screenX},{screenY}).");
+        }
+
+        var (absX, absY) = ToAbsolute(screenX, screenY);
+        const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute;
+        Send([CreateMouse(absX, absY, moveAbsolute)]);
+    }
+
+    /// <summary>
+    /// Drags with the left button from one screen point to another.
+    /// </summary>
+    /// <param name="fromScreenX">Start screen X.</param>
+    /// <param name="fromScreenY">Start screen Y.</param>
+    /// <param name="toScreenX">End screen X.</param>
+    /// <param name="toScreenY">End screen Y.</param>
+    public static void Drag(int fromScreenX, int fromScreenY, int toScreenX, int toScreenY)
+    {
+        MoveTo(fromScreenX, fromScreenY);
+        var (fromAbsX, fromAbsY) = ToAbsolute(fromScreenX, fromScreenY);
+        var (toAbsX, toAbsY) = ToAbsolute(toScreenX, toScreenY);
+        const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute;
+
+        Send([CreateMouse(fromAbsX, fromAbsY, moveAbsolute | NativeMethods.MouseEventFLeftDown)]);
+        Thread.Sleep(30);
+        Send([CreateMouse(toAbsX, toAbsY, moveAbsolute)]);
+        Thread.Sleep(30);
+        Send([CreateMouse(toAbsX, toAbsY, moveAbsolute | NativeMethods.MouseEventFLeftUp)]);
+    }
+
+    /// <summary>
+    /// Moves to screen coordinates and scrolls the mouse wheel by <paramref name="delta"/>.
+    /// </summary>
+    /// <param name="screenX">Screen X in pixels.</param>
+    /// <param name="screenY">Screen Y in pixels.</param>
+    /// <param name="delta">Wheel delta (typically multiples of 120; positive = away from user).</param>
+    public static void Wheel(int screenX, int screenY, int delta)
+    {
+        MoveTo(screenX, screenY);
+        var (absX, absY) = ToAbsolute(screenX, screenY);
+        const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute;
+        Send([CreateMouse(absX, absY, moveAbsolute), CreateMouseWheel(absX, absY, delta)]);
+    }
+
+    /// <summary>
     /// Types <paramref name="text"/> via Unicode key events (no chord DSL).
     /// </summary>
     /// <param name="text">Literal text to type (may be empty).</param>
@@ -111,10 +187,7 @@ public static class InputInjector
             throw CreateFailed($"SetCursorPos failed at ({screenX},{screenY}).");
         }
 
-        var screenWidth = Math.Max(1, NativeMethods.GetSystemMetrics(NativeMethods.SmCxScreen));
-        var screenHeight = Math.Max(1, NativeMethods.GetSystemMetrics(NativeMethods.SmCyScreen));
-        var absX = (int)Math.Round(screenX * 65535.0 / (screenWidth - 1));
-        var absY = (int)Math.Round(screenY * 65535.0 / (screenHeight - 1));
+        var (absX, absY) = ToAbsolute(screenX, screenY);
 
         const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute;
         var inputs = new NativeMethods.INPUT[]
@@ -124,6 +197,15 @@ public static class InputInjector
         };
 
         Send(inputs);
+    }
+
+    private static (int AbsX, int AbsY) ToAbsolute(int screenX, int screenY)
+    {
+        var screenWidth = Math.Max(1, NativeMethods.GetSystemMetrics(NativeMethods.SmCxScreen));
+        var screenHeight = Math.Max(1, NativeMethods.GetSystemMetrics(NativeMethods.SmCyScreen));
+        var absX = (int)Math.Round(screenX * 65535.0 / (screenWidth - 1));
+        var absY = (int)Math.Round(screenY * 65535.0 / (screenHeight - 1));
+        return (absX, absY);
     }
 
     private static void Send(NativeMethods.INPUT[] inputs)
@@ -152,6 +234,25 @@ public static class InputInjector
                     Dx = absX,
                     Dy = absY,
                     DwFlags = flags,
+                },
+            },
+        };
+
+    private static NativeMethods.INPUT CreateMouseWheel(int absX, int absY, int delta) =>
+        new()
+        {
+            Type = NativeMethods.InputMouse,
+            Data = new NativeMethods.InputUnion
+            {
+                Mouse = new NativeMethods.MOUSEINPUT
+                {
+                    Dx = absX,
+                    Dy = absY,
+                    MouseData = unchecked((uint)delta),
+                    DwFlags =
+                        NativeMethods.MouseEventFWheel
+                        | NativeMethods.MouseEventFMove
+                        | NativeMethods.MouseEventFAbsolute,
                 },
             },
         };

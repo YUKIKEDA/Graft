@@ -51,4 +51,4 @@ ID: `W06–W11`, `A04–A07`, `H03`, `C02`（[competitive-gap.md](./competitive-
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` / `competitive-gap.md` 優先
-- **次フェーズ:** Phase 25 マウス高度（M04–M08）
+- **次フェーズ:** [task_phase25.md](./task_phase25.md)

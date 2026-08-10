@@ -181,6 +181,11 @@ public static class ScenarioJson
             ScenarioActions.Launch => CompileLaunch(step, index),
             ScenarioActions.Invoke => CompileInvoke(step, index),
             ScenarioActions.RightClick => CompileRightClick(step, index),
+            ScenarioActions.DoubleClick => CompileDoubleClick(step, index),
+            ScenarioActions.Hover => CompileHover(step, index),
+            ScenarioActions.Drag => CompileDrag(step, index),
+            ScenarioActions.ClickAt => CompileClickAt(step, index),
+            ScenarioActions.Wheel => CompileWheel(step, index),
             ScenarioActions.SetValue => CompileSetValue(step, index),
             ScenarioActions.Toggle => CompileToggle(step, index),
             ScenarioActions.SendKeys => CompileSendKeys(step, index),
@@ -255,6 +260,35 @@ public static class ScenarioJson
 
     private static RightClickOperation CompileRightClick(JsonElement step, int index) =>
         new(RequireNonEmptyString(step, "automationId", index));
+
+    private static DoubleClickOperation CompileDoubleClick(JsonElement step, int index) =>
+        new(RequireNonEmptyString(step, "automationId", index));
+
+    private static HoverOperation CompileHover(JsonElement step, int index) =>
+        new(RequireNonEmptyString(step, "automationId", index));
+
+    private static DragOperation CompileDrag(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        var toAutomationId = RequireNonEmptyString(step, "toAutomationId", index);
+        return new DragOperation(automationId, toAutomationId);
+    }
+
+    private static ClickAtOperation CompileClickAt(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        return new ClickAtOperation(
+            automationId,
+            RequireNumber(step, "offsetX", index),
+            RequireNumber(step, "offsetY", index)
+        );
+    }
+
+    private static WheelOperation CompileWheel(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        return new WheelOperation(automationId, RequireInt(step, "delta", index));
+    }
 
     private static SetValueOperation CompileSetValue(JsonElement step, int index)
     {
@@ -432,10 +466,13 @@ public static class ScenarioJson
             );
         }
 
-        return new ExpectNameContainsOperation(
-            automationId,
-            substringElement.GetString() ?? string.Empty
-        );
+        var substring = substringElement.GetString();
+        if (string.IsNullOrEmpty(substring))
+        {
+            throw Invalid($"steps[{index}] expectNameContains 'substring' must be non-empty.");
+        }
+
+        return new ExpectNameContainsOperation(automationId, substring);
     }
 
     private static ExpectNameMatchesOperation CompileExpectNameMatches(JsonElement step, int index)
@@ -718,6 +755,33 @@ public static class ScenarioJson
         }
 
         return element.GetBoolean();
+    }
+
+    private static double RequireNumber(JsonElement step, string propertyName, int index)
+    {
+        if (
+            !step.TryGetProperty(propertyName, out var element)
+            || element.ValueKind != JsonValueKind.Number
+            || !element.TryGetDouble(out var value)
+        )
+        {
+            throw Invalid($"steps[{index}] requires number property '{propertyName}'.");
+        }
+
+        return value;
+    }
+
+    private static int RequireInt(JsonElement step, string propertyName, int index)
+    {
+        if (
+            !step.TryGetProperty(propertyName, out var element)
+            || !element.TryGetInt32(out var value)
+        )
+        {
+            throw Invalid($"steps[{index}] requires integer property '{propertyName}'.");
+        }
+
+        return value;
     }
 
     private static string RequireNonEmptyString(JsonElement step, string propertyName, int index)

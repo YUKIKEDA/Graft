@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Automation;
@@ -15,6 +15,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        DoubleClickTarget.MouseDoubleClick += DoubleClickTarget_OnMouseDoubleClick;
         LoadListItems();
     }
 
@@ -86,6 +87,63 @@ public partial class MainWindow : Window
     {
         StatusText.Text = "MouseHit";
         AutomationProperties.SetName(SampleMouseTarget, "MouseHit");
+    }
+
+    private void DoubleClickTarget_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        StatusText.Text = "DoubleClicked";
+        AutomationProperties.SetName(DoubleClickTarget, "DoubleClicked");
+        e.Handled = true;
+    }
+
+    private void HoverTarget_OnMouseEnter(object sender, MouseEventArgs e)
+    {
+        StatusText.Text = "Hovered";
+        AutomationProperties.SetName(HoverTarget, "Hovered");
+    }
+
+    private void DragSource_OnMouseMove(object sender, MouseEventArgs e)
+    {
+        if (e.LeftButton != MouseButtonState.Pressed)
+        {
+            return;
+        }
+
+        DragDrop.DoDragDrop(DragSource, "graft-drag", DragDropEffects.Copy);
+    }
+
+    private void DropTarget_OnDragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = DragDropEffects.Copy;
+        e.Handled = true;
+    }
+
+    private void DropTarget_OnDrop(object sender, DragEventArgs e)
+    {
+        StatusText.Text = "Dropped";
+        AutomationProperties.SetName(DropTarget, "Dropped");
+    }
+
+    private void ClickAtPad_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        var pos = e.GetPosition(ClickAtPad);
+        var label = pos.X < ClickAtPad.ActualWidth / 2 ? "ClickAtLeft" : "ClickAtRight";
+        StatusText.Text = label;
+        AutomationProperties.SetName(ClickAtPad, label);
+    }
+
+    private void WheelScroller_OnScrollChanged(object sender, ScrollChangedEventArgs e)
+    {
+        if (e.VerticalChange == 0 && e.VerticalOffset == 0)
+        {
+            return;
+        }
+
+        if (WheelScroller.VerticalOffset > 0)
+        {
+            StatusText.Text = "WheelScrolled";
+            AutomationProperties.SetName(WheelBottomLabel, "WheelScrolled");
+        }
     }
 
     private void ContextMenuPing_OnClick(object sender, RoutedEventArgs e)

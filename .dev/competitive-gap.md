@@ -68,11 +68,11 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | M01 | クリック（ボタン Invoke）          | Yes  | OK    | Done | —       | native → Peer → SendInput |
 | M02 | 右クリック → ContextMenu（1 段）   | Yes  | OK    | Done | —       | Phase 16                  |
 | M03 | ContextMenu サブメニュー           | Yes  | NO    | Must | 26      |                           |
-| M04 | ダブルクリック                     | Yes  | NO    | Must | 25      |                           |
-| M05 | Hover / MouseEnter 副作用          | Yes  | NO    | Must | 25      |                           |
-| M06 | Drag and Drop                      | Yes  | NO    | Must | 25      |                           |
-| M07 | 座標クリック（要素外・オフセット） | Yes  | NO    | Must | 25      |                           |
-| M08 | マウスホイール                     | Yes  | NO    | Must | 25      |                           |
+| M04 | ダブルクリック                     | Yes  | OK    | Done | 25      | `DoubleClickAsync`        |
+| M05 | Hover / MouseEnter 副作用          | Yes  | OK    | Done | 25      | ToolTip 待ちは C03        |
+| M06 | Drag and Drop                      | Yes  | OK    | Done | 25      | 要素→要素のみ             |
+| M07 | 座標クリック（要素外・オフセット） | Yes  | OK    | Done | 25      | クリック点相対 DIP        |
+| M08 | マウスホイール                     | Yes  | OK    | Done | 25      | `WheelAsync`              |
 
 ---
 

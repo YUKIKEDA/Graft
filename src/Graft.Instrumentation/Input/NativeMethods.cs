@@ -4,7 +4,7 @@ namespace Graft.Instrumentation.Input;
 
 #if GRAFT_TEST
 
-internal static class NativeMethods
+internal static partial class NativeMethods
 {
     public const uint InputMouse = 0;
     public const uint InputKeyboard = 1;
@@ -14,7 +14,11 @@ internal static class NativeMethods
     public const uint MouseEventFLeftUp = 0x0004;
     public const uint MouseEventFRightDown = 0x0008;
     public const uint MouseEventFRightUp = 0x0010;
+    public const uint MouseEventFWheel = 0x0800;
     public const uint MouseEventFAbsolute = 0x8000;
+
+    /// <summary>Standard Win32 wheel notch (positive = away from user).</summary>
+    public const int WheelDelta = 120;
 
     public const uint KeyEventFExtendedKey = 0x0001;
     public const uint KeyEventFKeyUp = 0x0002;
@@ -37,25 +41,25 @@ internal static class NativeMethods
     public const byte VkDelete = 0x2E;
     public const byte VkA = 0x41;
 
-    [DllImport("user32.dll", SetLastError = true)]
-    public static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
+    [LibraryImport("user32.dll", SetLastError = true)]
+    public static partial uint SendInput(uint nInputs, [In] INPUT[] pInputs, int cbSize);
 
-    [DllImport("user32.dll")]
-    public static extern int GetSystemMetrics(int nIndex);
+    [LibraryImport("user32.dll")]
+    public static partial int GetSystemMetrics(int nIndex);
 
     public const int SmCxScreen = 0;
     public const int SmCyScreen = 1;
 
-    [DllImport("user32.dll")]
+    [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool SetForegroundWindow(IntPtr hWnd);
+    public static partial bool SetForegroundWindow(IntPtr hWnd);
 
-    [DllImport("user32.dll")]
+    [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool SetCursorPos(int x, int y);
+    public static partial bool SetCursorPos(int x, int y);
 
-    [DllImport("user32.dll")]
-    public static extern uint MapVirtualKey(uint uCode, uint uMapType);
+    [LibraryImport("user32.dll")]
+    public static partial uint MapVirtualKey(uint uCode, uint uMapType);
 
     [StructLayout(LayoutKind.Sequential)]
     public struct INPUT

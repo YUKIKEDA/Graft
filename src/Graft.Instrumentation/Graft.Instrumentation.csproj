@@ -10,6 +10,8 @@
       A future non-test package flavor can build without GRAFT_TEST to strip the API.
     -->
     <DefineConstants>$(DefineConstants);GRAFT_TEST</DefineConstants>
+    <!-- LibraryImport source generator for Win32 P/Invoke (NativeMethods). -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Graft.Protocol\Graft.Protocol.csproj" />
