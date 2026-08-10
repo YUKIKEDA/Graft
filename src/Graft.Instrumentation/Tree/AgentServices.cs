@@ -22,6 +22,7 @@ public static class AgentServices
     private static IElementKeySender? _elementKeySender;
     private static IElementScroller? _elementScroller;
     private static IElementChooser? _elementChooser;
+    private static IMenuSelector? _menuSelector;
     private static IElementExpander? _elementExpander;
     private static IElementCellAccessor? _elementCellAccessor;
     private static IWindowCatalog? _windowCatalog;
@@ -70,6 +71,11 @@ public static class AgentServices
     /// Gets the registered element chooser (<c>select</c>), if any.
     /// </summary>
     public static IElementChooser? ElementChooser => _elementChooser;
+
+    /// <summary>
+    /// Gets the registered menu selector (<c>selectMenu</c>), if any.
+    /// </summary>
+    public static IMenuSelector? MenuSelector => _menuSelector;
 
     /// <summary>
     /// Gets the registered element expander, if any.
@@ -177,6 +183,16 @@ public static class AgentServices
     }
 
     /// <summary>
+    /// Registers the menu selector used for <c>selectMenu</c>.
+    /// </summary>
+    /// <param name="selector">Framework-specific menu selector.</param>
+    public static void RegisterMenuSelector(IMenuSelector selector)
+    {
+        ArgumentNullException.ThrowIfNull(selector);
+        _menuSelector = selector;
+    }
+
+    /// <summary>
     /// Registers the element expander used for <c>expand</c> / <c>collapse</c>.
     /// </summary>
     /// <param name="expander">Framework-specific expander.</param>
@@ -220,6 +236,7 @@ public static class AgentServices
         _elementKeySender = null;
         _elementScroller = null;
         _elementChooser = null;
+        _menuSelector = null;
         _elementExpander = null;
         _elementCellAccessor = null;
         _windowCatalog = null;

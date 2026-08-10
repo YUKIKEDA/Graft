@@ -194,6 +194,7 @@ public static class ScenarioJson
             ScenarioActions.ScrollIntoView => CompileScrollIntoView(step, index),
             ScenarioActions.Select => CompileSelect(step, index),
             ScenarioActions.SelectMany => CompileSelectMany(step, index),
+            ScenarioActions.SelectMenu => CompileSelectMenu(step, index),
             ScenarioActions.Expand => CompileExpand(step, index),
             ScenarioActions.Collapse => CompileCollapse(step, index),
             ScenarioActions.ExpectName => CompileExpectName(step, index),
@@ -373,6 +374,13 @@ public static class ScenarioJson
         }
 
         return new SelectOperation(automationId, itemIndex);
+    }
+
+    private static SelectMenuOperation CompileSelectMenu(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        var path = RequireNonEmptyString(step, "path", index);
+        return new SelectMenuOperation(automationId, path);
     }
 
     private static SelectManyOperation CompileSelectMany(JsonElement step, int index)

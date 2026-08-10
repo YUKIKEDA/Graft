@@ -42,6 +42,7 @@
         { "$ref": "#/$defs/scrollIntoView" },
         { "$ref": "#/$defs/select" },
         { "$ref": "#/$defs/selectMany" },
+        { "$ref": "#/$defs/selectMenu" },
         { "$ref": "#/$defs/expand" },
         { "$ref": "#/$defs/collapse" },
         { "$ref": "#/$defs/expectName" },
@@ -229,6 +230,16 @@
           "type": "array",
           "items": { "type": "integer", "minimum": 0 }
         }
+      }
+    },
+    "selectMenu": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "path"],
+      "properties": {
+        "action": { "const": "selectMenu" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 }
       }
     },
     "expand": {

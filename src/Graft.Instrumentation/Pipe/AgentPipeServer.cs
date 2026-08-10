@@ -303,6 +303,11 @@ internal sealed class AgentPipeServer : IDisposable
             return (HandleSelectMany(request), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
+        if (request.Method == ProtocolMethods.SelectMenu)
+        {
+            return (HandleSelectMenu(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
         if (request.Method == ProtocolMethods.GetCellText)
         {
             return (HandleGetCellText(request), CloseAfterWrite: false, BinaryFollowUp: null);
@@ -888,6 +893,39 @@ internal sealed class AgentPipeServer : IDisposable
         {
             var (selector, indexes) = ReadSelectManyParams(request.Params);
             chooser.SelectMany(selector, indexes);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleSelectMenu(RequestMessage request)
+    {
+        var menuSelector = AgentServices.MenuSelector;
+        if (menuSelector is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No menu selector is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var selector = ReadElementSelector(request.Params);
+            var path = ReadRequiredString(request.Params, "path");
+            menuSelector.SelectMenu(selector, path);
             return Ok(request.Id);
         }
         catch (ElementResolveException ex)

@@ -298,6 +298,43 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// selectMenu steps compile with automationId and path.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with launch + selectMenu
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - Second operation is SelectMenuOperation with matching fields
+    /// </remarks>
+    [Fact]
+    public void Parse_SelectMenuStep_CompilesSelectMenuOperation()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                {
+                  "action": "selectMenu",
+                  "automationId": "SampleMenu",
+                  "path": "SampleMenuFile/SampleMenuPing"
+                }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var selectMenu = Assert.IsType<SelectMenuOperation>(scenario.Operations[1]);
+        Assert.Equal(ScenarioActions.SelectMenu, selectMenu.Action);
+        Assert.Equal("SampleMenu", selectMenu.AutomationId);
+        Assert.Equal("SampleMenuFile/SampleMenuPing", selectMenu.Path);
+    }
+
+    /// <summary>
     /// expectSelected / expectExpanded compile with boolean fields.
     /// </summary>
     /// <remarks>

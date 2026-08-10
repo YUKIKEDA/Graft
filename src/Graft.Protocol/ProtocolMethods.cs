@@ -108,6 +108,12 @@ public static class ProtocolMethods
     public const string SelectMany = "selectMany";
 
     /// <summary>
+    /// Selects a menu path under <c>params.automationId</c> via slash-separated <c>params.path</c>
+    /// (AutomationId segments; Menu or open ContextMenu root).
+    /// </summary>
+    public const string SelectMenu = "selectMenu";
+
+    /// <summary>
     /// Expands an element (e.g. TreeViewItem / Expander) by <c>params.automationId</c>.
     /// </summary>
     public const string Expand = "expand";
