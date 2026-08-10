@@ -153,6 +153,43 @@ public sealed class MainWindowE2ETests
     }
 
     /// <summary>
+    /// Session ScreenshotAsync returns a non-empty PNG of the target window.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Sibling SampleWpfApp.csproj can build with Configuration=GraftTest
+    ///
+    /// Steps:
+    /// - Launch sample
+    /// - ScreenshotAsync()
+    ///
+    /// Expected:
+    /// - Format png, width/height &gt; 0, PNG signature bytes
+    /// </remarks>
+    [Fact]
+    public async Task Screenshot_TargetWindow_ReturnsPng()
+    {
+        await using var app = await Application.LaunchAsync(
+            new LaunchOptions
+            {
+                AppPath = SampleAppLocator.ResolveProjectPath(),
+                Configuration = "GraftTest",
+                Timeout = TimeSpan.FromSeconds(60),
+            }
+        );
+
+        var shot = await app.ScreenshotAsync();
+        Assert.Equal("png", shot.Format);
+        Assert.True(shot.Width > 0);
+        Assert.True(shot.Height > 0);
+        Assert.True(shot.PngBytes.Length >= 8);
+        Assert.Equal(0x89, shot.PngBytes[0]);
+        Assert.Equal((byte)'P', shot.PngBytes[1]);
+        Assert.Equal((byte)'N', shot.PngBytes[2]);
+        Assert.Equal((byte)'G', shot.PngBytes[3]);
+    }
+
+    /// <summary>
     /// pressKeys Control+A then Delete clears SampleTextBox.
     /// </summary>
     /// <remarks>

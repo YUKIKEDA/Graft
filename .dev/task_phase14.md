@@ -22,7 +22,7 @@
 | 語彙 | `A`–`Z`, `0`–`9`, `Enter`, `Tab`, `Escape`, `Backspace`, `Delete`, `Space`, `ArrowUp/Down/Left/Right` |
 | Sample E2E | TextBox: SetValue → `Control+A` → `Delete` → Expect 空 |
 | 公開経路 | Scenario / MCP 薄い追従 |
-| Phase 14 の次 | **公開 Screenshot** → 右クリック/Menu → … → Avalonia |
+| Phase 14 の次 | Phase 15 公開 Screenshot（[task_phase15.md](./task_phase15.md)） |
 
 ---
 
@@ -52,7 +52,7 @@
 
 - [x] schema / Runner / MCP
 - [x] Scenario E2E
-- [x] 完了チェック。次: **公開 Screenshot**
+- [x] 完了チェック。次: [task_phase15.md](./task_phase15.md)
 
 ---
 
@@ -69,4 +69,4 @@
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` 優先
-- **次フェーズ:** 公開 Screenshot → 右クリック/Menu → Tab/Slider/複数選択/DataGrid 列 → Avalonia → Inspector
+- **次フェーズ:** [task_phase15.md](./task_phase15.md) → 右クリック/Menu → Tab/Slider/複数選択/DataGrid 列 → Avalonia → Inspector

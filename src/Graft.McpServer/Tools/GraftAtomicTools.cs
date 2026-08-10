@@ -575,6 +575,42 @@ public sealed class GraftAtomicTools
         );
 
     /// <summary>
+    /// Captures a PNG screenshot of the current target window and writes it to a path.
+    /// </summary>
+    /// <param name="path">Destination PNG path (optional; temp file when omitted).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result with meta and path.</returns>
+    [McpServerTool(Name = "graft_screenshot")]
+    [Description(
+        "Capture the current target window as PNG. Optional path; when omitted writes a temp file."
+    )]
+    public Task<CallToolResult> Screenshot(
+        [Description("Destination PNG path (optional; temp when omitted).")] string? path = null,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                var shot = await session.ScreenshotAsync(cancellationToken).ConfigureAwait(false);
+                var dest = string.IsNullOrWhiteSpace(path)
+                    ? Path.Combine(Path.GetTempPath(), $"graft-mcp-{Guid.NewGuid():N}.png")
+                    : path;
+                await shot.SaveAsync(dest, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject
+                    {
+                        ["format"] = shot.Format,
+                        ["width"] = shot.Width,
+                        ["height"] = shot.Height,
+                        ["byteLength"] = shot.PngBytes.Length,
+                        ["path"] = Path.GetFullPath(dest),
+                    }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Lists open windows in the target process.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>

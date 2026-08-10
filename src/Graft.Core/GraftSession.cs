@@ -332,6 +332,32 @@ public sealed class GraftSession : IAsyncDisposable
     }
 
     /// <summary>
+    /// Captures a PNG screenshot of the current target window.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Screenshot meta and PNG bytes.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task<Screenshot> ScreenshotAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var (meta, pngBytes) = await _connection
+                .ScreenshotAsync(cancellationToken)
+                .ConfigureAwait(false);
+            var shot = new Screenshot(meta.Format, meta.Width, meta.Height, pngBytes);
+            _operationLog.Record(
+                FailureSteps.Screenshot,
+                $"{shot.Width}x{shot.Height}:{shot.PngBytes.Length}"
+            );
+            return shot;
+        }
+        catch (GraftException)
+        {
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Gets the child process id (0 if unavailable).
     /// </summary>
     public int ProcessId
