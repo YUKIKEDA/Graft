@@ -23,6 +23,9 @@ dotnet tool restore
 dotnet csharpier format .
 dotnet build Graft.slnx
 dotnet test tests/sample-apps/SampleWpfApp.Tests
+# Full solution: SendInput UI tests can flake under cross-assembly parallel launches.
+# Prefer -m:1, or run UI projects sequentially. See .dev/project.md §9 (SendInput memo).
+dotnet test Graft.slnx -m:1
 ```
 
 ## Commit style (summary)

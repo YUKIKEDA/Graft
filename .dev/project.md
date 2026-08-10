@@ -366,6 +366,7 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - .NET Framework WPF 対応の要否（需要が固まってから）
 - 多言語バインディング / gRPC（v1 スコープ外。再検討は操作モデル安定後）
 - （参考・不採用）プロセス注入方式の AV/EDR・コード署名問題は、事前組み込みへの変更で実質解消
+- **テスト並列と SendInput:** `SampleUiCollection` / `McpUiCollection` はアセンブリ内直列化のみ。`dotnet test Graft.slnx` は Core / Sample / MCP が同時に SampleWpfApp を起動し、SendInput（click / keys / chord / rightClick）がフォーカス競合でフレークしうる（症状例: PressKeys 後に `ello` 残存、SendKeys 空振り、ContextMenu が開かず MenuItem 待ちタイムアウト）。暫定: `dotnet test Graft.slnx -m:1` または UI 系プロジェクトを順実行。恒久: アセンブリ横断 mutex / CI ジョブ分割（未着手）
 
 ## 10. 設計決定ログ
 
