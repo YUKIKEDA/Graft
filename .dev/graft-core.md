@@ -73,13 +73,14 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - テキスト入力: `GetByAutomationId(…).SetValueAsync(value)`（エージェント wire `setValue`）。キー入力: `SendKeysAsync(text)`（リテラル、chord DSL なし）
 - トグル: `GetByAutomationId(…).ToggleAsync()`（状態フリップ）
 - スクロール: `ScrollIntoViewAsync()`（実現済み要素）/ `ScrollIntoViewAsync(index)`（リスト。仮想化対応、identity 返却）
-- 選択: `SelectAsync(index)`（単一。内部で自動 scroll/realize）
+- 選択: `SelectAsync(index)`（単一。内部で自動 scroll/realize）。ホストは ListBox / ComboBox / **DataGrid（行）**
 - 開閉: `ExpandAsync()` / `CollapseAsync()`（状態指定）
-- ツリー状態（Phase 6）: `TreeNode.selected` / `expanded`（`bool?`、非該当は省略）。`ExpectSelectedAsync(bool)` / `ExpectExpandedAsync(bool)`（null は expect.failed）
+- ツリー状態（Phase 6/8）: `TreeNode.selected` / `expanded` / `checked`（`bool?`、非該当は省略）。`ExpectSelectedAsync` / `ExpectExpandedAsync` / `ExpectCheckedAsync`（null は expect.failed）
+- DataGrid 行（Phase 8）: `SampleGrid` のようにホスト＋index で `ScrollIntoViewAsync` / `SelectAsync`。実現済み `DataGridRow` に `selected`。セル R/W・Cell 選択は未実装
 - ウィンドウ（Phase 7）: `ListWindowsAsync` / `SwitchToWindowAsync(windowId)` / `WaitForWindowAsync(title:, automationId:)`（既定で自動 Switch）。getTree / resolve / screenshot / アクションは既定ターゲット窓のみ
 - モーダル開封: `GetBy…().InvokeOpeningWindowAsync()`（BeginInvoke + 新窓待ち + 自動 Switch）。**素の `InvokeAsync` で `ShowDialog` を開くとハングしうる**（非対応）
 - 失敗診断: Expect / Wait / 各アクション失敗時に `GraftException.Report`（最小: step / expected / actual / timedOut / selector。添付: `recentOperations` / `tree` / `screenshotPath` / `healingCandidates`）。エージェントは RPC ごとに常時添付しない。添付は失敗時ベストエフォート
-- Scenario JSON: `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync`（上記に加え `listWindows` / `switchWindow` / `waitForWindow` / `invokeOpeningWindow`）。契約は `.dev/scenario.schema.json`。例: `tests/sample-apps/SampleWpfApp.Tests/Scenarios/`
-- MCP: `Graft.McpServer`（stdio）。原子ツールに `graft_list_windows` / `graft_switch_window` / `graft_wait_for_window` / `graft_invoke_opening_window` を含む。失敗時は `IsError` + FailureReport JSON
+- Scenario JSON: `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync`（上記に加え `expectChecked` / 窓系）。契約は `.dev/scenario.schema.json`。例: `tests/sample-apps/SampleWpfApp.Tests/Scenarios/`
+- MCP: `Graft.McpServer`（stdio）。原子ツールに `graft_expect_checked` と窓系を含む。失敗時は `IsError` + FailureReport JSON
 - invoke / setValue はネイティブ → Peer → SendInput フォールバック（クリック / クリア+タイプ）
-- 未実装（後続）: DataGrid 行操作 / `checked`（[task_phase8.md](./task_phase8.md)）、DataGrid セル R/W、OS 共通ダイアログ、Avalonia、Inspector、ファジー自己修復、シナリオ自動書き換え、`typeHuman` / chord DSL、複数選択
+- 未実装（後続）: DataGrid セル R/W、OS 共通ダイアログ、Avalonia、Inspector、ファジー自己修復、シナリオ自動書き換え、`typeHuman` / chord DSL、複数選択

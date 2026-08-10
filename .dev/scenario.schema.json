@@ -38,6 +38,7 @@
         { "$ref": "#/$defs/expectName" },
         { "$ref": "#/$defs/expectSelected" },
         { "$ref": "#/$defs/expectExpanded" },
+        { "$ref": "#/$defs/expectChecked" },
         { "$ref": "#/$defs/listWindows" },
         { "$ref": "#/$defs/switchWindow" },
         { "$ref": "#/$defs/waitForWindow" },
@@ -159,6 +160,16 @@
         "action": { "const": "expectExpanded" },
         "automationId": { "type": "string", "minLength": 1 },
         "expanded": { "type": "boolean" }
+      }
+    },
+    "expectChecked": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "checked"],
+      "properties": {
+        "action": { "const": "expectChecked" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "checked": { "type": "boolean" }
       }
     },
     "listWindows": {

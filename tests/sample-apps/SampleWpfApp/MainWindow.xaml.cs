@@ -33,6 +33,14 @@ public partial class MainWindow : Window
             new("ComboItem-02", "Gamma"),
         };
         SampleCombo.ItemsSource = comboItems;
+
+        var gridItems = new ObservableCollection<SampleListItem>();
+        for (var i = 0; i < 50; i++)
+        {
+            gridItems.Add(new SampleListItem($"GridRow-{i:D2}", $"Row {i}"));
+        }
+
+        SampleGrid.ItemsSource = gridItems;
     }
 
     private void SampleButton_OnClick(object sender, RoutedEventArgs e)
@@ -62,6 +70,14 @@ public partial class MainWindow : Window
         if (SampleList.SelectedItem is SampleListItem item)
         {
             StatusText.Text = $"Selected {item.Name}";
+        }
+    }
+
+    private void SampleGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (SampleGrid.SelectedItem is SampleListItem item)
+        {
+            StatusText.Text = $"Grid {item.Name}";
         }
     }
 

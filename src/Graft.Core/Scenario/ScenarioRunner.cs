@@ -164,6 +164,14 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case ExpectCheckedOperation expectChecked:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(expectChecked.AutomationId)
+                            .ExpectCheckedAsync(expectChecked.Checked, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     case ListWindowsOperation:
                         EnsureSession(session);
                         _ = await session!

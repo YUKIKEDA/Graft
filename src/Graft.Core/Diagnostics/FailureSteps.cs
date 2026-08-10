@@ -41,6 +41,9 @@ public static class FailureSteps
     /// <summary>Expect on element expanded state failed or timed out.</summary>
     public const string ExpectExpanded = "expectExpanded";
 
+    /// <summary>Expect on element checked state failed or timed out.</summary>
+    public const string ExpectChecked = "expectChecked";
+
     /// <summary>listWindows failed.</summary>
     public const string ListWindows = "listWindows";
 

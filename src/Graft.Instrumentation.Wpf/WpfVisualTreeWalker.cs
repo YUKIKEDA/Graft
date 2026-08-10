@@ -145,6 +145,7 @@ internal static class WpfVisualTreeWalker
             Focused = element.IsFocused,
             Selected = ResolveSelected(element),
             Expanded = ResolveExpanded(element),
+            Checked = ResolveChecked(element),
             Children = children,
         };
     }
@@ -156,6 +157,7 @@ internal static class WpfVisualTreeWalker
             ListBoxItem listItem => listItem.IsSelected,
             TreeViewItem treeItem => treeItem.IsSelected,
             TabItem tabItem => tabItem.IsSelected,
+            DataGridRow row => row.IsSelected,
             _ => null,
         };
 
@@ -164,6 +166,13 @@ internal static class WpfVisualTreeWalker
         {
             TreeViewItem treeItem => treeItem.IsExpanded,
             Expander expander => expander.IsExpanded,
+            _ => null,
+        };
+
+    private static bool? ResolveChecked(FrameworkElement element) =>
+        element switch
+        {
+            CheckBox checkBox => checkBox.IsChecked,
             _ => null,
         };
 

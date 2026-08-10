@@ -54,10 +54,12 @@ internal sealed class WpfElementScroller : IElementScroller
         }
 
         // ListView derives from ListBox — one arm covers both.
+        // DataGrid is not an ItemsControl — dedicated arm required.
         return listElement switch
         {
             ListBox listBox => ScrollWithListBoxApi(listBox, index),
             ComboBox comboBox => ScrollComboBox(comboBox, index),
+            DataGrid dataGrid => ScrollWithDataGridApi(dataGrid, index),
             ItemsControl itemsControl => ScrollGenericItemsControl(itemsControl, index),
             _ => throw new ElementActionException(
                 GraftErrorCodes.ActionFailed,
@@ -132,6 +134,29 @@ internal sealed class WpfElementScroller : IElementScroller
         return EnsureIdentity(container, index);
     }
 
+    private static ElementIdentity ScrollWithDataGridApi(DataGrid dataGrid, int index)
+    {
+        EnsureDataGridIndexInRange(dataGrid, index);
+        var item = dataGrid.Items[index]!;
+        dataGrid.ScrollIntoView(item);
+        dataGrid.UpdateLayout();
+        dataGrid.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
+
+        var container =
+            dataGrid.ItemContainerGenerator.ContainerFromIndex(index) as FrameworkElement;
+        if (container is null)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                $"Failed to realize DataGrid row at index {index}."
+            );
+        }
+
+        container.BringIntoView();
+        container.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
+        return EnsureIdentity(container, index);
+    }
+
     private static ElementIdentity ScrollComboBox(ComboBox comboBox, int index)
     {
         EnsureIndexInRange(comboBox, index);
@@ -188,6 +213,17 @@ internal sealed class WpfElementScroller : IElementScroller
             throw new ElementActionException(
                 GraftErrorCodes.ElementNotFound,
                 $"Item index {index} is out of range (count={itemsControl.Items.Count})."
+            );
+        }
+    }
+
+    private static void EnsureDataGridIndexInRange(DataGrid dataGrid, int index)
+    {
+        if (index >= dataGrid.Items.Count)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ElementNotFound,
+                $"Item index {index} is out of range (count={dataGrid.Items.Count})."
             );
         }
     }

@@ -66,6 +66,7 @@ internal sealed class WpfElementChooser : IElementChooser
         // Realize / scroll first (virtualized lists).
         _ = WpfElementScroller.ScrollListItem(element, index);
 
+        // DataGrid : MultiSelector : Selector — SelectedIndex covers FullRow single-select.
         switch (element)
         {
             case Selector sel:
