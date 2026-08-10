@@ -122,10 +122,7 @@ public sealed class GraftSession : IAsyncDisposable
         var hasAutomationId = !string.IsNullOrWhiteSpace(automationId);
         if (!hasTitle && !hasAutomationId)
         {
-            throw new ArgumentException(
-                "At least one of title or automationId must be provided.",
-                nameof(title)
-            );
+            throw new ArgumentException("At least one of title or automationId must be provided.");
         }
 
         var timeout = PositiveOrDefault(
