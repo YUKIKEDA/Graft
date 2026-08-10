@@ -197,6 +197,14 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case SelectMenuOperation selectMenu:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(selectMenu.AutomationId)
+                            .SelectMenuAsync(selectMenu.Path, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     case ExpandOperation expand:
                         EnsureSession(session);
                         await session!

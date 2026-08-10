@@ -507,6 +507,36 @@ public sealed partial class GraftAtomicTools
         );
 
     /// <summary>
+    /// Selects a menu path under a Menu or open ContextMenu by automation id.
+    /// </summary>
+    /// <param name="automationId">Menu or open ContextMenu automation id.</param>
+    /// <param name="path">Slash-separated AutomationId segments (root not included).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_select_menu")]
+    [Description(
+        "selectMenu under Menu/ContextMenu automationId via slash-separated AutomationId path."
+    )]
+    public partial Task<CallToolResult> SelectMenu(
+        [Description("Menu or open ContextMenu automation id.")] string automationId,
+        [Description("Slash-separated AutomationId path (root not included).")] string path,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .SelectMenuAsync(path, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject { ["automationId"] = automationId, ["path"] = path }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Reads DataGrid cell display text by row and column index or Header key.
     /// </summary>
     /// <param name="automationId">DataGrid automation id.</param>
@@ -1072,7 +1102,9 @@ public sealed partial class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_list_windows")]
     [Description("List open windows with session-local windowId values.")]
-    public partial Task<CallToolResult> ListWindows(CancellationToken cancellationToken = default) =>
+    public partial Task<CallToolResult> ListWindows(
+        CancellationToken cancellationToken = default
+    ) =>
         WithSessionAsync(
             async session =>
             {
@@ -1271,7 +1303,9 @@ public sealed partial class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_arm_open_file_cancel")]
     [Description("Arm the next OpenFileDialog.ShowDialog (RunDialog seam) as cancel (one-shot).")]
-    public partial Task<CallToolResult> ArmOpenFileCancel(CancellationToken cancellationToken = default) =>
+    public partial Task<CallToolResult> ArmOpenFileCancel(
+        CancellationToken cancellationToken = default
+    ) =>
         WithSessionAsync(
             async session =>
             {
@@ -1311,7 +1345,9 @@ public sealed partial class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_arm_save_file_cancel")]
     [Description("Arm the next SaveFileDialog.ShowDialog (RunDialog seam) as cancel (one-shot).")]
-    public partial Task<CallToolResult> ArmSaveFileCancel(CancellationToken cancellationToken = default) =>
+    public partial Task<CallToolResult> ArmSaveFileCancel(
+        CancellationToken cancellationToken = default
+    ) =>
         WithSessionAsync(
             async session =>
             {
@@ -1393,7 +1429,9 @@ public sealed partial class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_dispose")]
     [Description("Dispose the open Graft session (closes pipe and kills the app process).")]
-    public partial Task<CallToolResult> DisposeSession(CancellationToken cancellationToken = default) =>
+    public partial Task<CallToolResult> DisposeSession(
+        CancellationToken cancellationToken = default
+    ) =>
         _hub.RunAsync(
             async session =>
             {

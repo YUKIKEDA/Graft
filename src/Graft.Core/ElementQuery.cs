@@ -766,6 +766,49 @@ public sealed class ElementQuery
     }
 
     /// <summary>
+    /// Waits until the menu root is actionable, then selects a slash-separated AutomationId path.
+    /// </summary>
+    /// <param name="path">Slash-separated AutomationId segments (this query is the Menu / ContextMenu root).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when selectMenu succeeds.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or selectMenu failed.</exception>
+    public async Task SelectMenuAsync(string path, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot selectMenu over the wire.",
+                    FailureSteps.SelectMenu,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .SelectMenuAsync(node.AutomationId, path, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.SelectMenu, $"{node.AutomationId}:{path}");
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.SelectMenu,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
     /// Waits until the DataGrid is actionable, then returns cell display text by column index.
     /// </summary>
     /// <param name="row">Zero-based row index.</param>

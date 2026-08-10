@@ -20,6 +20,18 @@
                               AutomationProperties.AutomationId="SampleMenuPing"
                               Header="Ping"
                               Click="SampleMenuPing_OnClick" />
+                    <MenuItem x:Name="SampleMenuRecent"
+                              AutomationProperties.AutomationId="SampleMenuRecent"
+                              Header="Recent">
+                        <MenuItem x:Name="SampleMenuOpenRecent"
+                                  AutomationProperties.AutomationId="SampleMenuOpenRecent"
+                                  Header="Open recent"
+                                  Click="SampleMenuOpenRecent_OnClick" />
+                    </MenuItem>
+                    <MenuItem x:Name="SampleMenuDisabled"
+                              AutomationProperties.AutomationId="SampleMenuDisabled"
+                              Header="Disabled"
+                              IsEnabled="False" />
                 </MenuItem>
             </Menu>
             <TextBlock x:Name="StatusText"
@@ -143,11 +155,20 @@
                     Margin="0,0,0,16"
                     Cursor="Hand">
                 <Border.ContextMenu>
-                    <ContextMenu>
+                    <ContextMenu x:Name="SampleContextMenu"
+                                 AutomationProperties.AutomationId="SampleContextMenu">
                         <MenuItem x:Name="ContextMenuPing"
                                   AutomationProperties.AutomationId="ContextMenuPing"
                                   Header="Ping"
                                   Click="ContextMenuPing_OnClick" />
+                        <MenuItem x:Name="ContextMenuMore"
+                                  AutomationProperties.AutomationId="ContextMenuMore"
+                                  Header="More">
+                            <MenuItem x:Name="ContextMenuSubPing"
+                                      AutomationProperties.AutomationId="ContextMenuSubPing"
+                                      Header="Sub ping"
+                                      Click="ContextMenuSubPing_OnClick" />
+                        </MenuItem>
                     </ContextMenu>
                 </Border.ContextMenu>
                 <TextBlock Text="Context menu target"

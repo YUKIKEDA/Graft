@@ -1,0 +1,36 @@
+{
+  "v": 1,
+  "name": "phase26-menu-depth",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "selectMenu",
+      "automationId": "SampleMenu",
+      "path": "SampleMenuFile/SampleMenuRecent/SampleMenuOpenRecent"
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "MenuOpenRecent"
+    },
+    {
+      "action": "rightClick",
+      "automationId": "ContextMenuTarget"
+    },
+    {
+      "action": "selectMenu",
+      "automationId": "SampleContextMenu",
+      "path": "ContextMenuMore/ContextMenuSubPing"
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "ContextMenuSubPing"
+    }
+  ]
+}

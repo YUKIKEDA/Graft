@@ -49,4 +49,4 @@ ID: `M04–M08`（[competitive-gap.md](./competitive-gap.md)）。
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` / `competitive-gap.md` 優先
-- **次フェーズ:** Phase 26 メニュー深さ（M03, U02–U04）
+- **次フェーズ:** [task_phase26.md](./task_phase26.md) メニュー深さ（M03, U02–U04）

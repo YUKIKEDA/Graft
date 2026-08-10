@@ -67,7 +67,7 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | --- | ---------------------------------- | ---- | ----- | ---- | ------- | ------------------------- |
 | M01 | クリック（ボタン Invoke）          | Yes  | OK    | Done | —       | native → Peer → SendInput |
 | M02 | 右クリック → ContextMenu（1 段）   | Yes  | OK    | Done | —       | Phase 16                  |
-| M03 | ContextMenu サブメニュー           | Yes  | NO    | Must | 26      |                           |
+| M03 | ContextMenu サブメニュー           | Yes  | OK    | Done | 26      | `SelectMenuAsync`         |
 | M04 | ダブルクリック                     | Yes  | OK    | Done | 25      | `DoubleClickAsync`        |
 | M05 | Hover / MouseEnter 副作用          | Yes  | OK    | Done | 25      | ToolTip 待ちは C03        |
 | M06 | Drag and Drop                      | Yes  | OK    | Done | 25      | 要素→要素のみ             |
@@ -152,9 +152,9 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | ID  | シナリオ                     | 競合 | Graft | 優先 | 仮Phase | メモ       |
 | --- | ---------------------------- | ---- | ----- | ---- | ------- | ---------- |
 | U01 | Menu バー トップ + 1 段サブ  | Yes  | OK    | Done | —       |            |
-| U02 | Menu 任意深さ / パス DSL     | Yes  | NO    | Must | 26      |            |
-| U03 | ContextMenu サブメニュー     | Yes  | NO    | Must | 26      | M03 と同束 |
-| U04 | 無効メニュー項目の明示エラー | Yes  | PART  | Must | 26      |            |
+| U02 | Menu 任意深さ / パス DSL     | Yes  | OK    | Done | 26      | `SelectMenuAsync` path |
+| U03 | ContextMenu サブメニュー     | Yes  | OK    | Done | 26      | M03 と同束             |
+| U04 | 無効メニュー項目の明示エラー | Yes  | OK    | Done | 26      | `element.notActionable` |
 
 ---
 

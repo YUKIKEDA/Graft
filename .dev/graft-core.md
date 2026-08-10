@@ -83,6 +83,7 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - 右クリック（Phase 16）: `RightClickAsync()`（wire `rightClick`）。開いた ContextMenu の MenuItem は通常の `InvokeAsync`（getTree / resolve に開いている ContextMenu を含む）
 - マウス高度（Phase 25）: `DoubleClickAsync` / `HoverAsync` / `DragAsync(toAutomationId)`（要素→要素）/ `ClickAtAsync(offsetX, offsetY)`（クリック点相対 DIP）/ `WheelAsync(delta)`。いずれも SendInput。`invoke` は意味的クリックのまま
 - Menu バー（Phase 20）: トップレベル / 1段サブとも既存 `InvokeAsync`。開いているサブメニュー（`IsSubmenuOpen`）の MenuItem を getTree / resolve に含む
+- メニュー深さ（Phase 26）: ルート（Menu / 開いた ContextMenu）上の `SelectMenuAsync("id1/id2/leaf")`（wire `selectMenu`）。セグメントは AutomationId。ContextMenu は先に `RightClickAsync`。無効項目は `element.notActionable`
 - モーダル開封: `GetBy…().InvokeOpeningWindowAsync()`（BeginInvoke + 既定で新窓待ち + 自動 Switch）。**素の `InvokeAsync` で `ShowDialog` を開くとハングしうる**（非対応）
 - OpenFile シーム（Phase 10）: アプリは素の `OpenFileDialog`。`WpfGraft.Use` が Harmony で `CommonItemDialog.RunDialog` を差し替え。テストは `ArmOpenFileAsync(path)` / `ArmOpenFileCancelAsync()` → `InvokeOpeningWindowAsync(waitForNewWindow: false)` → Expect。未アーム時は実ダイアログへフォールバック。業務コードに Graft ダイアログ API は不要
 - SaveFile シーム（Phase 11）: 同上で素の `SaveFileDialog`。`ArmSaveFileAsync` / `ArmSaveFileCancelAsync`（OpenFile Arm と独立）

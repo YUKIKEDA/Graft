@@ -579,6 +579,39 @@ public sealed class AgentConnection : IAsyncDisposable
     }
 
     /// <summary>
+    /// Calls <c>selectMenu</c> for a slash-separated AutomationId path under a menu root.
+    /// </summary>
+    /// <param name="automationId">Menu or open ContextMenu automation id.</param>
+    /// <param name="path">Slash-separated AutomationId segments (root not included).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when selectMenu succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task SelectMenuAsync(
+        string automationId,
+        string path,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.SelectMenu,
+                    Params = JsonSerializer.SerializeToElement(new { automationId, path }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "selectMenu failed.");
+    }
+
+    /// <summary>
     /// Calls <c>getCellText</c> for a DataGrid cell by column index.
     /// </summary>
     /// <param name="automationId">DataGrid automation id.</param>

@@ -73,6 +73,11 @@ public partial class MainWindow : Window
         StatusText.Text = "MenuPing";
     }
 
+    private void SampleMenuOpenRecent_OnClick(object sender, RoutedEventArgs e)
+    {
+        StatusText.Text = "MenuOpenRecent";
+    }
+
     private void SampleCheckBox_OnChecked(object sender, RoutedEventArgs e)
     {
         SampleCheckBox.Content = "On";
@@ -149,6 +154,11 @@ public partial class MainWindow : Window
     private void ContextMenuPing_OnClick(object sender, RoutedEventArgs e)
     {
         StatusText.Text = "ContextMenuPing";
+    }
+
+    private void ContextMenuSubPing_OnClick(object sender, RoutedEventArgs e)
+    {
+        StatusText.Text = "ContextMenuSubPing";
     }
 
     private void SampleSlider_OnValueChanged(

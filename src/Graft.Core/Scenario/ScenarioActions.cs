@@ -55,6 +55,9 @@ public static class ScenarioActions
     /// <summary>Replace ListBox multi-selection by indexes.</summary>
     public const string SelectMany = FailureSteps.SelectMany;
 
+    /// <summary>Select a menu path (slash-separated AutomationIds).</summary>
+    public const string SelectMenu = FailureSteps.SelectMenu;
+
     /// <summary>Expand an element.</summary>
     public const string Expand = FailureSteps.Expand;
 
