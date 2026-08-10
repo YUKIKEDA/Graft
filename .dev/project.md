@@ -339,7 +339,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 6  | ツリー状態（`selected` / `expanded`）+ Expect        | 診断・LLM。Phase 5 操作の状態検証          |
 | Phase 7  | ウィンドウ／モーダル（list/switch/wait/開封）        | WPF カバレッジ。競合ギャップの窓面         |
 | Phase 8  | DataGrid 行中心 MVP + `checked`                      | 複雑ホスト UI。セル R/W は次フェーズ       |
-| （次）   | DataGrid セル R/W → OS ダイアログ方針 → … → Avalonia → Inspector | Avalonia/Inspector は最後寄り   |
+| Phase 9  | DataGrid セル R/W（Text 列 MVP）                     | ホスト＋(row, col)。OS ダイアログは次      |
+| （次）   | OS ダイアログ方針 → … → Avalonia → Inspector         | Avalonia/Inspector は最後寄り              |
 
 ## 9. 未検討・今後の課題
 
@@ -349,8 +350,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - セレクタ重みの実測チューニング、`details` スキーマのフィールド確定
 - 診断向けツリー差分 JSON のフィールド名の確定
 - scroll/select の項目キー・表示名指定（index 正本の次候補）
-- OS 共通ダイアログ（OpenFile 等）の方針・実装（Phase 8 後候補）
-- DataGrid **セル R/W**（Phase 8 行 MVP の次）
+- OS 共通ダイアログ（OpenFile 等）の方針・実装（**Phase 9 の次**）
+- DataGrid セルの列キー指定 / CheckBox・Template 列（Phase 9 後の拡張）
 - Avalonia アダプタ → Inspector（最後寄り）
 - MessagePack 評価用の実測ログ形式
 - .NET Framework WPF 対応の要否（需要が固まってから）
@@ -444,3 +445,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q79 | ツリーは実現済み `DataGridRow` + `selected`。行に安定 automationId。セル座標／編集／ソートは含めない |
 | Q80 | 公開は既存 Scenario ステップの薄い E2E。DataGrid 専用 MCP は作らない                               |
 | Q81 | Phase 8 の次は DataGrid **セル R/W**。OS ダイアログ・Avalonia・Inspector はさらに後               |
+| Q82 | Phase 9: DataGrid **セル R/W**（Text 列）。詳細は `task_phase9.md`                                |
+| Q83 | 指定はホスト＋(rowIndex, columnIndex)。API: GetCellText / SetCellValue / ExpectCellText + 同名 wire |
+| Q84 | 書込は BeginEdit→値→CommitEdit。列は DataGridTextColumn のみ。ツリーに DataGridCell は出さない     |
+| Q85 | Sample は FullRow+Single のまま編集可能 Text 列。Scenario/MCP 薄い追従                             |
+| Q86 | Phase 9 の次は **OS 共通ダイアログ方針**。列キー／他列種は後続                                     |

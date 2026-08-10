@@ -20,7 +20,7 @@
 | 公開経路 | 既存 Scenario ステップで薄い E2E。DataGrid 専用 MCP ツールは作らない |
 | `checked` | **同一 Phase・最終薄い Batch**（`TreeNode.checked` + Expect + Scenario/MCP） |
 | 含めない | セル座標 API、編集コミット、ソート／リサイズ、複数選択、Cell 選択モード、OS ダイアログ、Avalonia、Inspector |
-| Phase 8 の次 | DataGrid **セル R/W**（別フェーズ） |
+| Phase 8 の次 | Phase 9 DataGrid セル R/W（[task_phase9.md](./task_phase9.md)） |
 
 ---
 
@@ -100,4 +100,4 @@
 - 新 wire / DataGrid 専用 MCP は作らない
 - セル編集・セル選択は次フェーズ
 - 設計矛盾時は `project.md` 優先
-- **次フェーズ:** DataGrid **セル R/W** →（その後）OS ダイアログ方針など → … → Avalonia → Inspector（最後寄り）
+- **次フェーズ:** [task_phase9.md](./task_phase9.md)（DataGrid セル R/W）→ OS ダイアログ方針 → … → Avalonia → Inspector（最後寄り）
