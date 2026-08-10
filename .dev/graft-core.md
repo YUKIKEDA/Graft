@@ -70,7 +70,7 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - Wait / Expect タイムアウトは `app.WaitOptions`（アクション 5s / Expect 10s 既定）
 - セレクタ: `GetBy(Selector.…)` または `GetByAutomationId`。`AutomationId` 指定時はハード一致（不一致は `element.notFound`）
 - 自己修復（Phase 4）: 解決失敗時に Core が代替セレクタ候補を算出。高信頼で一意なら同一 `ElementQuery` で一回だけ自動再解決し、以降そのセレクタを使う。失敗時は `FailureReport.healingCandidates` に候補を添付（シナリオファイルは書き換えない。ファジー一致はしない）
-- テキスト入力: `GetByAutomationId(…).SetValueAsync(value)`（エージェント wire `setValue`）。キー入力: `SendKeysAsync(text)`（リテラル）。chord / 特殊キー: `PressAsync("Control+A")`（wire `pressKeys`。1 呼び出し = 1 chord）
+- テキスト入力: `GetByAutomationId(…).SetValueAsync(value)`（エージェント wire `setValue`。TextBox 置換。**Slider** は InvariantCulture の double 文字列 → `Value`）。キー入力: `SendKeysAsync(text)`（リテラル）。chord / 特殊キー: `PressAsync("Control+A")`（wire `pressKeys`。1 呼び出し = 1 chord）
 - トグル: `GetByAutomationId(…).ToggleAsync()`（状態フリップ）
 - スクロール: `ScrollIntoViewAsync()`（実現済み要素）/ `ScrollIntoViewAsync(index)`（リスト。仮想化対応、identity 返却）
 - 選択: `SelectAsync(index)`（単一。内部で自動 scroll/realize）。ホストは ListBox / ComboBox / **DataGrid（行）** / **TabControl**
@@ -90,4 +90,4 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - Scenario JSON: `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync`（上記に加え `armOpenFile` / `armSaveFile` / `armOpenFolder` / `armMessageBox` / セル・窓系）。契約は `.dev/scenario.schema.json`。例: `tests/sample-apps/SampleWpfApp.Tests/Scenarios/`
 - MCP: `Graft.McpServer`（stdio）。原子ツールにダイアログ Arm 系とセル・窓系を含む。失敗時は `IsError` + FailureReport JSON
 - invoke / setValue はネイティブ → Peer → SendInput フォールバック（クリック / クリア+タイプ）
-- 未実装（後続）: Menu バー/サブメニュー、TabControl/Slider/複数選択、DataGrid 列キー／他列種、Avalonia、Inspector、ファジー自己修復、シナリオ自動書き換え、`typeHuman`、要素クリップ Screenshot、画像 expect/diff
+- 未実装（後続）: Menu バー/サブメニュー、複数選択、DataGrid 列キー／他列種、Avalonia、Inspector、ファジー自己修復、シナリオ自動書き換え、`typeHuman`、要素クリップ Screenshot、画像 expect/diff

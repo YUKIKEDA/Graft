@@ -63,6 +63,17 @@
                            HorizontalAlignment="Center" />
             </Border>
 
+            <TextBlock Text="Slider" Margin="0,0,0,4" />
+            <Slider x:Name="SampleSlider"
+                    AutomationProperties.AutomationId="SampleSlider"
+                    Minimum="0"
+                    Maximum="100"
+                    Value="0"
+                    TickFrequency="1"
+                    IsSnapToTickEnabled="True"
+                    Margin="0,0,0,16"
+                    ValueChanged="SampleSlider_OnValueChanged" />
+
             <TextBlock Text="Tabs" Margin="0,0,0,4" />
             <TabControl x:Name="SampleTabs"
                         AutomationProperties.AutomationId="SampleTabs"

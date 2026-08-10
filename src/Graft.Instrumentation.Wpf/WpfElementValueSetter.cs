@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
@@ -11,7 +12,7 @@ using Graft.Protocol;
 namespace Graft.Instrumentation.Wpf;
 
 /// <summary>
-/// Sets WPF element values on the UI dispatcher (TextBox native replace first).
+/// Sets WPF element values on the UI dispatcher (TextBox / Slider native first).
 /// </summary>
 internal sealed class WpfElementValueSetter : IElementValueSetter
 {
@@ -65,7 +66,7 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
             );
         }
 
-        // Native replace first (project.md Q51).
+        // Native replace first (project.md Q51 / Q114).
         if (element is TextBox textBox)
         {
             if (textBox.IsReadOnly)
@@ -80,6 +81,12 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
             return;
         }
 
+        if (element is Slider slider)
+        {
+            SetSliderValue(slider, value, resolved.AutomationId);
+            return;
+        }
+
         if (TrySetValueViaAutomationPeer(element, value))
         {
             return;
@@ -87,6 +94,35 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
 
         // Clear + SendInput type (project.md Q51).
         WpfInputInjection.FocusAndType(element, value, clearFirst: true);
+    }
+
+    private static void SetSliderValue(Slider slider, string value, string automationId)
+    {
+        if (
+            !double.TryParse(
+                value,
+                NumberStyles.Float,
+                CultureInfo.InvariantCulture,
+                out var parsed
+            )
+        )
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                $"setValue for Slider '{automationId}' requires an invariant-culture number (got '{value}')."
+            );
+        }
+
+        if (double.IsNaN(parsed) || double.IsInfinity(parsed))
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                $"setValue for Slider '{automationId}' rejected non-finite value '{value}'."
+            );
+        }
+
+        slider.Value = parsed;
+        slider.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
     }
 
     private static bool TrySetValueViaAutomationPeer(FrameworkElement element, string value)

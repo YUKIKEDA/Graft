@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -69,6 +70,14 @@ public partial class MainWindow : Window
     private void ContextMenuPing_OnClick(object sender, RoutedEventArgs e)
     {
         StatusText.Text = "ContextMenuPing";
+    }
+
+    private void SampleSlider_OnValueChanged(
+        object sender,
+        RoutedPropertyChangedEventArgs<double> e
+    )
+    {
+        StatusText.Text = string.Create(CultureInfo.InvariantCulture, $"Slider {e.NewValue}");
     }
 
     private void SampleTabs_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
