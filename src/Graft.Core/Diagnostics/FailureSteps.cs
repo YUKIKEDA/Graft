@@ -56,6 +56,27 @@ public static class FailureSteps
     /// <summary>Expect on element checked state failed or timed out.</summary>
     public const string ExpectChecked = "expectChecked";
 
+    /// <summary>Expect on element enabled state failed or timed out.</summary>
+    public const string ExpectEnabled = "expectEnabled";
+
+    /// <summary>Expect on element visible state failed or timed out.</summary>
+    public const string ExpectVisible = "expectVisible";
+
+    /// <summary>Expect on element name substring failed or timed out.</summary>
+    public const string ExpectNameContains = "expectNameContains";
+
+    /// <summary>Expect on element name regex failed or timed out.</summary>
+    public const string ExpectNameMatches = "expectNameMatches";
+
+    /// <summary>Expect on element value failed or timed out.</summary>
+    public const string ExpectValue = "expectValue";
+
+    /// <summary>Wait until element is present failed or timed out.</summary>
+    public const string WaitFor = "waitFor";
+
+    /// <summary>Wait until element is gone / not visible failed or timed out.</summary>
+    public const string ExpectGone = "expectGone";
+
     /// <summary>getCellText action failed.</summary>
     public const string GetCellText = "getCellText";
 
@@ -94,6 +115,9 @@ public static class FailureSteps
 
     /// <summary>Wait for a window timed out or failed.</summary>
     public const string WaitForWindow = "waitForWindow";
+
+    /// <summary>Wait for a window to close timed out or failed.</summary>
+    public const string WaitForWindowClosed = "waitForWindowClosed";
 
     /// <summary>invokeOpeningWindow failed or timed out waiting for a new window.</summary>
     public const string InvokeOpeningWindow = "invokeOpeningWindow";

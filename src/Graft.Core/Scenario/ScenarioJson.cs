@@ -195,6 +195,13 @@ public static class ScenarioJson
             ScenarioActions.ExpectSelected => CompileExpectSelected(step, index),
             ScenarioActions.ExpectExpanded => CompileExpectExpanded(step, index),
             ScenarioActions.ExpectChecked => CompileExpectChecked(step, index),
+            ScenarioActions.ExpectEnabled => CompileExpectEnabled(step, index),
+            ScenarioActions.ExpectVisible => CompileExpectVisible(step, index),
+            ScenarioActions.ExpectNameContains => CompileExpectNameContains(step, index),
+            ScenarioActions.ExpectNameMatches => CompileExpectNameMatches(step, index),
+            ScenarioActions.ExpectValue => CompileExpectValue(step, index),
+            ScenarioActions.WaitFor => CompileWaitFor(step, index),
+            ScenarioActions.ExpectGone => CompileExpectGone(step, index),
             ScenarioActions.GetCellText => CompileGetCellText(step, index),
             ScenarioActions.SetCellValue => CompileSetCellValue(step, index),
             ScenarioActions.ExpectCellText => CompileExpectCellText(step, index),
@@ -208,6 +215,7 @@ public static class ScenarioJson
             ScenarioActions.ListWindows => new ListWindowsOperation(),
             ScenarioActions.SwitchWindow => CompileSwitchWindow(step, index),
             ScenarioActions.WaitForWindow => CompileWaitForWindow(step, index),
+            ScenarioActions.WaitForWindowClosed => CompileWaitForWindowClosed(step, index),
             ScenarioActions.InvokeOpeningWindow => CompileInvokeOpeningWindow(step, index),
             _ => throw Invalid($"steps[{index}] has unknown action '{action}'."),
         };
@@ -396,6 +404,80 @@ public static class ScenarioJson
         return new ExpectCheckedOperation(automationId, RequireBoolean(step, "checked", index));
     }
 
+    private static ExpectEnabledOperation CompileExpectEnabled(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        return new ExpectEnabledOperation(automationId, RequireBoolean(step, "enabled", index));
+    }
+
+    private static ExpectVisibleOperation CompileExpectVisible(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        return new ExpectVisibleOperation(automationId, RequireBoolean(step, "visible", index));
+    }
+
+    private static ExpectNameContainsOperation CompileExpectNameContains(
+        JsonElement step,
+        int index
+    )
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        if (
+            !step.TryGetProperty("substring", out var substringElement)
+            || substringElement.ValueKind != JsonValueKind.String
+        )
+        {
+            throw Invalid(
+                $"steps[{index}] expectNameContains requires string property 'substring'."
+            );
+        }
+
+        return new ExpectNameContainsOperation(
+            automationId,
+            substringElement.GetString() ?? string.Empty
+        );
+    }
+
+    private static ExpectNameMatchesOperation CompileExpectNameMatches(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        if (
+            !step.TryGetProperty("pattern", out var patternElement)
+            || patternElement.ValueKind != JsonValueKind.String
+        )
+        {
+            throw Invalid($"steps[{index}] expectNameMatches requires string property 'pattern'.");
+        }
+
+        var pattern = patternElement.GetString();
+        if (string.IsNullOrEmpty(pattern))
+        {
+            throw Invalid($"steps[{index}] expectNameMatches 'pattern' must be non-empty.");
+        }
+
+        return new ExpectNameMatchesOperation(automationId, pattern);
+    }
+
+    private static ExpectValueOperation CompileExpectValue(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        if (
+            !step.TryGetProperty("value", out var valueElement)
+            || valueElement.ValueKind != JsonValueKind.String
+        )
+        {
+            throw Invalid($"steps[{index}] expectValue requires string property 'value'.");
+        }
+
+        return new ExpectValueOperation(automationId, valueElement.GetString() ?? string.Empty);
+    }
+
+    private static WaitForOperation CompileWaitFor(JsonElement step, int index) =>
+        new(RequireNonEmptyString(step, "automationId", index));
+
+    private static ExpectGoneOperation CompileExpectGone(JsonElement step, int index) =>
+        new(RequireNonEmptyString(step, "automationId", index));
+
     private static GetCellTextOperation CompileGetCellText(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
@@ -561,6 +643,33 @@ public static class ScenarioJson
         }
 
         return new WaitForWindowOperation(title, automationId, switchTo);
+    }
+
+    private static WaitForWindowClosedOperation CompileWaitForWindowClosed(
+        JsonElement step,
+        int index
+    )
+    {
+        string? title = null;
+        string? automationId = null;
+        if (step.TryGetProperty("title", out _))
+        {
+            title = RequireNonEmptyString(step, "title", index);
+        }
+
+        if (step.TryGetProperty("automationId", out _))
+        {
+            automationId = RequireNonEmptyString(step, "automationId", index);
+        }
+
+        if (title is null && automationId is null)
+        {
+            throw Invalid(
+                $"steps[{index}] waitForWindowClosed requires 'title' and/or 'automationId'."
+            );
+        }
+
+        return new WaitForWindowClosedOperation(title, automationId);
     }
 
     private static ArmOpenFileOperation CompileArmOpenFile(JsonElement step, int index) =>
