@@ -112,6 +112,24 @@
                 </ListBox.ItemContainerStyle>
             </ListBox>
 
+            <TextBlock Text="Multi-select list" Margin="0,0,0,4" />
+            <ListBox x:Name="SampleMultiList"
+                     AutomationProperties.AutomationId="SampleMultiList"
+                     Height="100"
+                     Margin="0,0,0,16"
+                     DisplayMemberPath="Name"
+                     SelectionMode="Extended"
+                     SelectionChanged="SampleMultiList_OnSelectionChanged">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="AutomationProperties.AutomationId"
+                                Value="{Binding AutomationId}" />
+                        <Setter Property="AutomationProperties.Name"
+                                Value="{Binding Name}" />
+                    </Style>
+                </ListBox.ItemContainerStyle>
+            </ListBox>
+
             <TextBlock Text="Combo" Margin="0,0,0,4" />
             <ComboBox x:Name="SampleCombo"
                       AutomationProperties.AutomationId="SampleCombo"

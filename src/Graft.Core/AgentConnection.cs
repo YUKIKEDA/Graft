@@ -386,6 +386,39 @@ public sealed class AgentConnection : IAsyncDisposable
     }
 
     /// <summary>
+    /// Calls <c>selectMany</c> to replace ListBox multi-selection by indexes.
+    /// </summary>
+    /// <param name="automationId">ListBox automation id.</param>
+    /// <param name="indexes">Zero-based item indexes (empty clears selection).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when selectMany succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task SelectManyAsync(
+        string automationId,
+        IReadOnlyList<int> indexes,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ArgumentNullException.ThrowIfNull(indexes);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.SelectMany,
+                    Params = JsonSerializer.SerializeToElement(new { automationId, indexes }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "selectMany failed.");
+    }
+
+    /// <summary>
     /// Calls <c>getCellText</c> for a DataGrid Text cell.
     /// </summary>
     /// <param name="automationId">DataGrid automation id.</param>

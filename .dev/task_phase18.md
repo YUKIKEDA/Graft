@@ -17,7 +17,7 @@
 | 検証 | StatusText 副作用のみ（tree `value` は出さない） |
 | Scenario | 既存 `setValue` |
 | MCP | 変更なし |
-| Phase 18 の次 | 複数選択 など |
+| Phase 18 の次 | 複数選択（Phase 19）など |
 
 ---
 
@@ -33,7 +33,7 @@
 - [x] `WpfElementValueSetter` で Slider をネイティブ対応（不正文字列は明確なエラー）
 - [x] Sample Slider + ValueChanged → StatusText（例: `Slider 75`）
 - [x] Fluent / Scenario E2E
-- [x] 完了チェック。次: 複数選択 など
+- [x] 完了チェック。次: [task_phase19.md](./task_phase19.md)
 
 ---
 
@@ -49,4 +49,4 @@
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` 優先
-- **次フェーズ:** 複数選択 → … → Avalonia → Inspector
+- **次フェーズ:** [task_phase19.md](./task_phase19.md) → … → Avalonia → Inspector

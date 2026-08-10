@@ -35,6 +35,9 @@ public static class FailureSteps
     /// <summary>select action failed.</summary>
     public const string Select = "select";
 
+    /// <summary>selectMany action failed.</summary>
+    public const string SelectMany = "selectMany";
+
     /// <summary>expand action failed.</summary>
     public const string Expand = "expand";
 

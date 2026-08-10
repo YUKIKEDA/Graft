@@ -5,7 +5,7 @@ namespace Graft.Instrumentation.Actions;
 #if GRAFT_TEST
 
 /// <summary>
-/// Framework-specific <c>select</c> action (single selection by index).
+/// Framework-specific <c>select</c> / <c>selectMany</c> actions.
 /// </summary>
 public interface IElementChooser
 {
@@ -18,6 +18,17 @@ public interface IElementChooser
     /// <exception cref="ElementResolveException">Selector / resolve failures.</exception>
     /// <exception cref="ElementActionException">Not actionable or select failed.</exception>
     void Select(ElementSelector selector, int index);
+
+    /// <summary>
+    /// Replaces the multi-selection on a ListBox matched by <paramref name="selector"/>
+    /// with the items at <paramref name="indexes"/> (realizes / scrolls as needed).
+    /// Empty <paramref name="indexes"/> clears selection.
+    /// </summary>
+    /// <param name="selector">ListBox selector (automationId required).</param>
+    /// <param name="indexes">Zero-based item indexes (duplicates ignored).</param>
+    /// <exception cref="ElementResolveException">Selector / resolve failures.</exception>
+    /// <exception cref="ElementActionException">Not actionable or selectMany failed.</exception>
+    void SelectMany(ElementSelector selector, IReadOnlyList<int> indexes);
 }
 
 #endif
