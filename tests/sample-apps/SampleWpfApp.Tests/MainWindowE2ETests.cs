@@ -153,6 +153,42 @@ public sealed class MainWindowE2ETests
     }
 
     /// <summary>
+    /// pressKeys Control+A then Delete clears SampleTextBox.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Sibling SampleWpfApp.csproj can build with Configuration=GraftTest
+    ///
+    /// Steps:
+    /// - Launch sample
+    /// - SetValueAsync("hello") on SampleTextBox
+    /// - PressAsync("Control+A") then PressAsync("Delete")
+    /// - ExpectNameAsync("")
+    ///
+    /// Expected:
+    /// - TextBox name is empty
+    /// </remarks>
+    [Fact]
+    public async Task PressKeys_ControlA_Delete_ClearsSampleTextBox()
+    {
+        await using var app = await Application.LaunchAsync(
+            new LaunchOptions
+            {
+                AppPath = SampleAppLocator.ResolveProjectPath(),
+                Configuration = "GraftTest",
+                Timeout = TimeSpan.FromSeconds(60),
+            }
+        );
+
+        var textBox = app.GetByAutomationId("SampleTextBox");
+        await textBox.SetValueAsync("hello");
+        await textBox.ExpectNameAsync("hello");
+        await textBox.PressAsync("Control+A");
+        await textBox.PressAsync("Delete");
+        await textBox.ExpectNameAsync(string.Empty);
+    }
+
+    /// <summary>
     /// invoke on SampleMouseTarget uses SendInput fallback and updates StatusText.
     /// </summary>
     /// <remarks>

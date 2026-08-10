@@ -242,6 +242,39 @@ public sealed class AgentConnection : IAsyncDisposable
     }
 
     /// <summary>
+    /// Calls <c>pressKeys</c> for one keyboard chord on an element.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="keys">Chord DSL (e.g. <c>Control+A</c>).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when pressKeys succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task PressKeysAsync(
+        string automationId,
+        string keys,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(keys);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.PressKeys,
+                    Params = JsonSerializer.SerializeToElement(new { automationId, keys }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "pressKeys failed.");
+    }
+
+    /// <summary>
     /// Calls <c>scrollIntoView</c> and returns the realized element identity.
     /// </summary>
     /// <param name="automationId">Target element or list automation id.</param>

@@ -20,6 +20,9 @@ public static class FailureSteps
     /// <summary>sendKeys action failed.</summary>
     public const string SendKeys = "sendKeys";
 
+    /// <summary>pressKeys action failed.</summary>
+    public const string PressKeys = "pressKeys";
+
     /// <summary>scrollIntoView action failed.</summary>
     public const string ScrollIntoView = "scrollIntoView";
 

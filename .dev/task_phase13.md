@@ -22,7 +22,7 @@
 | Arm 寿命 | **一回限り**（他 Arm と独立） |
 | 公開経路 | Scenario / MCP 薄い追従（`armMessageBox` + `result` 文字列） |
 | 含めない | WinForms MessageBox、カスタムダイアログ、本文 Assert、Avalonia、Inspector |
-| Phase 13 の次 | **Avalonia**（ダイアログ系シーム一区切り） |
+| Phase 13 の次 | Phase 14 キー chord（[task_phase14.md](./task_phase14.md)）。Avalonia は後ろ |
 
 ---
 
@@ -72,4 +72,4 @@
 
 - ファイル系シームと同型の Arm モデル。戻り値は `MessageBoxResult`
 - 設計矛盾時は `project.md` 優先
-- **次フェーズ:** Avalonia → Inspector（最後寄り）
+- **次フェーズ:** [task_phase14.md](./task_phase14.md)（キー chord）→ Screenshot → 右クリック/Menu → … → Avalonia → Inspector

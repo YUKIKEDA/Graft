@@ -97,6 +97,14 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case PressKeysOperation pressKeys:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(pressKeys.AutomationId)
+                            .PressAsync(pressKeys.Keys, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     case ScrollIntoViewOperation scroll:
                         EnsureSession(session);
                         if (scroll.Index is { } scrollIndex)

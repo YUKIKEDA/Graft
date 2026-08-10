@@ -200,6 +200,36 @@ public sealed class GraftAtomicTools
         );
 
     /// <summary>
+    /// Presses one keyboard chord on an element by automation id.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="keys">Chord DSL (e.g. <c>Control+A</c>).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_press_keys")]
+    [Description(
+        "pressKeys: one keyboard chord (e.g. Control+A, Delete) on an element by automationId."
+    )]
+    public Task<CallToolResult> PressKeys(
+        [Description("Target automation id.")] string automationId,
+        [Description("Chord DSL (one chord per call).")] string keys,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .PressAsync(keys, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject { ["automationId"] = automationId, ["keys"] = keys }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Scrolls an element or list item into view.
     /// </summary>
     /// <param name="automationId">Element or list automation id.</param>

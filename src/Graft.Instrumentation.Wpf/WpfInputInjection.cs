@@ -76,6 +76,41 @@ internal static class WpfInputInjection
         );
     }
 
+    public static void FocusAndPress(FrameworkElement element, string keys)
+    {
+        ActivateWindow(element);
+        if (!element.Focusable)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ElementNotActionable,
+                "Element is not focusable; cannot press keys."
+            );
+        }
+
+        element.Focus();
+        Keyboard.Focus(element);
+        element.Dispatcher.Invoke(
+            static () => { },
+            System.Windows.Threading.DispatcherPriority.ContextIdle
+        );
+
+        KeyChord chord;
+        try
+        {
+            chord = KeyChordParser.Parse(keys);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, ex.Message);
+        }
+
+        InputInjector.PressChord(chord);
+        element.Dispatcher.Invoke(
+            static () => { },
+            System.Windows.Threading.DispatcherPriority.ContextIdle
+        );
+    }
+
     private static Point ResolveClickScreenPoint(FrameworkElement element)
     {
         AutomationPeer? peer = UIElementAutomationPeer.FromElement(element);
