@@ -1,0 +1,25 @@
+{
+  "v": 1,
+  "name": "phase20-menu-bar",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "invoke",
+      "automationId": "SampleMenuFile"
+    },
+    {
+      "action": "invoke",
+      "automationId": "SampleMenuPing"
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "MenuPing"
+    }
+  ]
+}

@@ -81,6 +81,7 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - ウィンドウ（Phase 7）: `ListWindowsAsync` / `SwitchToWindowAsync(windowId)` / `WaitForWindowAsync(title:, automationId:)`（既定で自動 Switch）。getTree / resolve / screenshot / アクションは既定ターゲット窓のみ
 - Screenshot（Phase 15）: `ScreenshotAsync()` → `Screenshot`（Format / Width / Height / PngBytes）+ `SaveAsync(path)`。現在ターゲット窓。Scenario `screenshot` は path 必須。MCP `graft_screenshot` は path 任意（省略時 temp）
 - 右クリック（Phase 16）: `RightClickAsync()`（wire `rightClick`）。開いた ContextMenu の MenuItem は通常の `InvokeAsync`（getTree / resolve に開いている ContextMenu を含む）
+- Menu バー（Phase 20）: トップレベル / 1段サブとも既存 `InvokeAsync`。開いているサブメニュー（`IsSubmenuOpen`）の MenuItem を getTree / resolve に含む
 - モーダル開封: `GetBy…().InvokeOpeningWindowAsync()`（BeginInvoke + 既定で新窓待ち + 自動 Switch）。**素の `InvokeAsync` で `ShowDialog` を開くとハングしうる**（非対応）
 - OpenFile シーム（Phase 10）: アプリは素の `OpenFileDialog`。`WpfGraft.Use` が Harmony で `CommonItemDialog.RunDialog` を差し替え。テストは `ArmOpenFileAsync(path)` / `ArmOpenFileCancelAsync()` → `InvokeOpeningWindowAsync(waitForNewWindow: false)` → Expect。未アーム時は実ダイアログへフォールバック。業務コードに Graft ダイアログ API は不要
 - SaveFile シーム（Phase 11）: 同上で素の `SaveFileDialog`。`ArmSaveFileAsync` / `ArmSaveFileCancelAsync`（OpenFile Arm と独立）
@@ -90,4 +91,4 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - Scenario JSON: `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync`（上記に加え `armOpenFile` / `armSaveFile` / `armOpenFolder` / `armMessageBox` / セル・窓系）。契約は `.dev/scenario.schema.json`。例: `tests/sample-apps/SampleWpfApp.Tests/Scenarios/`
 - MCP: `Graft.McpServer`（stdio）。原子ツールにダイアログ Arm 系とセル・窓系を含む。失敗時は `IsError` + FailureReport JSON
 - invoke / setValue はネイティブ → Peer → SendInput フォールバック（クリック / クリア+タイプ）
-- 未実装（後続）: Menu バー/サブメニュー、DataGrid 列キー／他列種／複数行選択、Avalonia、Inspector、ファジー自己修復、シナリオ自動書き換え、`typeHuman`、要素クリップ Screenshot、画像 expect/diff
+- 未実装（後続）: Menu 任意深さ／パス DSL、ContextMenu サブ、DataGrid 列キー／他列種／複数行選択、Avalonia、Inspector、ファジー自己修復、シナリオ自動書き換え、`typeHuman`、要素クリップ Screenshot、画像 expect/diff

@@ -106,6 +106,14 @@ internal sealed class WpfElementInvoker : IElementInvoker
             );
         }
 
+        // MenuItem: submenu headers use ExpandCollapse (not Invoke). Open via IsSubmenuOpen /
+        // Click before Peer/SendInput so Menu bar File→item stays sync (Phase 20).
+        if (element is MenuItem menuItem)
+        {
+            InvokeMenuItem(menuItem);
+            return;
+        }
+
         if (TryInvokeViaAutomationPeer(element))
         {
             return;
@@ -119,6 +127,24 @@ internal sealed class WpfElementInvoker : IElementInvoker
 
         // Native / Peer failed — SendInput click (project.md Q40 / Q52).
         WpfInputInjection.LeftClickElement(element);
+    }
+
+    private static void InvokeMenuItem(MenuItem menuItem)
+    {
+        if (menuItem.HasItems)
+        {
+            menuItem.IsSubmenuOpen = true;
+            menuItem.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
+            return;
+        }
+
+        if (TryInvokeViaAutomationPeer(menuItem))
+        {
+            return;
+        }
+
+        menuItem.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent, menuItem));
+        menuItem.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
     }
 
     private static void RightClickOnUiThread(ElementSelector selector)

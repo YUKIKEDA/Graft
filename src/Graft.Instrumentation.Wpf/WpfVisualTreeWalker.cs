@@ -196,23 +196,7 @@ internal static class WpfVisualTreeWalker
         // Avoid VisualTreeHelper here — it often rediscovers the same MenuItem instances.
         if (parent is ContextMenu { IsOpen: true } openMenu)
         {
-            foreach (var item in openMenu.Items)
-            {
-                if (state.NodeCount >= state.Options.MaxNodes)
-                {
-                    state.Truncated = true;
-                    return;
-                }
-
-                var container =
-                    item as FrameworkElement
-                    ?? openMenu.ItemContainerGenerator.ContainerFromItem(item) as FrameworkElement;
-                if (container is not null)
-                {
-                    onFrameworkChild(container);
-                }
-            }
-
+            WalkMenuItems(openMenu, state, onFrameworkChild);
             return;
         }
 
@@ -227,7 +211,7 @@ internal static class WpfVisualTreeWalker
 
             var child = VisualTreeHelper.GetChild(parent, i);
 
-            // ContextMenu Popup content is walked via owner.ContextMenu when IsOpen (avoids duplicates).
+            // Popup content is walked via owner ContextMenu / MenuItem.IsSubmenuOpen (avoids duplicates).
             if (child is Popup)
             {
                 continue;
@@ -258,6 +242,36 @@ internal static class WpfVisualTreeWalker
         )
         {
             state.Truncated = true;
+        }
+
+        // Open Menu bar submenu also lives in a Popup (Phase 20).
+        if (parent is MenuItem { IsSubmenuOpen: true } openSubmenu)
+        {
+            WalkMenuItems(openSubmenu, state, onFrameworkChild);
+        }
+    }
+
+    private static void WalkMenuItems(
+        ItemsControl menu,
+        WalkState state,
+        Action<FrameworkElement> onFrameworkChild
+    )
+    {
+        foreach (var item in menu.Items)
+        {
+            if (state.NodeCount >= state.Options.MaxNodes)
+            {
+                state.Truncated = true;
+                return;
+            }
+
+            var container =
+                item as FrameworkElement
+                ?? menu.ItemContainerGenerator.ContainerFromItem(item) as FrameworkElement;
+            if (container is not null)
+            {
+                onFrameworkChild(container);
+            }
         }
     }
 

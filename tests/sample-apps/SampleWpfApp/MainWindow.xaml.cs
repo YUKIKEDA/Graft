@@ -59,6 +59,11 @@ public partial class MainWindow : Window
         StatusText.Text = $"Clicked {clickCount}";
     }
 
+    private void SampleMenuPing_OnClick(object sender, RoutedEventArgs e)
+    {
+        StatusText.Text = "MenuPing";
+    }
+
     private void SampleCheckBox_OnChecked(object sender, RoutedEventArgs e)
     {
         SampleCheckBox.Content = "On";

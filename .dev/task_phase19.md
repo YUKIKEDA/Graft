@@ -19,7 +19,7 @@
 | Sample | 別 ListBox `SampleMultiList`（`Extended`）。`SampleList` は触らない |
 | 検証 | 項目 `ExpectSelectedAsync` + StatusText 副作用 |
 | Scenario / MCP | 薄い追従（schema + `graft_select_many`） |
-| Phase 19 の次 | DataGrid 列キー／他列種 or Menu バー など → Avalonia → Inspector |
+| Phase 19 の次 | Menu バー（Phase 20）→ DataGrid 列キー など → Avalonia → Inspector |
 
 ---
 
@@ -52,4 +52,4 @@
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` 優先
-- **次フェーズ:** Menu バー／DataGrid 列キー など → Avalonia → Inspector
+- **次フェーズ:** [task_phase20.md](./task_phase20.md) → DataGrid 列キー など → Avalonia → Inspector
