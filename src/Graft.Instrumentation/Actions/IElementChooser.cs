@@ -20,12 +20,12 @@ public interface IElementChooser
     void Select(ElementSelector selector, int index);
 
     /// <summary>
-    /// Replaces the multi-selection on a ListBox matched by <paramref name="selector"/>
-    /// with the items at <paramref name="indexes"/> (realizes / scrolls as needed).
+    /// Replaces the multi-selection on a ListBox or DataGrid matched by <paramref name="selector"/>
+    /// with the items/rows at <paramref name="indexes"/> (realizes / scrolls as needed).
     /// Empty <paramref name="indexes"/> clears selection.
     /// </summary>
-    /// <param name="selector">ListBox selector (automationId required).</param>
-    /// <param name="indexes">Zero-based item indexes (duplicates ignored).</param>
+    /// <param name="selector">ListBox or DataGrid selector (automationId required).</param>
+    /// <param name="indexes">Zero-based item/row indexes (duplicates ignored).</param>
     /// <exception cref="ElementResolveException">Selector / resolve failures.</exception>
     /// <exception cref="ElementActionException">Not actionable or selectMany failed.</exception>
     void SelectMany(ElementSelector selector, IReadOnlyList<int> indexes);

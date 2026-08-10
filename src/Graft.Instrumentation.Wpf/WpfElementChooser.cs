@@ -10,7 +10,7 @@ using Graft.Protocol;
 namespace Graft.Instrumentation.Wpf;
 
 /// <summary>
-/// Selects WPF list/combo/tab items (single or multi) on the UI dispatcher.
+/// Selects WPF list/combo/tab/DataGrid items (single or multi) on the UI dispatcher.
 /// </summary>
 internal sealed class WpfElementChooser : IElementChooser
 {
@@ -96,14 +96,28 @@ internal sealed class WpfElementChooser : IElementChooser
     private static void SelectManyOnUiThread(ElementSelector selector, IReadOnlyList<int> indexes)
     {
         var element = ResolveActionable(selector);
-        if (element is not ListBox listBox)
+        switch (element)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"selectMany is not supported for control type '{element.GetType().Name}' (ListBox only)."
-            );
+            case ListBox listBox:
+                SelectManyListBox(listBox, selector, indexes);
+                break;
+            case DataGrid dataGrid:
+                SelectManyDataGrid(dataGrid, selector, indexes);
+                break;
+            default:
+                throw new ElementActionException(
+                    GraftErrorCodes.ActionFailed,
+                    $"selectMany is not supported for control type '{element.GetType().Name}' (ListBox or DataGrid)."
+                );
         }
+    }
 
+    private static void SelectManyListBox(
+        ListBox listBox,
+        ElementSelector selector,
+        IReadOnlyList<int> indexes
+    )
+    {
         if (listBox.SelectionMode == SelectionMode.Single)
         {
             throw new ElementActionException(
@@ -112,24 +126,7 @@ internal sealed class WpfElementChooser : IElementChooser
             );
         }
 
-        foreach (var index in indexes)
-        {
-            if (index < 0)
-            {
-                throw new ElementActionException(
-                    GraftErrorCodes.SelectorInvalid,
-                    "params.indexes entries must be >= 0."
-                );
-            }
-
-            if (index >= listBox.Items.Count)
-            {
-                throw new ElementActionException(
-                    GraftErrorCodes.ElementNotFound,
-                    $"List index {index} is out of range (count={listBox.Items.Count})."
-                );
-            }
-        }
+        ValidateIndexes(indexes, listBox.Items.Count, "List");
 
         listBox.UnselectAll();
 
@@ -141,6 +138,63 @@ internal sealed class WpfElementChooser : IElementChooser
         }
 
         listBox.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
+    }
+
+    private static void SelectManyDataGrid(
+        DataGrid dataGrid,
+        ElementSelector selector,
+        IReadOnlyList<int> indexes
+    )
+    {
+        if (dataGrid.SelectionUnit != DataGridSelectionUnit.FullRow)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                $"selectMany requires SelectionUnit FullRow (got {dataGrid.SelectionUnit} on '{selector.AutomationId}')."
+            );
+        }
+
+        if (dataGrid.SelectionMode == DataGridSelectionMode.Single)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                $"selectMany requires SelectionMode Extended (got Single on '{selector.AutomationId}')."
+            );
+        }
+
+        ValidateIndexes(indexes, dataGrid.Items.Count, "DataGrid row");
+
+        dataGrid.UnselectAll();
+
+        foreach (var index in indexes.Distinct().OrderBy(static i => i))
+        {
+            _ = WpfElementScroller.ScrollListItem(dataGrid, index);
+            dataGrid.SelectedItems.Add(dataGrid.Items[index]);
+        }
+
+        dataGrid.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
+    }
+
+    private static void ValidateIndexes(IReadOnlyList<int> indexes, int count, string label)
+    {
+        foreach (var index in indexes)
+        {
+            if (index < 0)
+            {
+                throw new ElementActionException(
+                    GraftErrorCodes.SelectorInvalid,
+                    "params.indexes entries must be >= 0."
+                );
+            }
+
+            if (index >= count)
+            {
+                throw new ElementActionException(
+                    GraftErrorCodes.ElementNotFound,
+                    $"{label} index {index} is out of range (count={count})."
+                );
+            }
+        }
     }
 
     private static FrameworkElement ResolveActionable(ElementSelector selector)

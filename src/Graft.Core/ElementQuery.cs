@@ -505,7 +505,7 @@ public sealed class ElementQuery
     }
 
     /// <summary>
-    /// Waits until the ListBox is actionable, then replaces multi-selection with
+    /// Waits until the ListBox or DataGrid is actionable, then replaces multi-selection with
     /// <paramref name="indexes"/> (auto scroll/realize when needed). Empty clears.
     /// </summary>
     /// <param name="indexes">Zero-based item indexes.</param>

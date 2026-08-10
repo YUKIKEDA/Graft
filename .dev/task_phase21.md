@@ -49,4 +49,4 @@
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` 優先
-- **次フェーズ:** [task_phase22 予定] DataGrid 複数行選択 → Avalonia → Inspector
+- **次フェーズ:** [task_phase22.md](./task_phase22.md) → Avalonia → Inspector

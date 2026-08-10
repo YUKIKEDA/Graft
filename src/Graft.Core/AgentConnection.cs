@@ -386,10 +386,10 @@ public sealed class AgentConnection : IAsyncDisposable
     }
 
     /// <summary>
-    /// Calls <c>selectMany</c> to replace ListBox multi-selection by indexes.
+    /// Calls <c>selectMany</c> to replace ListBox or DataGrid multi-selection by indexes.
     /// </summary>
-    /// <param name="automationId">ListBox automation id.</param>
-    /// <param name="indexes">Zero-based item indexes (empty clears selection).</param>
+    /// <param name="automationId">ListBox or DataGrid automation id.</param>
+    /// <param name="indexes">Zero-based item/row indexes (empty clears selection).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when selectMany succeeds.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
