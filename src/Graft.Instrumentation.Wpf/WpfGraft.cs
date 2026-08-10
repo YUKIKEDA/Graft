@@ -1,4 +1,5 @@
 using Graft.Instrumentation.Tree;
+using Graft.Instrumentation.Wpf.Dialogs;
 
 namespace Graft.Instrumentation.Wpf;
 
@@ -14,9 +15,12 @@ public static class WpfGraft
     /// </summary>
     /// <remarks>
     /// Call once before <see cref="Agent.Start"/> (typically from <c>OnStartup</c>).
+    /// Also installs the OpenFile <c>CommonItemDialog.RunDialog</c> seam (Harmony) once per process.
     /// </remarks>
     public static void Use()
     {
+        OpenFileDialogPatch.Apply();
+
         if (Interlocked.Exchange(ref _registered, 1) != 0)
         {
             return;

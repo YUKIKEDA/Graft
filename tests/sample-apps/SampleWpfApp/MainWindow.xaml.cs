@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Microsoft.Win32;
 
 namespace SampleWpfApp;
 
@@ -112,5 +113,12 @@ public partial class MainWindow : Window
         StatusText.Text = "ModalOpening";
         modal.ShowDialog();
         StatusText.Text = "ModalClosed";
+    }
+
+    private void OpenFileButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog();
+        var result = dialog.ShowDialog(this);
+        StatusText.Text = result == true ? $"OpenFile {dialog.FileName}" : "OpenFileCancel";
     }
 }

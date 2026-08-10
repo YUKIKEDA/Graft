@@ -1,6 +1,7 @@
 using System.IO.Pipes;
 using System.Text.Json;
 using Graft.Instrumentation.Actions;
+using Graft.Instrumentation.Dialogs;
 using Graft.Instrumentation.Elements;
 using Graft.Instrumentation.Screenshot;
 using Graft.Instrumentation.Tree;
@@ -270,6 +271,16 @@ internal sealed class AgentPipeServer : IDisposable
         if (request.Method == ProtocolMethods.SetCellValue)
         {
             return (HandleSetCellValue(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
+        if (request.Method == ProtocolMethods.ArmOpenFile)
+        {
+            return (HandleArmOpenFile(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
+        if (request.Method == ProtocolMethods.ArmOpenFileCancel)
+        {
+            return (HandleArmOpenFileCancel(request), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
         if (request.Method == ProtocolMethods.Expand)
@@ -647,6 +658,37 @@ internal sealed class AgentPipeServer : IDisposable
         catch (ElementActionException ex)
         {
             return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleArmOpenFile(RequestMessage request)
+    {
+        try
+        {
+            var path = ReadRequiredString(request.Params, "path");
+            OpenFileArm.ArmPath(path);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleArmOpenFileCancel(RequestMessage request)
+    {
+        try
+        {
+            OpenFileArm.ArmCancel();
+            return Ok(request.Id);
         }
         catch (Exception ex)
         {
@@ -1066,6 +1108,44 @@ internal sealed class AgentPipeServer : IDisposable
             JsonValueKind.Null => string.Empty,
             _ => string.Empty,
         };
+    }
+
+    private static string ReadRequiredString(JsonElement? paramsElement, string propertyName)
+    {
+        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                $"params.{propertyName} is required."
+            );
+        }
+
+        if (!element.TryGetProperty(propertyName, out var property))
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                $"params.{propertyName} is required."
+            );
+        }
+
+        if (property.ValueKind != JsonValueKind.String)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                $"params.{propertyName} must be a string."
+            );
+        }
+
+        var value = property.GetString();
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                $"params.{propertyName} must be a non-empty string."
+            );
+        }
+
+        return value;
     }
 
     private static ResponseMessage Ok(string id, JsonElement? result = null) =>

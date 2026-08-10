@@ -194,6 +194,8 @@ public static class ScenarioJson
             ScenarioActions.GetCellText => CompileGetCellText(step, index),
             ScenarioActions.SetCellValue => CompileSetCellValue(step, index),
             ScenarioActions.ExpectCellText => CompileExpectCellText(step, index),
+            ScenarioActions.ArmOpenFile => CompileArmOpenFile(step, index),
+            ScenarioActions.ArmOpenFileCancel => new ArmOpenFileCancelOperation(),
             ScenarioActions.ListWindows => new ListWindowsOperation(),
             ScenarioActions.SwitchWindow => CompileSwitchWindow(step, index),
             ScenarioActions.WaitForWindow => CompileWaitForWindow(step, index),
@@ -455,10 +457,31 @@ public static class ScenarioJson
         return new WaitForWindowOperation(title, automationId, switchTo);
     }
 
+    private static ArmOpenFileOperation CompileArmOpenFile(JsonElement step, int index) =>
+        new(RequireNonEmptyString(step, "path", index));
+
     private static InvokeOpeningWindowOperation CompileInvokeOpeningWindow(
         JsonElement step,
         int index
-    ) => new(RequireNonEmptyString(step, "automationId", index));
+    )
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        var waitForNewWindow = true;
+        if (step.TryGetProperty("waitForNewWindow", out var waitElement))
+        {
+            if (
+                waitElement.ValueKind != JsonValueKind.True
+                && waitElement.ValueKind != JsonValueKind.False
+            )
+            {
+                throw Invalid($"steps[{index}].waitForNewWindow must be a boolean.");
+            }
+
+            waitForNewWindow = waitElement.GetBoolean();
+        }
+
+        return new InvokeOpeningWindowOperation(automationId, waitForNewWindow);
+    }
 
     private static bool RequireBoolean(JsonElement step, string propertyName, int index)
     {

@@ -53,6 +53,12 @@ public static class FailureSteps
     /// <summary>Expect on DataGrid cell text failed or timed out.</summary>
     public const string ExpectCellText = "expectCellText";
 
+    /// <summary>armOpenFile failed.</summary>
+    public const string ArmOpenFile = "armOpenFile";
+
+    /// <summary>armOpenFileCancel failed.</summary>
+    public const string ArmOpenFileCancel = "armOpenFileCancel";
+
     /// <summary>listWindows failed.</summary>
     public const string ListWindows = "listWindows";
 

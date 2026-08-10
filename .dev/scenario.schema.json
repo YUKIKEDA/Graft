@@ -42,6 +42,8 @@
         { "$ref": "#/$defs/getCellText" },
         { "$ref": "#/$defs/setCellValue" },
         { "$ref": "#/$defs/expectCellText" },
+        { "$ref": "#/$defs/armOpenFile" },
+        { "$ref": "#/$defs/armOpenFileCancel" },
         { "$ref": "#/$defs/listWindows" },
         { "$ref": "#/$defs/switchWindow" },
         { "$ref": "#/$defs/waitForWindow" },
@@ -242,13 +244,31 @@
         { "required": ["automationId"] }
       ]
     },
+    "armOpenFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "path"],
+      "properties": {
+        "action": { "const": "armOpenFile" },
+        "path": { "type": "string", "minLength": 1 }
+      }
+    },
+    "armOpenFileCancel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action"],
+      "properties": {
+        "action": { "const": "armOpenFileCancel" }
+      }
+    },
     "invokeOpeningWindow": {
       "type": "object",
       "additionalProperties": false,
       "required": ["action", "automationId"],
       "properties": {
         "action": { "const": "invokeOpeningWindow" },
-        "automationId": { "type": "string", "minLength": 1 }
+        "automationId": { "type": "string", "minLength": 1 },
+        "waitForNewWindow": { "type": "boolean" }
       }
     }
   }

@@ -72,21 +72,47 @@ public sealed class ElementQuery
     }
 
     /// <summary>
-    /// Invokes the element via <c>invokeOpeningWindow</c>, waits for a new window, and switches to it.
+    /// Invokes the element via <c>invokeOpeningWindow</c> (BeginInvoke), optionally waiting for a new window.
     /// </summary>
     /// <remarks>
     /// Use this when the click opens a modal (<c>ShowDialog</c>). A plain <see cref="InvokeAsync"/>
     /// may hang until the dialog closes because the agent UI thread is blocked.
+    /// For Graft OpenFile seam (no new WPF window), call the overload with
+    /// <c>waitForNewWindow: false</c>.
     /// </remarks>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The newly opened window (already selected as the agent target).</returns>
     /// <exception cref="GraftException">Wait, resolve, invoke, or window wait failed.</exception>
-    public async Task<WindowInfo> InvokeOpeningWindowAsync(
+    public Task<WindowInfo?> InvokeOpeningWindowAsync(
+        CancellationToken cancellationToken = default
+    ) => InvokeOpeningWindowAsync(waitForNewWindow: true, cancellationToken);
+
+    /// <summary>
+    /// Invokes the element via <c>invokeOpeningWindow</c> (BeginInvoke), optionally waiting for a new window.
+    /// </summary>
+    /// <param name="waitForNewWindow">
+    /// When true, waits for a new WPF window and switches to it.
+    /// When false, only queues BeginInvoke (OpenFile seam / no new window) and returns null.
+    /// </param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>
+    /// The newly opened window when <paramref name="waitForNewWindow"/> is true; otherwise
+    /// <see langword="null"/>.
+    /// </returns>
+    /// <exception cref="GraftException">Wait, resolve, invoke, or window wait failed.</exception>
+    public async Task<WindowInfo?> InvokeOpeningWindowAsync(
+        bool waitForNewWindow,
         CancellationToken cancellationToken = default
     )
     {
-        var before = await _connection.ListWindowsAsync(cancellationToken).ConfigureAwait(false);
-        var knownIds = before.Windows.Select(w => w.WindowId).ToHashSet();
+        HashSet<int>? knownIds = null;
+        if (waitForNewWindow)
+        {
+            var before = await _connection
+                .ListWindowsAsync(cancellationToken)
+                .ConfigureAwait(false);
+            knownIds = before.Windows.Select(w => w.WindowId).ToHashSet();
+        }
 
         var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(node.AutomationId))
@@ -118,6 +144,15 @@ public sealed class ElementQuery
                 .ConfigureAwait(false);
         }
 
+        if (!waitForNewWindow)
+        {
+            _operationLog.Record(
+                FailureSteps.InvokeOpeningWindow,
+                $"{node.AutomationId};waitForNewWindow=false"
+            );
+            return null;
+        }
+
         var timeout = PositiveOrDefault(
             _waitOptions.ExpectTimeout,
             WaitOptions.DefaultExpectTimeout
@@ -131,7 +166,7 @@ public sealed class ElementQuery
             var listed = await _connection
                 .ListWindowsAsync(cancellationToken)
                 .ConfigureAwait(false);
-            var newborn = listed.Windows.FirstOrDefault(w => !knownIds.Contains(w.WindowId));
+            var newborn = listed.Windows.FirstOrDefault(w => !knownIds!.Contains(w.WindowId));
             if (newborn is not null)
             {
                 try

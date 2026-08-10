@@ -28,4 +28,7 @@
       PackagePath="buildTransitive\Graft.Instrumentation.Wpf.targets"
     />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Lib.Harmony" Version="2.3.6" />
+  </ItemGroup>
 </Project>
