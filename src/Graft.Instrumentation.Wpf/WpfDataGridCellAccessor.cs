@@ -71,9 +71,10 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         {
             DataGridTextColumn => ReadDisplayText(content),
             DataGridCheckBoxColumn => ReadCheckBoxText(content),
+            DataGridTemplateColumn => ReadTemplateText(content),
             _ => throw new ElementActionException(
                 GraftErrorCodes.ActionFailed,
-                $"Column {columnIndex} is '{dataColumn.GetType().Name}'; only DataGridTextColumn and DataGridCheckBoxColumn are supported."
+                $"Column {columnIndex} is '{dataColumn.GetType().Name}'; only DataGridTextColumn, DataGridCheckBoxColumn, and DataGridTemplateColumn are supported."
             ),
         };
     }
@@ -137,11 +138,14 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
                 case DataGridCheckBoxColumn:
                     SetCheckBoxCell(content, value, row, columnIndex, dataGrid);
                     break;
+                case DataGridTemplateColumn:
+                    SetTemplateCell(content, value, row, columnIndex, dataGrid);
+                    break;
                 default:
                     dataGrid.CancelEdit();
                     throw new ElementActionException(
                         GraftErrorCodes.ActionFailed,
-                        $"Column {columnIndex} is '{dataColumn.GetType().Name}'; only DataGridTextColumn and DataGridCheckBoxColumn are supported."
+                        $"Column {columnIndex} is '{dataColumn.GetType().Name}'; only DataGridTextColumn, DataGridCheckBoxColumn, and DataGridTemplateColumn are supported."
                     );
             }
 
@@ -225,6 +229,57 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
 
         checkBox.IsChecked = isChecked;
         checkBox.GetBindingExpression(ToggleButton.IsCheckedProperty)?.UpdateSource();
+    }
+
+    private static void SetTemplateCell(
+        FrameworkElement? content,
+        string value,
+        int row,
+        int columnIndex,
+        DataGrid dataGrid
+    )
+    {
+        var textBox = content as TextBox ?? FindVisualChild<TextBox>(content);
+        if (textBox is not null)
+        {
+            textBox.Text = value;
+            textBox.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
+            return;
+        }
+
+        var checkBox = content as CheckBox ?? FindVisualChild<CheckBox>(content);
+        if (checkBox is not null)
+        {
+            if (!TryParseCheckBoxValue(value, out var isChecked))
+            {
+                dataGrid.CancelEdit();
+                throw new ElementActionException(
+                    GraftErrorCodes.ActionFailed,
+                    $"setCellValue for Template CheckBox requires 'True' or 'False' (got '{value}')."
+                );
+            }
+
+            checkBox.IsChecked = isChecked;
+            checkBox.GetBindingExpression(ToggleButton.IsCheckedProperty)?.UpdateSource();
+            return;
+        }
+
+        dataGrid.CancelEdit();
+        throw new ElementActionException(
+            GraftErrorCodes.ActionFailed,
+            $"Template column at row {row}, column {columnIndex} has no single TextBox/CheckBox editor."
+        );
+    }
+
+    private static string ReadTemplateText(FrameworkElement content)
+    {
+        var checkBox = content as CheckBox ?? FindVisualChild<CheckBox>(content);
+        if (checkBox is not null && FindVisualChild<TextBlock>(content) is null)
+        {
+            return checkBox.IsChecked == true ? "True" : "False";
+        }
+
+        return ReadDisplayText(content);
     }
 
     private static DataGrid ResolveDataGrid(ElementSelector selector)

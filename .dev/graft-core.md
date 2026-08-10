@@ -78,7 +78,8 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - 開閉: `ExpandAsync()` / `CollapseAsync()`（状態指定）
 - ツリー状態（Phase 6/8/24）: `TreeNode.selected` / `expanded` / `checked`（`bool?`、非該当は省略）、`enabled` / `visible`、任意 `value`（Slider/ProgressBar 等）。`ExpectSelectedAsync` / `ExpectExpandedAsync` / `ExpectCheckedAsync` / `ExpectEnabledAsync` / `ExpectVisibleAsync` / `ExpectValueAsync` / `ExpectNameContainsAsync` / `ExpectNameMatchesAsync`。出現 `WaitForAsync`、消失 `ExpectGoneAsync`、窓 `WaitForWindowClosedAsync`
 - DataGrid 行（Phase 8）: ホスト＋index で `ScrollIntoViewAsync` / `SelectAsync`。実現済み `DataGridRow` に `selected`
-- DataGrid セル（Phase 9/21）: ホスト＋`(row, column)` または `(row, columnKey)`（Header 文字列）で `GetCellTextAsync` / `SetCellValueAsync` / `ExpectCellTextAsync`。対応列: **Text** / **CheckBox**（値 `"True"`/`"False"`）。BeginEdit→CommitEdit。ツリーにセルは出さない
+- DataGrid セル（Phase 9/21/28）: ホスト＋`(row, column)` または `(row, columnKey)`（Header 文字列）で `GetCellTextAsync` / `SetCellValueAsync` / `ExpectCellTextAsync`。対応列: **Text** / **CheckBox** / **Template**（Get=表示テキスト、Set=単一 TextBox/CheckBox）。BeginEdit→CommitEdit。ツリーにセルは出さない
+- DataGrid 高度（Phase 28）: `SelectCellAsync(row, column|columnKey)`（SelectionUnit Cell/CellOrRowHeader）。`SelectRowAsync(columnKey, value)`（表示順非依存・曖昧は `element.ambiguous`）。`ClickColumnHeaderAsync(columnKey)`（ソート UI）。`AddRowAsync` / `DeleteSelectedRowsAsync`
 - ウィンドウ（Phase 7）: `ListWindowsAsync` / `SwitchToWindowAsync(windowId)` / `WaitForWindowAsync(title:, automationId:)`（既定で自動 Switch）。getTree / resolve / screenshot / アクションは既定ターゲット窓のみ
 - Screenshot（Phase 15）: `ScreenshotAsync()` → `Screenshot`（Format / Width / Height / PngBytes）+ `SaveAsync(path)`。現在ターゲット窓。Scenario `screenshot` は path 必須。MCP `graft_screenshot` は path 任意（省略時 temp）
 - 右クリック（Phase 16）: `RightClickAsync()`（wire `rightClick`）。開いた ContextMenu の MenuItem は通常の `InvokeAsync`（getTree / resolve に開いている ContextMenu を含む）

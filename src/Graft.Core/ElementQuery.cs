@@ -1046,6 +1046,214 @@ public sealed class ElementQuery
     }
 
     /// <summary>
+    /// Waits until the DataGrid is actionable, then selects a cell by column index.
+    /// </summary>
+    /// <param name="row">Zero-based row index.</param>
+    /// <param name="column">Zero-based column index.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when selectCell succeeds.</returns>
+    public Task SelectCellAsync(
+        int row,
+        int column,
+        CancellationToken cancellationToken = default
+    ) => SelectCellCoreAsync(row, column, columnKey: null, cancellationToken);
+
+    /// <summary>
+    /// Waits until the DataGrid is actionable, then selects a cell by column Header.
+    /// </summary>
+    /// <param name="row">Zero-based row index.</param>
+    /// <param name="columnKey">Column Header string.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when selectCell succeeds.</returns>
+    public Task SelectCellAsync(
+        int row,
+        string columnKey,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
+        return SelectCellCoreAsync(row, column: null, columnKey, cancellationToken);
+    }
+
+    /// <summary>
+    /// Waits until the DataGrid is actionable, then selects the row whose cell at
+    /// <paramref name="columnKey"/> equals <paramref name="value"/>.
+    /// </summary>
+    /// <param name="columnKey">Column Header string.</param>
+    /// <param name="value">Exact cell display text.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when selectRow succeeds.</returns>
+    public async Task SelectRowAsync(
+        string columnKey,
+        string value,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
+        ArgumentNullException.ThrowIfNull(value);
+
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot selectRow over the wire.",
+                    FailureSteps.SelectRow,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .SelectRowAsync(node.AutomationId, columnKey, value, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(
+                FailureSteps.SelectRow,
+                $"{node.AutomationId}[{columnKey}={value}]"
+            );
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.SelectRow,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Waits until the DataGrid is actionable, then clicks a column header (sort UI).
+    /// </summary>
+    /// <param name="columnKey">Column Header string.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when clickColumnHeader succeeds.</returns>
+    public async Task ClickColumnHeaderAsync(
+        string columnKey,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
+
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot clickColumnHeader over the wire.",
+                    FailureSteps.ClickColumnHeader,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .ClickColumnHeaderAsync(node.AutomationId, columnKey, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(
+                FailureSteps.ClickColumnHeader,
+                $"{node.AutomationId}:{columnKey}"
+            );
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.ClickColumnHeader,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Waits until the DataGrid is actionable, then adds a new row.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when addRow succeeds.</returns>
+    public async Task AddRowAsync(CancellationToken cancellationToken = default)
+    {
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot addRow over the wire.",
+                    FailureSteps.AddRow,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .AddRowAsync(node.AutomationId, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.AddRow, node.AutomationId);
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.AddRow,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Waits until the DataGrid is actionable, then deletes selected rows.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when deleteSelectedRows succeeds.</returns>
+    public async Task DeleteSelectedRowsAsync(CancellationToken cancellationToken = default)
+    {
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot deleteSelectedRows over the wire.",
+                    FailureSteps.DeleteSelectedRows,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .DeleteSelectedRowsAsync(node.AutomationId, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.DeleteSelectedRows, node.AutomationId);
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.DeleteSelectedRows,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
     /// Waits until the DataGrid cell text equals <paramref name="expectedText"/> (column index).
     /// </summary>
     /// <param name="row">Zero-based row index.</param>
@@ -1847,6 +2055,58 @@ public sealed class ElementQuery
                     ex.Message,
                     FailureSteps.SetCellValue,
                     expected: value,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    private async Task SelectCellCoreAsync(
+        int row,
+        int? column,
+        string? columnKey,
+        CancellationToken cancellationToken
+    )
+    {
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot selectCell over the wire.",
+                    FailureSteps.SelectCell,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            if (columnKey is null)
+            {
+                await _connection
+                    .SelectCellAsync(node.AutomationId, row, column!.Value, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                await _connection
+                    .SelectCellAsync(node.AutomationId, row, columnKey, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            var detail = columnKey is null
+                ? $"{node.AutomationId}[{row},{column}]"
+                : $"{node.AutomationId}[{row},{columnKey}]";
+            _operationLog.Record(FailureSteps.SelectCell, detail);
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.SelectCell,
                     cancellationToken: cancellationToken,
                     innerException: ex
                 )

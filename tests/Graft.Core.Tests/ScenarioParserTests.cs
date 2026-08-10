@@ -375,6 +375,63 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// Phase 28 DataGrid steps compile.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with selectCell / selectRow / clickColumnHeader / addRow / deleteSelectedRows
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - Matching operation types and fields
+    /// </remarks>
+    [Fact]
+    public void Parse_Phase28DataGridSteps_CompileOperations()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                {
+                  "action": "selectCell",
+                  "automationId": "Grid",
+                  "row": 1,
+                  "columnKey": "Name"
+                },
+                {
+                  "action": "selectRow",
+                  "automationId": "Grid",
+                  "columnKey": "Name",
+                  "value": "P28-5"
+                },
+                {
+                  "action": "clickColumnHeader",
+                  "automationId": "Grid",
+                  "columnKey": "Name"
+                },
+                { "action": "addRow", "automationId": "Grid" },
+                { "action": "deleteSelectedRows", "automationId": "Grid" }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var selectCell = Assert.IsType<SelectCellOperation>(scenario.Operations[1]);
+        Assert.Equal(1, selectCell.Row);
+        Assert.Equal("Name", selectCell.ColumnKey);
+
+        var selectRow = Assert.IsType<SelectRowOperation>(scenario.Operations[2]);
+        Assert.Equal("P28-5", selectRow.Value);
+
+        Assert.IsType<ClickColumnHeaderOperation>(scenario.Operations[3]);
+        Assert.IsType<AddRowOperation>(scenario.Operations[4]);
+        Assert.IsType<DeleteSelectedRowsOperation>(scenario.Operations[5]);
+    }
+
+    /// <summary>
     /// expectSelected / expectExpanded compile with boolean fields.
     /// </summary>
     /// <remarks>

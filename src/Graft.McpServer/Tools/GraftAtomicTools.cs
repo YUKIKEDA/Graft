@@ -707,6 +707,169 @@ public sealed partial class GraftAtomicTools
         );
 
     /// <summary>
+    /// Selects a DataGrid cell by row and column index or Header key.
+    /// </summary>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="row">Zero-based row index.</param>
+    /// <param name="column">Zero-based column index (xor columnKey).</param>
+    /// <param name="columnKey">Column Header string (xor column).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_select_cell")]
+    [Description("selectCell on a DataGrid by row and column/columnKey in the open session.")]
+    public Task<CallToolResult> SelectCell(
+        [Description("DataGrid automation id.")] string automationId,
+        [Description("Zero-based row index.")] int row,
+        [Description("Column index (xor columnKey).")] int? column = null,
+        [Description("Column Header (xor column).")] string? columnKey = null,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                EnsureColumnXor(column, columnKey);
+                if (columnKey is null)
+                {
+                    await session
+                        .GetByAutomationId(automationId)
+                        .SelectCellAsync(row, column!.Value, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    await session
+                        .GetByAutomationId(automationId)
+                        .SelectCellAsync(row, columnKey, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+
+                var payload = new JsonObject { ["automationId"] = automationId, ["row"] = row };
+                if (columnKey is null)
+                {
+                    payload["column"] = column;
+                }
+                else
+                {
+                    payload["columnKey"] = columnKey;
+                }
+
+                return ToolResults.Ok(payload);
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Selects a DataGrid row by column Header key and cell value.
+    /// </summary>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="columnKey">Column Header string.</param>
+    /// <param name="value">Exact cell display text.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_select_row")]
+    [Description("selectRow on a DataGrid by columnKey + value in the open session.")]
+    public Task<CallToolResult> SelectRow(
+        [Description("DataGrid automation id.")] string automationId,
+        [Description("Column Header.")] string columnKey,
+        [Description("Exact cell display text.")] string value,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .SelectRowAsync(columnKey, value, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject
+                    {
+                        ["automationId"] = automationId,
+                        ["columnKey"] = columnKey,
+                        ["value"] = value,
+                    }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Clicks a DataGrid column header (sort UI).
+    /// </summary>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="columnKey">Column Header string.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_click_column_header")]
+    [Description("clickColumnHeader on a DataGrid in the open session.")]
+    public Task<CallToolResult> ClickColumnHeader(
+        [Description("DataGrid automation id.")] string automationId,
+        [Description("Column Header.")] string columnKey,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .ClickColumnHeaderAsync(columnKey, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject { ["automationId"] = automationId, ["columnKey"] = columnKey }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Adds a DataGrid row.
+    /// </summary>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_add_row")]
+    [Description("addRow on a DataGrid in the open session.")]
+    public Task<CallToolResult> AddRow(
+        [Description("DataGrid automation id.")] string automationId,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .AddRowAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Deletes selected DataGrid rows.
+    /// </summary>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_delete_selected_rows")]
+    [Description("deleteSelectedRows on a DataGrid in the open session.")]
+    public Task<CallToolResult> DeleteSelectedRows(
+        [Description("DataGrid automation id.")] string automationId,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .DeleteSelectedRowsAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Expects DataGrid cell display text by row and column index or Header key.
     /// </summary>
     /// <param name="automationId">DataGrid automation id.</param>

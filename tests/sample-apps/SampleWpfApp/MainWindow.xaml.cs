@@ -60,6 +60,21 @@ public partial class MainWindow : Window
         }
 
         SampleMultiGrid.ItemsSource = multiGridItems;
+
+        var phase28Items = new ObservableCollection<SampleListItem>();
+        for (var i = 0; i < 10; i++)
+        {
+            phase28Items.Add(
+                new SampleListItem(
+                    $"Phase28Row-{i:D2}",
+                    $"P28-{i}",
+                    active: i % 2 == 0,
+                    notes: $"N{i}"
+                )
+            );
+        }
+
+        SamplePhase28Grid.ItemsSource = phase28Items;
     }
 
     private void SampleButton_OnClick(object sender, RoutedEventArgs e)
@@ -217,6 +232,27 @@ public partial class MainWindow : Window
             CultureInfo.InvariantCulture,
             $"MultiGrid {SampleMultiGrid.SelectedItems.Count}"
         );
+    }
+
+    private void SamplePhase28Grid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        StatusText.Text = string.Create(
+            CultureInfo.InvariantCulture,
+            $"Phase28Sel {SamplePhase28Grid.SelectedItems.Count}"
+        );
+    }
+
+    private void SamplePhase28Grid_OnCurrentCellChanged(object? sender, EventArgs e)
+    {
+        if (SamplePhase28Grid.CurrentCell.IsValid)
+        {
+            var col = SamplePhase28Grid.CurrentCell.Column?.Header?.ToString() ?? "?";
+            var row = SamplePhase28Grid.Items.IndexOf(SamplePhase28Grid.CurrentCell.Item);
+            StatusText.Text = string.Create(
+                CultureInfo.InvariantCulture,
+                $"Phase28Cell {row}:{col}"
+            );
+        }
     }
 
     private void SampleCombo_OnSelectionChanged(object sender, SelectionChangedEventArgs e)

@@ -167,11 +167,11 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | G03 | セル Text 読み書き                  | Yes  | OK    | Done | —       |                      |
 | G04 | セル CheckBox                       | Yes  | OK    | Done | —       |                      |
 | G05 | 列キー（Header）                    | Yes  | OK    | Done | —       |                      |
-| G06 | Template 列                         | Yes  | NO    | Must | 28      |                      |
-| G07 | セル選択ユニット                    | Yes  | NO    | Must | 28      |                      |
-| G08 | ソート後の行特定                    | Yes  | NO    | Must | 28      |                      |
-| G09 | フィルタ / 列リサイズ / 並び替え UI | Yes  | NO    | Must | 28      | 範囲は実装時に契約化 |
-| G10 | 新規行追加 / 行削除操作             | Yes  | NO    | Must | 28      |                      |
+| G06 | Template 列                         | Yes  | OK    | Done | 28      | Get 表示テキスト / Set=TextBox\|CheckBox |
+| G07 | セル選択ユニット                    | Yes  | OK    | Done | 28      | `SelectCellAsync` 単一                   |
+| G08 | ソート後の行特定                    | Yes  | OK    | Done | 28      | `SelectRowAsync(columnKey,value)`        |
+| G09 | フィルタ / 列リサイズ / 並び替え UI | Yes  | PART  | Done | 28      | **ソート UI のみ**（ヘッダークリック）   |
+| G10 | 新規行追加 / 行削除操作             | Yes  | OK    | Done | 28      | `AddRowAsync` / `DeleteSelectedRowsAsync` |
 
 ---
 

@@ -26,6 +26,7 @@ public static class AgentServices
     private static ITreeSelector? _treeSelector;
     private static IElementExpander? _elementExpander;
     private static IElementCellAccessor? _elementCellAccessor;
+    private static IDataGridOperator? _dataGridOperator;
     private static IWindowCatalog? _windowCatalog;
 
     /// <summary>
@@ -92,6 +93,11 @@ public static class AgentServices
     /// Gets the registered DataGrid cell accessor, if any.
     /// </summary>
     public static IElementCellAccessor? ElementCellAccessor => _elementCellAccessor;
+
+    /// <summary>
+    /// Gets the registered DataGrid operator (Phase 28), if any.
+    /// </summary>
+    public static IDataGridOperator? DataGridOperator => _dataGridOperator;
 
     /// <summary>
     /// Gets the registered window catalog, if any.
@@ -229,6 +235,16 @@ public static class AgentServices
     }
 
     /// <summary>
+    /// Registers the DataGrid operator used for selectCell / selectRow / column header / row CRUD.
+    /// </summary>
+    /// <param name="dataGridOperator">Framework-specific operator.</param>
+    public static void RegisterDataGridOperator(IDataGridOperator dataGridOperator)
+    {
+        ArgumentNullException.ThrowIfNull(dataGridOperator);
+        _dataGridOperator = dataGridOperator;
+    }
+
+    /// <summary>
     /// Registers the window catalog used for <c>listWindows</c> / <c>switchWindow</c>.
     /// </summary>
     /// <param name="catalog">Framework-specific catalog.</param>
@@ -256,6 +272,7 @@ public static class AgentServices
         _treeSelector = null;
         _elementExpander = null;
         _elementCellAccessor = null;
+        _dataGridOperator = null;
         _windowCatalog = null;
         OpenFileArm.Reset();
         SaveFileArm.Reset();

@@ -1,0 +1,67 @@
+{
+  "v": 1,
+  "name": "phase28-datagrid",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "setCellValue",
+      "automationId": "SamplePhase28Grid",
+      "row": 0,
+      "columnKey": "Notes",
+      "value": "ScenarioNote"
+    },
+    {
+      "action": "expectCellText",
+      "automationId": "SamplePhase28Grid",
+      "row": 0,
+      "columnKey": "Notes",
+      "text": "ScenarioNote"
+    },
+    {
+      "action": "selectCell",
+      "automationId": "SamplePhase28Grid",
+      "row": 2,
+      "columnKey": "Name"
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "Phase28Cell 2:Name"
+    },
+    {
+      "action": "clickColumnHeader",
+      "automationId": "SamplePhase28Grid",
+      "columnKey": "Name"
+    },
+    {
+      "action": "selectRow",
+      "automationId": "SamplePhase28Grid",
+      "columnKey": "Name",
+      "value": "P28-3"
+    },
+    {
+      "action": "expectSelected",
+      "automationId": "Phase28Row-03",
+      "selected": true
+    },
+    {
+      "action": "addRow",
+      "automationId": "SamplePhase28Grid"
+    },
+    {
+      "action": "selectRow",
+      "automationId": "SamplePhase28Grid",
+      "columnKey": "Name",
+      "value": "New"
+    },
+    {
+      "action": "deleteSelectedRows",
+      "automationId": "SamplePhase28Grid"
+    }
+  ]
+}

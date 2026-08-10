@@ -59,6 +59,11 @@
         { "$ref": "#/$defs/expectGone" },
         { "$ref": "#/$defs/getCellText" },
         { "$ref": "#/$defs/setCellValue" },
+        { "$ref": "#/$defs/selectCell" },
+        { "$ref": "#/$defs/selectRow" },
+        { "$ref": "#/$defs/clickColumnHeader" },
+        { "$ref": "#/$defs/addRow" },
+        { "$ref": "#/$defs/deleteSelectedRows" },
         { "$ref": "#/$defs/expectCellText" },
         { "$ref": "#/$defs/armOpenFile" },
         { "$ref": "#/$defs/armOpenFileCancel" },
@@ -416,6 +421,61 @@
         { "required": ["column"], "not": { "required": ["columnKey"] } },
         { "required": ["columnKey"], "not": { "required": ["column"] } }
       ]
+    },
+    "selectCell": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "row"],
+      "properties": {
+        "action": { "const": "selectCell" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "row": { "type": "integer", "minimum": 0 },
+        "column": { "type": "integer", "minimum": 0 },
+        "columnKey": { "type": "string", "minLength": 1 }
+      },
+      "oneOf": [
+        { "required": ["column"], "not": { "required": ["columnKey"] } },
+        { "required": ["columnKey"], "not": { "required": ["column"] } }
+      ]
+    },
+    "selectRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "columnKey", "value"],
+      "properties": {
+        "action": { "const": "selectRow" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "columnKey": { "type": "string", "minLength": 1 },
+        "value": { "type": "string" }
+      }
+    },
+    "clickColumnHeader": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "columnKey"],
+      "properties": {
+        "action": { "const": "clickColumnHeader" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "columnKey": { "type": "string", "minLength": 1 }
+      }
+    },
+    "addRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId"],
+      "properties": {
+        "action": { "const": "addRow" },
+        "automationId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "deleteSelectedRows": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId"],
+      "properties": {
+        "action": { "const": "deleteSelectedRows" },
+        "automationId": { "type": "string", "minLength": 1 }
+      }
     },
     "expectCellText": {
       "type": "object",

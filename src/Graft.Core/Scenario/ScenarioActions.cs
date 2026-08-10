@@ -106,6 +106,21 @@ public static class ScenarioActions
     /// <summary>Set a DataGrid Text cell value.</summary>
     public const string SetCellValue = FailureSteps.SetCellValue;
 
+    /// <summary>Select a DataGrid cell.</summary>
+    public const string SelectCell = FailureSteps.SelectCell;
+
+    /// <summary>Select a DataGrid row by column key + cell value.</summary>
+    public const string SelectRow = FailureSteps.SelectRow;
+
+    /// <summary>Click a DataGrid column header.</summary>
+    public const string ClickColumnHeader = FailureSteps.ClickColumnHeader;
+
+    /// <summary>Add a DataGrid row.</summary>
+    public const string AddRow = FailureSteps.AddRow;
+
+    /// <summary>Delete selected DataGrid rows.</summary>
+    public const string DeleteSelectedRows = FailureSteps.DeleteSelectedRows;
+
     /// <summary>Expect a DataGrid cell display text.</summary>
     public const string ExpectCellText = FailureSteps.ExpectCellText;
 

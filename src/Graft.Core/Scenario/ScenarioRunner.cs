@@ -381,6 +381,65 @@ public static class ScenarioRunner
 
                         break;
 
+                    case SelectCellOperation selectCell:
+                        EnsureSession(session);
+                        if (selectCell.ColumnKey is null)
+                        {
+                            await session!
+                                .GetByAutomationId(selectCell.AutomationId)
+                                .SelectCellAsync(
+                                    selectCell.Row,
+                                    selectCell.Column!.Value,
+                                    cancellationToken
+                                )
+                                .ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            await session!
+                                .GetByAutomationId(selectCell.AutomationId)
+                                .SelectCellAsync(
+                                    selectCell.Row,
+                                    selectCell.ColumnKey,
+                                    cancellationToken
+                                )
+                                .ConfigureAwait(false);
+                        }
+
+                        break;
+
+                    case SelectRowOperation selectRow:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(selectRow.AutomationId)
+                            .SelectRowAsync(selectRow.ColumnKey, selectRow.Value, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case ClickColumnHeaderOperation clickColumnHeader:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(clickColumnHeader.AutomationId)
+                            .ClickColumnHeaderAsync(clickColumnHeader.ColumnKey, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case AddRowOperation addRow:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(addRow.AutomationId)
+                            .AddRowAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case DeleteSelectedRowsOperation deleteSelectedRows:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(deleteSelectedRows.AutomationId)
+                            .DeleteSelectedRowsAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     case ExpectCellTextOperation expectCellText:
                         EnsureSession(session);
                         if (expectCellText.ColumnKey is null)

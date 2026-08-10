@@ -211,6 +211,11 @@ public static class ScenarioJson
             ScenarioActions.ExpectGone => CompileExpectGone(step, index),
             ScenarioActions.GetCellText => CompileGetCellText(step, index),
             ScenarioActions.SetCellValue => CompileSetCellValue(step, index),
+            ScenarioActions.SelectCell => CompileSelectCell(step, index),
+            ScenarioActions.SelectRow => CompileSelectRow(step, index),
+            ScenarioActions.ClickColumnHeader => CompileClickColumnHeader(step, index),
+            ScenarioActions.AddRow => CompileAddRow(step, index),
+            ScenarioActions.DeleteSelectedRows => CompileDeleteSelectedRows(step, index),
             ScenarioActions.ExpectCellText => CompileExpectCellText(step, index),
             ScenarioActions.ArmOpenFile => CompileArmOpenFile(step, index),
             ScenarioActions.ArmOpenFileCancel => new ArmOpenFileCancelOperation(),
@@ -578,6 +583,52 @@ public static class ScenarioJson
             valueElement.GetString() ?? string.Empty
         );
     }
+
+    private static SelectCellOperation CompileSelectCell(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        var (column, columnKey) = RequireColumnOrColumnKey(step, index, "selectCell");
+        return new SelectCellOperation(
+            automationId,
+            RequireNonNegativeInt(step, "row", index),
+            column,
+            columnKey
+        );
+    }
+
+    private static SelectRowOperation CompileSelectRow(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        var columnKey = RequireNonEmptyString(step, "columnKey", index);
+        if (
+            !step.TryGetProperty("value", out var valueElement)
+            || valueElement.ValueKind != JsonValueKind.String
+        )
+        {
+            throw Invalid($"steps[{index}] selectRow requires string property 'value'.");
+        }
+
+        return new SelectRowOperation(
+            automationId,
+            columnKey,
+            valueElement.GetString() ?? string.Empty
+        );
+    }
+
+    private static ClickColumnHeaderOperation CompileClickColumnHeader(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        var columnKey = RequireNonEmptyString(step, "columnKey", index);
+        return new ClickColumnHeaderOperation(automationId, columnKey);
+    }
+
+    private static AddRowOperation CompileAddRow(JsonElement step, int index) =>
+        new(RequireNonEmptyString(step, "automationId", index));
+
+    private static DeleteSelectedRowsOperation CompileDeleteSelectedRows(
+        JsonElement step,
+        int index
+    ) => new(RequireNonEmptyString(step, "automationId", index));
 
     private static ExpectCellTextOperation CompileExpectCellText(JsonElement step, int index)
     {
