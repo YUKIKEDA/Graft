@@ -769,6 +769,48 @@ public sealed class GraftAtomicTools
         );
 
     /// <summary>
+    /// Arms the next Graft OpenFolder seam with a folder path (OK, one-shot).
+    /// </summary>
+    /// <param name="path">Folder path to return.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_arm_open_folder")]
+    [Description(
+        "Arm the next OpenFolderDialog.ShowDialog (RunDialog seam) to return a folder path (one-shot)."
+    )]
+    public Task<CallToolResult> ArmOpenFolder(
+        [Description("Folder path to return.")] string path,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session.ArmOpenFolderAsync(path, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["path"] = path });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Arms the next Graft OpenFolder seam as cancel (one-shot).
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_arm_open_folder_cancel")]
+    [Description("Arm the next OpenFolderDialog.ShowDialog (RunDialog seam) as cancel (one-shot).")]
+    public Task<CallToolResult> ArmOpenFolderCancel(
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session.ArmOpenFolderCancelAsync(cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["canceled"] = true });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Disposes the open Graft session (pipe + child process).
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>

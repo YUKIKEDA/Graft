@@ -225,6 +225,7 @@ public static class AgentServices
         _windowCatalog = null;
         OpenFileArm.Reset();
         SaveFileArm.Reset();
+        OpenFolderArm.Reset();
     }
 }
 

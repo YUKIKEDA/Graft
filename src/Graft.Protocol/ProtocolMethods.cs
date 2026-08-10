@@ -105,4 +105,14 @@ public static class ProtocolMethods
     /// Arms the next Graft SaveFile seam response as cancel.
     /// </summary>
     public const string ArmSaveFileCancel = "armSaveFileCancel";
+
+    /// <summary>
+    /// Arms the next Graft OpenFolder seam response with <c>params.path</c> (OK).
+    /// </summary>
+    public const string ArmOpenFolder = "armOpenFolder";
+
+    /// <summary>
+    /// Arms the next Graft OpenFolder seam response as cancel.
+    /// </summary>
+    public const string ArmOpenFolderCancel = "armOpenFolderCancel";
 }

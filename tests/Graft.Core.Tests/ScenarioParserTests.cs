@@ -345,6 +345,39 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// armOpenFolder / armOpenFolderCancel compile.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with OpenFolder arm actions
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - Matching operation types
+    /// </remarks>
+    [Fact]
+    public void Parse_OpenFolderArmActions_CompileOperations()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "armOpenFolder", "path": "C:\\folder" },
+                { "action": "armOpenFolderCancel" }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var arm = Assert.IsType<ArmOpenFolderOperation>(scenario.Operations[1]);
+        Assert.Equal(@"C:\folder", arm.Path);
+        Assert.IsType<ArmOpenFolderCancelOperation>(scenario.Operations[2]);
+    }
+
+    /// <summary>
     /// Window actions compile to typed operations.
     /// </summary>
     /// <remarks>

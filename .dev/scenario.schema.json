@@ -46,6 +46,8 @@
         { "$ref": "#/$defs/armOpenFileCancel" },
         { "$ref": "#/$defs/armSaveFile" },
         { "$ref": "#/$defs/armSaveFileCancel" },
+        { "$ref": "#/$defs/armOpenFolder" },
+        { "$ref": "#/$defs/armOpenFolderCancel" },
         { "$ref": "#/$defs/listWindows" },
         { "$ref": "#/$defs/switchWindow" },
         { "$ref": "#/$defs/waitForWindow" },
@@ -278,6 +280,23 @@
       "required": ["action"],
       "properties": {
         "action": { "const": "armSaveFileCancel" }
+      }
+    },
+    "armOpenFolder": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "path"],
+      "properties": {
+        "action": { "const": "armOpenFolder" },
+        "path": { "type": "string", "minLength": 1 }
+      }
+    },
+    "armOpenFolderCancel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action"],
+      "properties": {
+        "action": { "const": "armOpenFolderCancel" }
       }
     },
     "invokeOpeningWindow": {

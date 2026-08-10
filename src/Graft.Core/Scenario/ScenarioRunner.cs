@@ -238,6 +238,20 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case ArmOpenFolderOperation armOpenFolder:
+                        EnsureSession(session);
+                        await session!
+                            .ArmOpenFolderAsync(armOpenFolder.Path, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case ArmOpenFolderCancelOperation:
+                        EnsureSession(session);
+                        await session!
+                            .ArmOpenFolderCancelAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     case ListWindowsOperation:
                         EnsureSession(session);
                         _ = await session!

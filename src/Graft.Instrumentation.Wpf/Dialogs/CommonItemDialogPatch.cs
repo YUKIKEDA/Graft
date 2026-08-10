@@ -7,11 +7,10 @@ using Microsoft.Win32;
 namespace Graft.Instrumentation.Wpf.Dialogs;
 
 /// <summary>
-/// Harmony prefix on <c>CommonItemDialog.RunDialog</c> for OpenFile / SaveFile arms.
+/// Harmony prefix on <c>CommonItemDialog.RunDialog</c> for OpenFile / SaveFile / OpenFolder arms.
 /// </summary>
 /// <remarks>
-/// On modern .NET, <see cref="OpenFileDialog"/> and <see cref="SaveFileDialog"/> implement
-/// <c>RunDialog</c> via <c>Microsoft.Win32.CommonItemDialog</c>.
+/// On modern .NET, these dialogs implement <c>RunDialog</c> via <c>Microsoft.Win32.CommonItemDialog</c>.
 /// Patches that <c>bool</c>-returning method instead of <c>ShowDialog</c> (<c>bool?</c>)
 /// to avoid Harmony ABI issues with nullable value-type returns.
 /// </remarks>
@@ -66,9 +65,9 @@ internal static class CommonItemDialogPatch
     }
 
     /// <summary>
-    /// Harmony prefix: when an Open/Save File arm is pending, stub the dialog result.
+    /// Harmony prefix: when a file/folder arm is pending, stub the dialog result.
     /// </summary>
-    /// <param name="__instance">File dialog instance.</param>
+    /// <param name="__instance">Dialog instance.</param>
     /// <param name="__result">Stubbed RunDialog result when skipping the original.</param>
     /// <returns>
     /// <see langword="false"/> to skip the original when an arm was consumed; otherwise
@@ -83,18 +82,27 @@ internal static class CommonItemDialogPatch
     {
         if (__instance is OpenFileDialog open)
         {
-            return TryApplyArm(open, OpenFileArm.TryConsume, ref __result);
+            return TryApplyFileArm(open, OpenFileArm.TryConsume, ref __result);
         }
 
         if (__instance is SaveFileDialog save)
         {
-            return TryApplyArm(save, SaveFileArm.TryConsume, ref __result);
+            return TryApplyFileArm(save, SaveFileArm.TryConsume, ref __result);
+        }
+
+        if (__instance is OpenFolderDialog folder)
+        {
+            return TryApplyFolderArm(folder, ref __result);
         }
 
         return true;
     }
 
-    private static bool TryApplyArm(FileDialog dialog, TryConsumeArm tryConsume, ref bool result)
+    private static bool TryApplyFileArm(
+        FileDialog dialog,
+        TryConsumeArm tryConsume,
+        ref bool result
+    )
     {
         if (!tryConsume(out var path, out var canceled))
         {
@@ -108,6 +116,24 @@ internal static class CommonItemDialogPatch
         }
 
         dialog.FileName = path!;
+        result = true;
+        return false;
+    }
+
+    private static bool TryApplyFolderArm(OpenFolderDialog dialog, ref bool result)
+    {
+        if (!OpenFolderArm.TryConsume(out var path, out var canceled))
+        {
+            return true;
+        }
+
+        if (canceled)
+        {
+            result = false;
+            return false;
+        }
+
+        dialog.FolderName = path!;
         result = true;
         return false;
     }
