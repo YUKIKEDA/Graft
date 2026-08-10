@@ -435,6 +435,131 @@ public sealed class ElementQuery
             .ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Waits until the element's tree <c>selected</c> equals <paramref name="expectedSelected"/>.
+    /// </summary>
+    /// <param name="expectedSelected">Expected selection state.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The matched node when the expectation holds.</returns>
+    /// <exception cref="GraftException">
+    /// <c>expect.failed</c> when the state differs or is not applicable;
+    /// <c>action.timeout</c> when the element never qualifies in time.
+    /// </exception>
+    public Task<TreeNode> ExpectSelectedAsync(
+        bool expectedSelected,
+        CancellationToken cancellationToken = default
+    ) =>
+        ExpectBoolPropertyAsync(
+            expectedSelected,
+            static node => node.Selected,
+            FailureSteps.ExpectSelected,
+            "selected",
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Waits until the element's tree <c>expanded</c> equals <paramref name="expectedExpanded"/>.
+    /// </summary>
+    /// <param name="expectedExpanded">Expected expand state.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The matched node when the expectation holds.</returns>
+    /// <exception cref="GraftException">
+    /// <c>expect.failed</c> when the state differs or is not applicable;
+    /// <c>action.timeout</c> when the element never qualifies in time.
+    /// </exception>
+    public Task<TreeNode> ExpectExpandedAsync(
+        bool expectedExpanded,
+        CancellationToken cancellationToken = default
+    ) =>
+        ExpectBoolPropertyAsync(
+            expectedExpanded,
+            static node => node.Expanded,
+            FailureSteps.ExpectExpanded,
+            "expanded",
+            cancellationToken
+        );
+
+    private async Task<TreeNode> ExpectBoolPropertyAsync(
+        bool expected,
+        Func<TreeNode, bool?> getter,
+        string step,
+        string propertyName,
+        CancellationToken cancellationToken
+    )
+    {
+        var timeout = PositiveOrDefault(
+            _waitOptions.ExpectTimeout,
+            WaitOptions.DefaultExpectTimeout
+        );
+        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
+        var deadline = DateTime.UtcNow + timeout;
+        var expectedText = expected ? "true" : "false";
+
+        string? lastActual = null;
+        TreeNode? lastRoot = null;
+        var sawElement = false;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
+                lastRoot = tree.Root;
+                var node = ResolveNode(tree.Root);
+                sawElement = true;
+                var actual = getter(node);
+                if (actual is { } value && value == expected)
+                {
+                    _operationLog.Record(step, expectedText);
+                    return node;
+                }
+
+                lastActual = actual is null ? "n/a" : (actual.Value ? "true" : "false");
+            }
+            catch (GraftException ex)
+                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+            {
+                // Still waiting for the element to appear / tree to be ready.
+            }
+
+            var remaining = deadline - DateTime.UtcNow;
+            if (remaining <= TimeSpan.Zero)
+            {
+                break;
+            }
+
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        if (sawElement && lastActual is not null)
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ExpectFailed,
+                    $"Expected {propertyName} '{expectedText}' but was '{lastActual}'.",
+                    step,
+                    expected: expectedText,
+                    actual: lastActual,
+                    timedOut: true,
+                    treeRoot: lastRoot,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        throw await CreateFailureAsync(
+                GraftErrorCodes.ActionTimeout,
+                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for {propertyName} '{expectedText}'.",
+                step,
+                expected: expectedText,
+                timedOut: true,
+                treeRoot: lastRoot,
+                cancellationToken: cancellationToken
+            )
+            .ConfigureAwait(false);
+    }
+
     private async Task<TreeNode> WaitForActionableAsync(CancellationToken cancellationToken)
     {
         var timeout = PositiveOrDefault(
@@ -601,10 +726,9 @@ public sealed class ElementQuery
             var identity = await _connection
                 .ScrollIntoViewAsync(node.AutomationId, index, cancellationToken)
                 .ConfigureAwait(false);
-            var detail =
-                index is null
-                    ? node.AutomationId
-                    : $"{node.AutomationId}[{index}]->{identity.AutomationId}";
+            var detail = index is null
+                ? node.AutomationId
+                : $"{node.AutomationId}[{index}]->{identity.AutomationId}";
             _operationLog.Record(FailureSteps.ScrollIntoView, detail);
             return identity;
         }

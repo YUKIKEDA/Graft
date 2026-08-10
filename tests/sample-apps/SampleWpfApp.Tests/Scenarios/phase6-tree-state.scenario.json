@@ -1,0 +1,45 @@
+{
+  "v": 1,
+  "name": "phase6-tree-state",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "select",
+      "automationId": "SampleList",
+      "index": 35
+    },
+    {
+      "action": "expectSelected",
+      "automationId": "ListItem-35",
+      "selected": true
+    },
+    {
+      "action": "expectExpanded",
+      "automationId": "SampleTreeRoot",
+      "expanded": false
+    },
+    {
+      "action": "expand",
+      "automationId": "SampleTreeRoot"
+    },
+    {
+      "action": "expectExpanded",
+      "automationId": "SampleTreeRoot",
+      "expanded": true
+    },
+    {
+      "action": "collapse",
+      "automationId": "SampleTreeRoot"
+    },
+    {
+      "action": "expectExpanded",
+      "automationId": "SampleTreeRoot",
+      "expanded": false
+    }
+  ]
+}

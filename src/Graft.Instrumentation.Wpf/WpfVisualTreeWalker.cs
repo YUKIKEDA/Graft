@@ -143,9 +143,29 @@ internal static class WpfVisualTreeWalker
             Enabled = element.IsEnabled,
             Visible = element.IsVisible,
             Focused = element.IsFocused,
+            Selected = ResolveSelected(element),
+            Expanded = ResolveExpanded(element),
             Children = children,
         };
     }
+
+    private static bool? ResolveSelected(FrameworkElement element) =>
+        element switch
+        {
+            // ComboBoxItem inherits ListBoxItem — one arm covers both.
+            ListBoxItem listItem => listItem.IsSelected,
+            TreeViewItem treeItem => treeItem.IsSelected,
+            TabItem tabItem => tabItem.IsSelected,
+            _ => null,
+        };
+
+    private static bool? ResolveExpanded(FrameworkElement element) =>
+        element switch
+        {
+            TreeViewItem treeItem => treeItem.IsExpanded,
+            Expander expander => expander.IsExpanded,
+            _ => null,
+        };
 
     private static void CollectFrameworkChildren(
         DependencyObject parent,

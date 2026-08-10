@@ -168,6 +168,42 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// expectSelected / expectExpanded compile with boolean fields.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with expectSelected and expectExpanded
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - Matching operation types and bool values
+    /// </remarks>
+    [Fact]
+    public void Parse_ExpectSelectedAndExpanded_CompileOperations()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "expectSelected", "automationId": "ListItem-35", "selected": true },
+                { "action": "expectExpanded", "automationId": "SampleTreeRoot", "expanded": false }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var selected = Assert.IsType<ExpectSelectedOperation>(scenario.Operations[1]);
+        Assert.Equal("ListItem-35", selected.AutomationId);
+        Assert.True(selected.Selected);
+        var expanded = Assert.IsType<ExpectExpandedOperation>(scenario.Operations[2]);
+        Assert.Equal("SampleTreeRoot", expanded.AutomationId);
+        Assert.False(expanded.Expanded);
+    }
+
+    /// <summary>
     /// Unknown action fails with action.failed.
     /// </summary>
     /// <remarks>

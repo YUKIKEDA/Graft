@@ -36,4 +36,10 @@ public static class ScenarioActions
 
     /// <summary>Expect an element's tree name.</summary>
     public const string ExpectName = FailureSteps.ExpectName;
+
+    /// <summary>Expect an element's selected state.</summary>
+    public const string ExpectSelected = FailureSteps.ExpectSelected;
+
+    /// <summary>Expect an element's expanded state.</summary>
+    public const string ExpectExpanded = FailureSteps.ExpectExpanded;
 }
