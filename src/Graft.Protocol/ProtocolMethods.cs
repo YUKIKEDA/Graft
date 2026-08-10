@@ -97,7 +97,8 @@ public static class ProtocolMethods
     public const string ScrollIntoView = "scrollIntoView";
 
     /// <summary>
-    /// Selects a single item by <c>params.index</c> on a list/combo (<c>params.automationId</c>).
+    /// Selects a single item on a list/combo/tab (<c>params.automationId</c>) by exactly one of
+    /// <c>params.index</c> or <c>params.key</c> (display / Automation Name; ordinal).
     /// </summary>
     public const string Select = "select";
 
@@ -112,6 +113,12 @@ public static class ProtocolMethods
     /// (AutomationId segments; Menu or open ContextMenu root).
     /// </summary>
     public const string SelectMenu = "selectMenu";
+
+    /// <summary>
+    /// Selects a TreeView path under <c>params.automationId</c> via slash-separated <c>params.path</c>
+    /// (AutomationId segments; expands intermediates, selects the leaf).
+    /// </summary>
+    public const string SelectTree = "selectTree";
 
     /// <summary>
     /// Expands an element (e.g. TreeViewItem / Expander) by <c>params.automationId</c>.

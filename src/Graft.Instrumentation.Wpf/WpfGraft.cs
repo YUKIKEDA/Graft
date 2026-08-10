@@ -39,6 +39,7 @@ public static class WpfGraft
         AgentServices.RegisterElementScroller(new WpfElementScroller());
         AgentServices.RegisterElementChooser(new WpfElementChooser());
         AgentServices.RegisterMenuSelector(new WpfMenuSelector());
+        AgentServices.RegisterTreeSelector(new WpfTreeSelector());
         AgentServices.RegisterElementExpander(new WpfElementExpander());
         AgentServices.RegisterElementCellAccessor(new WpfDataGridCellAccessor());
     }

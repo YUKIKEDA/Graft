@@ -308,6 +308,11 @@ internal sealed class AgentPipeServer : IDisposable
             return (HandleSelectMenu(request), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
+        if (request.Method == ProtocolMethods.SelectTree)
+        {
+            return (HandleSelectTree(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
         if (request.Method == ProtocolMethods.GetCellText)
         {
             return (HandleGetCellText(request), CloseAfterWrite: false, BinaryFollowUp: null);
@@ -859,8 +864,16 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var (selector, index) = ReadIndexParams(request.Params, requireIndex: true);
-            chooser.Select(selector, index!.Value);
+            var (selector, index, key) = ReadSelectParams(request.Params);
+            if (index is not null)
+            {
+                chooser.Select(selector, index.Value);
+            }
+            else
+            {
+                chooser.Select(selector, key!);
+            }
+
             return Ok(request.Id);
         }
         catch (ElementResolveException ex)
@@ -926,6 +939,39 @@ internal sealed class AgentPipeServer : IDisposable
             var selector = ReadElementSelector(request.Params);
             var path = ReadRequiredString(request.Params, "path");
             menuSelector.SelectMenu(selector, path);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleSelectTree(RequestMessage request)
+    {
+        var treeSelector = AgentServices.TreeSelector;
+        if (treeSelector is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No tree selector is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var selector = ReadElementSelector(request.Params);
+            var path = ReadRequiredString(request.Params, "path");
+            treeSelector.SelectTree(selector, path);
             return Ok(request.Id);
         }
         catch (ElementResolveException ex)
@@ -1485,6 +1531,62 @@ internal sealed class AgentPipeServer : IDisposable
         }
 
         return (selector, index);
+    }
+
+    private static (ElementSelector Selector, int? Index, string? Key) ReadSelectParams(
+        JsonElement? paramsElement
+    )
+    {
+        var selector = ReadElementSelector(paramsElement);
+        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params must have exactly one of index or key."
+            );
+        }
+
+        var hasIndex = element.TryGetProperty("index", out var indexProperty);
+        var hasKey = element.TryGetProperty("key", out var keyProperty);
+        if (hasIndex == hasKey)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params must have exactly one of index or key."
+            );
+        }
+
+        if (hasIndex)
+        {
+            if (!indexProperty.TryGetInt32(out var index))
+            {
+                throw new ElementResolveException(
+                    GraftErrorCodes.SelectorInvalid,
+                    "params.index must be an integer."
+                );
+            }
+
+            return (selector, index, null);
+        }
+
+        if (keyProperty.ValueKind != JsonValueKind.String)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.key must be a string."
+            );
+        }
+
+        var key = keyProperty.GetString();
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.key must be a non-empty string."
+            );
+        }
+
+        return (selector, null, key);
     }
 
     private static (ElementSelector Selector, IReadOnlyList<int> Indexes) ReadSelectManyParams(

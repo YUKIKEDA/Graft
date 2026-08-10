@@ -335,6 +335,46 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// select with key and selectTree compile.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with select key + selectTree
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - SelectOperation.Key and SelectTreeOperation.Path match
+    /// </remarks>
+    [Fact]
+    public void Parse_SelectKeyAndSelectTree_CompileOperations()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "select", "automationId": "SampleList", "key": "Item 35" },
+                {
+                  "action": "selectTree",
+                  "automationId": "SampleTree",
+                  "path": "SampleTreeRoot/SampleTreeChildA"
+                }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var select = Assert.IsType<SelectOperation>(scenario.Operations[1]);
+        Assert.Equal("Item 35", select.Key);
+        Assert.Null(select.Index);
+
+        var selectTree = Assert.IsType<SelectTreeOperation>(scenario.Operations[2]);
+        Assert.Equal("SampleTreeRoot/SampleTreeChildA", selectTree.Path);
+    }
+
+    /// <summary>
     /// expectSelected / expectExpanded compile with boolean fields.
     /// </summary>
     /// <remarks>

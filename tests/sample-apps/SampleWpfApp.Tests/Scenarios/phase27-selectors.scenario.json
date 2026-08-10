@@ -1,0 +1,32 @@
+{
+  "v": 1,
+  "name": "phase27-selectors",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "select",
+      "automationId": "SampleList",
+      "key": "Item 35"
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "Selected Item 35"
+    },
+    {
+      "action": "selectTree",
+      "automationId": "SampleTree",
+      "path": "SampleTreeRoot/SampleTreeChildA/SampleTreeGrandchild"
+    },
+    {
+      "action": "expectSelected",
+      "automationId": "SampleTreeGrandchild",
+      "selected": true
+    }
+  ]
+}

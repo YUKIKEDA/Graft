@@ -15,6 +15,7 @@ public sealed class ElementQuery
     private readonly Selector _selector;
     private readonly WaitOptions _waitOptions;
     private readonly OperationLog _operationLog;
+    private readonly IReadOnlyList<RelativeStep> _relativeSteps;
     private Selector _effectiveSelector;
     private bool _healApplied;
 
@@ -22,7 +23,8 @@ public sealed class ElementQuery
         AgentConnection connection,
         Selector selector,
         WaitOptions waitOptions,
-        OperationLog operationLog
+        OperationLog operationLog,
+        IReadOnlyList<RelativeStep>? relativeSteps = null
     )
     {
         _connection = connection;
@@ -30,6 +32,85 @@ public sealed class ElementQuery
         _effectiveSelector = selector;
         _waitOptions = waitOptions;
         _operationLog = operationLog;
+        _relativeSteps = relativeSteps ?? [];
+    }
+
+    /// <summary>
+    /// Narrows to a direct child matching <paramref name="selector"/>.
+    /// </summary>
+    /// <param name="selector">Child criteria.</param>
+    /// <returns>A new query scoped to the child.</returns>
+    public ElementQuery Child(Selector selector)
+    {
+        ArgumentNullException.ThrowIfNull(selector);
+        return WithRelative(new ChildStep(selector));
+    }
+
+    /// <summary>
+    /// Narrows to a direct child with the given automation id.
+    /// </summary>
+    /// <param name="automationId">Child automation id.</param>
+    /// <returns>A new query scoped to the child.</returns>
+    public ElementQuery ChildByAutomationId(string automationId) =>
+        Child(Selector.ByAutomationId(automationId));
+
+    /// <summary>
+    /// Narrows to a direct child with the given name.
+    /// </summary>
+    /// <param name="name">Child name.</param>
+    /// <returns>A new query scoped to the child.</returns>
+    public ElementQuery ChildByName(string name) => Child(Selector.ByName(name));
+
+    /// <summary>
+    /// Narrows to a sibling matching <paramref name="selector"/>.
+    /// </summary>
+    /// <param name="selector">Sibling criteria.</param>
+    /// <returns>A new query scoped to the sibling.</returns>
+    public ElementQuery Sibling(Selector selector)
+    {
+        ArgumentNullException.ThrowIfNull(selector);
+        return WithRelative(new SiblingStep(selector));
+    }
+
+    /// <summary>
+    /// Narrows to a sibling with the given automation id.
+    /// </summary>
+    /// <param name="automationId">Sibling automation id.</param>
+    /// <returns>A new query scoped to the sibling.</returns>
+    public ElementQuery SiblingByAutomationId(string automationId) =>
+        Sibling(Selector.ByAutomationId(automationId));
+
+    /// <summary>
+    /// Picks the zero-based Nth match among the current scope (or best-score ties).
+    /// </summary>
+    /// <param name="index">Zero-based index.</param>
+    /// <returns>A new query with Nth applied.</returns>
+    public ElementQuery Nth(int index)
+    {
+        if (index < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index), "Nth index must be >= 0.");
+        }
+
+        if (_relativeSteps.Count == 0)
+        {
+            return new ElementQuery(
+                _connection,
+                new Selector
+                {
+                    AutomationId = _selector.AutomationId,
+                    Name = _selector.Name,
+                    ControlType = _selector.ControlType,
+                    NearAutomationId = _selector.NearAutomationId,
+                    Nth = index,
+                },
+                _waitOptions,
+                _operationLog,
+                _relativeSteps
+            );
+        }
+
+        return WithRelative(new NthStep(index));
     }
 
     /// <summary>
@@ -708,6 +789,94 @@ public sealed class ElementQuery
                     ex.Code,
                     ex.Message,
                     FailureSteps.Select,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Waits until the list/combo is actionable, then selects the item whose name equals
+    /// <paramref name="key"/>.
+    /// </summary>
+    /// <param name="key">Item display / automation name (ordinal).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when select succeeds.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or select failed.</exception>
+    public async Task SelectAsync(string key, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot select over the wire.",
+                    FailureSteps.Select,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .SelectByKeyAsync(node.AutomationId, key, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.Select, $"{node.AutomationId}[key={key}]");
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.Select,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Waits until the TreeView is actionable, then expands along a slash-separated AutomationId
+    /// path and selects the leaf.
+    /// </summary>
+    /// <param name="path">Slash-separated AutomationId segments (root TreeView not included).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when selectTree succeeds.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or selectTree failed.</exception>
+    public async Task SelectTreeAsync(string path, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot selectTree over the wire.",
+                    FailureSteps.SelectTree,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .SelectTreeAsync(node.AutomationId, path, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.SelectTree, $"{node.AutomationId}:{path}");
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.SelectTree,
                     cancellationToken: cancellationToken,
                     innerException: ex
                 )
@@ -2046,9 +2215,10 @@ public sealed class ElementQuery
 
     private TreeNode ResolveNode(TreeNode root)
     {
+        TreeNode node;
         try
         {
-            return TreeSelector.Resolve(root, _effectiveSelector);
+            node = TreeSelector.Resolve(root, _effectiveSelector);
         }
         catch (GraftException ex) when (ex.Code == GraftErrorCodes.ElementNotFound && !_healApplied)
         {
@@ -2060,9 +2230,56 @@ public sealed class ElementQuery
             _effectiveSelector = healed;
             _healApplied = true;
             _operationLog.Record("heal", DescribeSelector(healed));
-            return TreeSelector.Resolve(root, _effectiveSelector);
+            node = TreeSelector.Resolve(root, _effectiveSelector);
         }
+
+        for (var i = 0; i < _relativeSteps.Count; )
+        {
+            var step = _relativeSteps[i];
+            var nth =
+                i + 1 < _relativeSteps.Count && _relativeSteps[i + 1] is NthStep n
+                    ? n.Index
+                    : (int?)null;
+
+            switch (step)
+            {
+                case ChildStep child:
+                    node = TreeSelector.ResolveChild(node, child.Selector, nth);
+                    i += nth is null ? 1 : 2;
+                    break;
+                case SiblingStep sibling:
+                    node = TreeSelector.ResolveSibling(root, node, sibling.Selector, nth);
+                    i += nth is null ? 1 : 2;
+                    break;
+                case NthStep alone:
+                    // Positional among siblings of current (same parent).
+                    node = TreeSelector.ResolveSibling(root, node, new Selector(), alone.Index);
+                    i++;
+                    break;
+                default:
+                    i++;
+                    break;
+            }
+        }
+
+        return node;
     }
+
+    private ElementQuery WithRelative(RelativeStep step)
+    {
+        var steps = new List<RelativeStep>(_relativeSteps.Count + 1);
+        steps.AddRange(_relativeSteps);
+        steps.Add(step);
+        return new ElementQuery(_connection, _selector, _waitOptions, _operationLog, steps);
+    }
+
+    internal abstract record RelativeStep;
+
+    internal sealed record ChildStep(Selector Selector) : RelativeStep;
+
+    internal sealed record SiblingStep(Selector Selector) : RelativeStep;
+
+    internal sealed record NthStep(int Index) : RelativeStep;
 
     private static string DescribeSelector(Selector selector)
     {

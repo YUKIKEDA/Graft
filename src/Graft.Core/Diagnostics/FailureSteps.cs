@@ -56,6 +56,9 @@ public static class FailureSteps
     /// <summary>selectMenu action failed.</summary>
     public const string SelectMenu = "selectMenu";
 
+    /// <summary>selectTree action failed.</summary>
+    public const string SelectTree = "selectTree";
+
     /// <summary>expand action failed.</summary>
     public const string Expand = "expand";
 

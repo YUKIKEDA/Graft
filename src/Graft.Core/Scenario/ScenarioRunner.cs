@@ -183,10 +183,21 @@ public static class ScenarioRunner
 
                     case SelectOperation select:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(select.AutomationId)
-                            .SelectAsync(select.Index, cancellationToken)
-                            .ConfigureAwait(false);
+                        if (select.Key is not null)
+                        {
+                            await session!
+                                .GetByAutomationId(select.AutomationId)
+                                .SelectAsync(select.Key, cancellationToken)
+                                .ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            await session!
+                                .GetByAutomationId(select.AutomationId)
+                                .SelectAsync(select.Index!.Value, cancellationToken)
+                                .ConfigureAwait(false);
+                        }
+
                         break;
 
                     case SelectManyOperation selectMany:
@@ -202,6 +213,14 @@ public static class ScenarioRunner
                         await session!
                             .GetByAutomationId(selectMenu.AutomationId)
                             .SelectMenuAsync(selectMenu.Path, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case SelectTreeOperation selectTree:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(selectTree.AutomationId)
+                            .SelectTreeAsync(selectTree.Path, cancellationToken)
                             .ConfigureAwait(false);
                         break;
 

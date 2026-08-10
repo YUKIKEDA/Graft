@@ -546,6 +546,70 @@ public sealed class AgentConnection : IAsyncDisposable
     }
 
     /// <summary>
+    /// Calls <c>select</c> with an item name key.
+    /// </summary>
+    /// <param name="automationId">List / combo / tab automation id.</param>
+    /// <param name="key">Item display / automation name.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when select succeeds.</returns>
+    public async Task SelectByKeyAsync(
+        string automationId,
+        string key,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.Select,
+                    Params = JsonSerializer.SerializeToElement(new { automationId, key }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "select failed.");
+    }
+
+    /// <summary>
+    /// Calls <c>selectTree</c> for a slash-separated AutomationId path under a TreeView.
+    /// </summary>
+    /// <param name="automationId">TreeView automation id.</param>
+    /// <param name="path">Slash-separated AutomationId segments.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when selectTree succeeds.</returns>
+    public async Task SelectTreeAsync(
+        string automationId,
+        string path,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.SelectTree,
+                    Params = JsonSerializer.SerializeToElement(new { automationId, path }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "selectTree failed.");
+    }
+
+    /// <summary>
     /// Calls <c>selectMany</c> to replace ListBox or DataGrid multi-selection by indexes.
     /// </summary>
     /// <param name="automationId">ListBox or DataGrid automation id.</param>

@@ -58,6 +58,9 @@ public static class ScenarioActions
     /// <summary>Select a menu path (slash-separated AutomationIds).</summary>
     public const string SelectMenu = FailureSteps.SelectMenu;
 
+    /// <summary>Select a tree path (slash-separated AutomationIds).</summary>
+    public const string SelectTree = FailureSteps.SelectTree;
+
     /// <summary>Expand an element.</summary>
     public const string Expand = FailureSteps.Expand;
 

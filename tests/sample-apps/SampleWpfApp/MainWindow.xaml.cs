@@ -78,6 +78,16 @@ public partial class MainWindow : Window
         StatusText.Text = "MenuOpenRecent";
     }
 
+    private void RelativeChildA_OnClick(object sender, RoutedEventArgs e)
+    {
+        StatusText.Text = "RelA";
+    }
+
+    private void RelativeChildB_OnClick(object sender, RoutedEventArgs e)
+    {
+        StatusText.Text = "RelB";
+    }
+
     private void SampleCheckBox_OnChecked(object sender, RoutedEventArgs e)
     {
         SampleCheckBox.Content = "On";
