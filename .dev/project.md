@@ -355,7 +355,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 22 | DataGrid 複数行選択（`selectMany` 拡張）             | Extended + FullRow。次はギャップ洗い出し   |
 | Phase 23 | 競合シナリオ対照表（WPF Must 洗い出し）              | 文書のみ。Must 確定。Avalonia は Must 後   |
 | Phase 24 | 待ち / Expect / 画面遷移・進捗                       | Wait/Expect 強化 + value + 進捗 Sample     |
-| （次）   | Must 残り（Phase 25+）→ Avalonia                     | 対照表: `competitive-gap.md`。Inspector 任意 |
+| Phase 25 | マウス高度                                           | dbl/hover/drag/clickAt/wheel（SendInput）  |
+| （次）   | Must 残り（Phase 26+）→ Avalonia                     | 対照表: `competitive-gap.md`。Inspector 任意 |
 
 ## 9. 未検討・今後の課題
 
@@ -509,3 +510,5 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q127 | Must 確定: 提示 ID 群 + X04。K05/V06/W12/A08/P02 は任意。Inspector 任意。`competitive-gap.md` 更新 |
 | Q128 | Phase 24: Expect* 系拡張 + WaitFor/Gone + WaitForWindowClosed + TreeNode.value。`task_phase24.md`   |
 | Q129 | Sample: 進捗 Window → 同一窓内次パネル。Frame なし。Scenario/MCP 薄い追従。W11 専用 API なし          |
+| Q130 | Phase 25: DoubleClick/Hover/Drag(要素→要素)/ClickAt(DIP)/Wheel。SendInput。`task_phase25.md`       |
+| Q131 | Hover は移動+短 dwell。ToolTip 待ちは Phase 29。Sample は Mouse セクション 1 つ。Scenario/MCP 薄い追従 |

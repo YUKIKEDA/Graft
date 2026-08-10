@@ -176,6 +176,166 @@ public sealed class AgentConnection : IAsyncDisposable
     }
 
     /// <summary>
+    /// Calls <c>doubleClick</c> for the element with the given automation id.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when doubleClick succeeds.</returns>
+    public async Task DoubleClickAsync(
+        string automationId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.DoubleClick,
+                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "doubleClick failed.");
+    }
+
+    /// <summary>
+    /// Calls <c>hover</c> for the element with the given automation id.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when hover succeeds.</returns>
+    public async Task HoverAsync(string automationId, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.Hover,
+                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "hover failed.");
+    }
+
+    /// <summary>
+    /// Calls <c>drag</c> from one automation id to another.
+    /// </summary>
+    /// <param name="automationId">Source automation id.</param>
+    /// <param name="toAutomationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when drag succeeds.</returns>
+    public async Task DragAsync(
+        string automationId,
+        string toAutomationId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(toAutomationId);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.Drag,
+                    Params = JsonSerializer.SerializeToElement(
+                        new { automationId, toAutomationId }
+                    ),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "drag failed.");
+    }
+
+    /// <summary>
+    /// Calls <c>clickAt</c> with DIP offsets from the element's clickable point.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="offsetX">Horizontal DIP offset.</param>
+    /// <param name="offsetY">Vertical DIP offset.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when clickAt succeeds.</returns>
+    public async Task ClickAtAsync(
+        string automationId,
+        double offsetX,
+        double offsetY,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.ClickAt,
+                    Params = JsonSerializer.SerializeToElement(
+                        new
+                        {
+                            automationId,
+                            offsetX,
+                            offsetY,
+                        }
+                    ),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "clickAt failed.");
+    }
+
+    /// <summary>
+    /// Calls <c>wheel</c> over the element with the given automation id.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="delta">Wheel delta (typically multiples of 120).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when wheel succeeds.</returns>
+    public async Task WheelAsync(
+        string automationId,
+        int delta,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.Wheel,
+                    Params = JsonSerializer.SerializeToElement(new { automationId, delta }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "wheel failed.");
+    }
+
+    /// <summary>
     /// Calls <c>setValue</c> for the element with the given automation id.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>
@@ -454,61 +614,6 @@ public sealed class AgentConnection : IAsyncDisposable
         return GetCellTextCoreAsync(automationId, row, column: null, columnKey, cancellationToken);
     }
 
-    private async Task<string> GetCellTextCoreAsync(
-        string automationId,
-        int row,
-        int? column,
-        string? columnKey,
-        CancellationToken cancellationToken
-    )
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
-        ThrowIfDisposed();
-
-        object payload = columnKey is null
-            ? new
-            {
-                automationId,
-                row,
-                column,
-            }
-            : new
-            {
-                automationId,
-                row,
-                columnKey,
-            };
-
-        var response = await SendAsync(
-                new RequestMessage
-                {
-                    V = ProtocolVersion.Current,
-                    Id = NextId(),
-                    Method = ProtocolMethods.GetCellText,
-                    Params = JsonSerializer.SerializeToElement(payload),
-                },
-                cancellationToken
-            )
-            .ConfigureAwait(false);
-
-        EnsureOk(response, "getCellText failed.");
-        if (response.Result is not { } resultElement)
-        {
-            throw new GraftException(
-                GraftErrorCodes.ActionFailed,
-                "getCellText returned no result."
-            );
-        }
-
-        var result =
-            resultElement.Deserialize<CellTextResult>(JsonMessageCodec.Options)
-            ?? throw new GraftException(
-                GraftErrorCodes.ActionFailed,
-                "getCellText result deserialized to null."
-            );
-        return result.Text;
-    }
-
     /// <summary>
     /// Calls <c>setCellValue</c> for a DataGrid cell by column index.
     /// </summary>
@@ -555,50 +660,6 @@ public sealed class AgentConnection : IAsyncDisposable
             value,
             cancellationToken
         );
-    }
-
-    private async Task SetCellValueCoreAsync(
-        string automationId,
-        int row,
-        int? column,
-        string? columnKey,
-        string value,
-        CancellationToken cancellationToken
-    )
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
-        ArgumentNullException.ThrowIfNull(value);
-        ThrowIfDisposed();
-
-        object payload = columnKey is null
-            ? new
-            {
-                automationId,
-                row,
-                column,
-                value,
-            }
-            : new
-            {
-                automationId,
-                row,
-                columnKey,
-                value,
-            };
-
-        var response = await SendAsync(
-                new RequestMessage
-                {
-                    V = ProtocolVersion.Current,
-                    Id = NextId(),
-                    Method = ProtocolMethods.SetCellValue,
-                    Params = JsonSerializer.SerializeToElement(payload),
-                },
-                cancellationToken
-            )
-            .ConfigureAwait(false);
-
-        EnsureOk(response, "setCellValue failed.");
     }
 
     /// <summary>
@@ -1016,6 +1077,105 @@ public sealed class AgentConnection : IAsyncDisposable
 
         _disposed = true;
         await _stream.DisposeAsync().ConfigureAwait(false);
+    }
+
+    private async Task<string> GetCellTextCoreAsync(
+        string automationId,
+        int row,
+        int? column,
+        string? columnKey,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ThrowIfDisposed();
+
+        object payload = columnKey is null
+            ? new
+            {
+                automationId,
+                row,
+                column,
+            }
+            : new
+            {
+                automationId,
+                row,
+                columnKey,
+            };
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.GetCellText,
+                    Params = JsonSerializer.SerializeToElement(payload),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "getCellText failed.");
+        if (response.Result is not { } resultElement)
+        {
+            throw new GraftException(
+                GraftErrorCodes.ActionFailed,
+                "getCellText returned no result."
+            );
+        }
+
+        var result =
+            resultElement.Deserialize<CellTextResult>(JsonMessageCodec.Options)
+            ?? throw new GraftException(
+                GraftErrorCodes.ActionFailed,
+                "getCellText result deserialized to null."
+            );
+        return result.Text;
+    }
+
+    private async Task SetCellValueCoreAsync(
+        string automationId,
+        int row,
+        int? column,
+        string? columnKey,
+        string value,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ArgumentNullException.ThrowIfNull(value);
+        ThrowIfDisposed();
+
+        object payload = columnKey is null
+            ? new
+            {
+                automationId,
+                row,
+                column,
+                value,
+            }
+            : new
+            {
+                automationId,
+                row,
+                columnKey,
+                value,
+            };
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.SetCellValue,
+                    Params = JsonSerializer.SerializeToElement(payload),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "setCellValue failed.");
     }
 
     private async Task HandshakeAsync(string token, CancellationToken cancellationToken)

@@ -3,6 +3,7 @@ using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Input;
 using Graft.Protocol;
@@ -47,10 +48,58 @@ internal static class WpfInputInjection
         ActivateWindow(element);
         var point = ResolveClickScreenPoint(element);
         InputInjector.RightClick((int)Math.Round(point.X), (int)Math.Round(point.Y));
-        element.Dispatcher.Invoke(
-            static () => { },
-            System.Windows.Threading.DispatcherPriority.ContextIdle
+        FlushIdle(element);
+    }
+
+    public static void DoubleClickElement(FrameworkElement element)
+    {
+        ActivateWindow(element);
+        var point = ResolveClickScreenPoint(element);
+        InputInjector.DoubleClick((int)Math.Round(point.X), (int)Math.Round(point.Y));
+        FlushIdle(element);
+    }
+
+    public static void HoverElement(FrameworkElement element)
+    {
+        ActivateWindow(element);
+        var point = ResolveClickScreenPoint(element);
+        InputInjector.MoveTo((int)Math.Round(point.X), (int)Math.Round(point.Y));
+        Thread.Sleep(100);
+        FlushIdle(element);
+    }
+
+    public static void DragElement(FrameworkElement from, FrameworkElement to)
+    {
+        ActivateWindow(from);
+        var fromPoint = ResolveClickScreenPoint(from);
+        var toPoint = ResolveClickScreenPoint(to);
+        InputInjector.Drag(
+            (int)Math.Round(fromPoint.X),
+            (int)Math.Round(fromPoint.Y),
+            (int)Math.Round(toPoint.X),
+            (int)Math.Round(toPoint.Y)
         );
+        FlushIdle(to);
+    }
+
+    public static void ClickAtElement(
+        FrameworkElement element,
+        double offsetXDip,
+        double offsetYDip
+    )
+    {
+        ActivateWindow(element);
+        var point = ResolveClickScreenPoint(element, offsetXDip, offsetYDip);
+        InputInjector.LeftClick((int)Math.Round(point.X), (int)Math.Round(point.Y));
+        FlushIdle(element);
+    }
+
+    public static void WheelElement(FrameworkElement element, int delta)
+    {
+        ActivateWindow(element);
+        var point = ResolveClickScreenPoint(element);
+        InputInjector.Wheel((int)Math.Round(point.X), (int)Math.Round(point.Y), delta);
+        FlushIdle(element);
     }
 
     public static void FocusAndType(FrameworkElement element, string text, bool clearFirst)
@@ -122,7 +171,32 @@ internal static class WpfInputInjection
         );
     }
 
-    private static Point ResolveClickScreenPoint(FrameworkElement element)
+    private static void FlushIdle(FrameworkElement element) =>
+        element.Dispatcher.Invoke(
+            static () => { },
+            System.Windows.Threading.DispatcherPriority.ContextIdle
+        );
+
+    private static Point ResolveClickScreenPoint(
+        FrameworkElement element,
+        double offsetXDip = 0,
+        double offsetYDip = 0
+    )
+    {
+        var basePoint = ResolveBaseClickScreenPoint(element);
+        if (offsetXDip == 0 && offsetYDip == 0)
+        {
+            return basePoint;
+        }
+
+        var dpi = VisualTreeHelper.GetDpi(element);
+        return new Point(
+            basePoint.X + (offsetXDip * dpi.DpiScaleX),
+            basePoint.Y + (offsetYDip * dpi.DpiScaleY)
+        );
+    }
+
+    private static Point ResolveBaseClickScreenPoint(FrameworkElement element)
     {
         AutomationPeer? peer = UIElementAutomationPeer.FromElement(element);
         if (peer is null && element is UIElement uiElement)

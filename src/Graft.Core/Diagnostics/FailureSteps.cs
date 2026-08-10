@@ -14,6 +14,21 @@ public static class FailureSteps
     /// <summary>rightClick action failed.</summary>
     public const string RightClick = "rightClick";
 
+    /// <summary>doubleClick action failed.</summary>
+    public const string DoubleClick = "doubleClick";
+
+    /// <summary>hover action failed.</summary>
+    public const string Hover = "hover";
+
+    /// <summary>drag action failed.</summary>
+    public const string Drag = "drag";
+
+    /// <summary>clickAt action failed.</summary>
+    public const string ClickAt = "clickAt";
+
+    /// <summary>wheel action failed.</summary>
+    public const string Wheel = "wheel";
+
     /// <summary>setValue action failed.</summary>
     public const string SetValue = "setValue";
 

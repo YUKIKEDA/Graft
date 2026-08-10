@@ -56,6 +56,86 @@
                            VerticalAlignment="Center"
                            HorizontalAlignment="Center" />
             </Border>
+
+            <TextBlock Text="Mouse advanced" Margin="0,0,0,4" />
+            <Button x:Name="DoubleClickTarget"
+                    AutomationProperties.AutomationId="DoubleClickTarget"
+                    AutomationProperties.Name="DoubleClickReady"
+                    Background="#FFFFE0B2"
+                    Height="36"
+                    Margin="0,0,0,8"
+                    Padding="12,0"
+                    HorizontalAlignment="Left"
+                    Cursor="Hand"
+                    Content="Double-click target" />
+            <Border x:Name="HoverTarget"
+                    AutomationProperties.AutomationId="HoverTarget"
+                    AutomationProperties.Name="HoverReady"
+                    Background="#FFE1BEE7"
+                    Height="36"
+                    Margin="0,0,0,8"
+                    Cursor="Hand"
+                    MouseEnter="HoverTarget_OnMouseEnter">
+                <TextBlock Text="Hover target"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center" />
+            </Border>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <Border x:Name="DragSource"
+                        AutomationProperties.AutomationId="DragSource"
+                        Background="#FFBBDEFB"
+                        Width="120"
+                        Height="48"
+                        Margin="0,0,12,0"
+                        Cursor="Hand"
+                        AllowDrop="False"
+                        MouseMove="DragSource_OnMouseMove">
+                    <TextBlock Text="Drag source"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center" />
+                </Border>
+                <Border x:Name="DropTarget"
+                        AutomationProperties.AutomationId="DropTarget"
+                        AutomationProperties.Name="DropReady"
+                        Background="#FFC8E6C9"
+                        Width="120"
+                        Height="48"
+                        AllowDrop="True"
+                        Drop="DropTarget_OnDrop"
+                        DragOver="DropTarget_OnDragOver">
+                    <TextBlock Text="Drop target"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center" />
+                </Border>
+            </StackPanel>
+            <Border x:Name="ClickAtPad"
+                    AutomationProperties.AutomationId="ClickAtPad"
+                    Background="#FFFFCDD2"
+                    Width="160"
+                    Height="80"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,0,8"
+                    Cursor="Hand"
+                    MouseLeftButtonDown="ClickAtPad_OnMouseLeftButtonDown">
+                <TextBlock Text="ClickAt pad (L/R)"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center" />
+            </Border>
+            <ScrollViewer x:Name="WheelScroller"
+                          AutomationProperties.AutomationId="WheelScroller"
+                          Height="80"
+                          Margin="0,0,0,16"
+                          VerticalScrollBarVisibility="Auto"
+                          ScrollChanged="WheelScroller_OnScrollChanged">
+                <StackPanel>
+                    <TextBlock Text="Wheel top" Margin="0,0,0,40" />
+                    <TextBlock x:Name="WheelBottomLabel"
+                               AutomationProperties.AutomationId="WheelBottomLabel"
+                               Text="WheelBottom"
+                               Margin="0,120,0,0" />
+                </StackPanel>
+            </ScrollViewer>
+
             <Border x:Name="ContextMenuTarget"
                     AutomationProperties.AutomationId="ContextMenuTarget"
                     Background="#FFE8F0FF"

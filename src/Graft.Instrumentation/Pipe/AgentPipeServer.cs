@@ -243,6 +243,31 @@ internal sealed class AgentPipeServer : IDisposable
             return (HandleRightClick(request), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
+        if (request.Method == ProtocolMethods.DoubleClick)
+        {
+            return (HandleDoubleClick(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
+        if (request.Method == ProtocolMethods.Hover)
+        {
+            return (HandleHover(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
+        if (request.Method == ProtocolMethods.Drag)
+        {
+            return (HandleDrag(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
+        if (request.Method == ProtocolMethods.ClickAt)
+        {
+            return (HandleClickAt(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
+        if (request.Method == ProtocolMethods.Wheel)
+        {
+            return (HandleWheel(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
         if (request.Method == ProtocolMethods.SetValue)
         {
             return (HandleSetValue(request), CloseAfterWrite: false, BinaryFollowUp: null);
@@ -496,6 +521,148 @@ internal sealed class AgentPipeServer : IDisposable
         {
             var selector = ReadElementSelector(request.Params);
             invoker.RightClick(selector);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleDoubleClick(RequestMessage request) =>
+        HandleInvokerAction(request, static (invoker, selector) => invoker.DoubleClick(selector));
+
+    private static ResponseMessage HandleHover(RequestMessage request) =>
+        HandleInvokerAction(request, static (invoker, selector) => invoker.Hover(selector));
+
+    private static ResponseMessage HandleDrag(RequestMessage request)
+    {
+        var invoker = AgentServices.ElementInvoker;
+        if (invoker is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No element invoker is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var from = ReadElementSelector(request.Params);
+            var toAutomationId = ReadRequiredString(request.Params, "toAutomationId");
+            var to = new ElementSelector { AutomationId = toAutomationId };
+            invoker.Drag(from, to);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleClickAt(RequestMessage request)
+    {
+        var invoker = AgentServices.ElementInvoker;
+        if (invoker is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No element invoker is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var selector = ReadElementSelector(request.Params);
+            var offsetX = ReadRequiredDouble(request.Params, "offsetX");
+            var offsetY = ReadRequiredDouble(request.Params, "offsetY");
+            invoker.ClickAt(selector, offsetX, offsetY);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleWheel(RequestMessage request)
+    {
+        var invoker = AgentServices.ElementInvoker;
+        if (invoker is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No element invoker is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var selector = ReadElementSelector(request.Params);
+            var delta = ReadRequiredInt32(request.Params, "delta");
+            invoker.Wheel(selector, delta);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleInvokerAction(
+        RequestMessage request,
+        Action<IElementInvoker, ElementSelector> action
+    )
+    {
+        var invoker = AgentServices.ElementInvoker;
+        if (invoker is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No element invoker is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var selector = ReadElementSelector(request.Params);
+            action(invoker, selector);
             return Ok(request.Id);
         }
         catch (ElementResolveException ex)
@@ -1484,6 +1651,55 @@ internal sealed class AgentPipeServer : IDisposable
             throw new ElementResolveException(
                 GraftErrorCodes.SelectorInvalid,
                 $"params.{propertyName} must be a non-empty string."
+            );
+        }
+
+        return value;
+    }
+
+    private static double ReadRequiredDouble(JsonElement? paramsElement, string propertyName)
+    {
+        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                $"params.{propertyName} is required."
+            );
+        }
+
+        if (
+            !element.TryGetProperty(propertyName, out var property)
+            || property.ValueKind != JsonValueKind.Number
+            || !property.TryGetDouble(out var value)
+        )
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                $"params.{propertyName} must be a number."
+            );
+        }
+
+        return value;
+    }
+
+    private static int ReadRequiredInt32(JsonElement? paramsElement, string propertyName)
+    {
+        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                $"params.{propertyName} is required."
+            );
+        }
+
+        if (
+            !element.TryGetProperty(propertyName, out var property)
+            || !property.TryGetInt32(out var value)
+        )
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                $"params.{propertyName} must be an integer."
             );
         }
 

@@ -113,6 +113,216 @@ public sealed class ElementQuery
     }
 
     /// <summary>
+    /// Waits until the element is present and actionable, then double-clicks it (SendInput).
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when doubleClick succeeds.</returns>
+    public async Task DoubleClickAsync(CancellationToken cancellationToken = default)
+    {
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot doubleClick over the wire.",
+                    FailureSteps.DoubleClick,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .DoubleClickAsync(node.AutomationId, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.DoubleClick, node.AutomationId);
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.DoubleClick,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Waits until the element is present and actionable, then moves the cursor over it (SendInput).
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when hover succeeds.</returns>
+    public async Task HoverAsync(CancellationToken cancellationToken = default)
+    {
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot hover over the wire.",
+                    FailureSteps.Hover,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .HoverAsync(node.AutomationId, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.Hover, node.AutomationId);
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.Hover,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Waits until this element is actionable, then drags to <paramref name="toAutomationId"/> (SendInput).
+    /// </summary>
+    /// <param name="toAutomationId">Drop target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when drag succeeds.</returns>
+    public async Task DragAsync(
+        string toAutomationId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(toAutomationId);
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot drag over the wire.",
+                    FailureSteps.Drag,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .DragAsync(node.AutomationId, toAutomationId, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.Drag, $"{node.AutomationId}->{toAutomationId}");
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.Drag,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Waits until the element is actionable, then left-clicks at the clickable point plus DIP offsets.
+    /// </summary>
+    /// <param name="offsetX">Horizontal DIP offset from the clickable point.</param>
+    /// <param name="offsetY">Vertical DIP offset from the clickable point.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when clickAt succeeds.</returns>
+    public async Task ClickAtAsync(
+        double offsetX,
+        double offsetY,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot clickAt over the wire.",
+                    FailureSteps.ClickAt,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .ClickAtAsync(node.AutomationId, offsetX, offsetY, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(
+                FailureSteps.ClickAt,
+                $"{node.AutomationId}@({offsetX},{offsetY})"
+            );
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.ClickAt,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Waits until the element is actionable, then scrolls the mouse wheel over it (SendInput).
+    /// </summary>
+    /// <param name="delta">Wheel delta (typically multiples of 120; positive = away from user).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when wheel succeeds.</returns>
+    public async Task WheelAsync(int delta, CancellationToken cancellationToken = default)
+    {
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot wheel over the wire.",
+                    FailureSteps.Wheel,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .WheelAsync(node.AutomationId, delta, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.Wheel, $"{node.AutomationId}:{delta}");
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.Wheel,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
     /// Invokes the element via <c>invokeOpeningWindow</c> (BeginInvoke), optionally waiting for a new window.
     /// </summary>
     /// <remarks>
@@ -587,55 +797,6 @@ public sealed class ElementQuery
         return GetCellTextCoreAsync(row, column: null, columnKey, cancellationToken);
     }
 
-    private async Task<string> GetCellTextCoreAsync(
-        int row,
-        int? column,
-        string? columnKey,
-        CancellationToken cancellationToken
-    )
-    {
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot getCellText over the wire.",
-                    FailureSteps.GetCellText,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            var text = columnKey is null
-                ? await _connection
-                    .GetCellTextAsync(node.AutomationId, row, column!.Value, cancellationToken)
-                    .ConfigureAwait(false)
-                : await _connection
-                    .GetCellTextAsync(node.AutomationId, row, columnKey, cancellationToken)
-                    .ConfigureAwait(false);
-            _operationLog.Record(
-                FailureSteps.GetCellText,
-                columnKey is null
-                    ? $"{node.AutomationId}[{row},{column}]"
-                    : $"{node.AutomationId}[{row},{columnKey}]"
-            );
-            return text;
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.GetCellText,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
-                .ConfigureAwait(false);
-        }
-    }
-
     /// <summary>
     /// Waits until the DataGrid is actionable, then sets a cell by column index.
     /// </summary>
@@ -670,71 +831,6 @@ public sealed class ElementQuery
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
         return SetCellValueCoreAsync(row, column: null, columnKey, value, cancellationToken);
-    }
-
-    private async Task SetCellValueCoreAsync(
-        int row,
-        int? column,
-        string? columnKey,
-        string value,
-        CancellationToken cancellationToken
-    )
-    {
-        ArgumentNullException.ThrowIfNull(value);
-
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot setCellValue over the wire.",
-                    FailureSteps.SetCellValue,
-                    expected: value,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            if (columnKey is null)
-            {
-                await _connection
-                    .SetCellValueAsync(
-                        node.AutomationId,
-                        row,
-                        column!.Value,
-                        value,
-                        cancellationToken
-                    )
-                    .ConfigureAwait(false);
-            }
-            else
-            {
-                await _connection
-                    .SetCellValueAsync(node.AutomationId, row, columnKey, value, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-
-            _operationLog.Record(
-                FailureSteps.SetCellValue,
-                columnKey is null
-                    ? $"{node.AutomationId}[{row},{column}]={value}"
-                    : $"{node.AutomationId}[{row},{columnKey}]={value}"
-            );
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.SetCellValue,
-                    expected: value,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
-                .ConfigureAwait(false);
-        }
     }
 
     /// <summary>
@@ -783,100 +879,6 @@ public sealed class ElementQuery
             expectedText,
             cancellationToken
         );
-    }
-
-    private async Task ExpectCellTextCoreAsync(
-        int row,
-        int? column,
-        string? columnKey,
-        string expectedText,
-        CancellationToken cancellationToken
-    )
-    {
-        ArgumentNullException.ThrowIfNull(expectedText);
-
-        var host = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(host.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot expectCellText over the wire.",
-                    FailureSteps.ExpectCellText,
-                    expected: expectedText,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        var timeout = PositiveOrDefault(
-            _waitOptions.ExpectTimeout,
-            WaitOptions.DefaultExpectTimeout
-        );
-        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
-        var deadline = DateTime.UtcNow + timeout;
-        string? lastActual = null;
-        var sawCell = false;
-
-        while (DateTime.UtcNow < deadline)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                var actual = columnKey is null
-                    ? await _connection
-                        .GetCellTextAsync(host.AutomationId, row, column!.Value, cancellationToken)
-                        .ConfigureAwait(false)
-                    : await _connection
-                        .GetCellTextAsync(host.AutomationId, row, columnKey, cancellationToken)
-                        .ConfigureAwait(false);
-                sawCell = true;
-                if (string.Equals(actual, expectedText, StringComparison.Ordinal))
-                {
-                    _operationLog.Record(FailureSteps.ExpectCellText, expectedText);
-                    return;
-                }
-
-                lastActual = actual;
-            }
-            catch (GraftException ex)
-                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
-            {
-                // Still waiting for the cell / grid to be ready.
-            }
-
-            var remaining = deadline - DateTime.UtcNow;
-            if (remaining <= TimeSpan.Zero)
-            {
-                break;
-            }
-
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
-                .ConfigureAwait(false);
-        }
-
-        if (sawCell && lastActual is not null)
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ExpectFailed,
-                    $"Expected cell text '{expectedText}' but was '{lastActual}'.",
-                    FailureSteps.ExpectCellText,
-                    expected: expectedText,
-                    actual: lastActual,
-                    timedOut: true,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        throw await CreateFailureAsync(
-                GraftErrorCodes.ActionTimeout,
-                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for cell text '{expectedText}'.",
-                FailureSteps.ExpectCellText,
-                expected: expectedText,
-                timedOut: true,
-                cancellationToken: cancellationToken
-            )
-            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1153,7 +1155,7 @@ public sealed class ElementQuery
     /// <summary>
     /// Waits until the element's <c>name</c> contains <paramref name="substring"/>.
     /// </summary>
-    /// <param name="substring">Expected ordinal substring.</param>
+    /// <param name="substring">Expected non-empty ordinal substring.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The matched node when the expectation holds.</returns>
     public async Task<TreeNode> ExpectNameContainsAsync(
@@ -1161,7 +1163,7 @@ public sealed class ElementQuery
         CancellationToken cancellationToken = default
     )
     {
-        ArgumentNullException.ThrowIfNull(substring);
+        ArgumentException.ThrowIfNullOrEmpty(substring);
 
         var timeout = PositiveOrDefault(
             _waitOptions.ExpectTimeout,
@@ -1515,14 +1517,220 @@ public sealed class ElementQuery
                 .ConfigureAwait(false);
         }
 
+        var goneTimeoutMessage =
+            $"Timed out after {timeout.TotalSeconds:0.###}s waiting for element to be gone"
+            + (lastActual is null ? "." : $" ({lastActual}).");
         throw await CreateFailureAsync(
                 GraftErrorCodes.ActionTimeout,
-                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for element to be gone"
-                    + (lastActual is null ? "." : $" ({lastActual})."),
+                goneTimeoutMessage,
                 FailureSteps.ExpectGone,
                 actual: lastActual,
                 timedOut: true,
                 treeRoot: lastRoot,
+                cancellationToken: cancellationToken
+            )
+            .ConfigureAwait(false);
+    }
+
+    private async Task<string> GetCellTextCoreAsync(
+        int row,
+        int? column,
+        string? columnKey,
+        CancellationToken cancellationToken
+    )
+    {
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot getCellText over the wire.",
+                    FailureSteps.GetCellText,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            var text = columnKey is null
+                ? await _connection
+                    .GetCellTextAsync(node.AutomationId, row, column!.Value, cancellationToken)
+                    .ConfigureAwait(false)
+                : await _connection
+                    .GetCellTextAsync(node.AutomationId, row, columnKey, cancellationToken)
+                    .ConfigureAwait(false);
+            var detail = columnKey is null
+                ? $"{node.AutomationId}[{row},{column}]"
+                : $"{node.AutomationId}[{row},{columnKey}]";
+            _operationLog.Record(FailureSteps.GetCellText, detail);
+            return text;
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.GetCellText,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    private async Task SetCellValueCoreAsync(
+        int row,
+        int? column,
+        string? columnKey,
+        string value,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(value);
+
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot setCellValue over the wire.",
+                    FailureSteps.SetCellValue,
+                    expected: value,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            if (columnKey is null)
+            {
+                await _connection
+                    .SetCellValueAsync(
+                        node.AutomationId,
+                        row,
+                        column!.Value,
+                        value,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                await _connection
+                    .SetCellValueAsync(node.AutomationId, row, columnKey, value, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            var detail = columnKey is null
+                ? $"{node.AutomationId}[{row},{column}]={value}"
+                : $"{node.AutomationId}[{row},{columnKey}]={value}";
+            _operationLog.Record(FailureSteps.SetCellValue, detail);
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.SetCellValue,
+                    expected: value,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    private async Task ExpectCellTextCoreAsync(
+        int row,
+        int? column,
+        string? columnKey,
+        string expectedText,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(expectedText);
+
+        var host = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(host.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot expectCellText over the wire.",
+                    FailureSteps.ExpectCellText,
+                    expected: expectedText,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        var timeout = PositiveOrDefault(
+            _waitOptions.ExpectTimeout,
+            WaitOptions.DefaultExpectTimeout
+        );
+        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
+        var deadline = DateTime.UtcNow + timeout;
+        string? lastActual = null;
+        var sawCell = false;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                var actual = columnKey is null
+                    ? await _connection
+                        .GetCellTextAsync(host.AutomationId, row, column!.Value, cancellationToken)
+                        .ConfigureAwait(false)
+                    : await _connection
+                        .GetCellTextAsync(host.AutomationId, row, columnKey, cancellationToken)
+                        .ConfigureAwait(false);
+                sawCell = true;
+                if (string.Equals(actual, expectedText, StringComparison.Ordinal))
+                {
+                    _operationLog.Record(FailureSteps.ExpectCellText, expectedText);
+                    return;
+                }
+
+                lastActual = actual;
+            }
+            catch (GraftException ex)
+                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+            {
+                // Still waiting for the cell / grid to be ready.
+            }
+
+            var remaining = deadline - DateTime.UtcNow;
+            if (remaining <= TimeSpan.Zero)
+            {
+                break;
+            }
+
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        if (sawCell && lastActual is not null)
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ExpectFailed,
+                    $"Expected cell text '{expectedText}' but was '{lastActual}'.",
+                    FailureSteps.ExpectCellText,
+                    expected: expectedText,
+                    actual: lastActual,
+                    timedOut: true,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        throw await CreateFailureAsync(
+                GraftErrorCodes.ActionTimeout,
+                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for cell text '{expectedText}'.",
+                FailureSteps.ExpectCellText,
+                expected: expectedText,
+                timedOut: true,
                 cancellationToken: cancellationToken
             )
             .ConfigureAwait(false);
@@ -1713,14 +1921,13 @@ public sealed class ElementQuery
             var (_, pngBytes) = await _connection
                 .ScreenshotAsync(cancellationToken)
                 .ConfigureAwait(false);
-            screenshotPath = Path.Combine(Path.GetTempPath(), $"graft-fail-{Guid.NewGuid():N}.png");
-            await File.WriteAllBytesAsync(screenshotPath, pngBytes, cancellationToken)
-                .ConfigureAwait(false);
+            var path = Path.Combine(Path.GetTempPath(), $"graft-fail-{Guid.NewGuid():N}.png");
+            await File.WriteAllBytesAsync(path, pngBytes, cancellationToken).ConfigureAwait(false);
+            screenshotPath = path;
         }
         catch (Exception)
         {
             // Best-effort attachment; keep the original failure.
-            screenshotPath = null;
         }
 
         IReadOnlyList<HealingCandidate>? healingCandidates = null;

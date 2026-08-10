@@ -47,6 +47,31 @@ public static class ProtocolMethods
     public const string RightClick = "rightClick";
 
     /// <summary>
+    /// Double-clicks an element selected by <c>params.automationId</c> (SendInput).
+    /// </summary>
+    public const string DoubleClick = "doubleClick";
+
+    /// <summary>
+    /// Moves the cursor over an element selected by <c>params.automationId</c> (SendInput).
+    /// </summary>
+    public const string Hover = "hover";
+
+    /// <summary>
+    /// Drags from <c>params.automationId</c> to <c>params.toAutomationId</c> (SendInput).
+    /// </summary>
+    public const string Drag = "drag";
+
+    /// <summary>
+    /// Left-clicks at clickable point + DIP offsets via <c>params.automationId</c>, <c>offsetX</c>, <c>offsetY</c>.
+    /// </summary>
+    public const string ClickAt = "clickAt";
+
+    /// <summary>
+    /// Scrolls the mouse wheel over <c>params.automationId</c> by <c>params.delta</c> (SendInput).
+    /// </summary>
+    public const string Wheel = "wheel";
+
+    /// <summary>
     /// Replaces an element's value (e.g. TextBox) via <c>params.automationId</c> and <c>params.value</c>.
     /// </summary>
     public const string SetValue = "setValue";

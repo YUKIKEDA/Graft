@@ -81,6 +81,46 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case DoubleClickOperation doubleClick:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(doubleClick.AutomationId)
+                            .DoubleClickAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case HoverOperation hover:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(hover.AutomationId)
+                            .HoverAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case DragOperation drag:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(drag.AutomationId)
+                            .DragAsync(drag.ToAutomationId, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case ClickAtOperation clickAt:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(clickAt.AutomationId)
+                            .ClickAtAsync(clickAt.OffsetX, clickAt.OffsetY, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case WheelOperation wheel:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(wheel.AutomationId)
+                            .WheelAsync(wheel.Delta, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     case SetValueOperation setValue:
                         EnsureSession(session);
                         await session!

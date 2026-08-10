@@ -12,7 +12,7 @@ namespace Graft.McpServer.Tools;
 /// Session-scoped atomic MCP tools wrapping Fluent Core APIs.
 /// </summary>
 [McpServerToolType]
-public sealed class GraftAtomicTools
+public sealed partial class GraftAtomicTools
 {
     private readonly GraftSessionHub _hub;
 
@@ -37,7 +37,7 @@ public sealed class GraftAtomicTools
     [Description(
         "Launch an instrumented app and open a Graft session. Fails if a session is already open."
     )]
-    public Task<CallToolResult> Launch(
+    public partial Task<CallToolResult> Launch(
         [Description("Absolute path to the app exe or csproj.")] string appPath,
         [Description("MSBuild configuration (default GraftTest).")] string? configuration = null,
         [Description("Launch timeout in seconds (default 30).")] double? timeoutSeconds = null,
@@ -103,7 +103,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_invoke")]
     [Description("Invoke (click) an element by automationId in the open session.")]
-    public Task<CallToolResult> Invoke(
+    public partial Task<CallToolResult> Invoke(
         [Description("Target automation id.")] string automationId,
         CancellationToken cancellationToken = default
     ) =>
@@ -127,7 +127,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_right_click")]
     [Description("rightClick an element by automationId in the open session.")]
-    public Task<CallToolResult> RightClick(
+    public partial Task<CallToolResult> RightClick(
         [Description("Target automation id.")] string automationId,
         CancellationToken cancellationToken = default
     ) =>
@@ -144,6 +144,149 @@ public sealed class GraftAtomicTools
         );
 
     /// <summary>
+    /// Double-clicks an element by automation id.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_double_click")]
+    [Description("doubleClick an element by automationId in the open session.")]
+    public partial Task<CallToolResult> DoubleClick(
+        [Description("Target automation id.")] string automationId,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .DoubleClickAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Hovers over an element by automation id.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_hover")]
+    [Description("hover over an element by automationId in the open session.")]
+    public partial Task<CallToolResult> Hover(
+        [Description("Target automation id.")] string automationId,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .HoverAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Drags from one element to another by automation id.
+    /// </summary>
+    /// <param name="automationId">Source automation id.</param>
+    /// <param name="toAutomationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_drag")]
+    [Description("drag from automationId to toAutomationId in the open session.")]
+    public partial Task<CallToolResult> Drag(
+        [Description("Source automation id.")] string automationId,
+        [Description("Target automation id.")] string toAutomationId,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .DragAsync(toAutomationId, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject
+                    {
+                        ["automationId"] = automationId,
+                        ["toAutomationId"] = toAutomationId,
+                    }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Left-clicks at clickable point plus DIP offsets.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="offsetX">Horizontal DIP offset from clickable point.</param>
+    /// <param name="offsetY">Vertical DIP offset from clickable point.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_click_at")]
+    [Description("clickAt an element with DIP offsets in the open session.")]
+    public partial Task<CallToolResult> ClickAt(
+        [Description("Target automation id.")] string automationId,
+        [Description("Horizontal DIP offset from clickable point.")] double offsetX,
+        [Description("Vertical DIP offset from clickable point.")] double offsetY,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .ClickAtAsync(offsetX, offsetY, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject
+                    {
+                        ["automationId"] = automationId,
+                        ["offsetX"] = offsetX,
+                        ["offsetY"] = offsetY,
+                    }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Scrolls the mouse wheel over an element.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="delta">Wheel delta (typically multiples of 120).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_wheel")]
+    [Description("wheel over an element by automationId in the open session.")]
+    public partial Task<CallToolResult> Wheel(
+        [Description("Target automation id.")] string automationId,
+        [Description("Wheel delta (typically multiples of 120).")] int delta,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .WheelAsync(delta, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject { ["automationId"] = automationId, ["delta"] = delta }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Sets an element's value by automation id.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>
@@ -152,7 +295,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_set_value")]
     [Description("setValue on an element by automationId in the open session.")]
-    public Task<CallToolResult> SetValue(
+    public partial Task<CallToolResult> SetValue(
         [Description("Target automation id.")] string automationId,
         [Description("Replacement text.")] string value,
         CancellationToken cancellationToken = default
@@ -179,7 +322,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_toggle")]
     [Description("Toggle an element by automationId in the open session.")]
-    public Task<CallToolResult> Toggle(
+    public partial Task<CallToolResult> Toggle(
         [Description("Target automation id.")] string automationId,
         CancellationToken cancellationToken = default
     ) =>
@@ -204,7 +347,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_send_keys")]
     [Description("sendKeys (literal text) to an element by automationId in the open session.")]
-    public Task<CallToolResult> SendKeys(
+    public partial Task<CallToolResult> SendKeys(
         [Description("Target automation id.")] string automationId,
         [Description("Literal text to type.")] string text,
         CancellationToken cancellationToken = default
@@ -234,7 +377,7 @@ public sealed class GraftAtomicTools
     [Description(
         "pressKeys: one keyboard chord (e.g. Control+A, Delete) on an element by automationId."
     )]
-    public Task<CallToolResult> PressKeys(
+    public partial Task<CallToolResult> PressKeys(
         [Description("Target automation id.")] string automationId,
         [Description("Chord DSL (one chord per call).")] string keys,
         CancellationToken cancellationToken = default
@@ -264,7 +407,7 @@ public sealed class GraftAtomicTools
     [Description(
         "scrollIntoView for an element or list item (optional index) in the open session."
     )]
-    public Task<CallToolResult> ScrollIntoView(
+    public partial Task<CallToolResult> ScrollIntoView(
         [Description("Target element or list automation id.")] string automationId,
         [Description("Optional zero-based list item index.")] int? index = null,
         CancellationToken cancellationToken = default
@@ -307,7 +450,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_select")]
     [Description("Select a single list/combo item by index in the open session.")]
-    public Task<CallToolResult> Select(
+    public partial Task<CallToolResult> Select(
         [Description("List or combo automation id.")] string automationId,
         [Description("Zero-based item index.")] int index,
         CancellationToken cancellationToken = default
@@ -337,7 +480,7 @@ public sealed class GraftAtomicTools
     [Description(
         "Replace ListBox or DataGrid multi-selection by indexes in the open session (empty clears)."
     )]
-    public Task<CallToolResult> SelectMany(
+    public partial Task<CallToolResult> SelectMany(
         [Description("ListBox or DataGrid automation id.")] string automationId,
         [Description("Zero-based item/row indexes (empty clears selection).")] int[] indexes,
         CancellationToken cancellationToken = default
@@ -376,13 +519,11 @@ public sealed class GraftAtomicTools
     [Description(
         "Get DataGrid cell text by row and column index or columnKey (Header) in the open session."
     )]
-    public Task<CallToolResult> GetCellText(
+    public partial Task<CallToolResult> GetCellText(
         [Description("DataGrid automation id.")] string automationId,
         [Description("Zero-based row index.")] int row,
-        [Description("Zero-based column index (mutually exclusive with columnKey).")]
-            int? column = null,
-        [Description("Column Header string (mutually exclusive with column).")]
-            string? columnKey = null,
+        [Description("Column index (xor columnKey).")] int? column = null,
+        [Description("Column Header (xor column).")] string? columnKey = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
@@ -432,14 +573,12 @@ public sealed class GraftAtomicTools
     [Description(
         "Set DataGrid cell value by row and column index or columnKey (Header) in the open session."
     )]
-    public Task<CallToolResult> SetCellValue(
+    public partial Task<CallToolResult> SetCellValue(
         [Description("DataGrid automation id.")] string automationId,
         [Description("Zero-based row index.")] int row,
         [Description("Replacement text (CheckBox: True/False).")] string value,
-        [Description("Zero-based column index (mutually exclusive with columnKey).")]
-            int? column = null,
-        [Description("Column Header string (mutually exclusive with column).")]
-            string? columnKey = null,
+        [Description("Column index (xor columnKey).")] int? column = null,
+        [Description("Column Header (xor column).")] string? columnKey = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
@@ -495,14 +634,12 @@ public sealed class GraftAtomicTools
     [Description(
         "Expect DataGrid cell text by row and column index or columnKey (Header) in the open session."
     )]
-    public Task<CallToolResult> ExpectCellText(
+    public partial Task<CallToolResult> ExpectCellText(
         [Description("DataGrid automation id.")] string automationId,
         [Description("Zero-based row index.")] int row,
         [Description("Expected cell text.")] string text,
-        [Description("Zero-based column index (mutually exclusive with columnKey).")]
-            int? column = null,
-        [Description("Column Header string (mutually exclusive with column).")]
-            string? columnKey = null,
+        [Description("Column index (xor columnKey).")] int? column = null,
+        [Description("Column Header (xor column).")] string? columnKey = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
@@ -544,19 +681,6 @@ public sealed class GraftAtomicTools
             cancellationToken
         );
 
-    private static void EnsureColumnXor(int? column, string? columnKey)
-    {
-        var hasColumn = column is not null;
-        var hasKey = !string.IsNullOrWhiteSpace(columnKey);
-        if (hasColumn == hasKey)
-        {
-            throw new GraftException(
-                GraftErrorCodes.SelectorInvalid,
-                "Exactly one of column or columnKey is required."
-            );
-        }
-    }
-
     /// <summary>
     /// Expands an element by automation id.
     /// </summary>
@@ -565,7 +689,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expand")]
     [Description("Expand an element by automationId in the open session.")]
-    public Task<CallToolResult> Expand(
+    public partial Task<CallToolResult> Expand(
         [Description("Target automation id.")] string automationId,
         CancellationToken cancellationToken = default
     ) =>
@@ -589,7 +713,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_collapse")]
     [Description("Collapse an element by automationId in the open session.")]
-    public Task<CallToolResult> Collapse(
+    public partial Task<CallToolResult> Collapse(
         [Description("Target automation id.")] string automationId,
         CancellationToken cancellationToken = default
     ) =>
@@ -614,7 +738,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_name")]
     [Description("Expect an element's tree name in the open session.")]
-    public Task<CallToolResult> ExpectName(
+    public partial Task<CallToolResult> ExpectName(
         [Description("Target automation id.")] string automationId,
         [Description("Expected tree name.")] string name,
         CancellationToken cancellationToken = default
@@ -642,7 +766,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_selected")]
     [Description("Expect an element's tree selected state in the open session.")]
-    public Task<CallToolResult> ExpectSelected(
+    public partial Task<CallToolResult> ExpectSelected(
         [Description("Target automation id.")] string automationId,
         [Description("Expected selected state.")] bool selected,
         CancellationToken cancellationToken = default
@@ -670,7 +794,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_expanded")]
     [Description("Expect an element's tree expanded state in the open session.")]
-    public Task<CallToolResult> ExpectExpanded(
+    public partial Task<CallToolResult> ExpectExpanded(
         [Description("Target automation id.")] string automationId,
         [Description("Expected expanded state.")] bool expanded,
         CancellationToken cancellationToken = default
@@ -698,7 +822,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_checked")]
     [Description("Expect an element's tree checked state in the open session.")]
-    public Task<CallToolResult> ExpectChecked(
+    public partial Task<CallToolResult> ExpectChecked(
         [Description("Target automation id.")] string automationId,
         [Description("Expected checked state.")] bool checkedState,
         CancellationToken cancellationToken = default
@@ -726,7 +850,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_enabled")]
     [Description("Expect an element's tree enabled state in the open session.")]
-    public Task<CallToolResult> ExpectEnabled(
+    public partial Task<CallToolResult> ExpectEnabled(
         [Description("Target automation id.")] string automationId,
         [Description("Expected enabled state.")] bool enabled,
         CancellationToken cancellationToken = default
@@ -754,7 +878,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_visible")]
     [Description("Expect an element's tree visible state in the open session.")]
-    public Task<CallToolResult> ExpectVisible(
+    public partial Task<CallToolResult> ExpectVisible(
         [Description("Target automation id.")] string automationId,
         [Description("Expected visible state.")] bool visible,
         CancellationToken cancellationToken = default
@@ -782,7 +906,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_name_contains")]
     [Description("Expect an element's tree name contains a substring in the open session.")]
-    public Task<CallToolResult> ExpectNameContains(
+    public partial Task<CallToolResult> ExpectNameContains(
         [Description("Target automation id.")] string automationId,
         [Description("Expected ordinal substring.")] string substring,
         CancellationToken cancellationToken = default
@@ -810,7 +934,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_name_matches")]
     [Description("Expect an element's tree name matches a regex in the open session.")]
-    public Task<CallToolResult> ExpectNameMatches(
+    public partial Task<CallToolResult> ExpectNameMatches(
         [Description("Target automation id.")] string automationId,
         [Description(".NET regular expression pattern.")] string pattern,
         CancellationToken cancellationToken = default
@@ -838,7 +962,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_value")]
     [Description("Expect an element's tree value in the open session.")]
-    public Task<CallToolResult> ExpectValue(
+    public partial Task<CallToolResult> ExpectValue(
         [Description("Target automation id.")] string automationId,
         [Description("Expected tree value.")] string value,
         CancellationToken cancellationToken = default
@@ -865,7 +989,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_wait_for")]
     [Description("Wait until an element is present in the open session.")]
-    public Task<CallToolResult> WaitFor(
+    public partial Task<CallToolResult> WaitFor(
         [Description("Target automation id.")] string automationId,
         CancellationToken cancellationToken = default
     ) =>
@@ -889,7 +1013,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_gone")]
     [Description("Wait until an element is gone or not visible in the open session.")]
-    public Task<CallToolResult> ExpectGone(
+    public partial Task<CallToolResult> ExpectGone(
         [Description("Target automation id.")] string automationId,
         CancellationToken cancellationToken = default
     ) =>
@@ -915,7 +1039,7 @@ public sealed class GraftAtomicTools
     [Description(
         "Capture the current target window as PNG. Optional path; when omitted writes a temp file."
     )]
-    public Task<CallToolResult> Screenshot(
+    public partial Task<CallToolResult> Screenshot(
         [Description("Destination PNG path (optional; temp when omitted).")] string? path = null,
         CancellationToken cancellationToken = default
     ) =>
@@ -948,7 +1072,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_list_windows")]
     [Description("List open windows with session-local windowId values.")]
-    public Task<CallToolResult> ListWindows(CancellationToken cancellationToken = default) =>
+    public partial Task<CallToolResult> ListWindows(CancellationToken cancellationToken = default) =>
         WithSessionAsync(
             async session =>
             {
@@ -983,7 +1107,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_switch_window")]
     [Description("Switch the agent target window by session-local windowId.")]
-    public Task<CallToolResult> SwitchWindow(
+    public partial Task<CallToolResult> SwitchWindow(
         [Description("Session-local window id from graft_list_windows.")] int windowId,
         CancellationToken cancellationToken = default
     ) =>
@@ -1010,7 +1134,7 @@ public sealed class GraftAtomicTools
     [Description(
         "Wait for a window by title and/or automationId. Defaults to switching the target to the match."
     )]
-    public Task<CallToolResult> WaitForWindow(
+    public partial Task<CallToolResult> WaitForWindow(
         [Description("Exact title (optional).")] string? title = null,
         [Description("Exact automation id (optional).")] string? automationId = null,
         [Description("Switch to match (default true).")] bool switchTo = true,
@@ -1046,7 +1170,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_wait_for_window_closed")]
     [Description("Wait until a window by title and/or automationId is closed.")]
-    public Task<CallToolResult> WaitForWindowClosed(
+    public partial Task<CallToolResult> WaitForWindowClosed(
         [Description("Exact title (optional).")] string? title = null,
         [Description("Exact automation id (optional).")] string? automationId = null,
         CancellationToken cancellationToken = default
@@ -1080,7 +1204,7 @@ public sealed class GraftAtomicTools
     [Description(
         "Invoke an element that may open a window (BeginInvoke). By default waits for a new WPF window. Set waitForNewWindow=false for Graft OpenFile seam."
     )]
-    public Task<CallToolResult> InvokeOpeningWindow(
+    public partial Task<CallToolResult> InvokeOpeningWindow(
         [Description("Target automation id.")] string automationId,
         [Description("Wait for new WPF window (default true).")] bool waitForNewWindow = true,
         CancellationToken cancellationToken = default
@@ -1127,7 +1251,7 @@ public sealed class GraftAtomicTools
     [Description(
         "Arm the next OpenFileDialog.ShowDialog (RunDialog seam) to return a path (one-shot)."
     )]
-    public Task<CallToolResult> ArmOpenFile(
+    public partial Task<CallToolResult> ArmOpenFile(
         [Description("File path to return.")] string path,
         CancellationToken cancellationToken = default
     ) =>
@@ -1147,7 +1271,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_arm_open_file_cancel")]
     [Description("Arm the next OpenFileDialog.ShowDialog (RunDialog seam) as cancel (one-shot).")]
-    public Task<CallToolResult> ArmOpenFileCancel(CancellationToken cancellationToken = default) =>
+    public partial Task<CallToolResult> ArmOpenFileCancel(CancellationToken cancellationToken = default) =>
         WithSessionAsync(
             async session =>
             {
@@ -1167,7 +1291,7 @@ public sealed class GraftAtomicTools
     [Description(
         "Arm the next SaveFileDialog.ShowDialog (RunDialog seam) to return a path (one-shot)."
     )]
-    public Task<CallToolResult> ArmSaveFile(
+    public partial Task<CallToolResult> ArmSaveFile(
         [Description("File path to return.")] string path,
         CancellationToken cancellationToken = default
     ) =>
@@ -1187,7 +1311,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_arm_save_file_cancel")]
     [Description("Arm the next SaveFileDialog.ShowDialog (RunDialog seam) as cancel (one-shot).")]
-    public Task<CallToolResult> ArmSaveFileCancel(CancellationToken cancellationToken = default) =>
+    public partial Task<CallToolResult> ArmSaveFileCancel(CancellationToken cancellationToken = default) =>
         WithSessionAsync(
             async session =>
             {
@@ -1207,7 +1331,7 @@ public sealed class GraftAtomicTools
     [Description(
         "Arm the next OpenFolderDialog.ShowDialog (RunDialog seam) to return a folder path (one-shot)."
     )]
-    public Task<CallToolResult> ArmOpenFolder(
+    public partial Task<CallToolResult> ArmOpenFolder(
         [Description("Folder path to return.")] string path,
         CancellationToken cancellationToken = default
     ) =>
@@ -1227,7 +1351,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_arm_open_folder_cancel")]
     [Description("Arm the next OpenFolderDialog.ShowDialog (RunDialog seam) as cancel (one-shot).")]
-    public Task<CallToolResult> ArmOpenFolderCancel(
+    public partial Task<CallToolResult> ArmOpenFolderCancel(
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
@@ -1249,7 +1373,7 @@ public sealed class GraftAtomicTools
     [Description(
         "Arm the next MessageBox.Show to return a MessageBoxResult (None/OK/Cancel/Yes/No, one-shot)."
     )]
-    public Task<CallToolResult> ArmMessageBox(
+    public partial Task<CallToolResult> ArmMessageBox(
         [Description("MessageBoxResult name: None, OK, Cancel, Yes, or No.")] string result,
         CancellationToken cancellationToken = default
     ) =>
@@ -1269,7 +1393,7 @@ public sealed class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_dispose")]
     [Description("Dispose the open Graft session (closes pipe and kills the app process).")]
-    public Task<CallToolResult> DisposeSession(CancellationToken cancellationToken = default) =>
+    public partial Task<CallToolResult> DisposeSession(CancellationToken cancellationToken = default) =>
         _hub.RunAsync(
             async session =>
             {
@@ -1287,6 +1411,19 @@ public sealed class GraftAtomicTools
             },
             cancellationToken
         );
+
+    private static void EnsureColumnXor(int? column, string? columnKey)
+    {
+        var hasColumn = column is not null;
+        var hasKey = !string.IsNullOrWhiteSpace(columnKey);
+        if (hasColumn == hasKey)
+        {
+            throw new GraftException(
+                GraftErrorCodes.SelectorInvalid,
+                "Exactly one of column or columnKey is required."
+            );
+        }
+    }
 
     private Task<CallToolResult> WithSessionAsync(
         Func<GraftSession, Task<CallToolResult>> action,
