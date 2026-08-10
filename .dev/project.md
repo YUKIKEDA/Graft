@@ -365,7 +365,7 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - 診断向けツリー差分 JSON のフィールド名の確定
 - scroll/select の項目キー・表示名指定（index 正本の次候補）
 - 実 OS コモンダイアログの UIA 操作（方針上非採用。必要なら別検討）
-- WPF 競合ギャップ（正本: [competitive-gap.md](./competitive-gap.md)。Must 未確定行のレビュー）
+- WPF 競合ギャップ（正本: [competitive-gap.md](./competitive-gap.md)。Must 確定済み → Phase 24+）
 - Avalonia アダプタ（**Must 完了後**）。Inspector は任意（自社アプリでは getTree で代替しやすい）
 - MessagePack 評価用の実測ログ形式
 - .NET Framework WPF 対応の要否（需要が固まってから）
