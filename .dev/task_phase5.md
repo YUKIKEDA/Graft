@@ -36,12 +36,12 @@
 
 ## Batch 1 — `scrollIntoView`（ブランチ: `phase5/batch-1-scroll-into-view`）
 
-- [ ] wire: `scrollIntoView`（`automationId`、任意 `index`）
-- [ ] WPF: 要素 `BringIntoView` / リスト `ScrollIntoView` + コンテナ生成
-- [ ] 成功時 result に実現項目の identity（`automationId` 必須）
-- [ ] Core: `ScrollIntoViewAsync()` / `ScrollIntoViewAsync(int index)`
-- [ ] Sample: 仮想化 ListBox（十分な項目数）+ E2E 1 経路
-- [ ] （任意この Batch 末尾）Scenario / MCP 薄い追従
+- [x] wire: `scrollIntoView`（`automationId`、任意 `index`）
+- [x] WPF: 要素 `BringIntoView` / リスト `ScrollIntoView` + コンテナ生成
+- [x] 成功時 result に実現項目の identity（`automationId` 必須）
+- [x] Core: `ScrollIntoViewAsync()` / `ScrollIntoViewAsync(int index)`
+- [x] Sample: 仮想化 ListBox（十分な項目数）+ E2E 1 経路
+- [x] （任意この Batch 末尾）Scenario / MCP 薄い追従
 
 **完了条件:** 仮想化リストの画面外 index を scroll し、返った identity で後続操作またはツリー確認ができる。  
 **次:** Batch 2（select）へ。
@@ -50,11 +50,11 @@
 
 ## Batch 2 — `select`（ブランチ: `phase5/batch-2-select`）
 
-- [ ] wire: `select`（`automationId` = リスト/コンボ、`index`）
-- [ ] WPF: 単一選択。未実現なら内部で scroll/realize してから選択
-- [ ] Core: `SelectAsync(int index)`
-- [ ] Sample: 選択で StatusText 等が変わる副作用 + E2E
-- [ ] （任意）Scenario / MCP 追従
+- [x] wire: `select`（`automationId` = リスト/コンボ、`index`）
+- [x] WPF: 単一選択。未実現なら内部で scroll/realize してから選択
+- [x] Core: `SelectAsync(int index)`
+- [x] Sample: 選択で StatusText 等が変わる副作用 + E2E
+- [x] （任意）Scenario / MCP 追従
 
 **完了条件:** index 指定の単一選択が仮想化 ListBox（および ComboBox いずれか）で緑。  
 **次:** Batch 3（expand/collapse）へ。
@@ -63,11 +63,11 @@
 
 ## Batch 3 — `expand` / `collapse`（ブランチ: `phase5/batch-3-expand-collapse`）
 
-- [ ] wire: `expand` / `collapse`（または `setExpanded` + bool）
-- [ ] WPF: TreeViewItem / Expander 等
-- [ ] Core: `ExpandAsync()` / `CollapseAsync()`
-- [ ] Sample: 展開で子や Status が変わる副作用 + E2E
-- [ ] （任意）Scenario / MCP 追従
+- [x] wire: `expand` / `collapse`（または `setExpanded` + bool）
+- [x] WPF: TreeViewItem / Expander 等
+- [x] Core: `ExpandAsync()` / `CollapseAsync()`
+- [x] Sample: 展開で子や Status が変わる副作用 + E2E
+- [x] （任意）Scenario / MCP 追従
 
 **完了条件:** 状態指定で開閉できる。  
 **次:** Batch 4（docs / 完了チェック、未追従の Scenario・MCP があればここで）へ。
@@ -76,10 +76,10 @@
 
 ## Batch 4 — docs + 追従の締め（ブランチ: `phase5/batch-4-docs`）
 
-- [ ] 未追従なら Scenario schema / MCP ツールを揃える
-- [ ] `graft-core.md` 更新
-- [ ] 本ファイル完了チェック
-- [ ] 次フェーズメモ: ツリー `selected`/`expanded`（診断・LLM）→ Avalonia
+- [x] 未追従なら Scenario schema / MCP ツールを揃える
+- [x] `graft-core.md` 更新
+- [x] 本ファイル完了チェック
+- [x] 次フェーズメモ: ツリー `selected`/`expanded`（診断・LLM）→ Avalonia
 
 **完了条件:** 公開経路と文書が揃っている。  
 **次:** Phase 5 完了チェック → ツリー状態フェーズへ。
@@ -97,13 +97,13 @@
 
 ## Phase 5 完了チェック
 
-- [ ] 仮想化リストで `scrollIntoView(index)` が identity を返す
-- [ ] 実現済み要素の引数なし `scrollIntoView` がある
-- [ ] `select(index)` が単一選択でき、必要なら自動 scroll する
-- [ ] `expand` / `collapse` で状態指定できる
-- [ ] Sample 副作用ベースの E2E が緑
-- [ ] Scenario / MCP から同操作が呼べる（薄い追従で可）
-- [ ] Avalonia / Inspector / ツリー selected・expanded / 複数選択 / パス一括は **含めない**
+- [x] 仮想化リストで `scrollIntoView(index)` が identity を返す
+- [x] 実現済み要素の引数なし `scrollIntoView` がある
+- [x] `select(index)` が単一選択でき、必要なら自動 scroll する
+- [x] `expand` / `collapse` で状態指定できる
+- [x] Sample 副作用ベースの E2E が緑
+- [x] Scenario / MCP から同操作が呼べる（薄い追従で可）
+- [x] Avalonia / Inspector / ツリー selected・expanded / 複数選択 / パス一括は **含めない**
 
 ---
 

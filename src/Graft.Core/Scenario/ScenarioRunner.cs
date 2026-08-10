@@ -97,6 +97,49 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case ScrollIntoViewOperation scroll:
+                        EnsureSession(session);
+                        if (scroll.Index is { } scrollIndex)
+                        {
+                            await session!
+                                .GetByAutomationId(scroll.AutomationId)
+                                .ScrollIntoViewAsync(scrollIndex, cancellationToken)
+                                .ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            await session!
+                                .GetByAutomationId(scroll.AutomationId)
+                                .ScrollIntoViewAsync(cancellationToken)
+                                .ConfigureAwait(false);
+                        }
+
+                        break;
+
+                    case SelectOperation select:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(select.AutomationId)
+                            .SelectAsync(select.Index, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case ExpandOperation expand:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(expand.AutomationId)
+                            .ExpandAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case CollapseOperation collapse:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(collapse.AutomationId)
+                            .CollapseAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     case ExpectNameOperation expectName:
                         EnsureSession(session);
                         await session!

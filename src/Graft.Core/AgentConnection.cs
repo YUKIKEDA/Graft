@@ -242,6 +242,147 @@ public sealed class AgentConnection : IAsyncDisposable
     }
 
     /// <summary>
+    /// Calls <c>scrollIntoView</c> and returns the realized element identity.
+    /// </summary>
+    /// <param name="automationId">Target element or list automation id.</param>
+    /// <param name="index">Optional list item index (virtualized lists).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Identity of the scrolled element.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task<ElementIdentity> ScrollIntoViewAsync(
+        string automationId,
+        int? index = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ThrowIfDisposed();
+
+        object payload = index is null
+            ? new { automationId }
+            : new { automationId, index = index.Value };
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.ScrollIntoView,
+                    Params = JsonSerializer.SerializeToElement(payload),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "scrollIntoView failed.");
+        if (response.Result is not { } resultElement)
+        {
+            throw new GraftException(
+                GraftErrorCodes.ActionFailed,
+                "scrollIntoView returned no result."
+            );
+        }
+
+        return resultElement.Deserialize<ElementIdentity>(JsonMessageCodec.Options)
+            ?? throw new GraftException(
+                GraftErrorCodes.ActionFailed,
+                "scrollIntoView result deserialized to null."
+            );
+    }
+
+    /// <summary>
+    /// Calls <c>select</c> for a list/combo item by index.
+    /// </summary>
+    /// <param name="automationId">List or combo automation id.</param>
+    /// <param name="index">Zero-based item index.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when select succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task SelectAsync(
+        string automationId,
+        int index,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.Select,
+                    Params = JsonSerializer.SerializeToElement(new { automationId, index }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "select failed.");
+    }
+
+    /// <summary>
+    /// Calls <c>expand</c> for the element with the given automation id.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when expand succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task ExpandAsync(
+        string automationId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.Expand,
+                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "expand failed.");
+    }
+
+    /// <summary>
+    /// Calls <c>collapse</c> for the element with the given automation id.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when collapse succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task CollapseAsync(
+        string automationId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.Collapse,
+                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "collapse failed.");
+    }
+
+    /// <summary>
     /// Calls <c>screenshot</c> and reads the following raw PNG frame.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>

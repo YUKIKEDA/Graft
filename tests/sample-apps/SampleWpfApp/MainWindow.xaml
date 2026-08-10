@@ -6,42 +6,95 @@
         mc:Ignorable="d"
         Title="Graft Sample WPF App"
         AutomationProperties.AutomationId="Main"
-        Height="420"
+        Height="560"
         Width="480">
-    <StackPanel Margin="24" VerticalAlignment="Center">
-        <TextBlock x:Name="StatusText"
-                   AutomationProperties.AutomationId="StatusText"
-                   Text="Ready"
-                   FontSize="16"
-                   Margin="0,0,0,16" />
-        <TextBox x:Name="SampleTextBox"
-                 AutomationProperties.AutomationId="SampleTextBox"
-                 Text=""
-                 Margin="0,0,0,16" />
-        <Button x:Name="SampleButton"
-                AutomationProperties.AutomationId="SampleButton"
-                Content="Click Me"
-                Padding="12,6"
-                HorizontalAlignment="Left"
-                Margin="0,0,0,16"
-                Click="SampleButton_OnClick" />
-        <CheckBox x:Name="SampleCheckBox"
-                  AutomationProperties.AutomationId="SampleCheckBox"
-                  Content="Off"
-                  Margin="0,0,0,16"
-                  Checked="SampleCheckBox_OnChecked"
-                  Unchecked="SampleCheckBox_OnUnchecked" />
-        <Border x:Name="SampleMouseTarget"
-                AutomationProperties.AutomationId="SampleMouseTarget"
-                AutomationProperties.Name="MouseReady"
-                Background="#FFDDDDDD"
-                Height="36"
-                Margin="0,0,0,8"
-                Cursor="Hand"
-                MouseLeftButtonDown="SampleMouseTarget_OnMouseLeftButtonDown">
-            <TextBlock Text="Mouse target"
-                       VerticalAlignment="Center"
-                       HorizontalAlignment="Center" />
-        </Border>
-    </StackPanel>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24">
+            <TextBlock x:Name="StatusText"
+                       AutomationProperties.AutomationId="StatusText"
+                       Text="Ready"
+                       FontSize="16"
+                       Margin="0,0,0,16" />
+            <TextBox x:Name="SampleTextBox"
+                     AutomationProperties.AutomationId="SampleTextBox"
+                     Text=""
+                     Margin="0,0,0,16" />
+            <Button x:Name="SampleButton"
+                    AutomationProperties.AutomationId="SampleButton"
+                    Content="Click Me"
+                    Padding="12,6"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,0,16"
+                    Click="SampleButton_OnClick" />
+            <CheckBox x:Name="SampleCheckBox"
+                      AutomationProperties.AutomationId="SampleCheckBox"
+                      Content="Off"
+                      Margin="0,0,0,16"
+                      Checked="SampleCheckBox_OnChecked"
+                      Unchecked="SampleCheckBox_OnUnchecked" />
+            <Border x:Name="SampleMouseTarget"
+                    AutomationProperties.AutomationId="SampleMouseTarget"
+                    AutomationProperties.Name="MouseReady"
+                    Background="#FFDDDDDD"
+                    Height="36"
+                    Margin="0,0,0,16"
+                    Cursor="Hand"
+                    MouseLeftButtonDown="SampleMouseTarget_OnMouseLeftButtonDown">
+                <TextBlock Text="Mouse target"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center" />
+            </Border>
+
+            <TextBlock Text="Virtualized list" Margin="0,0,0,4" />
+            <ListBox x:Name="SampleList"
+                     AutomationProperties.AutomationId="SampleList"
+                     Height="120"
+                     Margin="0,0,0,16"
+                     DisplayMemberPath="Name"
+                     VirtualizingStackPanel.IsVirtualizing="True"
+                     VirtualizingStackPanel.VirtualizationMode="Recycling"
+                     ScrollViewer.CanContentScroll="True"
+                     SelectionChanged="SampleList_OnSelectionChanged">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="AutomationProperties.AutomationId"
+                                Value="{Binding AutomationId}" />
+                        <Setter Property="AutomationProperties.Name"
+                                Value="{Binding Name}" />
+                    </Style>
+                </ListBox.ItemContainerStyle>
+            </ListBox>
+
+            <TextBlock Text="Combo" Margin="0,0,0,4" />
+            <ComboBox x:Name="SampleCombo"
+                      AutomationProperties.AutomationId="SampleCombo"
+                      Margin="0,0,0,16"
+                      DisplayMemberPath="Name"
+                      SelectionChanged="SampleCombo_OnSelectionChanged">
+                <ComboBox.ItemContainerStyle>
+                    <Style TargetType="ComboBoxItem">
+                        <Setter Property="AutomationProperties.AutomationId"
+                                Value="{Binding AutomationId}" />
+                    </Style>
+                </ComboBox.ItemContainerStyle>
+            </ComboBox>
+
+            <TextBlock Text="Tree" Margin="0,0,0,4" />
+            <TreeView x:Name="SampleTree"
+                      AutomationProperties.AutomationId="SampleTree"
+                      Height="100"
+                      Margin="0,0,0,8">
+                <TreeViewItem x:Name="SampleTreeRoot"
+                              AutomationProperties.AutomationId="SampleTreeRoot"
+                              Header="Root"
+                              Expanded="SampleTreeRoot_OnExpanded"
+                              Collapsed="SampleTreeRoot_OnCollapsed">
+                    <TreeViewItem Header="Child A"
+                                  AutomationProperties.AutomationId="SampleTreeChildA" />
+                    <TreeViewItem Header="Child B"
+                                  AutomationProperties.AutomationId="SampleTreeChildB" />
+                </TreeViewItem>
+            </TreeView>
+        </StackPanel>
+    </ScrollViewer>
 </Window>

@@ -183,6 +183,10 @@ public static class ScenarioJson
             ScenarioActions.SetValue => CompileSetValue(step, index),
             ScenarioActions.Toggle => CompileToggle(step, index),
             ScenarioActions.SendKeys => CompileSendKeys(step, index),
+            ScenarioActions.ScrollIntoView => CompileScrollIntoView(step, index),
+            ScenarioActions.Select => CompileSelect(step, index),
+            ScenarioActions.Expand => CompileExpand(step, index),
+            ScenarioActions.Collapse => CompileCollapse(step, index),
             ScenarioActions.ExpectName => CompileExpectName(step, index),
             _ => throw Invalid($"steps[{index}] has unknown action '{action}'."),
         };
@@ -250,6 +254,47 @@ public static class ScenarioJson
 
         return new SendKeysOperation(automationId, textElement.GetString() ?? string.Empty);
     }
+
+    private static ScrollIntoViewOperation CompileScrollIntoView(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        int? itemIndex = null;
+        if (step.TryGetProperty("index", out var indexElement))
+        {
+            if (
+                indexElement.ValueKind != JsonValueKind.Number
+                || !indexElement.TryGetInt32(out var i)
+            )
+            {
+                throw Invalid($"steps[{index}] scrollIntoView.index must be an integer.");
+            }
+
+            itemIndex = i;
+        }
+
+        return new ScrollIntoViewOperation(automationId, itemIndex);
+    }
+
+    private static SelectOperation CompileSelect(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        if (
+            !step.TryGetProperty("index", out var indexElement)
+            || indexElement.ValueKind != JsonValueKind.Number
+            || !indexElement.TryGetInt32(out var itemIndex)
+        )
+        {
+            throw Invalid($"steps[{index}] select requires integer property 'index'.");
+        }
+
+        return new SelectOperation(automationId, itemIndex);
+    }
+
+    private static ExpandOperation CompileExpand(JsonElement step, int index) =>
+        new(RequireNonEmptyString(step, "automationId", index));
+
+    private static CollapseOperation CompileCollapse(JsonElement step, int index) =>
+        new(RequireNonEmptyString(step, "automationId", index));
 
     private static ExpectNameOperation CompileExpectName(JsonElement step, int index)
     {

@@ -18,6 +18,9 @@ public static class AgentServices
     private static IElementValueSetter? _elementValueSetter;
     private static IElementToggler? _elementToggler;
     private static IElementKeySender? _elementKeySender;
+    private static IElementScroller? _elementScroller;
+    private static IElementChooser? _elementChooser;
+    private static IElementExpander? _elementExpander;
 
     /// <summary>
     /// Gets the registered UI tree provider, if any.
@@ -53,6 +56,21 @@ public static class AgentServices
     /// Gets the registered element key sender, if any.
     /// </summary>
     public static IElementKeySender? ElementKeySender => _elementKeySender;
+
+    /// <summary>
+    /// Gets the registered element scroller, if any.
+    /// </summary>
+    public static IElementScroller? ElementScroller => _elementScroller;
+
+    /// <summary>
+    /// Gets the registered element chooser (<c>select</c>), if any.
+    /// </summary>
+    public static IElementChooser? ElementChooser => _elementChooser;
+
+    /// <summary>
+    /// Gets the registered element expander, if any.
+    /// </summary>
+    public static IElementExpander? ElementExpander => _elementExpander;
 
     /// <summary>
     /// Registers the UI tree provider used for <c>getTree</c>.
@@ -125,6 +143,36 @@ public static class AgentServices
     }
 
     /// <summary>
+    /// Registers the element scroller used for <c>scrollIntoView</c>.
+    /// </summary>
+    /// <param name="scroller">Framework-specific scroller.</param>
+    public static void RegisterElementScroller(IElementScroller scroller)
+    {
+        ArgumentNullException.ThrowIfNull(scroller);
+        _elementScroller = scroller;
+    }
+
+    /// <summary>
+    /// Registers the element chooser used for <c>select</c>.
+    /// </summary>
+    /// <param name="chooser">Framework-specific chooser.</param>
+    public static void RegisterElementChooser(IElementChooser chooser)
+    {
+        ArgumentNullException.ThrowIfNull(chooser);
+        _elementChooser = chooser;
+    }
+
+    /// <summary>
+    /// Registers the element expander used for <c>expand</c> / <c>collapse</c>.
+    /// </summary>
+    /// <param name="expander">Framework-specific expander.</param>
+    public static void RegisterElementExpander(IElementExpander expander)
+    {
+        ArgumentNullException.ThrowIfNull(expander);
+        _elementExpander = expander;
+    }
+
+    /// <summary>
     /// Clears registered services (tests).
     /// </summary>
     public static void Reset()
@@ -136,6 +184,9 @@ public static class AgentServices
         _elementValueSetter = null;
         _elementToggler = null;
         _elementKeySender = null;
+        _elementScroller = null;
+        _elementChooser = null;
+        _elementExpander = null;
     }
 }
 

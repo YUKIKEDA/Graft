@@ -22,6 +22,18 @@ public static class ScenarioActions
     /// <summary>Type literal text into an element.</summary>
     public const string SendKeys = FailureSteps.SendKeys;
 
+    /// <summary>Scroll an element or list item into view.</summary>
+    public const string ScrollIntoView = FailureSteps.ScrollIntoView;
+
+    /// <summary>Select a list/combo item by index.</summary>
+    public const string Select = FailureSteps.Select;
+
+    /// <summary>Expand an element.</summary>
+    public const string Expand = FailureSteps.Expand;
+
+    /// <summary>Collapse an element.</summary>
+    public const string Collapse = FailureSteps.Collapse;
+
     /// <summary>Expect an element's tree name.</summary>
     public const string ExpectName = FailureSteps.ExpectName;
 }
