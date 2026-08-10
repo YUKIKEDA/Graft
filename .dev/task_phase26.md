@@ -53,4 +53,4 @@ ID: `M03, U02–U04`（[competitive-gap.md](./competitive-gap.md)）。
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` / `competitive-gap.md` 優先
-- **次フェーズ:** Phase 27 探索・パス・キー指定（F02, F04, F05, L05, E04）
+- **次フェーズ:** [task_phase27.md](./task_phase27.md) 探索・パス・キー指定（F02, F04, F05, L05, E04）

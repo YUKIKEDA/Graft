@@ -357,7 +357,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 24 | 待ち / Expect / 画面遷移・進捗                       | Wait/Expect 強化 + value + 進捗 Sample     |
 | Phase 25 | マウス高度                                           | dbl/hover/drag/clickAt/wheel（SendInput）  |
 | Phase 26 | メニュー深さ                                         | `SelectMenuAsync` / ContextMenu サブ / U04 |
-| （次）   | Must 残り（Phase 27+）→ Avalonia                     | 対照表: `competitive-gap.md`。Inspector 任意 |
+| Phase 27 | 探索・パス・キー指定                                 | GetByName/相対/Select key/SelectTree       |
+| （次）   | Must 残り（Phase 28+）→ Avalonia                     | 対照表: `competitive-gap.md`。Inspector 任意 |
 
 ## 9. 未検討・今後の課題
 
@@ -514,3 +515,4 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q130 | Phase 25: DoubleClick/Hover/Drag(要素→要素)/ClickAt(DIP)/Wheel。SendInput。`task_phase25.md`       |
 | Q131 | Hover は移動+短 dwell。ToolTip 待ちは Phase 29。Sample は Mouse セクション 1 つ。Scenario/MCP 薄い追従 |
 | Q132 | Phase 26: `SelectMenuAsync` パス DSL（AutomationId/`/`）。wire `selectMenu`。ContextMenu は RightClick 後。U04=`element.notActionable`。`task_phase26.md` |
+| Q133 | Phase 27: GetByName/ControlType・Child/Sibling/Nth・SelectAsync(key)・SelectTreeAsync。`task_phase27.md` |

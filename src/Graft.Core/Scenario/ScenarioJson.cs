@@ -195,6 +195,7 @@ public static class ScenarioJson
             ScenarioActions.Select => CompileSelect(step, index),
             ScenarioActions.SelectMany => CompileSelectMany(step, index),
             ScenarioActions.SelectMenu => CompileSelectMenu(step, index),
+            ScenarioActions.SelectTree => CompileSelectTree(step, index),
             ScenarioActions.Expand => CompileExpand(step, index),
             ScenarioActions.Collapse => CompileCollapse(step, index),
             ScenarioActions.ExpectName => CompileExpectName(step, index),
@@ -364,16 +365,31 @@ public static class ScenarioJson
     private static SelectOperation CompileSelect(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
+        var hasIndex = false;
+        var itemIndex = 0;
         if (
-            !step.TryGetProperty("index", out var indexElement)
-            || indexElement.ValueKind != JsonValueKind.Number
-            || !indexElement.TryGetInt32(out var itemIndex)
+            step.TryGetProperty("index", out var indexElement)
+            && indexElement.ValueKind == JsonValueKind.Number
+            && indexElement.TryGetInt32(out itemIndex)
         )
         {
-            throw Invalid($"steps[{index}] select requires integer property 'index'.");
+            hasIndex = true;
         }
 
-        return new SelectOperation(automationId, itemIndex);
+        string? key = null;
+        var hasKey =
+            step.TryGetProperty("key", out var keyElement)
+            && keyElement.ValueKind == JsonValueKind.String
+            && !string.IsNullOrWhiteSpace(key = keyElement.GetString());
+
+        if (hasIndex == hasKey)
+        {
+            throw Invalid($"steps[{index}] select requires exactly one of 'index' or 'key'.");
+        }
+
+        return hasIndex
+            ? new SelectOperation(automationId, Index: itemIndex)
+            : new SelectOperation(automationId, Key: key);
     }
 
     private static SelectMenuOperation CompileSelectMenu(JsonElement step, int index)
@@ -381,6 +397,13 @@ public static class ScenarioJson
         var automationId = RequireNonEmptyString(step, "automationId", index);
         var path = RequireNonEmptyString(step, "path", index);
         return new SelectMenuOperation(automationId, path);
+    }
+
+    private static SelectTreeOperation CompileSelectTree(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        var path = RequireNonEmptyString(step, "path", index);
+        return new SelectTreeOperation(automationId, path);
     }
 
     private static SelectManyOperation CompileSelectMany(JsonElement step, int index)

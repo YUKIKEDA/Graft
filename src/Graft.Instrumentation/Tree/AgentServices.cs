@@ -23,6 +23,7 @@ public static class AgentServices
     private static IElementScroller? _elementScroller;
     private static IElementChooser? _elementChooser;
     private static IMenuSelector? _menuSelector;
+    private static ITreeSelector? _treeSelector;
     private static IElementExpander? _elementExpander;
     private static IElementCellAccessor? _elementCellAccessor;
     private static IWindowCatalog? _windowCatalog;
@@ -76,6 +77,11 @@ public static class AgentServices
     /// Gets the registered menu selector (<c>selectMenu</c>), if any.
     /// </summary>
     public static IMenuSelector? MenuSelector => _menuSelector;
+
+    /// <summary>
+    /// Gets the registered tree selector (<c>selectTree</c>), if any.
+    /// </summary>
+    public static ITreeSelector? TreeSelector => _treeSelector;
 
     /// <summary>
     /// Gets the registered element expander, if any.
@@ -193,6 +199,16 @@ public static class AgentServices
     }
 
     /// <summary>
+    /// Registers the tree selector used for <c>selectTree</c>.
+    /// </summary>
+    /// <param name="selector">Framework-specific tree selector.</param>
+    public static void RegisterTreeSelector(ITreeSelector selector)
+    {
+        ArgumentNullException.ThrowIfNull(selector);
+        _treeSelector = selector;
+    }
+
+    /// <summary>
     /// Registers the element expander used for <c>expand</c> / <c>collapse</c>.
     /// </summary>
     /// <param name="expander">Framework-specific expander.</param>
@@ -237,6 +253,7 @@ public static class AgentServices
         _elementScroller = null;
         _elementChooser = null;
         _menuSelector = null;
+        _treeSelector = null;
         _elementExpander = null;
         _elementCellAccessor = null;
         _windowCatalog = null;

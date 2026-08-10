@@ -68,7 +68,8 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 
 - `ConnectAsync` は既にパイプが立っているプロセス向けの低レベル API（ドキュメント第一級ではない）
 - Wait / Expect タイムアウトは `app.WaitOptions`（アクション 5s / Expect 10s 既定）
-- セレクタ: `GetBy(Selector.…)` または `GetByAutomationId`。`AutomationId` 指定時はハード一致（不一致は `element.notFound`）
+- セレクタ: `GetBy(Selector.…)` / `GetByAutomationId` / `GetByName` / `GetByControlType`。`AutomationId`・`Name`・`ControlType` はハード一致（不一致は `element.notFound`）。相対: `Child` / `Sibling` / `Nth`（Phase 27）
+- リストキー選択（Phase 27）: `SelectAsync("Item 35")`（wire `select` + `key`）。ツリーパス: `SelectTreeAsync("Root/Child/Leaf")`（wire `selectTree`）
 - 自己修復（Phase 4）: 解決失敗時に Core が代替セレクタ候補を算出。高信頼で一意なら同一 `ElementQuery` で一回だけ自動再解決し、以降そのセレクタを使う。失敗時は `FailureReport.healingCandidates` に候補を添付（シナリオファイルは書き換えない。ファジー一致はしない）
 - テキスト入力: `GetByAutomationId(…).SetValueAsync(value)`（エージェント wire `setValue`。TextBox 置換。**Slider** は InvariantCulture の double 文字列 → `Value`）。キー入力: `SendKeysAsync(text)`（リテラル）。chord / 特殊キー: `PressAsync("Control+A")`（wire `pressKeys`。1 呼び出し = 1 chord）
 - トグル: `GetByAutomationId(…).ToggleAsync()`（状態フリップ）

@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Threading;
@@ -35,6 +36,30 @@ internal sealed class WpfElementChooser : IElementChooser
         }
 
         dispatcher.Invoke(() => SelectOnUiThread(selector, index), DispatcherPriority.Normal);
+    }
+
+    /// <inheritdoc />
+    public void Select(ElementSelector selector, string key)
+    {
+        ArgumentNullException.ThrowIfNull(selector);
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                "WPF Application.Current is not available; cannot select."
+            );
+        }
+
+        if (dispatcher.CheckAccess())
+        {
+            SelectByKeyOnUiThread(selector, key);
+            return;
+        }
+
+        dispatcher.Invoke(() => SelectByKeyOnUiThread(selector, key), DispatcherPriority.Normal);
     }
 
     /// <inheritdoc />
@@ -88,6 +113,33 @@ internal sealed class WpfElementChooser : IElementChooser
                 }
 
                 break;
+        }
+
+        element.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
+    }
+
+    private static void SelectByKeyOnUiThread(ElementSelector selector, string key)
+    {
+        var element = ResolveActionable(selector);
+
+        switch (element)
+        {
+            case TabControl tab:
+                SelectTabByKey(tab, key);
+                break;
+            case DataGrid:
+                throw new ElementActionException(
+                    GraftErrorCodes.ActionFailed,
+                    "select by key is not supported for DataGrid."
+                );
+            case Selector sel:
+                SelectSelectorByKey(sel, key);
+                break;
+            default:
+                throw new ElementActionException(
+                    GraftErrorCodes.ActionFailed,
+                    $"select by key is not supported for control type '{element.GetType().Name}'."
+                );
         }
 
         element.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
@@ -245,5 +297,124 @@ internal sealed class WpfElementChooser : IElementChooser
         }
 
         tab.SelectedIndex = index;
+    }
+
+    private static void SelectTabByKey(TabControl tab, string key)
+    {
+        int? matchIndex = null;
+
+        for (var i = 0; i < tab.Items.Count; i++)
+        {
+            var item = tab.Items[i];
+            var tabItem =
+                item as TabItem ?? tab.ItemContainerGenerator.ContainerFromIndex(i) as TabItem;
+            var displayName = ResolveTabItemKey(tabItem, item);
+            if (!string.Equals(displayName, key, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (matchIndex is not null)
+            {
+                throw new ElementResolveException(
+                    GraftErrorCodes.ElementAmbiguous,
+                    $"Multiple tab items matched key '{key}'."
+                );
+            }
+
+            matchIndex = i;
+        }
+
+        if (matchIndex is null)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.ElementNotFound,
+                $"No tab item matched key '{key}'."
+            );
+        }
+
+        tab.SelectedIndex = matchIndex.Value;
+    }
+
+    private static void SelectSelectorByKey(Selector selector, string key)
+    {
+        int? matchIndex = null;
+
+        for (var i = 0; i < selector.Items.Count; i++)
+        {
+            _ = WpfElementScroller.ScrollListItem(selector, i);
+            var container =
+                selector.ItemContainerGenerator.ContainerFromIndex(i) as FrameworkElement;
+            var displayName = ResolveItemDisplayName(container, selector.Items[i]);
+            if (!string.Equals(displayName, key, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (matchIndex is not null)
+            {
+                throw new ElementResolveException(
+                    GraftErrorCodes.ElementAmbiguous,
+                    $"Multiple items matched key '{key}'."
+                );
+            }
+
+            matchIndex = i;
+        }
+
+        if (matchIndex is null)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.ElementNotFound,
+                $"No item matched key '{key}'."
+            );
+        }
+
+        _ = WpfElementScroller.ScrollListItem(selector, matchIndex.Value);
+        selector.SelectedIndex = matchIndex.Value;
+    }
+
+    private static string ResolveTabItemKey(TabItem? tabItem, object? item)
+    {
+        var element = tabItem ?? item as TabItem;
+        if (element is not null)
+        {
+            var automationName = AutomationProperties.GetName(element);
+            if (!string.IsNullOrEmpty(automationName))
+            {
+                return automationName;
+            }
+
+            if (element.Header is string header)
+            {
+                return header;
+            }
+        }
+
+        return item as string ?? string.Empty;
+    }
+
+    private static string ResolveItemDisplayName(FrameworkElement? container, object? item)
+    {
+        if (container is not null)
+        {
+            var automationName = AutomationProperties.GetName(container);
+            if (!string.IsNullOrEmpty(automationName))
+            {
+                return automationName;
+            }
+
+            switch (container)
+            {
+                case HeaderedContentControl { Header: string header }:
+                    return header;
+                case HeaderedItemsControl { Header: string itemsHeader }:
+                    return itemsHeader;
+                case ContentControl { Content: string content }:
+                    return content;
+            }
+        }
+
+        return item as string ?? string.Empty;
     }
 }

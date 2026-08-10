@@ -470,6 +470,62 @@ public sealed partial class GraftAtomicTools
         );
 
     /// <summary>
+    /// Selects a list/combo/tab item by display name key.
+    /// </summary>
+    /// <param name="automationId">List or combo automation id.</param>
+    /// <param name="key">Item name key.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_select_by_key")]
+    [Description("Select a list/combo/tab item by name key in the open session.")]
+    public partial Task<CallToolResult> SelectByKey(
+        [Description("List or combo automation id.")] string automationId,
+        [Description("Item display / automation name.")] string key,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .SelectAsync(key, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject { ["automationId"] = automationId, ["key"] = key }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Selects a TreeView path under a TreeView root.
+    /// </summary>
+    /// <param name="automationId">TreeView automation id.</param>
+    /// <param name="path">Slash-separated AutomationId path.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_select_tree")]
+    [Description("selectTree under TreeView automationId via slash-separated AutomationId path.")]
+    public partial Task<CallToolResult> SelectTree(
+        [Description("TreeView automation id.")] string automationId,
+        [Description("Slash-separated AutomationId path (root not included).")] string path,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .SelectTreeAsync(path, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject { ["automationId"] = automationId, ["path"] = path }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Replaces ListBox or DataGrid multi-selection by indexes (empty clears).
     /// </summary>
     /// <param name="automationId">ListBox or DataGrid automation id.</param>

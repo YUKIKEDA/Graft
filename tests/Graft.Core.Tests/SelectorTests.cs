@@ -29,7 +29,7 @@ public sealed class SelectorTests
     }
 
     /// <summary>
-    /// Name-only selector scores below threshold and yields notFound.
+    /// Name-only selector reaches threshold and resolves (Phase 27 F02).
     /// </summary>
     /// <remarks>
     /// Preconditions:
@@ -39,20 +39,39 @@ public sealed class SelectorTests
     /// - Resolve with Name = "Click Me" only
     ///
     /// Expected:
-    /// - GraftException with element.notFound (score 40 &lt; threshold 60)
+    /// - SampleButton
     /// </remarks>
     [Fact]
-    public void Resolve_NameOnly_ThrowsElementNotFound()
+    public void Resolve_NameOnly_ReturnsMatch()
     {
         var root = SampleTree();
-        var ex = Assert.Throws<GraftException>(() =>
-            TreeSelector.Resolve(root, new Selector { Name = "Click Me" })
-        );
-        Assert.Equal(GraftErrorCodes.ElementNotFound, ex.Code);
+        var node = TreeSelector.Resolve(root, Selector.ByName("Click Me"));
+        Assert.Equal("SampleButton", node.AutomationId);
     }
 
     /// <summary>
-    /// Name + near-path reaches the threshold and resolves.
+    /// ControlType-only selector resolves when unique.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Tree with a single Button
+    ///
+    /// Steps:
+    /// - Resolve ByControlType("Button")
+    ///
+    /// Expected:
+    /// - SampleButton
+    /// </remarks>
+    [Fact]
+    public void Resolve_ControlTypeOnly_ReturnsMatch()
+    {
+        var root = SampleTree();
+        var node = TreeSelector.Resolve(root, Selector.ByControlType("Button"));
+        Assert.Equal("SampleButton", node.AutomationId);
+    }
+
+    /// <summary>
+    /// Name + near-path still resolves.
     /// </summary>
     /// <remarks>
     /// Preconditions:
@@ -62,7 +81,7 @@ public sealed class SelectorTests
     /// - Resolve with Name and NearAutomationId=Main
     ///
     /// Expected:
-    /// - Matched button (score 40+20 = 60)
+    /// - Matched button
     /// </remarks>
     [Fact]
     public void Resolve_NamePlusNearPath_ReturnsMatch()
@@ -189,7 +208,7 @@ public sealed class SelectorTests
     /// - TreeSelector.Score with all criteria matching
     ///
     /// Expected:
-    /// - Score equals 100+40+15+20
+    /// - Score equals sum of AutomationId + Name + ControlType + NearPath weights
     /// </remarks>
     [Fact]
     public void Score_AllCriteriaMatch_SumsWeights()

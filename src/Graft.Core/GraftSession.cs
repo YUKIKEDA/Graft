@@ -55,6 +55,21 @@ public sealed class GraftSession : IAsyncDisposable
         GetBy(Selector.ByAutomationId(automationId));
 
     /// <summary>
+    /// Creates an element query for an exact automation / display name.
+    /// </summary>
+    /// <param name="name">Name criterion (hard match).</param>
+    /// <returns>A query that can invoke or expect against the live tree.</returns>
+    public ElementQuery GetByName(string name) => GetBy(Selector.ByName(name));
+
+    /// <summary>
+    /// Creates an element query for an exact control type label.
+    /// </summary>
+    /// <param name="controlType">Control type (e.g. <c>Button</c>).</param>
+    /// <returns>A query that can invoke or expect against the live tree.</returns>
+    public ElementQuery GetByControlType(string controlType) =>
+        GetBy(Selector.ByControlType(controlType));
+
+    /// <summary>
     /// Lists open windows with session-local <c>windowId</c> values.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>

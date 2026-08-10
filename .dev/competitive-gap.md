@@ -51,10 +51,10 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | ID  | シナリオ                                | 競合 | Graft | 優先   | 仮Phase | メモ                         |
 | --- | --------------------------------------- | ---- | ----- | ------ | ------- | ---------------------------- |
 | F01 | AutomationId で一意特定                 | Yes  | OK    | Done   | —       | ハード一致                   |
-| F02 | Name / ControlType で特定               | Yes  | PART  | Must   | 27      | E2E 正本を Id 以外にも広げる |
-| F03 | 祖先近傍（near）で曖昧さ低減            | PART | PART  | 任意   | —       | `NearAutomationId`           |
-| F04 | 表示テキスト / 項目キーでリスト項目特定 | Yes  | NO    | Must   | 27      |                              |
-| F05 | 相対セレクタ（子・兄弟・nth）           | Yes  | NO    | Must   | 27      |                              |
+| F02 | Name / ControlType で特定               | Yes  | OK    | Done   | 27      | `GetByName` / `GetByControlType` |
+| F03 | 祖先近傍（near）で曖昧さ低減            | PART | PART  | 任意   | —       | `NearAutomationId`               |
+| F04 | 表示テキスト / 項目キーでリスト項目特定 | Yes  | OK    | Done   | 27      | `SelectAsync(key)`               |
+| F05 | 相対セレクタ（子・兄弟・nth）           | Yes  | OK    | Done   | 27      | `Child` / `Sibling` / `Nth`      |
 | F06 | 失敗時の自己修復（代替セレクタ）        | PART | PART  | 任意   | —       | Phase 4。ファジーは非目標    |
 | F07 | ファジー／編集距離マッチ                | PART | NO    | 非目標 | —       |                              |
 | F08 | Inspector / Spy で Id 採取              | Yes  | NO    | 任意   | —       | 探索補助。getTree で代替可   |
@@ -120,7 +120,7 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | L02 | ListBox 複数選択（置換）          | Yes  | OK    | Done | —       |      |
 | L03 | ComboBox 項目選択（index）        | Yes  | OK    | Done | —       |      |
 | L04 | ComboBox ドロップダウン開閉の明示 | Yes  | PART  | Must | 29      |      |
-| L05 | 表示名・キーで選択                | Yes  | NO    | Must | 27      |      |
+| L05 | 表示名・キーで選択                | Yes  | OK    | Done | 27      | `SelectAsync(key)` |
 | L06 | ListView / GridView               | Yes  | PART  | Must | 29      |      |
 | L07 | 仮想化リストの scroll+select      | Yes  | OK    | Done | —       |      |
 
@@ -133,7 +133,7 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | E01 | TreeView 展開/折りたたみ   | Yes  | OK    | Done | —       |      |
 | E02 | ExpectExpanded / Selected  | Yes  | OK    | Done | —       |      |
 | E03 | Expander                   | Yes  | OK    | Done | —       |      |
-| E04 | 深いツリーをパス指定で辿る | Yes  | NO    | Must | 27      |      |
+| E04 | 深いツリーをパス指定で辿る | Yes  | OK    | Done | 27      | `SelectTreeAsync` |
 
 ---
 
