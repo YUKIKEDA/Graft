@@ -135,4 +135,16 @@ public partial class MainWindow : Window
         var result = dialog.ShowDialog(this);
         StatusText.Text = result == true ? $"OpenFolder {dialog.FolderName}" : "OpenFolderCancel";
     }
+
+    private void MessageBoxButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        var result = MessageBox.Show(
+            this,
+            "Continue?",
+            "Graft Sample",
+            System.Windows.MessageBoxButton.YesNo,
+            MessageBoxImage.Question
+        );
+        StatusText.Text = $"MessageBox {result}";
+    }
 }

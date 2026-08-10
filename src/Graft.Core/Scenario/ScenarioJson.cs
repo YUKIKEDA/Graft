@@ -200,6 +200,7 @@ public static class ScenarioJson
             ScenarioActions.ArmSaveFileCancel => new ArmSaveFileCancelOperation(),
             ScenarioActions.ArmOpenFolder => CompileArmOpenFolder(step, index),
             ScenarioActions.ArmOpenFolderCancel => new ArmOpenFolderCancelOperation(),
+            ScenarioActions.ArmMessageBox => CompileArmMessageBox(step, index),
             ScenarioActions.ListWindows => new ListWindowsOperation(),
             ScenarioActions.SwitchWindow => CompileSwitchWindow(step, index),
             ScenarioActions.WaitForWindow => CompileWaitForWindow(step, index),
@@ -469,6 +470,9 @@ public static class ScenarioJson
 
     private static ArmOpenFolderOperation CompileArmOpenFolder(JsonElement step, int index) =>
         new(RequireNonEmptyString(step, "path", index));
+
+    private static ArmMessageBoxOperation CompileArmMessageBox(JsonElement step, int index) =>
+        new(RequireNonEmptyString(step, "result", index));
 
     private static InvokeOpeningWindowOperation CompileInvokeOpeningWindow(
         JsonElement step,

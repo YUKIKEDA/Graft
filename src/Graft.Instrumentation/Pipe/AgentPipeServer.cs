@@ -307,6 +307,11 @@ internal sealed class AgentPipeServer : IDisposable
             );
         }
 
+        if (request.Method == ProtocolMethods.ArmMessageBox)
+        {
+            return (HandleArmMessageBox(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
         if (request.Method == ProtocolMethods.Expand)
         {
             return (
@@ -775,6 +780,28 @@ internal sealed class AgentPipeServer : IDisposable
         {
             OpenFolderArm.ArmCancel();
             return Ok(request.Id);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleArmMessageBox(RequestMessage request)
+    {
+        try
+        {
+            var result = ReadRequiredString(request.Params, "result");
+            MessageBoxArm.ArmResult(result);
+            return Ok(request.Id);
+        }
+        catch (ArgumentException ex)
+        {
+            return Error(request.Id, GraftErrorCodes.SelectorInvalid, ex.Message);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
         }
         catch (Exception ex)
         {

@@ -115,4 +115,9 @@ public static class ProtocolMethods
     /// Arms the next Graft OpenFolder seam response as cancel.
     /// </summary>
     public const string ArmOpenFolderCancel = "armOpenFolderCancel";
+
+    /// <summary>
+    /// Arms the next Graft MessageBox seam with <c>params.result</c> (MessageBoxResult name).
+    /// </summary>
+    public const string ArmMessageBox = "armMessageBox";
 }

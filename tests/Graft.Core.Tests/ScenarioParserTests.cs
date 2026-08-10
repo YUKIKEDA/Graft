@@ -378,6 +378,37 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// armMessageBox compiles.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with armMessageBox
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - ArmMessageBoxOperation with result Yes
+    /// </remarks>
+    [Fact]
+    public void Parse_MessageBoxArmAction_CompileOperation()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "armMessageBox", "result": "Yes" }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var arm = Assert.IsType<ArmMessageBoxOperation>(scenario.Operations[1]);
+        Assert.Equal("Yes", arm.Result);
+    }
+
+    /// <summary>
     /// Window actions compile to typed operations.
     /// </summary>
     /// <remarks>

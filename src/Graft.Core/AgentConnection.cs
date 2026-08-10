@@ -733,6 +733,36 @@ public sealed class AgentConnection : IAsyncDisposable
     }
 
     /// <summary>
+    /// Calls <c>armMessageBox</c> to arm the next MessageBox.Show with a result (OK).
+    /// </summary>
+    /// <param name="result">MessageBoxResult name: None, OK, Cancel, Yes, or No.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when arming succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task ArmMessageBoxAsync(
+        string result,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(result);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.ArmMessageBox,
+                    Params = JsonSerializer.SerializeToElement(new { result }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "armMessageBox failed.");
+    }
+
+    /// <summary>
     /// Calls <c>screenshot</c> and reads the following raw PNG frame.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>

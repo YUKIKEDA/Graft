@@ -23,7 +23,7 @@
 | Arm 寿命 | **一回限り**（Open/Save Arm とは独立ストア） |
 | 公開経路 | Scenario / MCP 薄い追従（`armOpenFolder` / `armOpenFolderCancel`） |
 | 含めない | Multiselect、FolderBrowserDialog、MessageBox、実 OS UIA、アプリ Graft 業務依存、Avalonia、Inspector |
-| Phase 12 の次 | **MessageBox シーム** |
+| Phase 12 の次 | Phase 13 MessageBox シーム（[task_phase13.md](./task_phase13.md)） |
 
 ---
 
@@ -74,4 +74,4 @@
 
 - Open/Save と同型。結果プロパティは `FolderName`（`FileName` ではない）
 - 設計矛盾時は `project.md` 優先
-- **次フェーズ:** MessageBox シーム → … → Avalonia → Inspector（最後寄り）
+- **次フェーズ:** [task_phase13.md](./task_phase13.md)（MessageBox）→ Avalonia → Inspector（最後寄り）

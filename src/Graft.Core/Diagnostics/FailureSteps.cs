@@ -71,6 +71,9 @@ public static class FailureSteps
     /// <summary>armOpenFolderCancel failed.</summary>
     public const string ArmOpenFolderCancel = "armOpenFolderCancel";
 
+    /// <summary>armMessageBox failed.</summary>
+    public const string ArmMessageBox = "armMessageBox";
+
     /// <summary>listWindows failed.</summary>
     public const string ListWindows = "listWindows";
 

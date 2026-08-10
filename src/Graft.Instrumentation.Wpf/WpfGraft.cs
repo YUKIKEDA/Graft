@@ -15,11 +15,12 @@ public static class WpfGraft
     /// </summary>
     /// <remarks>
     /// Call once before <see cref="Agent.Start"/> (typically from <c>OnStartup</c>).
-    /// Also installs the Open/Save/Folder <c>CommonItemDialog.RunDialog</c> seam (Harmony) once per process.
+    /// Also installs CommonItemDialog and MessageBox seams (Harmony) once per process.
     /// </remarks>
     public static void Use()
     {
         CommonItemDialogPatch.Apply();
+        MessageBoxPatch.Apply();
 
         if (Interlocked.Exchange(ref _registered, 1) != 0)
         {
