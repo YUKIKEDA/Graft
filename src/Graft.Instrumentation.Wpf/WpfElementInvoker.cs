@@ -57,6 +57,29 @@ internal sealed class WpfElementInvoker : IElementInvoker
         _ = dispatcher.BeginInvoke(() => InvokeOnUiThread(selector), DispatcherPriority.Normal);
     }
 
+    /// <inheritdoc />
+    public void RightClick(ElementSelector selector)
+    {
+        ArgumentNullException.ThrowIfNull(selector);
+
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                "WPF Application.Current is not available; cannot rightClick."
+            );
+        }
+
+        if (dispatcher.CheckAccess())
+        {
+            RightClickOnUiThread(selector);
+            return;
+        }
+
+        dispatcher.Invoke(() => RightClickOnUiThread(selector), DispatcherPriority.Normal);
+    }
+
     private static void InvokeOnUiThread(ElementSelector selector)
     {
         var resolver =
@@ -96,6 +119,41 @@ internal sealed class WpfElementInvoker : IElementInvoker
 
         // Native / Peer failed — SendInput click (project.md Q40 / Q52).
         WpfInputInjection.LeftClickElement(element);
+    }
+
+    private static void RightClickOnUiThread(ElementSelector selector)
+    {
+        var element = ResolveActionableFrameworkElement(selector);
+        WpfInputInjection.RightClickElement(element);
+    }
+
+    private static FrameworkElement ResolveActionableFrameworkElement(ElementSelector selector)
+    {
+        var resolver =
+            AgentServices.ElementResolver
+            ?? throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                "No element resolver is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+
+        var resolved = resolver.Resolve(selector);
+        if (resolved.Target is not FrameworkElement element)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ActionFailed,
+                $"Resolved target is not a FrameworkElement (got {resolved.Target.GetType().Name})."
+            );
+        }
+
+        if (!element.IsEnabled || !element.IsVisible)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ElementNotActionable,
+                $"Element '{resolved.AutomationId}' is not actionable (enabled={element.IsEnabled}, visible={element.IsVisible})."
+            );
+        }
+
+        return element;
     }
 
     private static bool TryInvokeViaAutomationPeer(FrameworkElement element)

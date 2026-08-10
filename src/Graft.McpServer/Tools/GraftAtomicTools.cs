@@ -120,6 +120,30 @@ public sealed class GraftAtomicTools
         );
 
     /// <summary>
+    /// Right-clicks an element by automation id.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_right_click")]
+    [Description("rightClick an element by automationId in the open session.")]
+    public Task<CallToolResult> RightClick(
+        [Description("Target automation id.")] string automationId,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .RightClickAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Sets an element's value by automation id.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>

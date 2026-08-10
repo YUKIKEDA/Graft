@@ -180,6 +180,7 @@ public static class ScenarioJson
         {
             ScenarioActions.Launch => CompileLaunch(step, index),
             ScenarioActions.Invoke => CompileInvoke(step, index),
+            ScenarioActions.RightClick => CompileRightClick(step, index),
             ScenarioActions.SetValue => CompileSetValue(step, index),
             ScenarioActions.Toggle => CompileToggle(step, index),
             ScenarioActions.SendKeys => CompileSendKeys(step, index),
@@ -241,6 +242,9 @@ public static class ScenarioJson
     }
 
     private static InvokeOperation CompileInvoke(JsonElement step, int index) =>
+        new(RequireNonEmptyString(step, "automationId", index));
+
+    private static RightClickOperation CompileRightClick(JsonElement step, int index) =>
         new(RequireNonEmptyString(step, "automationId", index));
 
     private static SetValueOperation CompileSetValue(JsonElement step, int index)

@@ -321,6 +321,37 @@ public sealed class ScenarioE2ETests
     }
 
     /// <summary>
+    /// phase16-context-menu.scenario.json right-clicks and invokes a MenuItem.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Scenarios/phase16-context-menu.scenario.json is copied to the test output
+    ///
+    /// Steps:
+    /// - Parse Scenario JSON
+    /// - ScenarioRunner.RunAsync with AppPath override
+    ///
+    /// Expected:
+    /// - Scenario completes without GraftException
+    /// </remarks>
+    [Fact]
+    public async Task Phase16ContextMenu_Scenario_Passes()
+    {
+        var scenarioPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Scenarios",
+            "phase16-context-menu.scenario.json"
+        );
+        Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
+
+        var scenario = ScenarioJson.ParseFile(scenarioPath);
+        await ScenarioRunner.RunAsync(
+            scenario,
+            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
+        );
+    }
+
+    /// <summary>
     /// phase15-screenshot.scenario.json writes a PNG to the scenario path.
     /// </summary>
     /// <remarks>

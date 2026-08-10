@@ -83,6 +83,34 @@ public sealed class InvokeDispatchTests : IDisposable
     }
 
     /// <summary>
+    /// rightClick dispatches to the registered invoker.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Fake IElementInvoker registered
+    ///
+    /// Steps:
+    /// - Handshake then rightClick
+    ///
+    /// Expected:
+    /// - ok=true and fake received automationId
+    /// </remarks>
+    [Fact]
+    public async Task RightClick_WithFakeInvoker_CallsRightClick()
+    {
+        var fake = new FakeElementInvoker();
+        AgentServices.RegisterElementInvoker(fake);
+        StartAgent();
+
+        await using var client = await ConnectAsync(_pipeName);
+        Assert.True((await SendHandshakeAsync(client)).Ok);
+
+        var response = await SendRightClickAsync(client, "ContextMenuTarget");
+        Assert.True(response.Ok, response.Error?.Message);
+        Assert.Equal("ContextMenuTarget", fake.LastAutomationId);
+    }
+
+    /// <summary>
     /// invoke maps ElementResolveException codes onto the wire error.
     /// </summary>
     /// <remarks>
@@ -178,6 +206,23 @@ public sealed class InvokeDispatchTests : IDisposable
         return await JsonMessageCodec.ReadResponseAsync(stream).ConfigureAwait(false);
     }
 
+    private static async Task<ResponseMessage> SendRightClickAsync(
+        Stream stream,
+        string automationId
+    )
+    {
+        var request = new RequestMessage
+        {
+            V = ProtocolVersion.Current,
+            Id = "3",
+            Method = ProtocolMethods.RightClick,
+            Params = JsonSerializer.SerializeToElement(new { automationId }),
+        };
+
+        await JsonMessageCodec.WriteRequestAsync(stream, request).ConfigureAwait(false);
+        return await JsonMessageCodec.ReadResponseAsync(stream).ConfigureAwait(false);
+    }
+
     private static void ClearGraftEnvironment()
     {
         Environment.SetEnvironmentVariable(GraftEnvironment.Enable, null);
@@ -203,5 +248,7 @@ public sealed class InvokeDispatchTests : IDisposable
         }
 
         public void BeginInvoke(ElementSelector selector) => Invoke(selector);
+
+        public void RightClick(ElementSelector selector) => Invoke(selector);
     }
 }

@@ -42,6 +42,11 @@ public static class ProtocolMethods
     public const string Invoke = "invoke";
 
     /// <summary>
+    /// Right-clicks an element selected by <c>params.automationId</c> (SendInput).
+    /// </summary>
+    public const string RightClick = "rightClick";
+
+    /// <summary>
     /// Replaces an element's value (e.g. TextBox) via <c>params.automationId</c> and <c>params.value</c>.
     /// </summary>
     public const string SetValue = "setValue";

@@ -117,6 +117,38 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// rightClick steps compile with automationId.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with launch + rightClick
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - RightClickOperation with matching automationId
+    /// </remarks>
+    [Fact]
+    public void Parse_RightClickStep_CompilesRightClickOperation()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "rightClick", "automationId": "ContextMenuTarget" }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var rightClick = Assert.IsType<RightClickOperation>(scenario.Operations[1]);
+        Assert.Equal(ScenarioActions.RightClick, rightClick.Action);
+        Assert.Equal("ContextMenuTarget", rightClick.AutomationId);
+    }
+
+    /// <summary>
     /// screenshot steps compile with a required path.
     /// </summary>
     /// <remarks>

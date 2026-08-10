@@ -13,6 +13,9 @@ public static class ScenarioActions
     /// <summary>Invoke (click) an element.</summary>
     public const string Invoke = FailureSteps.Invoke;
 
+    /// <summary>Right-click an element.</summary>
+    public const string RightClick = FailureSteps.RightClick;
+
     /// <summary>Replace an element's value.</summary>
     public const string SetValue = FailureSteps.SetValue;
 

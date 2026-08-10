@@ -346,7 +346,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 13 | MessageBox シーム（Runtime MVP）                     | Arm + Harmony `MessageBox.Show`            |
 | Phase 14 | キー chord / 特殊キー（`pressKeys`）                 | `PressAsync`。Avalonia は後ろへ            |
 | Phase 15 | 公開 Screenshot（Session / Scenario / MCP）          | 既存 wire を第一級化。要素クリップは含めない |
-| （次）   | 右クリック/Menu → … → Avalonia                       | WPF ギャップ埋め優先。Inspector は最後寄り |
+| Phase 16 | 右クリック + ContextMenu / MenuItem                  | `RightClickAsync` + 開いたメニューをツリーに |
+| （次）   | Tab/Slider/複数選択 → … → Avalonia                   | WPF ギャップ埋め優先。Inspector は最後寄り |
 
 ## 9. 未検討・今後の課題
 
@@ -358,8 +359,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - scroll/select の項目キー・表示名指定（index 正本の次候補）
 - 実 OS コモンダイアログの UIA 操作（方針上非採用。必要なら別検討）
 - DataGrid セルの列キー指定 / CheckBox・Template 列（Phase 9 後の拡張）
-- 右クリック + ContextMenu / MenuItem
 - TabControl / Slider / 複数選択 / hover・D&D
+- Menu バー / ContextMenu サブメニュー
 - Avalonia アダプタ → Inspector（最後寄り）
 - MessagePack 評価用の実測ログ形式
 - .NET Framework WPF 対応の要否（需要が固まってから）
@@ -481,3 +482,5 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q107 | Phase 15 は **公開 Screenshot**。Fluent 戻りは meta+bytes の `Screenshot` + `SaveAsync`               |
 | Q108 | 対象は現在ターゲット窓のみ。Scenario は path 必須。MCP は path 任意（省略時 temp）                    |
 | Q109 | E2E: Fluent PNG シグネチャ+size / Scenario path 書き。画像 diff・要素クリップは含めない。`task_phase15.md` |
+| Q110 | Phase 16: `RightClickAsync` + 開いた ContextMenu をツリーに載せ MenuItem は既存 `invoke`               |
+| Q111 | 実装は SendInput 右クリック + flush。待ちは呼び出し側。Menu バー/サブメニューは含めない。`task_phase16.md` |

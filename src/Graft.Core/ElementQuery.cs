@@ -72,6 +72,46 @@ public sealed class ElementQuery
     }
 
     /// <summary>
+    /// Waits until the element is present and actionable, then right-clicks it.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when rightClick succeeds.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or rightClick failed (may include <see cref="GraftException.Report"/>).</exception>
+    public async Task RightClickAsync(CancellationToken cancellationToken = default)
+    {
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot rightClick over the wire.",
+                    FailureSteps.RightClick,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection
+                .RightClickAsync(node.AutomationId, cancellationToken)
+                .ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.RightClick, node.AutomationId);
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.RightClick,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
     /// Invokes the element via <c>invokeOpeningWindow</c> (BeginInvoke), optionally waiting for a new window.
     /// </summary>
     /// <remarks>

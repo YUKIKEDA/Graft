@@ -44,6 +44,24 @@
                            VerticalAlignment="Center"
                            HorizontalAlignment="Center" />
             </Border>
+            <Border x:Name="ContextMenuTarget"
+                    AutomationProperties.AutomationId="ContextMenuTarget"
+                    Background="#FFE8F0FF"
+                    Height="36"
+                    Margin="0,0,0,16"
+                    Cursor="Hand">
+                <Border.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem x:Name="ContextMenuPing"
+                                  AutomationProperties.AutomationId="ContextMenuPing"
+                                  Header="Ping"
+                                  Click="ContextMenuPing_OnClick" />
+                    </ContextMenu>
+                </Border.ContextMenu>
+                <TextBlock Text="Context menu target"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center" />
+            </Border>
 
             <TextBlock Text="Virtualized list" Margin="0,0,0,4" />
             <ListBox x:Name="SampleList"

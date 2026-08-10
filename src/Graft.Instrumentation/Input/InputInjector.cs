@@ -30,27 +30,21 @@ public static class InputInjector
     /// </summary>
     /// <param name="screenX">Screen X in pixels.</param>
     /// <param name="screenY">Screen Y in pixels.</param>
-    public static void LeftClick(int screenX, int screenY)
-    {
-        if (!NativeMethods.SetCursorPos(screenX, screenY))
-        {
-            throw CreateFailed($"SetCursorPos failed at ({screenX},{screenY}).");
-        }
+    public static void LeftClick(int screenX, int screenY) =>
+        Click(screenX, screenY, NativeMethods.MouseEventFLeftDown, NativeMethods.MouseEventFLeftUp);
 
-        var screenWidth = Math.Max(1, NativeMethods.GetSystemMetrics(NativeMethods.SmCxScreen));
-        var screenHeight = Math.Max(1, NativeMethods.GetSystemMetrics(NativeMethods.SmCyScreen));
-        var absX = (int)Math.Round(screenX * 65535.0 / (screenWidth - 1));
-        var absY = (int)Math.Round(screenY * 65535.0 / (screenHeight - 1));
-
-        const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute;
-        var inputs = new NativeMethods.INPUT[]
-        {
-            CreateMouse(absX, absY, moveAbsolute | NativeMethods.MouseEventFLeftDown),
-            CreateMouse(absX, absY, moveAbsolute | NativeMethods.MouseEventFLeftUp),
-        };
-
-        Send(inputs);
-    }
+    /// <summary>
+    /// Moves the cursor to screen coordinates and performs a right click.
+    /// </summary>
+    /// <param name="screenX">Screen X in pixels.</param>
+    /// <param name="screenY">Screen Y in pixels.</param>
+    public static void RightClick(int screenX, int screenY) =>
+        Click(
+            screenX,
+            screenY,
+            NativeMethods.MouseEventFRightDown,
+            NativeMethods.MouseEventFRightUp
+        );
 
     /// <summary>
     /// Types <paramref name="text"/> via Unicode key events (no chord DSL).
@@ -106,6 +100,28 @@ public static class InputInjector
         {
             inputs[index++] = CreateVk(mods[i], keyUp: true, extended: false);
         }
+
+        Send(inputs);
+    }
+
+    private static void Click(int screenX, int screenY, uint downFlag, uint upFlag)
+    {
+        if (!NativeMethods.SetCursorPos(screenX, screenY))
+        {
+            throw CreateFailed($"SetCursorPos failed at ({screenX},{screenY}).");
+        }
+
+        var screenWidth = Math.Max(1, NativeMethods.GetSystemMetrics(NativeMethods.SmCxScreen));
+        var screenHeight = Math.Max(1, NativeMethods.GetSystemMetrics(NativeMethods.SmCyScreen));
+        var absX = (int)Math.Round(screenX * 65535.0 / (screenWidth - 1));
+        var absY = (int)Math.Round(screenY * 65535.0 / (screenHeight - 1));
+
+        const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute;
+        var inputs = new NativeMethods.INPUT[]
+        {
+            CreateMouse(absX, absY, moveAbsolute | downFlag),
+            CreateMouse(absX, absY, moveAbsolute | upFlag),
+        };
 
         Send(inputs);
     }

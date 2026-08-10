@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using Graft.Instrumentation.Elements;
 using Graft.Instrumentation.Tree;
@@ -183,12 +184,6 @@ internal static class WpfVisualTreeWalker
         Action<FrameworkElement> onFrameworkChild
     )
     {
-        var childCount = VisualTreeHelper.GetChildrenCount(parent);
-        if (childCount == 0)
-        {
-            return;
-        }
-
         // Apply before FE / non-FE branching so non-FrameworkElement chains cannot
         // recurse past MaxDepth (they are flattened at the same childDepth).
         if (childDepth > state.Options.MaxDepth)
@@ -197,6 +192,31 @@ internal static class WpfVisualTreeWalker
             return;
         }
 
+        // Open ContextMenu: walk MenuItem containers via Items (Popup is outside owner visuals).
+        // Avoid VisualTreeHelper here — it often rediscovers the same MenuItem instances.
+        if (parent is ContextMenu { IsOpen: true } openMenu)
+        {
+            foreach (var item in openMenu.Items)
+            {
+                if (state.NodeCount >= state.Options.MaxNodes)
+                {
+                    state.Truncated = true;
+                    return;
+                }
+
+                var container =
+                    item as FrameworkElement
+                    ?? openMenu.ItemContainerGenerator.ContainerFromItem(item) as FrameworkElement;
+                if (container is not null)
+                {
+                    onFrameworkChild(container);
+                }
+            }
+
+            return;
+        }
+
+        var childCount = VisualTreeHelper.GetChildrenCount(parent);
         for (var i = 0; i < childCount; i++)
         {
             if (state.NodeCount >= state.Options.MaxNodes)
@@ -206,6 +226,13 @@ internal static class WpfVisualTreeWalker
             }
 
             var child = VisualTreeHelper.GetChild(parent, i);
+
+            // ContextMenu Popup content is walked via owner.ContextMenu when IsOpen (avoids duplicates).
+            if (child is Popup)
+            {
+                continue;
+            }
+
             if (child is FrameworkElement frameworkChild)
             {
                 onFrameworkChild(frameworkChild);
@@ -215,6 +242,22 @@ internal static class WpfVisualTreeWalker
                 // Non-FrameworkElement visuals are skipped as nodes but children are flattened.
                 CollectFrameworkChildren(child, childDepth, state, onFrameworkChild);
             }
+        }
+
+        // Open ContextMenu lives in a Popup (not under the owner's visual children).
+        if (
+            parent is FrameworkElement { ContextMenu: { IsOpen: true } menu }
+            && state.NodeCount < state.Options.MaxNodes
+        )
+        {
+            onFrameworkChild(menu);
+        }
+        else if (
+            parent is FrameworkElement { ContextMenu: { IsOpen: true } }
+            && state.NodeCount >= state.Options.MaxNodes
+        )
+        {
+            state.Truncated = true;
         }
     }
 
@@ -232,6 +275,8 @@ internal static class WpfVisualTreeWalker
             Button button when button.Content is string text => text,
             TextBlock textBlock => textBlock.Text ?? string.Empty,
             TextBox textBox => textBox.Text ?? string.Empty,
+            MenuItem { Header: string menuHeader } => menuHeader,
+            HeaderedItemsControl { Header: string itemsHeader } => itemsHeader,
             HeaderedContentControl { Header: string header } => header,
             ContentControl { Content: string content } => content,
             _ => element.Name ?? string.Empty,
