@@ -174,6 +174,19 @@ public partial class MainWindow : Window
         StatusText.Text = "ModalClosed";
     }
 
+    private void OpenProgressWindowButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        NextScreenPanel.Visibility = Visibility.Collapsed;
+        var progress = new ProgressWindow { Owner = this };
+        progress.Closed += (_, _) =>
+        {
+            NextScreenPanel.Visibility = Visibility.Visible;
+            StatusText.Text = "ProgressClosed";
+        };
+        progress.Show();
+        StatusText.Text = "ProgressOpened";
+    }
+
     private void OpenFileButton_OnClick(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFileDialog();

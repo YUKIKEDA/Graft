@@ -142,8 +142,8 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | ID  | シナリオ                       | 競合 | Graft | 優先 | 仮Phase | メモ |
 | --- | ------------------------------ | ---- | ----- | ---- | ------- | ---- |
 | H01 | TabControl 選択                | Yes  | OK    | Done | —       |      |
-| H02 | Frame / NavigationWindow 遷移  | Yes  | NO    | Must | 24      |      |
-| H03 | カスタム「ページ」差し替え待ち | Yes  | NO    | Must | 24      |      |
+| H02 | Frame / NavigationWindow 遷移  | Yes  | NO    | Must | —       | Phase 24 は Frame なし。需要後 |
+| H03 | カスタム「ページ」差し替え待ち | Yes  | OK    | Done | 24      | Visibility パネル |
 
 ---
 
@@ -180,7 +180,7 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | ID  | シナリオ                           | 競合 | Graft | 優先 | 仮Phase | メモ       |
 | --- | ---------------------------------- | ---- | ----- | ---- | ------- | ---------- |
 | C01 | DatePicker / Calendar              | Yes  | NO    | Must | 29      |            |
-| C02 | ProgressBar 値の読み取り・完了待ち | Yes  | NO    | Must | 24      |            |
+| C02 | ProgressBar 値の読み取り・完了待ち | Yes  | OK    | Done | 24      | `ExpectValue` |
 | C03 | ToolTip 表示待ち                   | Yes  | NO    | Must | 29      | hover 依存 |
 | C04 | ToolBar / StatusBar 項目操作       | Yes  | PART  | Must | 29      |            |
 | C05 | Popup / Flyout                     | Yes  | PART  | Must | 29      |            |
@@ -197,12 +197,12 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | W03 | Open/Save/Folder ダイアログ（シーム）  | Yes  | OK    | Done   | —       |             |
 | W04 | MessageBox（シーム）                   | Yes  | OK    | Done   | —       |             |
 | W05 | 実 OS コモンダイアログを UIA 操作      | Yes  | NO    | 非目標 | —       |             |
-| W06 | 要素の出現待ち（汎用）                 | Yes  | PART  | Must   | 24      |             |
-| W07 | 要素の消失待ち                         | Yes  | NO    | Must   | 24      |             |
-| W08 | 窓の消失待ち                           | Yes  | NO    | Must   | 24      |             |
-| W09 | 進捗ダイアログ → 完了 → 次画面         | Yes  | NO    | Must   | 24      | Sample 代表 |
-| W10 | 同一窓内画面遷移の安定検証             | Yes  | NO    | Must   | 24      |             |
-| W11 | 非同期 UI（Dispatcher 遅延）の自動待機 | Yes  | PART  | Must   | 24      |             |
+| W06 | 要素の出現待ち（汎用）                 | Yes  | OK    | Done   | 24      | `WaitForAsync` |
+| W07 | 要素の消失待ち                         | Yes  | OK    | Done   | 24      | `ExpectGoneAsync` |
+| W08 | 窓の消失待ち                           | Yes  | OK    | Done   | 24      | `WaitForWindowClosedAsync` |
+| W09 | 進捗ダイアログ → 完了 → 次画面         | Yes  | OK    | Done   | 24      | Sample `ProgressWindow` |
+| W10 | 同一窓内画面遷移の安定検証             | Yes  | OK    | Done   | 24      | `NextScreenPanel` |
+| W11 | 非同期 UI（Dispatcher 遅延）の自動待機 | Yes  | PART  | Done   | 24      | 専用 API なし（ポーリング） |
 | W12 | トースト / 一時通知                    | PART | NO    | 任意   | —       |             |
 
 ---
@@ -226,10 +226,10 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | A01 | ExpectName                          | Yes  | OK    | Done | —       |      |
 | A02 | ExpectSelected / Expanded / Checked | Yes  | OK    | Done | —       |      |
 | A03 | ExpectCellText                      | Yes  | OK    | Done | —       |      |
-| A04 | ExpectEnabled / Disabled            | Yes  | NO    | Must | 24      |      |
-| A05 | ExpectVisible / Hidden              | Yes  | NO    | Must | 24      |      |
-| A06 | テキスト部分一致 / Regex            | Yes  | NO    | Must | 24      |      |
-| A07 | ExpectValue（Slider 等を tree で）  | PART | NO    | Must | 24      |      |
+| A04 | ExpectEnabled / Disabled            | Yes  | OK   | Done | 24      |      |
+| A05 | ExpectVisible / Hidden              | Yes  | OK   | Done | 24      |      |
+| A06 | テキスト部分一致 / Regex            | Yes  | OK   | Done | 24      | Contains / Matches |
+| A07 | ExpectValue（Slider 等を tree で）  | PART | OK   | Done | 24      | `TreeNode.value` |
 | A08 | ソフトアサート（失敗を貯める）      | PART | NO    | 任意 | —       |      |
 
 ---
@@ -272,7 +272,7 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | 仮Phase | 束                             | 主な ID                                              |
 | ------- | ------------------------------ | ---------------------------------------------------- |
 | 23      | 本表 + roadmap（実装なし）     | —                                                    |
-| 24      | 待ち / Expect / 画面遷移・進捗 | W06–W11, A04–A07, H02–H03, C02                       |
+| 24      | 待ち / Expect / 画面遷移・進捗 | W06–W11, A04–A07, H03, C02（H02 Frame は除外）        |
 | 25      | マウス高度                     | M04–M08                                              |
 | 26      | メニュー深さ                   | M03, U02–U04                                         |
 | 27      | 探索・パス・キー指定           | F02, F04, F05, L05, E04                              |
@@ -290,4 +290,4 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 - [x] K05 / V06 / W12 / A08 / P02 は任意、X04 は Must
 - [x] Inspector は任意（ゲート外）
 - [x] Avalonia 再開ゲート（Must 全緑）に合意
-- [ ] 仮 Phase 分割の細部（各フェーズの受け入れ線）は実装開始時に `task_phaseN.md` で固定
+- [x] Phase 24 受け入れ線は `task_phase24.md` で固定（以降も各 `task_phaseN.md`）

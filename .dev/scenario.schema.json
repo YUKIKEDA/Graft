@@ -43,6 +43,13 @@
         { "$ref": "#/$defs/expectSelected" },
         { "$ref": "#/$defs/expectExpanded" },
         { "$ref": "#/$defs/expectChecked" },
+        { "$ref": "#/$defs/expectEnabled" },
+        { "$ref": "#/$defs/expectVisible" },
+        { "$ref": "#/$defs/expectNameContains" },
+        { "$ref": "#/$defs/expectNameMatches" },
+        { "$ref": "#/$defs/expectValue" },
+        { "$ref": "#/$defs/waitFor" },
+        { "$ref": "#/$defs/expectGone" },
         { "$ref": "#/$defs/getCellText" },
         { "$ref": "#/$defs/setCellValue" },
         { "$ref": "#/$defs/expectCellText" },
@@ -56,6 +63,7 @@
         { "$ref": "#/$defs/listWindows" },
         { "$ref": "#/$defs/switchWindow" },
         { "$ref": "#/$defs/waitForWindow" },
+        { "$ref": "#/$defs/waitForWindowClosed" },
         { "$ref": "#/$defs/invokeOpeningWindow" }
       ]
     },
@@ -227,6 +235,74 @@
         "checked": { "type": "boolean" }
       }
     },
+    "expectEnabled": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "enabled"],
+      "properties": {
+        "action": { "const": "expectEnabled" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "enabled": { "type": "boolean" }
+      }
+    },
+    "expectVisible": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "visible"],
+      "properties": {
+        "action": { "const": "expectVisible" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "visible": { "type": "boolean" }
+      }
+    },
+    "expectNameContains": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "substring"],
+      "properties": {
+        "action": { "const": "expectNameContains" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "substring": { "type": "string" }
+      }
+    },
+    "expectNameMatches": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "pattern"],
+      "properties": {
+        "action": { "const": "expectNameMatches" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "pattern": { "type": "string", "minLength": 1 }
+      }
+    },
+    "expectValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "value"],
+      "properties": {
+        "action": { "const": "expectValue" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "value": { "type": "string" }
+      }
+    },
+    "waitFor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId"],
+      "properties": {
+        "action": { "const": "waitFor" },
+        "automationId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "expectGone": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId"],
+      "properties": {
+        "action": { "const": "expectGone" },
+        "automationId": { "type": "string", "minLength": 1 }
+      }
+    },
     "getCellText": {
       "type": "object",
       "additionalProperties": false,
@@ -303,6 +379,20 @@
         "title": { "type": "string", "minLength": 1 },
         "automationId": { "type": "string", "minLength": 1 },
         "switchTo": { "type": "boolean" }
+      },
+      "anyOf": [
+        { "required": ["title"] },
+        { "required": ["automationId"] }
+      ]
+    },
+    "waitForWindowClosed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action"],
+      "properties": {
+        "action": { "const": "waitForWindowClosed" },
+        "title": { "type": "string", "minLength": 1 },
+        "automationId": { "type": "string", "minLength": 1 }
       },
       "anyOf": [
         { "required": ["title"] },

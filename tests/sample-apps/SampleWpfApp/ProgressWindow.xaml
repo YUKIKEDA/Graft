@@ -1,0 +1,31 @@
+<Window x:Class="SampleWpfApp.ProgressWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Progress Window"
+        AutomationProperties.AutomationId="ProgressWindow"
+        Height="220"
+        Width="360"
+        WindowStartupLocation="CenterOwner"
+        Loaded="ProgressWindow_OnLoaded">
+    <StackPanel Margin="24">
+        <TextBlock x:Name="ProgressStatus"
+                   AutomationProperties.AutomationId="ProgressStatus"
+                   Text="ProgressRunning"
+                   FontSize="16"
+                   Margin="0,0,0,16" />
+        <ProgressBar x:Name="SampleProgress"
+                     AutomationProperties.AutomationId="SampleProgress"
+                     Minimum="0"
+                     Maximum="100"
+                     Value="0"
+                     Height="18"
+                     Margin="0,0,0,16" />
+        <Button x:Name="CloseProgressButton"
+                AutomationProperties.AutomationId="CloseProgressButton"
+                Content="Close Progress"
+                Padding="12,6"
+                HorizontalAlignment="Left"
+                IsEnabled="False"
+                Click="CloseProgressButton_OnClick" />
+    </StackPanel>
+</Window>

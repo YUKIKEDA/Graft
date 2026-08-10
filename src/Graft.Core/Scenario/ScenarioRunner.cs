@@ -205,6 +205,65 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case ExpectEnabledOperation expectEnabled:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(expectEnabled.AutomationId)
+                            .ExpectEnabledAsync(expectEnabled.Enabled, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case ExpectVisibleOperation expectVisible:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(expectVisible.AutomationId)
+                            .ExpectVisibleAsync(expectVisible.Visible, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case ExpectNameContainsOperation expectNameContains:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(expectNameContains.AutomationId)
+                            .ExpectNameContainsAsync(
+                                expectNameContains.Substring,
+                                cancellationToken
+                            )
+                            .ConfigureAwait(false);
+                        break;
+
+                    case ExpectNameMatchesOperation expectNameMatches:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(expectNameMatches.AutomationId)
+                            .ExpectNameMatchesAsync(expectNameMatches.Pattern, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case ExpectValueOperation expectValue:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(expectValue.AutomationId)
+                            .ExpectValueAsync(expectValue.Value, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case WaitForOperation waitFor:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(waitFor.AutomationId)
+                            .WaitForAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case ExpectGoneOperation expectGone:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(expectGone.AutomationId)
+                            .ExpectGoneAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     case GetCellTextOperation getCellText:
                         EnsureSession(session);
                         _ = getCellText.ColumnKey is null
@@ -354,6 +413,17 @@ public static class ScenarioRunner
                                 waitForWindow.Title,
                                 waitForWindow.AutomationId,
                                 waitForWindow.SwitchTo,
+                                cancellationToken
+                            )
+                            .ConfigureAwait(false);
+                        break;
+
+                    case WaitForWindowClosedOperation waitForWindowClosed:
+                        EnsureSession(session);
+                        await session!
+                            .WaitForWindowClosedAsync(
+                                waitForWindowClosed.Title,
+                                waitForWindowClosed.AutomationId,
                                 cancellationToken
                             )
                             .ConfigureAwait(false);

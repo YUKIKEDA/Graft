@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -147,6 +148,7 @@ internal static class WpfVisualTreeWalker
             Selected = ResolveSelected(element),
             Expanded = ResolveExpanded(element),
             Checked = ResolveChecked(element),
+            Value = ResolveValue(element),
             Children = children,
         };
     }
@@ -174,6 +176,13 @@ internal static class WpfVisualTreeWalker
         element switch
         {
             CheckBox checkBox => checkBox.IsChecked,
+            _ => null,
+        };
+
+    private static string? ResolveValue(FrameworkElement element) =>
+        element switch
+        {
+            RangeBase range => range.Value.ToString("G", CultureInfo.InvariantCulture),
             _ => null,
         };
 

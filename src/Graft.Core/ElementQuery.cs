@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Graft.Core.Diagnostics;
 using Graft.Core.Selectors;
 using Graft.Protocol;
@@ -1112,6 +1113,420 @@ public sealed class ElementQuery
             "checked",
             cancellationToken
         );
+
+    /// <summary>
+    /// Waits until the element's tree <c>enabled</c> equals <paramref name="expectedEnabled"/>.
+    /// </summary>
+    /// <param name="expectedEnabled">Expected enabled state.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The matched node when the expectation holds.</returns>
+    public Task<TreeNode> ExpectEnabledAsync(
+        bool expectedEnabled,
+        CancellationToken cancellationToken = default
+    ) =>
+        ExpectBoolPropertyAsync(
+            expectedEnabled,
+            static node => (bool?)node.Enabled,
+            FailureSteps.ExpectEnabled,
+            "enabled",
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Waits until the element's tree <c>visible</c> equals <paramref name="expectedVisible"/>.
+    /// </summary>
+    /// <param name="expectedVisible">Expected visible state.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The matched node when the expectation holds.</returns>
+    public Task<TreeNode> ExpectVisibleAsync(
+        bool expectedVisible,
+        CancellationToken cancellationToken = default
+    ) =>
+        ExpectBoolPropertyAsync(
+            expectedVisible,
+            static node => (bool?)node.Visible,
+            FailureSteps.ExpectVisible,
+            "visible",
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Waits until the element's <c>name</c> contains <paramref name="substring"/>.
+    /// </summary>
+    /// <param name="substring">Expected ordinal substring.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The matched node when the expectation holds.</returns>
+    public async Task<TreeNode> ExpectNameContainsAsync(
+        string substring,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(substring);
+
+        var timeout = PositiveOrDefault(
+            _waitOptions.ExpectTimeout,
+            WaitOptions.DefaultExpectTimeout
+        );
+        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
+        var deadline = DateTime.UtcNow + timeout;
+
+        string? lastActual = null;
+        TreeNode? lastRoot = null;
+        var sawElement = false;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
+                lastRoot = tree.Root;
+                var node = ResolveNode(tree.Root);
+                sawElement = true;
+                if (node.Name.Contains(substring, StringComparison.Ordinal))
+                {
+                    _operationLog.Record(FailureSteps.ExpectNameContains, substring);
+                    return node;
+                }
+
+                lastActual = node.Name;
+            }
+            catch (GraftException ex)
+                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+            {
+                // Still waiting for the element to appear / tree to be ready.
+            }
+
+            var remaining = deadline - DateTime.UtcNow;
+            if (remaining <= TimeSpan.Zero)
+            {
+                break;
+            }
+
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        if (sawElement && lastActual is not null)
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ExpectFailed,
+                    $"Expected name to contain '{substring}' but was '{lastActual}'.",
+                    FailureSteps.ExpectNameContains,
+                    expected: substring,
+                    actual: lastActual,
+                    timedOut: true,
+                    treeRoot: lastRoot,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        throw await CreateFailureAsync(
+                GraftErrorCodes.ActionTimeout,
+                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for name containing '{substring}'.",
+                FailureSteps.ExpectNameContains,
+                expected: substring,
+                timedOut: true,
+                treeRoot: lastRoot,
+                cancellationToken: cancellationToken
+            )
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Waits until the element's <c>name</c> matches <paramref name="pattern"/>.
+    /// </summary>
+    /// <param name="pattern">.NET regular expression pattern.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The matched node when the expectation holds.</returns>
+    public async Task<TreeNode> ExpectNameMatchesAsync(
+        string pattern,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrEmpty(pattern);
+        var regex = new Regex(pattern, RegexOptions.CultureInvariant | RegexOptions.Singleline);
+
+        var timeout = PositiveOrDefault(
+            _waitOptions.ExpectTimeout,
+            WaitOptions.DefaultExpectTimeout
+        );
+        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
+        var deadline = DateTime.UtcNow + timeout;
+
+        string? lastActual = null;
+        TreeNode? lastRoot = null;
+        var sawElement = false;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
+                lastRoot = tree.Root;
+                var node = ResolveNode(tree.Root);
+                sawElement = true;
+                if (regex.IsMatch(node.Name))
+                {
+                    _operationLog.Record(FailureSteps.ExpectNameMatches, pattern);
+                    return node;
+                }
+
+                lastActual = node.Name;
+            }
+            catch (GraftException ex)
+                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+            {
+                // Still waiting for the element to appear / tree to be ready.
+            }
+
+            var remaining = deadline - DateTime.UtcNow;
+            if (remaining <= TimeSpan.Zero)
+            {
+                break;
+            }
+
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        if (sawElement && lastActual is not null)
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ExpectFailed,
+                    $"Expected name to match /{pattern}/ but was '{lastActual}'.",
+                    FailureSteps.ExpectNameMatches,
+                    expected: pattern,
+                    actual: lastActual,
+                    timedOut: true,
+                    treeRoot: lastRoot,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        throw await CreateFailureAsync(
+                GraftErrorCodes.ActionTimeout,
+                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for name matching /{pattern}/.",
+                FailureSteps.ExpectNameMatches,
+                expected: pattern,
+                timedOut: true,
+                treeRoot: lastRoot,
+                cancellationToken: cancellationToken
+            )
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Waits until the element's tree <c>value</c> equals <paramref name="expectedValue"/>.
+    /// </summary>
+    /// <param name="expectedValue">Expected tree value (ordinal).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The matched node when the expectation holds.</returns>
+    /// <exception cref="GraftException">
+    /// <c>expect.failed</c> when the value differs or is not applicable;
+    /// <c>action.timeout</c> when the element never qualifies in time.
+    /// </exception>
+    public async Task<TreeNode> ExpectValueAsync(
+        string expectedValue,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(expectedValue);
+
+        var timeout = PositiveOrDefault(
+            _waitOptions.ExpectTimeout,
+            WaitOptions.DefaultExpectTimeout
+        );
+        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
+        var deadline = DateTime.UtcNow + timeout;
+
+        string? lastActual = null;
+        TreeNode? lastRoot = null;
+        var sawElement = false;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
+                lastRoot = tree.Root;
+                var node = ResolveNode(tree.Root);
+                sawElement = true;
+                if (
+                    node.Value is not null
+                    && string.Equals(node.Value, expectedValue, StringComparison.Ordinal)
+                )
+                {
+                    _operationLog.Record(FailureSteps.ExpectValue, expectedValue);
+                    return node;
+                }
+
+                lastActual = node.Value ?? "n/a";
+            }
+            catch (GraftException ex)
+                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+            {
+                // Still waiting for the element to appear / tree to be ready.
+            }
+
+            var remaining = deadline - DateTime.UtcNow;
+            if (remaining <= TimeSpan.Zero)
+            {
+                break;
+            }
+
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        if (sawElement && lastActual is not null)
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ExpectFailed,
+                    $"Expected value '{expectedValue}' but was '{lastActual}'.",
+                    FailureSteps.ExpectValue,
+                    expected: expectedValue,
+                    actual: lastActual,
+                    timedOut: true,
+                    treeRoot: lastRoot,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        throw await CreateFailureAsync(
+                GraftErrorCodes.ActionTimeout,
+                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for value '{expectedValue}'.",
+                FailureSteps.ExpectValue,
+                expected: expectedValue,
+                timedOut: true,
+                treeRoot: lastRoot,
+                cancellationToken: cancellationToken
+            )
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Waits until the element is present in the visual tree.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The matched node when found.</returns>
+    public async Task<TreeNode> WaitForAsync(CancellationToken cancellationToken = default)
+    {
+        var timeout = PositiveOrDefault(
+            _waitOptions.ExpectTimeout,
+            WaitOptions.DefaultExpectTimeout
+        );
+        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
+        var deadline = DateTime.UtcNow + timeout;
+        TreeNode? lastRoot = null;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
+                lastRoot = tree.Root;
+                var node = ResolveNode(tree.Root);
+                _operationLog.Record(FailureSteps.WaitFor, node.AutomationId);
+                return node;
+            }
+            catch (GraftException ex)
+                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+            {
+                // Keep polling.
+            }
+
+            var remaining = deadline - DateTime.UtcNow;
+            if (remaining <= TimeSpan.Zero)
+            {
+                break;
+            }
+
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        throw await CreateFailureAsync(
+                GraftErrorCodes.ActionTimeout,
+                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for element to appear.",
+                FailureSteps.WaitFor,
+                timedOut: true,
+                treeRoot: lastRoot,
+                cancellationToken: cancellationToken
+            )
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Waits until the element is not found or not visible.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when the element is gone.</returns>
+    public async Task ExpectGoneAsync(CancellationToken cancellationToken = default)
+    {
+        var timeout = PositiveOrDefault(
+            _waitOptions.ExpectTimeout,
+            WaitOptions.DefaultExpectTimeout
+        );
+        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
+        var deadline = DateTime.UtcNow + timeout;
+        TreeNode? lastRoot = null;
+        string? lastActual = null;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
+                lastRoot = tree.Root;
+                var node = ResolveNode(tree.Root);
+                if (!node.Visible)
+                {
+                    _operationLog.Record(FailureSteps.ExpectGone, "not-visible");
+                    return;
+                }
+
+                lastActual = $"visible={node.Visible}";
+            }
+            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound)
+            {
+                _operationLog.Record(FailureSteps.ExpectGone, "not-found");
+                return;
+            }
+            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ActionFailed)
+            {
+                // Keep polling.
+            }
+
+            var remaining = deadline - DateTime.UtcNow;
+            if (remaining <= TimeSpan.Zero)
+            {
+                break;
+            }
+
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        throw await CreateFailureAsync(
+                GraftErrorCodes.ActionTimeout,
+                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for element to be gone"
+                    + (lastActual is null ? "." : $" ({lastActual})."),
+                FailureSteps.ExpectGone,
+                actual: lastActual,
+                timedOut: true,
+                treeRoot: lastRoot,
+                cancellationToken: cancellationToken
+            )
+            .ConfigureAwait(false);
+    }
 
     private async Task<TreeNode> ExpectBoolPropertyAsync(
         bool expected,

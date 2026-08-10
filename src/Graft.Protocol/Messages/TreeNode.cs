@@ -78,6 +78,14 @@ public sealed class TreeNode
     public bool? Checked { get; init; }
 
     /// <summary>
+    /// Gets a string value for value-capable controls (e.g. Slider / ProgressBar);
+    /// <see langword="null"/> when not applicable.
+    /// </summary>
+    [JsonPropertyName("value")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Value { get; init; }
+
+    /// <summary>
     /// Gets child nodes in visual-tree order.
     /// </summary>
     [JsonPropertyName("children")]

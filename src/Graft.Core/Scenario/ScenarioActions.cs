@@ -58,6 +58,27 @@ public static class ScenarioActions
     /// <summary>Expect an element's checked state.</summary>
     public const string ExpectChecked = FailureSteps.ExpectChecked;
 
+    /// <summary>Expect an element's enabled state.</summary>
+    public const string ExpectEnabled = FailureSteps.ExpectEnabled;
+
+    /// <summary>Expect an element's visible state.</summary>
+    public const string ExpectVisible = FailureSteps.ExpectVisible;
+
+    /// <summary>Expect an element's name contains a substring.</summary>
+    public const string ExpectNameContains = FailureSteps.ExpectNameContains;
+
+    /// <summary>Expect an element's name matches a regex.</summary>
+    public const string ExpectNameMatches = FailureSteps.ExpectNameMatches;
+
+    /// <summary>Expect an element's tree value.</summary>
+    public const string ExpectValue = FailureSteps.ExpectValue;
+
+    /// <summary>Wait until an element is present.</summary>
+    public const string WaitFor = FailureSteps.WaitFor;
+
+    /// <summary>Wait until an element is gone or not visible.</summary>
+    public const string ExpectGone = FailureSteps.ExpectGone;
+
     /// <summary>Read a DataGrid cell display text.</summary>
     public const string GetCellText = FailureSteps.GetCellText;
 
@@ -96,6 +117,9 @@ public static class ScenarioActions
 
     /// <summary>Wait for a window by title and/or automation id.</summary>
     public const string WaitForWindow = FailureSteps.WaitForWindow;
+
+    /// <summary>Wait for a window to close.</summary>
+    public const string WaitForWindowClosed = FailureSteps.WaitForWindowClosed;
 
     /// <summary>Invoke an element that may open a window (modal-safe).</summary>
     public const string InvokeOpeningWindow = FailureSteps.InvokeOpeningWindow;

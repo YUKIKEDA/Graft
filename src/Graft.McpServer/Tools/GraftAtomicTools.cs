@@ -718,6 +718,194 @@ public sealed class GraftAtomicTools
         );
 
     /// <summary>
+    /// Expects an element's tree enabled state.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="enabled">Expected enabled state.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_expect_enabled")]
+    [Description("Expect an element's tree enabled state in the open session.")]
+    public Task<CallToolResult> ExpectEnabled(
+        [Description("Target automation id.")] string automationId,
+        [Description("Expected enabled state.")] bool enabled,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .ExpectEnabledAsync(enabled, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject { ["automationId"] = automationId, ["enabled"] = enabled }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Expects an element's tree visible state.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="visible">Expected visible state.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_expect_visible")]
+    [Description("Expect an element's tree visible state in the open session.")]
+    public Task<CallToolResult> ExpectVisible(
+        [Description("Target automation id.")] string automationId,
+        [Description("Expected visible state.")] bool visible,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .ExpectVisibleAsync(visible, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject { ["automationId"] = automationId, ["visible"] = visible }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Expects an element's tree name contains a substring.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="substring">Expected ordinal substring.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_expect_name_contains")]
+    [Description("Expect an element's tree name contains a substring in the open session.")]
+    public Task<CallToolResult> ExpectNameContains(
+        [Description("Target automation id.")] string automationId,
+        [Description("Expected ordinal substring.")] string substring,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .ExpectNameContainsAsync(substring, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject { ["automationId"] = automationId, ["substring"] = substring }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Expects an element's tree name matches a regex pattern.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="pattern">.NET regular expression pattern.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_expect_name_matches")]
+    [Description("Expect an element's tree name matches a regex in the open session.")]
+    public Task<CallToolResult> ExpectNameMatches(
+        [Description("Target automation id.")] string automationId,
+        [Description(".NET regular expression pattern.")] string pattern,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .ExpectNameMatchesAsync(pattern, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject { ["automationId"] = automationId, ["pattern"] = pattern }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Expects an element's tree value.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="value">Expected tree value.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_expect_value")]
+    [Description("Expect an element's tree value in the open session.")]
+    public Task<CallToolResult> ExpectValue(
+        [Description("Target automation id.")] string automationId,
+        [Description("Expected tree value.")] string value,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .ExpectValueAsync(value, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject { ["automationId"] = automationId, ["value"] = value }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Waits until an element is present in the visual tree.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_wait_for")]
+    [Description("Wait until an element is present in the open session.")]
+    public Task<CallToolResult> WaitFor(
+        [Description("Target automation id.")] string automationId,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .WaitForAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Waits until an element is not found or not visible.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_expect_gone")]
+    [Description("Wait until an element is gone or not visible in the open session.")]
+    public Task<CallToolResult> ExpectGone(
+        [Description("Target automation id.")] string automationId,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .ExpectGoneAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Captures a PNG screenshot of the current target window and writes it to a path.
     /// </summary>
     /// <param name="path">Destination PNG path (optional; temp file when omitted).</param>
@@ -843,6 +1031,38 @@ public sealed class GraftAtomicTools
                         ["isModal"] = window.IsModal,
                         ["isActive"] = window.IsActive,
                         ["switched"] = switchTo,
+                    }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
+    /// Waits until a window by title and/or automation id is closed.
+    /// </summary>
+    /// <param name="title">Optional exact title.</param>
+    /// <param name="automationId">Optional exact automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_wait_for_window_closed")]
+    [Description("Wait until a window by title and/or automationId is closed.")]
+    public Task<CallToolResult> WaitForWindowClosed(
+        [Description("Exact title (optional).")] string? title = null,
+        [Description("Exact automation id (optional).")] string? automationId = null,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .WaitForWindowClosedAsync(title, automationId, cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject
+                    {
+                        ["title"] = title,
+                        ["automationId"] = automationId,
+                        ["closed"] = true,
                     }
                 );
             },

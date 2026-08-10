@@ -1,0 +1,82 @@
+{
+  "v": 1,
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "tests/sample-apps/SampleWpfApp/SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "expectGone",
+      "automationId": "NextScreenLabel"
+    },
+    {
+      "action": "invoke",
+      "automationId": "OpenProgressWindowButton"
+    },
+    {
+      "action": "waitForWindow",
+      "automationId": "ProgressWindow"
+    },
+    {
+      "action": "waitFor",
+      "automationId": "SampleProgress"
+    },
+    {
+      "action": "expectValue",
+      "automationId": "SampleProgress",
+      "value": "100"
+    },
+    {
+      "action": "expectEnabled",
+      "automationId": "CloseProgressButton",
+      "enabled": true
+    },
+    {
+      "action": "expectNameContains",
+      "automationId": "ProgressStatus",
+      "substring": "Done"
+    },
+    {
+      "action": "expectNameMatches",
+      "automationId": "ProgressStatus",
+      "pattern": "^ProgressDone$"
+    },
+    {
+      "action": "invoke",
+      "automationId": "CloseProgressButton"
+    },
+    {
+      "action": "waitForWindowClosed",
+      "automationId": "ProgressWindow"
+    },
+    {
+      "action": "waitForWindow",
+      "automationId": "Main"
+    },
+    {
+      "action": "waitFor",
+      "automationId": "NextScreenLabel"
+    },
+    {
+      "action": "expectVisible",
+      "automationId": "NextScreenPanel",
+      "visible": true
+    },
+    {
+      "action": "expectName",
+      "automationId": "NextScreenLabel",
+      "name": "NextScreenReady"
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "ProgressClosed"
+    },
+    {
+      "action": "expectGone",
+      "automationId": "SampleProgress"
+    }
+  ]
+}

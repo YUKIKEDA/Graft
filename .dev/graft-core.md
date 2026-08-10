@@ -75,7 +75,7 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - スクロール: `ScrollIntoViewAsync()`（実現済み要素）/ `ScrollIntoViewAsync(index)`（リスト。仮想化対応、identity 返却）
 - 選択: `SelectAsync(index)`（単一。内部で自動 scroll/realize）。ホストは ListBox / ComboBox / **DataGrid（行）** / **TabControl**。複数選択: `SelectManyAsync(indexes)`（wire `selectMany`。**ListBox** Multiple/Extended、**DataGrid** Extended+FullRow。置換。空配列でクリア）
 - 開閉: `ExpandAsync()` / `CollapseAsync()`（状態指定）
-- ツリー状態（Phase 6/8）: `TreeNode.selected` / `expanded` / `checked`（`bool?`、非該当は省略）。`ExpectSelectedAsync` / `ExpectExpandedAsync` / `ExpectCheckedAsync`（null は expect.failed）
+- ツリー状態（Phase 6/8/24）: `TreeNode.selected` / `expanded` / `checked`（`bool?`、非該当は省略）、`enabled` / `visible`、任意 `value`（Slider/ProgressBar 等）。`ExpectSelectedAsync` / `ExpectExpandedAsync` / `ExpectCheckedAsync` / `ExpectEnabledAsync` / `ExpectVisibleAsync` / `ExpectValueAsync` / `ExpectNameContainsAsync` / `ExpectNameMatchesAsync`。出現 `WaitForAsync`、消失 `ExpectGoneAsync`、窓 `WaitForWindowClosedAsync`
 - DataGrid 行（Phase 8）: ホスト＋index で `ScrollIntoViewAsync` / `SelectAsync`。実現済み `DataGridRow` に `selected`
 - DataGrid セル（Phase 9/21）: ホスト＋`(row, column)` または `(row, columnKey)`（Header 文字列）で `GetCellTextAsync` / `SetCellValueAsync` / `ExpectCellTextAsync`。対応列: **Text** / **CheckBox**（値 `"True"`/`"False"`）。BeginEdit→CommitEdit。ツリーにセルは出さない
 - ウィンドウ（Phase 7）: `ListWindowsAsync` / `SwitchToWindowAsync(windowId)` / `WaitForWindowAsync(title:, automationId:)`（既定で自動 Switch）。getTree / resolve / screenshot / アクションは既定ターゲット窓のみ

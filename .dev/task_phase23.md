@@ -18,7 +18,7 @@
 | Phase 23 | 文書のみ。Must は表で確定済み（Q127） |
 | 画面遷移 | 出現/消失待ち + 進捗→完了→次画面は Must（W06–W11 等） |
 | 任意除外 | K05 / V06 / W12 / A08 / P02。Inspector（F08）も任意 |
-| 次 | Phase 24+ で Must を分割実装 → Avalonia |
+| 次 | [task_phase24.md](./task_phase24.md) → … → Avalonia |
 
 ---
 
@@ -43,4 +43,4 @@
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` 優先。シナリオ正本は `competitive-gap.md`
-- **次:** [仮 Phase 24+](./competitive-gap.md) 実装（待ち/遷移から推奨）→ Avalonia
+- **次:** [task_phase24.md](./task_phase24.md) → … → Avalonia

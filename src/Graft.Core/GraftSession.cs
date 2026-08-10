@@ -188,6 +188,80 @@ public sealed class GraftSession : IAsyncDisposable
     }
 
     /// <summary>
+    /// Waits until no window matches <paramref name="title"/> and/or <paramref name="automationId"/>.
+    /// </summary>
+    /// <param name="title">Optional exact window title.</param>
+    /// <param name="automationId">Optional exact window automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when the window is no longer listed.</returns>
+    /// <exception cref="ArgumentException">Neither title nor automationId was provided.</exception>
+    /// <exception cref="GraftException">Timed out or RPC failed.</exception>
+    public async Task WaitForWindowClosedAsync(
+        string? title = null,
+        string? automationId = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var hasTitle = !string.IsNullOrWhiteSpace(title);
+        var hasAutomationId = !string.IsNullOrWhiteSpace(automationId);
+        if (!hasTitle && !hasAutomationId)
+        {
+            throw new ArgumentException("At least one of title or automationId must be provided.");
+        }
+
+        var timeout = PositiveOrDefault(
+            WaitOptions.ExpectTimeout,
+            WaitOptions.DefaultExpectTimeout
+        );
+        var poll = PositiveOrDefault(WaitOptions.PollInterval, WaitOptions.DefaultPollInterval);
+        var deadline = DateTime.UtcNow + timeout;
+
+        while (DateTime.UtcNow <= deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var listed = await _connection
+                .ListWindowsAsync(cancellationToken)
+                .ConfigureAwait(false);
+            var match = listed.Windows.FirstOrDefault(window =>
+                (!hasTitle || string.Equals(window.Title, title, StringComparison.Ordinal))
+                && (
+                    !hasAutomationId
+                    || string.Equals(window.AutomationId, automationId, StringComparison.Ordinal)
+                )
+            );
+
+            if (match is null)
+            {
+                var detail =
+                    hasTitle && hasAutomationId ? $"title='{title}', automationId='{automationId}'"
+                    : hasTitle ? $"title='{title}'"
+                    : $"automationId='{automationId}'";
+                _operationLog.Record(FailureSteps.WaitForWindowClosed, detail);
+                return;
+            }
+
+            var remaining = deadline - DateTime.UtcNow;
+            if (remaining <= TimeSpan.Zero)
+            {
+                break;
+            }
+
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        var criteria =
+            hasTitle && hasAutomationId ? $"title='{title}', automationId='{automationId}'"
+            : hasTitle ? $"title='{title}'"
+            : $"automationId='{automationId}'";
+
+        throw new GraftException(
+            GraftErrorCodes.ActionTimeout,
+            $"Timed out after {timeout.TotalSeconds:0.###}s waiting for window to close ({criteria})."
+        );
+    }
+
+    /// <summary>
     /// Arms the next <c>OpenFileDialog.ShowDialog</c> (via RunDialog seam) to return <paramref name="path"/> (one-shot).
     /// </summary>
     /// <param name="path">File path to return.</param>
