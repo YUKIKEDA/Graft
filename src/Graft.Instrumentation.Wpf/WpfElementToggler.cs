@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Threading;
 using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Elements;
@@ -64,14 +65,21 @@ internal sealed class WpfElementToggler : IElementToggler
             );
         }
 
+        // Radio: select (do not flip off). Prefer native before peer Toggle.
+        if (element is RadioButton radioButton)
+        {
+            radioButton.IsChecked = true;
+            return;
+        }
+
         if (TryToggleViaAutomationPeer(element))
         {
             return;
         }
 
-        if (element is CheckBox checkBox)
+        if (element is ToggleButton toggleButton)
         {
-            checkBox.IsChecked = checkBox.IsChecked != true;
+            toggleButton.IsChecked = toggleButton.IsChecked != true;
             return;
         }
 

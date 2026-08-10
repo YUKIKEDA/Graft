@@ -53,4 +53,4 @@ ID: `G06–G10`（[competitive-gap.md](./competitive-gap.md)）。
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` / `competitive-gap.md` 優先
-- **次フェーズ:** Phase 29 コントロール / キー穴（V03, V05, L04, L06, T03, T04, C01, C03–C06, K03, K04）
+- **次フェーズ:** [task_phase29.md](./task_phase29.md) コントロール / キー穴（29a → 29b）

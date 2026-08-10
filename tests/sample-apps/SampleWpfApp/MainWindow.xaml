@@ -405,6 +405,51 @@
                 </DataGrid.RowStyle>
             </DataGrid>
 
+            <TextBlock Text="Phase 29a controls" Margin="0,8,0,4" />
+            <PasswordBox x:Name="SamplePhase29aPassword"
+                         AutomationProperties.AutomationId="SamplePhase29aPassword"
+                         Width="200"
+                         Margin="0,0,0,8"
+                         HorizontalAlignment="Left"
+                         PasswordChanged="SamplePhase29aPassword_OnPasswordChanged" />
+            <RichTextBox x:Name="SamplePhase29aRichText"
+                         AutomationProperties.AutomationId="SamplePhase29aRichText"
+                         Height="60"
+                         Width="280"
+                         Margin="0,0,0,8"
+                         HorizontalAlignment="Left"
+                         AcceptsReturn="True" />
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <RadioButton x:Name="SamplePhase29aRadioA"
+                             AutomationProperties.AutomationId="SamplePhase29aRadioA"
+                             GroupName="Phase29a"
+                             Content="Radio A"
+                             Margin="0,0,12,0"
+                             IsChecked="True" />
+                <RadioButton x:Name="SamplePhase29aRadioB"
+                             AutomationProperties.AutomationId="SamplePhase29aRadioB"
+                             GroupName="Phase29a"
+                             Content="Radio B"
+                             Margin="0,0,12,0" />
+                <ToggleButton x:Name="SamplePhase29aToggle"
+                              AutomationProperties.AutomationId="SamplePhase29aToggle"
+                              Content="Toggle"
+                              Padding="8,4" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                <TextBox x:Name="SamplePhase29aFocusA"
+                         AutomationProperties.AutomationId="SamplePhase29aFocusA"
+                         Width="120"
+                         Margin="0,0,8,0"
+                         Text="FocusA"
+                         TabIndex="100" />
+                <TextBox x:Name="SamplePhase29aFocusB"
+                         AutomationProperties.AutomationId="SamplePhase29aFocusB"
+                         Width="120"
+                         Text="FocusB"
+                         TabIndex="101" />
+            </StackPanel>
+
             <TextBlock Text="Windows" Margin="0,8,0,4" />
             <Button x:Name="OpenChildWindowButton"
                     AutomationProperties.AutomationId="OpenChildWindowButton"

@@ -40,6 +40,31 @@ internal static partial class NativeMethods
     public const byte VkDown = 0x28;
     public const byte VkDelete = 0x2E;
     public const byte VkA = 0x41;
+    public const byte VkNumPad0 = 0x60;
+    public const byte VkNumPad1 = 0x61;
+    public const byte VkNumPad2 = 0x62;
+    public const byte VkNumPad3 = 0x63;
+    public const byte VkNumPad4 = 0x64;
+    public const byte VkNumPad5 = 0x65;
+    public const byte VkNumPad6 = 0x66;
+    public const byte VkNumPad7 = 0x67;
+    public const byte VkNumPad8 = 0x68;
+    public const byte VkNumPad9 = 0x69;
+    public const byte VkNumPadAdd = 0x6B;
+    public const byte VkNumPadSubtract = 0x6D;
+    public const byte VkNumPadDecimal = 0x6E;
+    public const byte VkF1 = 0x70;
+    public const byte VkF2 = 0x71;
+    public const byte VkF3 = 0x72;
+    public const byte VkF4 = 0x73;
+    public const byte VkF5 = 0x74;
+    public const byte VkF6 = 0x75;
+    public const byte VkF7 = 0x76;
+    public const byte VkF8 = 0x77;
+    public const byte VkF9 = 0x78;
+    public const byte VkF10 = 0x79;
+    public const byte VkF11 = 0x7A;
+    public const byte VkF12 = 0x7B;
 
     [LibraryImport("user32.dll", SetLastError = true)]
     public static partial uint SendInput(uint nInputs, [In] INPUT[] pInputs, int cbSize);
@@ -58,7 +83,7 @@ internal static partial class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool SetCursorPos(int x, int y);
 
-    [LibraryImport("user32.dll")]
+    [LibraryImport("user32.dll", EntryPoint = "MapVirtualKeyW")]
     public static partial uint MapVirtualKey(uint uCode, uint uMapType);
 
     [StructLayout(LayoutKind.Sequential)]

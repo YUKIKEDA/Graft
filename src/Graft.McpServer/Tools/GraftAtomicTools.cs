@@ -1147,6 +1147,30 @@ public sealed partial class GraftAtomicTools
         );
 
     /// <summary>
+    /// Expects an element to be focused.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_expect_focused")]
+    [Description("Expect an element to be focused in the open session.")]
+    public partial Task<CallToolResult> ExpectFocused(
+        [Description("Target automation id.")] string automationId,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .ExpectFocusedAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Expects an element's tree name contains a substring.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>

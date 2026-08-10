@@ -1,0 +1,60 @@
+{
+  "v": 1,
+  "name": "phase29a-controls",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "setValue",
+      "automationId": "SamplePhase29aPassword",
+      "value": "abc"
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "Phase29aPassword len=3"
+    },
+    {
+      "action": "setValue",
+      "automationId": "SamplePhase29aRichText",
+      "value": "ScenarioRich"
+    },
+    {
+      "action": "expectValue",
+      "automationId": "SamplePhase29aRichText",
+      "value": "ScenarioRich"
+    },
+    {
+      "action": "toggle",
+      "automationId": "SamplePhase29aRadioB"
+    },
+    {
+      "action": "expectChecked",
+      "automationId": "SamplePhase29aRadioB",
+      "checked": true
+    },
+    {
+      "action": "pressKeys",
+      "automationId": "SamplePhase29aFocusA",
+      "keys": "Tab"
+    },
+    {
+      "action": "expectFocused",
+      "automationId": "SamplePhase29aFocusB"
+    },
+    {
+      "action": "pressKeys",
+      "automationId": "SamplePhase29aFocusB",
+      "keys": "F5"
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "Phase29aKey F5"
+    }
+  ]
+}

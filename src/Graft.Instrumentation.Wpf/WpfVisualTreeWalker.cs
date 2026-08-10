@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Documents;
 using System.Windows.Media;
 using Graft.Instrumentation.Elements;
 using Graft.Instrumentation.Tree;
@@ -144,7 +145,7 @@ internal static class WpfVisualTreeWalker
             Bounds = ResolveBounds(element, window, boundsOrigin),
             Enabled = element.IsEnabled,
             Visible = element.IsVisible,
-            Focused = element.IsFocused,
+            Focused = element.IsKeyboardFocused,
             Selected = ResolveSelected(element),
             Expanded = ResolveExpanded(element),
             Checked = ResolveChecked(element),
@@ -175,7 +176,8 @@ internal static class WpfVisualTreeWalker
     private static bool? ResolveChecked(FrameworkElement element) =>
         element switch
         {
-            CheckBox checkBox => checkBox.IsChecked,
+            // CheckBox / RadioButton / ToggleButton
+            ToggleButton toggle => toggle.IsChecked,
             _ => null,
         };
 
@@ -183,8 +185,19 @@ internal static class WpfVisualTreeWalker
         element switch
         {
             RangeBase range => range.Value.ToString("G", CultureInfo.InvariantCulture),
+            RichTextBox richTextBox => ReadRichTextPlain(richTextBox),
+            // PasswordBox intentionally omitted (Phase 29a: do not expose Password over the tree).
             _ => null,
         };
+
+    private static string ReadRichTextPlain(RichTextBox richTextBox)
+    {
+        var text = new TextRange(
+            richTextBox.Document.ContentStart,
+            richTextBox.Document.ContentEnd
+        ).Text;
+        return text.TrimEnd('\r', '\n');
+    }
 
     private static void CollectFrameworkChildren(
         DependencyObject parent,

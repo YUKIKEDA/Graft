@@ -52,6 +52,7 @@
         { "$ref": "#/$defs/expectChecked" },
         { "$ref": "#/$defs/expectEnabled" },
         { "$ref": "#/$defs/expectVisible" },
+        { "$ref": "#/$defs/expectFocused" },
         { "$ref": "#/$defs/expectNameContains" },
         { "$ref": "#/$defs/expectNameMatches" },
         { "$ref": "#/$defs/expectValue" },
@@ -339,6 +340,15 @@
         "action": { "const": "expectVisible" },
         "automationId": { "type": "string", "minLength": 1 },
         "visible": { "type": "boolean" }
+      }
+    },
+    "expectFocused": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId"],
+      "properties": {
+        "action": { "const": "expectFocused" },
+        "automationId": { "type": "string", "minLength": 1 }
       }
     },
     "expectNameContains": {

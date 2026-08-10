@@ -85,6 +85,9 @@ public static class ScenarioActions
     /// <summary>Expect an element's visible state.</summary>
     public const string ExpectVisible = FailureSteps.ExpectVisible;
 
+    /// <summary>Expect an element's focused state.</summary>
+    public const string ExpectFocused = FailureSteps.ExpectFocused;
+
     /// <summary>Expect an element's name contains a substring.</summary>
     public const string ExpectNameContains = FailureSteps.ExpectNameContains;
 
