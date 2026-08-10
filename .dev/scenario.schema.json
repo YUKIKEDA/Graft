@@ -28,6 +28,7 @@
       "oneOf": [
         { "$ref": "#/$defs/launch" },
         { "$ref": "#/$defs/invoke" },
+        { "$ref": "#/$defs/rightClick" },
         { "$ref": "#/$defs/setValue" },
         { "$ref": "#/$defs/toggle" },
         { "$ref": "#/$defs/sendKeys" },
@@ -74,6 +75,15 @@
       "required": ["action", "automationId"],
       "properties": {
         "action": { "const": "invoke" },
+        "automationId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "rightClick": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId"],
+      "properties": {
+        "action": { "const": "rightClick" },
         "automationId": { "type": "string", "minLength": 1 }
       }
     },

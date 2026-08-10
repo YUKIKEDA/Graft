@@ -238,6 +238,11 @@ internal sealed class AgentPipeServer : IDisposable
             return (HandleInvoke(request), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
+        if (request.Method == ProtocolMethods.RightClick)
+        {
+            return (HandleRightClick(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
         if (request.Method == ProtocolMethods.SetValue)
         {
             return (HandleSetValue(request), CloseAfterWrite: false, BinaryFollowUp: null);
@@ -454,6 +459,38 @@ internal sealed class AgentPipeServer : IDisposable
         {
             var selector = ReadElementSelector(request.Params);
             invoker.Invoke(selector);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleRightClick(RequestMessage request)
+    {
+        var invoker = AgentServices.ElementInvoker;
+        if (invoker is null)
+        {
+            return Error(
+                request.Id,
+                GraftErrorCodes.ActionFailed,
+                "No element invoker is registered. Call WpfGraft.Use() before Agent.Start()."
+            );
+        }
+
+        try
+        {
+            var selector = ReadElementSelector(request.Params);
+            invoker.RightClick(selector);
             return Ok(request.Id);
         }
         catch (ElementResolveException ex)

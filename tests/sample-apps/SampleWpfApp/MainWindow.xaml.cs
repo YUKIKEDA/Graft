@@ -66,6 +66,11 @@ public partial class MainWindow : Window
         AutomationProperties.SetName(SampleMouseTarget, "MouseHit");
     }
 
+    private void ContextMenuPing_OnClick(object sender, RoutedEventArgs e)
+    {
+        StatusText.Text = "ContextMenuPing";
+    }
+
     private void SampleList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (SampleList.SelectedItem is SampleListItem item)

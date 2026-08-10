@@ -40,7 +40,7 @@
 
 - [x] schema / Runner / MCP
 - [x] Sample Fluent + Scenario E2E
-- [x] 完了チェック。次: **右クリック + ContextMenu / MenuItem**
+- [x] 完了チェック。次: [task_phase16.md](./task_phase16.md)
 
 ---
 
@@ -57,4 +57,4 @@
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` 優先
-- **次フェーズ:** 右クリック + ContextMenu / MenuItem → Tab/Slider/複数選択 → … → Avalonia → Inspector
+- **次フェーズ:** [task_phase16.md](./task_phase16.md) → Tab/Slider/複数選択 → … → Avalonia → Inspector

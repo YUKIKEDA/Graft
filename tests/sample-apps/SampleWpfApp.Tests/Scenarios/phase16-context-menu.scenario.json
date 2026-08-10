@@ -1,0 +1,25 @@
+{
+  "v": 1,
+  "name": "phase16-context-menu",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "rightClick",
+      "automationId": "ContextMenuTarget"
+    },
+    {
+      "action": "invoke",
+      "automationId": "ContextMenuPing"
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "ContextMenuPing"
+    }
+  ]
+}

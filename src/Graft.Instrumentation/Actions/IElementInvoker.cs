@@ -28,6 +28,14 @@ public interface IElementInvoker
     /// <exception cref="ElementResolveException">Selector / resolve failures before queueing.</exception>
     /// <exception cref="ElementActionException">Dispatcher unavailable.</exception>
     void BeginInvoke(ElementSelector selector);
+
+    /// <summary>
+    /// Right-clicks the element matched by <paramref name="selector"/> (SendInput).
+    /// </summary>
+    /// <param name="selector">Element selector (automationId required).</param>
+    /// <exception cref="ElementResolveException">Selector / resolve failures.</exception>
+    /// <exception cref="ElementActionException">Not actionable or right-click failed.</exception>
+    void RightClick(ElementSelector selector);
 }
 
 #endif

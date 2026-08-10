@@ -42,6 +42,17 @@ internal static class WpfInputInjection
         );
     }
 
+    public static void RightClickElement(FrameworkElement element)
+    {
+        ActivateWindow(element);
+        var point = ResolveClickScreenPoint(element);
+        InputInjector.RightClick((int)Math.Round(point.X), (int)Math.Round(point.Y));
+        element.Dispatcher.Invoke(
+            static () => { },
+            System.Windows.Threading.DispatcherPriority.ContextIdle
+        );
+    }
+
     public static void FocusAndType(FrameworkElement element, string text, bool clearFirst)
     {
         ActivateWindow(element);

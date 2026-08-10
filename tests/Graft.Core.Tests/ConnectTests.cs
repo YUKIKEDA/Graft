@@ -191,6 +191,8 @@ public sealed class ConnectTests : IDisposable
         public void Invoke(ElementSelector selector) => LastAutomationId = selector.AutomationId;
 
         public void BeginInvoke(ElementSelector selector) => Invoke(selector);
+
+        public void RightClick(ElementSelector selector) => Invoke(selector);
     }
 
     private sealed class FakeElementValueSetter : IElementValueSetter

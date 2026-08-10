@@ -11,6 +11,9 @@ public static class FailureSteps
     /// <summary>Invoke (click) action failed.</summary>
     public const string Invoke = "invoke";
 
+    /// <summary>rightClick action failed.</summary>
+    public const string RightClick = "rightClick";
+
     /// <summary>setValue action failed.</summary>
     public const string SetValue = "setValue";
 

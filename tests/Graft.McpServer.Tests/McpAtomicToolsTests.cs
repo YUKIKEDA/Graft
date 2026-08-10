@@ -41,6 +41,7 @@ public sealed class McpAtomicToolsTests
         var tools = await client.ListToolsAsync();
         Assert.Contains(tools, t => t.Name == "graft_launch");
         Assert.Contains(tools, t => t.Name == "graft_invoke");
+        Assert.Contains(tools, t => t.Name == "graft_right_click");
         Assert.Contains(tools, t => t.Name == "graft_set_value");
         Assert.Contains(tools, t => t.Name == "graft_toggle");
         Assert.Contains(tools, t => t.Name == "graft_send_keys");

@@ -73,6 +73,14 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case RightClickOperation rightClick:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(rightClick.AutomationId)
+                            .RightClickAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     case SetValueOperation setValue:
                         EnsureSession(session);
                         await session!

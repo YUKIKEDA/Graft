@@ -146,6 +146,36 @@ public sealed class AgentConnection : IAsyncDisposable
     }
 
     /// <summary>
+    /// Calls <c>rightClick</c> for the element with the given automation id.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when rightClick succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task RightClickAsync(
+        string automationId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.RightClick,
+                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "rightClick failed.");
+    }
+
+    /// <summary>
     /// Calls <c>setValue</c> for the element with the given automation id.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>
