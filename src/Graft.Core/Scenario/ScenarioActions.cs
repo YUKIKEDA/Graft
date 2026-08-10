@@ -73,6 +73,9 @@ public static class ScenarioActions
     /// <summary>Arm the next OpenFolder seam as cancel.</summary>
     public const string ArmOpenFolderCancel = FailureSteps.ArmOpenFolderCancel;
 
+    /// <summary>Arm the next MessageBox.Show with a MessageBoxResult name.</summary>
+    public const string ArmMessageBox = FailureSteps.ArmMessageBox;
+
     /// <summary>List open windows.</summary>
     public const string ListWindows = FailureSteps.ListWindows;
 

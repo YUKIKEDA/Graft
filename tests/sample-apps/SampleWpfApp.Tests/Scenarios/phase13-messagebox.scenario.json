@@ -1,0 +1,40 @@
+{
+  "v": 1,
+  "name": "phase13-messagebox",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "armMessageBox",
+      "result": "Yes"
+    },
+    {
+      "action": "invokeOpeningWindow",
+      "automationId": "MessageBoxButton",
+      "waitForNewWindow": false
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "MessageBox Yes"
+    },
+    {
+      "action": "armMessageBox",
+      "result": "No"
+    },
+    {
+      "action": "invokeOpeningWindow",
+      "automationId": "MessageBoxButton",
+      "waitForNewWindow": false
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "MessageBox No"
+    }
+  ]
+}

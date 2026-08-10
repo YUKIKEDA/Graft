@@ -226,6 +226,7 @@ public static class AgentServices
         OpenFileArm.Reset();
         SaveFileArm.Reset();
         OpenFolderArm.Reset();
+        MessageBoxArm.Reset();
     }
 }
 

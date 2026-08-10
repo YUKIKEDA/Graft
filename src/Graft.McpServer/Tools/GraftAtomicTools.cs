@@ -811,6 +811,29 @@ public sealed class GraftAtomicTools
         );
 
     /// <summary>
+    /// Arms the next MessageBox.Show with a MessageBoxResult (one-shot).
+    /// </summary>
+    /// <param name="result">MessageBoxResult name: None, OK, Cancel, Yes, or No.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_arm_message_box")]
+    [Description(
+        "Arm the next MessageBox.Show to return a MessageBoxResult (None/OK/Cancel/Yes/No, one-shot)."
+    )]
+    public Task<CallToolResult> ArmMessageBox(
+        [Description("MessageBoxResult name: None, OK, Cancel, Yes, or No.")] string result,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session.ArmMessageBoxAsync(result, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["result"] = result });
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Disposes the open Graft session (pipe + child process).
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>

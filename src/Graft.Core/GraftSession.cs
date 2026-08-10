@@ -308,6 +308,30 @@ public sealed class GraftSession : IAsyncDisposable
     }
 
     /// <summary>
+    /// Arms the next <c>MessageBox.Show</c> (via seam) to return <paramref name="result"/> (one-shot).
+    /// </summary>
+    /// <param name="result">MessageBoxResult name: None, OK, Cancel, Yes, or No.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when arming succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task ArmMessageBoxAsync(
+        string result,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(result);
+        try
+        {
+            await _connection.ArmMessageBoxAsync(result, cancellationToken).ConfigureAwait(false);
+            _operationLog.Record(FailureSteps.ArmMessageBox, result);
+        }
+        catch (GraftException)
+        {
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Gets the child process id (0 if unavailable).
     /// </summary>
     public int ProcessId

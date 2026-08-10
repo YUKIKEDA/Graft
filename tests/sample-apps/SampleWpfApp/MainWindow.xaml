@@ -162,6 +162,13 @@
                     HorizontalAlignment="Left"
                     Margin="0,0,0,8"
                     Click="OpenFolderButton_OnClick" />
+            <Button x:Name="MessageBoxButton"
+                    AutomationProperties.AutomationId="MessageBoxButton"
+                    Content="Message Box"
+                    Padding="12,6"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,0,8"
+                    Click="MessageBoxButton_OnClick" />
         </StackPanel>
     </ScrollViewer>
 </Window>

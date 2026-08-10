@@ -252,6 +252,13 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case ArmMessageBoxOperation armMessageBox:
+                        EnsureSession(session);
+                        await session!
+                            .ArmMessageBoxAsync(armMessageBox.Result, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     case ListWindowsOperation:
                         EnsureSession(session);
                         _ = await session!

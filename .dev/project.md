@@ -343,7 +343,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 10 | OpenFile ダイアログ・シーム（方針 + MVP）            | Arm + Harmony CommonItemDialog.RunDialog   |
 | Phase 11 | SaveFile ダイアログ・シーム（OpenFile 同型 MVP）     | Arm + 同一 RunDialog パッチ（Save のみ）   |
 | Phase 12 | OpenFolder ダイアログ・シーム（同型 MVP）            | Arm + 同一 RunDialog（`FolderName`）       |
-| （次）   | MessageBox シーム → … → Avalonia → Inspector         | Avalonia/Inspector は最後寄り              |
+| Phase 13 | MessageBox シーム（Runtime MVP）                     | Arm + Harmony `MessageBox.Show`            |
+| （次）   | Avalonia → Inspector                                 | Avalonia/Inspector は最後寄り              |
 
 ## 9. 未検討・今後の課題
 
@@ -353,7 +354,6 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - セレクタ重みの実測チューニング、`details` スキーマのフィールド確定
 - 診断向けツリー差分 JSON のフィールド名の確定
 - scroll/select の項目キー・表示名指定（index 正本の次候補）
-- MessageBox シーム（OpenFolder MVP の後続）
 - 実 OS コモンダイアログの UIA 操作（方針上非採用。必要なら別検討）
 - DataGrid セルの列キー指定 / CheckBox・Template 列（Phase 9 後の拡張）
 - Avalonia アダプタ → Inspector（最後寄り）
@@ -466,3 +466,7 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q96 | 素の `OpenFolderDialog`。同一 `RunDialog` パッチ。結果は `FolderName`。`OpenFolderArm` は独立         |
 | Q97 | `ArmOpenFolder` / `ArmOpenFolderCancel`、一回限り、`waitForNewWindow:false`。Scenario/MCP 薄い追従    |
 | Q98 | Phase 12 の次は **MessageBox シーム**。Avalonia / Inspector は後ろ                                    |
+| Q99 | Phase 13: MessageBox **Runtime シーム**。詳細は `task_phase13.md`                                      |
+| Q100 | 素の `MessageBox.Show`。Harmony で主要オーバーロードを差し替え。業務コードに Graft API なし          |
+| Q101 | `ArmMessageBox(result)`（OK/Cancel/Yes/No/None）、一回限り、`waitForNewWindow:false`。Scenario/MCP   |
+| Q102 | Phase 13 の次は **Avalonia**。Inspector は後ろ                                                       |
