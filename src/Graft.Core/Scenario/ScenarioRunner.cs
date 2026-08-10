@@ -224,6 +224,20 @@ public static class ScenarioRunner
                             .ConfigureAwait(false);
                         break;
 
+                    case ArmSaveFileOperation armSaveFile:
+                        EnsureSession(session);
+                        await session!
+                            .ArmSaveFileAsync(armSaveFile.Path, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
+                    case ArmSaveFileCancelOperation:
+                        EnsureSession(session);
+                        await session!
+                            .ArmSaveFileCancelAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     case ListWindowsOperation:
                         EnsureSession(session);
                         _ = await session!

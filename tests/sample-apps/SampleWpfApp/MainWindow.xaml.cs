@@ -121,4 +121,11 @@ public partial class MainWindow : Window
         var result = dialog.ShowDialog(this);
         StatusText.Text = result == true ? $"OpenFile {dialog.FileName}" : "OpenFileCancel";
     }
+
+    private void SaveFileButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        var dialog = new SaveFileDialog();
+        var result = dialog.ShowDialog(this);
+        StatusText.Text = result == true ? $"SaveFile {dialog.FileName}" : "SaveFileCancel";
+    }
 }

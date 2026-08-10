@@ -1,0 +1,39 @@
+{
+  "v": 1,
+  "name": "phase11-savefile",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "armSaveFile",
+      "path": "C:\\graft-save-file-ok.txt"
+    },
+    {
+      "action": "invokeOpeningWindow",
+      "automationId": "SaveFileButton",
+      "waitForNewWindow": false
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "SaveFile C:\\graft-save-file-ok.txt"
+    },
+    {
+      "action": "armSaveFileCancel"
+    },
+    {
+      "action": "invokeOpeningWindow",
+      "automationId": "SaveFileButton",
+      "waitForNewWindow": false
+    },
+    {
+      "action": "expectName",
+      "automationId": "StatusText",
+      "name": "SaveFileCancel"
+    }
+  ]
+}

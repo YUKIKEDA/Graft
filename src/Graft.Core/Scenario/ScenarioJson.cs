@@ -196,6 +196,8 @@ public static class ScenarioJson
             ScenarioActions.ExpectCellText => CompileExpectCellText(step, index),
             ScenarioActions.ArmOpenFile => CompileArmOpenFile(step, index),
             ScenarioActions.ArmOpenFileCancel => new ArmOpenFileCancelOperation(),
+            ScenarioActions.ArmSaveFile => CompileArmSaveFile(step, index),
+            ScenarioActions.ArmSaveFileCancel => new ArmSaveFileCancelOperation(),
             ScenarioActions.ListWindows => new ListWindowsOperation(),
             ScenarioActions.SwitchWindow => CompileSwitchWindow(step, index),
             ScenarioActions.WaitForWindow => CompileWaitForWindow(step, index),
@@ -458,6 +460,9 @@ public static class ScenarioJson
     }
 
     private static ArmOpenFileOperation CompileArmOpenFile(JsonElement step, int index) =>
+        new(RequireNonEmptyString(step, "path", index));
+
+    private static ArmSaveFileOperation CompileArmSaveFile(JsonElement step, int index) =>
         new(RequireNonEmptyString(step, "path", index));
 
     private static InvokeOpeningWindowOperation CompileInvokeOpeningWindow(

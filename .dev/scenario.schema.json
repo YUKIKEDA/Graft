@@ -44,6 +44,8 @@
         { "$ref": "#/$defs/expectCellText" },
         { "$ref": "#/$defs/armOpenFile" },
         { "$ref": "#/$defs/armOpenFileCancel" },
+        { "$ref": "#/$defs/armSaveFile" },
+        { "$ref": "#/$defs/armSaveFileCancel" },
         { "$ref": "#/$defs/listWindows" },
         { "$ref": "#/$defs/switchWindow" },
         { "$ref": "#/$defs/waitForWindow" },
@@ -259,6 +261,23 @@
       "required": ["action"],
       "properties": {
         "action": { "const": "armOpenFileCancel" }
+      }
+    },
+    "armSaveFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "path"],
+      "properties": {
+        "action": { "const": "armSaveFile" },
+        "path": { "type": "string", "minLength": 1 }
+      }
+    },
+    "armSaveFileCancel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action"],
+      "properties": {
+        "action": { "const": "armSaveFileCancel" }
       }
     },
     "invokeOpeningWindow": {

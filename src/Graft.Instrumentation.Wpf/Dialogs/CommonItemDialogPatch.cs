@@ -7,16 +7,15 @@ using Microsoft.Win32;
 namespace Graft.Instrumentation.Wpf.Dialogs;
 
 /// <summary>
-/// Harmony prefix on <c>CommonItemDialog.RunDialog</c> that consumes <see cref="OpenFileArm"/>.
+/// Harmony prefix on <c>CommonItemDialog.RunDialog</c> for OpenFile / SaveFile arms.
 /// </summary>
 /// <remarks>
-/// On modern .NET, <see cref="OpenFileDialog"/> implements <c>RunDialog</c> via
-/// <c>Microsoft.Win32.CommonItemDialog</c> (not the older <see cref="FileDialog"/> path).
+/// On modern .NET, <see cref="OpenFileDialog"/> and <see cref="SaveFileDialog"/> implement
+/// <c>RunDialog</c> via <c>Microsoft.Win32.CommonItemDialog</c>.
 /// Patches that <c>bool</c>-returning method instead of <c>ShowDialog</c> (<c>bool?</c>)
 /// to avoid Harmony ABI issues with nullable value-type returns.
-/// Only <see cref="OpenFileDialog"/> instances are intercepted; other dialogs fall through.
 /// </remarks>
-internal static class OpenFileDialogPatch
+internal static class CommonItemDialogPatch
 {
     private static int _applied;
 
@@ -30,20 +29,20 @@ internal static class OpenFileDialogPatch
             return;
         }
 
-        var harmony = new Harmony("Graft.Instrumentation.Wpf.OpenFileDialog");
+        var harmony = new Harmony("Graft.Instrumentation.Wpf.CommonItemDialog");
         var runDialog = ResolveRunDialogMethod();
         if (runDialog is null)
         {
             Interlocked.Exchange(ref _applied, 0);
             throw new InvalidOperationException(
-                "Could not locate CommonItemDialog/FileDialog.RunDialog(IntPtr) for OpenFile seam."
+                "Could not locate CommonItemDialog/FileDialog.RunDialog(IntPtr) for file dialog seam."
             );
         }
 
         harmony.Patch(
             runDialog,
             prefix: new HarmonyMethod(
-                typeof(OpenFileDialogPatch).GetMethod(
+                typeof(CommonItemDialogPatch).GetMethod(
                     nameof(Prefix),
                     BindingFlags.Static | BindingFlags.NonPublic
                 )!
@@ -53,7 +52,6 @@ internal static class OpenFileDialogPatch
 
     private static MethodInfo? ResolveRunDialogMethod()
     {
-        // Prefer the declared implementation used by OpenFileDialog on .NET (CommonItemDialog).
         var commonItemDialog = AccessTools.TypeByName("Microsoft.Win32.CommonItemDialog");
         if (commonItemDialog is not null)
         {
@@ -68,7 +66,7 @@ internal static class OpenFileDialogPatch
     }
 
     /// <summary>
-    /// Harmony prefix: when an OpenFile arm is pending, stub the dialog result.
+    /// Harmony prefix: when an Open/Save File arm is pending, stub the dialog result.
     /// </summary>
     /// <param name="__instance">File dialog instance.</param>
     /// <param name="__result">Stubbed RunDialog result when skipping the original.</param>
@@ -83,24 +81,36 @@ internal static class OpenFileDialogPatch
     )]
     private static bool Prefix(object __instance, ref bool __result)
     {
-        if (__instance is not OpenFileDialog open)
+        if (__instance is OpenFileDialog open)
         {
-            return true;
+            return TryApplyArm(open, OpenFileArm.TryConsume, ref __result);
         }
 
-        if (!OpenFileArm.TryConsume(out var path, out var canceled))
+        if (__instance is SaveFileDialog save)
+        {
+            return TryApplyArm(save, SaveFileArm.TryConsume, ref __result);
+        }
+
+        return true;
+    }
+
+    private static bool TryApplyArm(FileDialog dialog, TryConsumeArm tryConsume, ref bool result)
+    {
+        if (!tryConsume(out var path, out var canceled))
         {
             return true;
         }
 
         if (canceled)
         {
-            __result = false;
+            result = false;
             return false;
         }
 
-        open.FileName = path!;
-        __result = true;
+        dialog.FileName = path!;
+        result = true;
         return false;
     }
+
+    private delegate bool TryConsumeArm(out string? path, out bool canceled);
 }
