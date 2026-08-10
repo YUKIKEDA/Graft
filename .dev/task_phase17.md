@@ -17,7 +17,7 @@
 | 検証 | TabItem `ExpectSelectedAsync` + StatusText 副作用 |
 | Scenario | 既存 `select` で 1 本 |
 | MCP | 変更なし |
-| Phase 17 の次 | Slider / 複数選択 など |
+| Phase 17 の次 | Slider（Phase 18） / 複数選択 など |
 
 ---
 
@@ -32,7 +32,7 @@
 
 - [x] `WpfElementChooser` で TabControl を明示対応
 - [x] Sample TabControl + Fluent / Scenario E2E
-- [x] 完了チェック。次: Slider / 複数選択
+- [x] 完了チェック。次: [task_phase18.md](./task_phase18.md)
 
 ---
 
@@ -48,4 +48,4 @@
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` 優先
-- **次フェーズ:** Slider / 複数選択 → … → Avalonia → Inspector
+- **次フェーズ:** [task_phase18.md](./task_phase18.md) → 複数選択 → … → Avalonia → Inspector

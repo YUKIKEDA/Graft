@@ -256,8 +256,9 @@ public sealed class ElementQuery
 
     /// <summary>
     /// Waits until the element is present and actionable, then replaces its value.
+    /// For <c>Slider</c>, <paramref name="value"/> is parsed as an invariant-culture double.
     /// </summary>
-    /// <param name="value">Replacement text (empty string clears).</param>
+    /// <param name="value">Replacement text (empty string clears TextBox). Slider: invariant number string.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when setValue succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or setValue failed (may include <see cref="GraftException.Report"/>).</exception>

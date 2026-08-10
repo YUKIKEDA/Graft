@@ -348,7 +348,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 15 | 公開 Screenshot（Session / Scenario / MCP）          | 既存 wire を第一級化。要素クリップは含めない |
 | Phase 16 | 右クリック + ContextMenu / MenuItem                  | `RightClickAsync` + 開いたメニューをツリーに |
 | Phase 17 | TabControl 選択（`select` 拡張）                     | 既存 `SelectAsync(index)`。Slider 等は次   |
-| （次）   | Slider / 複数選択 → … → Avalonia                     | WPF ギャップ埋め優先。Inspector は最後寄り |
+| Phase 18 | Slider 値設定（`setValue` 拡張）                     | Invariant double → `Slider.Value`。複数選択は次 |
+| （次）   | 複数選択 → … → Avalonia                              | WPF ギャップ埋め優先。Inspector は最後寄り |
 
 ## 9. 未検討・今後の課題
 
@@ -488,3 +489,5 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q111 | 実装は SendInput 右クリック + flush。待ちは呼び出し側。Menu バー/サブメニューは含めない。`task_phase16.md` |
 | Q112 | Phase 17 は **TabControl** のみ。既存 `SelectAsync(index)` 拡張。ExpectSelected + StatusText。`task_phase17.md` |
 | Q113 | Scenario は既存 `select`。MCP 変更なし。Slider / 複数選択 / ヘッダー指定は含めない                              |
+| Q114 | Phase 18 は **Slider のみ**。既存 `SetValueAsync` / `setValue`。InvariantCulture double → `Slider.Value`。`task_phase18.md` |
+| Q115 | 検証は StatusText 副作用のみ（tree `value` なし）。Scenario 既存 `setValue`。MCP 変更なし。複数選択は含めない   |
