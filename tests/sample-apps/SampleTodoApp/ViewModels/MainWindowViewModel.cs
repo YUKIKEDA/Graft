@@ -39,9 +39,11 @@ public sealed class MainWindowViewModel : IDisposable
 
         var hasSelection = SelectedItem.Select(static x => x is not null);
 
-        AddCommand = new ReactiveCommand(_ => OpenDetail(isNew: true)).AddTo(ref _disposables);
+        AddCommand = new AsyncReactiveCommand(() => OpenDetailAsync(isNew: true)).AddTo(
+            ref _disposables
+        );
         EditCommand = hasSelection
-            .ToReactiveCommand(_ => OpenDetail(isNew: false))
+            .ToAsyncReactiveCommand(() => OpenDetailAsync(isNew: false))
             .AddTo(ref _disposables);
         DeleteCommand = hasSelection
             .ToAsyncReactiveCommand(DeleteSelectedAsync)
@@ -111,7 +113,7 @@ public sealed class MainWindowViewModel : IDisposable
         StatusMessage.Value = "FiltersCleared";
     }
 
-    private void OpenDetail(bool isNew)
+    private async Task OpenDetailAsync(bool isNew)
     {
         TodoItem draft;
         if (isNew)
@@ -167,7 +169,7 @@ public sealed class MainWindowViewModel : IDisposable
             StatusMessage.Value = "ItemUpdated";
         }
 
-        _ = PersistAsync();
+        await PersistAsync().ConfigureAwait(true);
         RefreshVisible();
         SelectedItem.Value = _visible.FirstOrDefault(i => i.Id == saved.Id);
     }
