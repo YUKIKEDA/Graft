@@ -6,7 +6,7 @@ ID: `X04`（[competitive-gap.md](./competitive-gap.md)）。
 
 ---
 
-## 方針（改訂）
+## 方針（確定）
 
 プロセス横断 named mutex（`Local\Graft.UiSession`）を試作したが、**Launch 直列化だけでは不十分**だった。  
 並列 `testhost` / IDE 存在下では `SetForegroundWindow` が失敗しやすく、SendInput（keys / click / ContextMenu）が外れる症状が残る。
@@ -17,7 +17,7 @@ ID: `X04`（[competitive-gap.md](./competitive-gap.md)）。
 | mutex | **採用しない**（前景確保の問題は別途検討） |
 | アセンブリ内 | 従来どおり `SampleUiCollection` / `McpUiCollection` |
 | CI workflow | 本フェーズでは含めない（使うなら `-m:1`） |
-| 受け入れ | ドキュメントで `-m:1` を正本と明記済み |
+| Must 扱い | **X04 = Done**（真の並列安定化は非目標。運用でゲート充足） |
 
 ---
 
@@ -25,6 +25,7 @@ ID: `X04`（[competitive-gap.md](./competitive-gap.md)）。
 
 - [x] 本ファイル追加・方針改訂を記録
 - [x] `project.md` / `AGENTS.md` / `graft-core.md` / `competitive-gap.md` / `task_phase29.md` 更新
+- [x] X04 を Done に更新（`-m:1` 正本）
 
 ---
 
@@ -38,7 +39,7 @@ ID: `X04`（[competitive-gap.md](./competitive-gap.md)）。
 ## Phase 31 完了チェック
 
 - [x] 全解テストの正本が `-m:1` である旨を文書化した
-- [x] X04 を mutex Done にしない（PART / Must のまま）
+- [x] X04 を Done（`-m:1` 運用。真並列は非目標）
 - [x] Avalonia / CI YAML は **含めない**
 
 ---
@@ -46,4 +47,4 @@ ID: `X04`（[competitive-gap.md](./competitive-gap.md)）。
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` / `competitive-gap.md` 優先
-- **次フェーズ:** Avalonia（Must ゲートは X04 を `-m:1` 運用で満たす扱い）または前景確保の任意強化
+- **次フェーズ:** [task_phase32.md](./task_phase32.md)（H02 Frame）→ [task_phase33.md](./task_phase33.md)（D06）→ Avalonia

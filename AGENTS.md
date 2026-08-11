@@ -1,6 +1,6 @@
 # Graft — Agent notes
 
-In-process UI testing for WPF & AvaloniaUI. Design source of truth: `.dev/project.md`. M0/M1/M2: `.dev/task_m0.md` / `task_m1.md` / `task_m2.md`. Phase 2–31: `.dev/task_phase2.md` … `task_phase31.md`. WPF vs competitors gap matrix: `.dev/competitive-gap.md` (Avalonia gated on Must).
+In-process UI testing for WPF & AvaloniaUI. Design source of truth: `.dev/project.md`. M0/M1/M2: `.dev/task_m0.md` / `task_m1.md` / `task_m2.md`. Phase 2–33: `.dev/task_phase2.md` … `task_phase33.md`. WPF vs competitors gap matrix: `.dev/competitive-gap.md` (Avalonia gated on remaining Must: H02, D06; X04 Done via `-m:1`).
 
 **Consumer usage example:** `tests/sample-apps/SampleWpfApp.Tests` (see `.dev/graft-core.md`).
 

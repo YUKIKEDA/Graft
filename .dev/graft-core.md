@@ -97,5 +97,5 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - Scenario JSON: `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync`（上記に加え `armOpenFile` / `armSaveFile` / `armOpenFolder` / `armMessageBox` / セル・窓系）。契約は `.dev/scenario.schema.json`。例: `tests/sample-apps/SampleWpfApp.Tests/Scenarios/`
 - MCP: `Graft.McpServer`（stdio）。原子ツールにダイアログ Arm 系とセル・窓系を含む。失敗時は `IsError` + FailureReport JSON
 - invoke / setValue はネイティブ → Peer → SendInput フォールバック（クリック / クリア+タイプ）
-- 全解テスト並列（Phase 31 / X04）: 正本は `dotnet test Graft.slnx -m:1`（アセンブリ内は `SampleUiCollection` / `McpUiCollection`）。プロセス mutex だけでは SendInput 前景不足が残るため未採用（[task_phase31.md](./task_phase31.md)）
-- 未実装（後続）: 正本は [competitive-gap.md](./competitive-gap.md)（**Must 確定済み**）。**Avalonia は Must 完了後**。要素クリップ / typeHuman / Inspector / 画像 diff 等は任意または非目標
+- 全解テスト並列（Phase 31 / X04）: 正本は `dotnet test Graft.slnx -m:1`（アセンブリ内は `SampleUiCollection` / `McpUiCollection`）。プロセス mutex だけでは SendInput 前景不足が残るため未採用。X04 は運用 Done（[task_phase31.md](./task_phase31.md)）
+- 未実装（後続 Must）: [H02 Frame](./task_phase32.md) → [D06 操作タイムライン](./task_phase33.md)。**Avalonia はその後**。正本は [competitive-gap.md](./competitive-gap.md)。要素クリップ / typeHuman / Inspector / 画像 diff 等は任意または非目標

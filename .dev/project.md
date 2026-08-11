@@ -361,8 +361,10 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 28 | DataGrid 残り                                        | Template/セル選択/行キー/ソート/行 CRUD    |
 | Phase 29a | 入力・トグル・キー穴                                | V03/V05/T03/T04/K03/K04                    |
 | Phase 29b | リスト / その他 UI 穴                               | L04/L06/C01/C03–C06                        |
-| Phase 31 | SendInput 並列対策                                   | X04。正本は `-m:1`（mutex 見送り）         |
-| （次）   | Avalonia（Must 完了後）                              | 対照表: `competitive-gap.md`。Inspector 任意 |
+| Phase 31 | SendInput 並列対策                                   | X04。正本 `-m:1` で Done（mutex 見送り）   |
+| Phase 32 | Frame 遷移（H02）                                    | Frame のみ。専用 DSL なし                  |
+| Phase 33 | 操作タイムライン（D06）                              | PNG 連番 + HTML。Must。GIF/FFmpeg なし     |
+| （次）   | Avalonia（H02・D06 完了後）                          | 対照表: `competitive-gap.md`。Inspector 任意 |
 
 ## 9. 未検討・今後の課題
 
@@ -374,7 +376,7 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - scroll/select の項目キー・表示名指定（index 正本の次候補）
 - 実 OS コモンダイアログの UIA 操作（方針上非採用。必要なら別検討）
 - WPF 競合ギャップ（正本: [competitive-gap.md](./competitive-gap.md)。Must 確定済み → Phase 24+）
-- Avalonia アダプタ（**Must 完了後**）。Inspector は任意（自社アプリでは getTree で代替しやすい）
+- Avalonia アダプタ（**残 Must = H02・D06 完了後**）。Inspector は任意（自社アプリでは getTree で代替しやすい）
 - MessagePack 評価用の実測ログ形式
 - .NET Framework WPF 対応の要否（需要が固まってから）
 - 多言語バインディング / gRPC（v1 スコープ外。再検討は操作モデル安定後）
@@ -524,3 +526,6 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q135 | Phase 29a: Password Set / RichText 平文 / Radio·Toggle checked / ExpectFocused / F+NumPad（Win 除外）。29b=L04/L06/C01/C03–C06。`task_phase29.md` |
 | Q136 | Phase 29b: DatePicker yyyy-MM-dd / ComboBox Expand / ListView GridView Read / ExpectToolTip / ToolBar·StatusBar Sample / Popup 開時合流 / Hyperlink Click。`task_phase29.md` |
 | Q137 | Phase 31: 全解の正本は `-m:1`。named mutex 試作は前景不足で見送り。`task_phase31.md` |
+| Q138 | ロードマップ: H02 → 操作タイムライン(D06) → Avalonia。X04 は `-m:1` で Done。単一 FW 完成度優先 |
+| Q139 | H02: Frame のみ・専用 DSL なし・Sample + WaitFor/Expect。NavigationWindow は本 Must 外。`task_phase32.md` |
+| Q140 | D06: Core オプション・Always/OnFailure・Dispose+Save・操作後1枚・PNG+HTML（速度・字幕）・画像系 NuGet/FFmpeg なし。Must。`task_phase33.md` |

@@ -26,9 +26,9 @@ Playwright DX（codegen / trace / video）や TestComplete Object Spy 全体は�
 
 ## 確定 Must（レビュー結果）
 
-提示リストをベースに、K05 / V06 / W12 / A08 / P02 は任意。**X04 は Must**。
+提示リストをベースに、K05 / V06 / W12 / A08 / P02 は任意。**X04 は Must（`-m:1` 運用で Done）**。**D06（操作タイムライン）を Must に追加**（単一 FW 完成度優先。Avalonia はその後）。
 
-`F02 F04 F05` · `M03–M08` · `K03 K04` · `V03 V05` · `T03 T04` · `L04 L05 L06` · `E04` · `H02 H03` · `U02 U03 U04` · `G06–G10` · `C01–C06` · `W06–W11` · `A04–A07` · `X04`
+`F02 F04 F05` · `M03–M08` · `K03 K04` · `V03 V05` · `T03 T04` · `L04 L05 L06` · `E04` · `H02 H03` · `U02 U03 U04` · `G06–G10` · `C01–C06` · `W06–W11` · `A04–A07` · `X04` · `D06`
 
 Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄いため **任意**（ゲート外・ロードマップ必須ではない）。
 
@@ -142,7 +142,7 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | ID  | シナリオ                       | 競合 | Graft | 優先 | 仮Phase | メモ |
 | --- | ------------------------------ | ---- | ----- | ---- | ------- | ---- |
 | H01 | TabControl 選択                | Yes  | OK    | Done | —       |      |
-| H02 | Frame / NavigationWindow 遷移  | Yes  | NO    | Must | —       | Phase 24 は Frame なし。需要後 |
+| H02 | Frame / NavigationWindow 遷移  | Yes  | NO    | Must | 32      | **Frame のみ**（専用 DSL なし・既存 WaitFor/Expect）。NavigationWindow は本 Must 外 |
 | H03 | カスタム「ページ」差し替え待ち | Yes  | OK    | Done | 24      | Visibility パネル |
 
 ---
@@ -243,6 +243,7 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | D03 | 失敗時ツリー添付             | Yes  | OK    | Done   | —       |      |
 | D04 | ツリー差分 JSON              | PART | NO    | 任意   | —       |      |
 | D05 | シナリオファイル自動書き換え | PART | NO    | 非目標 | —       |      |
+| D06 | 操作タイムライン（目視レビュー） | PART | NO    | Must | 33      | PNG 連番 + HTML（速度・操作名字幕）。GIF/FFmpeg/ImageSharp なし。`task_phase33.md` |
 
 ---
 
@@ -253,7 +254,7 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | X01 | 宣言的 Scenario JSON | Yes  | OK    | Done | —       |                         |
 | X02 | MCP 原子ツール       | Yes  | OK    | Done | —       |                         |
 | X03 | Codegen / レコーダー | Yes  | NO    | 任意 | —       |                         |
-| X04 | 並列 E2E の安定実行  | Yes  | PART  | Must | 31      | 正本は `dotnet test Graft.slnx -m:1`。mutex 試作は前景不足で見送り |
+| X04 | 並列 E2E の安定実行  | Yes  | PART  | Done | 31      | 正本 `dotnet test Graft.slnx -m:1`。真の並列安定化は非目標（mutex 見送り） |
 
 ---
 
@@ -279,16 +280,21 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | 28      | DataGrid 残り                  | G06–G10                                              |
 | 29a     | 入力・トグル・キー穴           | V03, V05, T03, T04, K03, K04                         |
 | 29b     | リスト / その他 UI 穴          | L04, L06, C01, C03–C06                               |
-| 31      | SendInput 並列対策             | X04                                                  |
+| 31      | SendInput 並列対策             | X04（`-m:1` で Done）                                |
+| 32      | Frame 遷移                     | H02（Frame のみ）                                    |
+| 33      | 操作タイムライン               | D06                                                  |
 
 （P02 要素クリップは任意のため Phase 番号なし）
+
+残 Must（Avalonia 前）: **H02 · D06**（X04 は Done）。
 
 ---
 
 ## レビューチェックリスト
 
 - [x] Must を行単位で確定した
-- [x] K05 / V06 / W12 / A08 / P02 は任意、X04 は Must
+- [x] K05 / V06 / W12 / A08 / P02 は任意、X04 は Must（運用 Done）
+- [x] D06 を Must に追加（単一 FW 完成度優先）
 - [x] Inspector は任意（ゲート外）
 - [x] Avalonia 再開ゲート（Must 全緑）に合意
 - [x] Phase 24 受け入れ線は `task_phase24.md` で固定（以降も各 `task_phaseN.md`）
