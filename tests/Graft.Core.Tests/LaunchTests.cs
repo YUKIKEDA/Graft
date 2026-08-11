@@ -20,7 +20,7 @@ public sealed class LaunchTests
     /// - Dispose the session
     ///
     /// Expected:
-    /// - SampleButton exists with name "Click Me"
+    /// - SampleButton exists with Automation Name "SampleClickMe"
     /// - Dispose completes without throwing
     /// </remarks>
     [Fact]
@@ -32,7 +32,7 @@ public sealed class LaunchTests
         );
 
         var button = await WaitForSampleButtonAsync(session.Connection);
-        Assert.Equal("Click Me", button.Name);
+        Assert.Equal("SampleClickMe", button.Name);
         Assert.True(session.ProcessId > 0);
     }
 

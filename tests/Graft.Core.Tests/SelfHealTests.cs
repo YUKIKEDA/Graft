@@ -12,7 +12,7 @@ public sealed class SelfHealTests
     /// </summary>
     /// <remarks>
     /// Preconditions:
-    /// - SampleWpfApp with Window AutomationId=Main and SampleButton Content=Click Me
+    /// - SampleWpfApp with Window AutomationId=Main and SampleButton Automation Name=SampleClickMe
     ///
     /// Steps:
     /// - GetBy selector with wrong AutomationId + Name + ControlType + Near
@@ -35,7 +35,7 @@ public sealed class SelfHealTests
                 new Selector
                 {
                     AutomationId = "OldSampleButton",
-                    Name = "Click Me",
+                    Name = "SampleClickMe",
                     ControlType = "Button",
                     NearAutomationId = "Main",
                 }
