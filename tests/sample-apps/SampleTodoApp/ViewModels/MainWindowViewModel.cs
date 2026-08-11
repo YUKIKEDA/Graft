@@ -15,6 +15,7 @@ public sealed class MainWindowViewModel : IDisposable
     private readonly ThemeService _theme;
     private readonly List<TodoItem> _master = [];
     private readonly ObservableList<TodoItem> _visible = [];
+    private readonly HashSet<int> _checkedIds = [];
     private DisposableBag _disposables;
     private int _nextId = 1;
 
@@ -32,19 +33,24 @@ public sealed class MainWindowViewModel : IDisposable
         StatusFilter = new BindableReactiveProperty<string>(string.Empty).AddTo(ref _disposables);
         PriorityFilter = new BindableReactiveProperty<string>(string.Empty).AddTo(ref _disposables);
         StatusMessage = new BindableReactiveProperty<string>("Ready").AddTo(ref _disposables);
-        SelectedItem = new BindableReactiveProperty<TodoItem?>().AddTo(ref _disposables);
         IsDarkTheme = new BindableReactiveProperty<bool>().AddTo(ref _disposables);
         IsSettingsOpen = new BindableReactiveProperty<bool>().AddTo(ref _disposables);
         Settings = new BindableReactiveProperty<SettingsViewModel?>().AddTo(ref _disposables);
 
-        var hasSelection = SelectedItem.Select(static x => x is not null);
+        SelectionCount = new BindableReactiveProperty<int>(0).AddTo(ref _disposables);
+        HeaderCheckState = new BindableReactiveProperty<bool?>(false).AddTo(ref _disposables);
+        var hasSelection = SelectionCount.Select(static c => c > 0);
+        var hasSingleSelection = SelectionCount.Select(static c => c == 1);
 
         AddCommand = new AsyncReactiveCommand(() => OpenDetailAsync(isNew: true)).AddTo(
             ref _disposables
         );
-        EditCommand = hasSelection
+        EditCommand = hasSingleSelection
             .ToAsyncReactiveCommand(() => OpenDetailAsync(isNew: false))
             .AddTo(ref _disposables);
+        EditRowCommand = new ReactiveCommand<TodoItem>(item =>
+            _ = OpenDetailAsync(isNew: false, target: item)
+        ).AddTo(ref _disposables);
         DeleteCommand = hasSelection
             .ToAsyncReactiveCommand(DeleteSelectedAsync)
             .AddTo(ref _disposables);
@@ -74,7 +80,12 @@ public sealed class MainWindowViewModel : IDisposable
 
     public BindableReactiveProperty<string> StatusMessage { get; }
 
-    public BindableReactiveProperty<TodoItem?> SelectedItem { get; }
+    public BindableReactiveProperty<int> SelectionCount { get; }
+
+    /// <summary>
+    /// Tri-state header checkbox: false / true / null (partial).
+    /// </summary>
+    public BindableReactiveProperty<bool?> HeaderCheckState { get; }
 
     public BindableReactiveProperty<bool> IsDarkTheme { get; }
 
@@ -85,6 +96,11 @@ public sealed class MainWindowViewModel : IDisposable
     public ReactiveCommand AddCommand { get; }
 
     public ReactiveCommand EditCommand { get; }
+
+    /// <summary>
+    /// Double-click row edit. Parameter is the <see cref="TodoItem"/> under the cursor.
+    /// </summary>
+    public ReactiveCommand<TodoItem> EditRowCommand { get; }
 
     public ReactiveCommand DeleteCommand { get; }
 
@@ -99,10 +115,88 @@ public sealed class MainWindowViewModel : IDisposable
     public async Task InitializeAsync() =>
         ApplyLoaded(await _store.LoadAsync().ConfigureAwait(true));
 
+    public int GetVisibleCheckedCount() => _visible.Count(static i => i.IsChecked);
+
+    public void ToggleItemChecked(TodoItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        SetItemChecked(item, !item.IsChecked);
+    }
+
+    public void ToggleSelectAllVisible() =>
+        SetAllVisibleChecked(GetVisibleCheckedCount() < _visible.Count);
+
+    public void SetItemChecked(TodoItem item, bool isChecked)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        item.IsChecked = isChecked;
+        if (isChecked)
+        {
+            _checkedIds.Add(item.Id);
+        }
+        else
+        {
+            _checkedIds.Remove(item.Id);
+        }
+
+        PublishCheckedSelection();
+    }
+
+    public void SetAllVisibleChecked(bool isChecked)
+    {
+        foreach (var item in _visible)
+        {
+            item.IsChecked = isChecked;
+            if (isChecked)
+            {
+                _checkedIds.Add(item.Id);
+            }
+            else
+            {
+                _checkedIds.Remove(item.Id);
+            }
+        }
+
+        PublishCheckedSelection();
+    }
+
     public void Dispose()
     {
         CloseSettings();
         _disposables.Dispose();
+    }
+
+    private void ClearCheckedSelection()
+    {
+        _checkedIds.Clear();
+        foreach (var item in _visible)
+        {
+            item.IsChecked = false;
+        }
+
+        PublishCheckedSelection();
+    }
+
+    private void PublishCheckedSelection()
+    {
+        SelectionCount.Value = _checkedIds.Count;
+        var total = _visible.Count;
+        var selected = GetVisibleCheckedCount();
+        HeaderCheckState.Value =
+            total == 0 || selected == 0 ? false
+            : selected == total ? true
+            : null;
+    }
+
+    private TodoItem? GetSingleCheckedItem()
+    {
+        if (_checkedIds.Count != 1)
+        {
+            return null;
+        }
+
+        var id = _checkedIds.First();
+        return _visible.FirstOrDefault(i => i.Id == id) ?? _master.FirstOrDefault(i => i.Id == id);
     }
 
     private void ClearFilters()
@@ -113,7 +207,7 @@ public sealed class MainWindowViewModel : IDisposable
         StatusMessage.Value = "FiltersCleared";
     }
 
-    private async Task OpenDetailAsync(bool isNew)
+    private async Task OpenDetailAsync(bool isNew, TodoItem? target = null)
     {
         TodoItem draft;
         if (isNew)
@@ -128,13 +222,14 @@ public sealed class MainWindowViewModel : IDisposable
         }
         else
         {
-            if (SelectedItem.Value is null)
+            var source = target ?? GetSingleCheckedItem();
+            if (source is null)
             {
                 StatusMessage.Value = "NoSelection";
                 return;
             }
 
-            draft = Clone(SelectedItem.Value);
+            draft = Clone(source);
         }
 
         using var vm = new ItemDetailViewModel(draft, isNew);
@@ -171,21 +266,20 @@ public sealed class MainWindowViewModel : IDisposable
 
         await PersistAsync().ConfigureAwait(true);
         RefreshVisible();
-        SelectedItem.Value = _visible.FirstOrDefault(i => i.Id == saved.Id);
     }
 
     private async Task DeleteSelectedAsync()
     {
-        if (SelectedItem.Value is null)
+        if (_checkedIds.Count == 0)
         {
             StatusMessage.Value = "NoSelection";
             return;
         }
 
-        var id = SelectedItem.Value.Id;
-        _master.RemoveAll(i => i.Id == id);
-        SelectedItem.Value = null;
-        StatusMessage.Value = "ItemDeleted";
+        var ids = _checkedIds.ToHashSet();
+        _master.RemoveAll(i => ids.Contains(i.Id));
+        ClearCheckedSelection();
+        StatusMessage.Value = ids.Count == 1 ? "ItemDeleted" : $"ItemsDeleted:{ids.Count}";
         await PersistAsync().ConfigureAwait(true);
         RefreshVisible();
     }
@@ -281,7 +375,7 @@ public sealed class MainWindowViewModel : IDisposable
             _theme.Apply(IsDarkTheme.Value);
         }
 
-        SelectedItem.Value = null;
+        ClearCheckedSelection();
         RefreshVisible();
         StatusMessage.Value = $"Loaded {_master.Count} item(s)";
     }
@@ -317,8 +411,13 @@ public sealed class MainWindowViewModel : IDisposable
         _visible.Clear();
         foreach (var item in list)
         {
+            item.IsChecked = _checkedIds.Contains(item.Id);
             _visible.Add(item);
         }
+
+        // Drop checks for ids that no longer exist in master.
+        _checkedIds.RemoveWhere(id => _master.TrueForAll(i => i.Id != id));
+        PublishCheckedSelection();
     }
 
     private static TodoItem Clone(TodoItem item) =>
