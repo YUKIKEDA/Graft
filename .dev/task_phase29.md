@@ -91,4 +91,4 @@ ID: `V03, V05, L04, L06, T03, T04, C01, C03–C06, K03, K04`（[competitive-gap.
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` / `competitive-gap.md` 優先
-- **次フェーズ:** Phase 31 SendInput 並列（`X04`）
+- **次フェーズ:** [task_phase31.md](./task_phase31.md) SendInput 並列（`X04`、正本 `-m:1`）
