@@ -1,0 +1,12 @@
+<Page x:Class="SampleWpfApp.FrameBetaPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Frame Beta"
+      Background="White">
+    <StackPanel Margin="8">
+        <TextBlock x:Name="FrameBetaLabel"
+                   AutomationProperties.AutomationId="FrameBetaLabel"
+                   Text="FrameBetaReady"
+                   FontSize="16" />
+    </StackPanel>
+</Page>

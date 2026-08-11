@@ -28,8 +28,28 @@ public partial class MainWindow : Window
         ToolTipService.SetBetweenShowDelay(SamplePhase29bTipHost, 0);
         ToolTipService.SetShowDuration(SamplePhase29bTipHost, 60000);
 
+        SampleFrame.Navigate(new FrameHomePage());
+
         // Tab/List/Grid SelectionChanged can fire during init and overwrite StatusText=Ready.
         suppressStatusFromSelectionChanged = false;
+    }
+
+    private void NavigateFrameHomeButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        SampleFrame.Navigate(new FrameHomePage());
+        StatusText.Text = "FrameHome";
+    }
+
+    private void NavigateFrameAlphaButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        SampleFrame.Navigate(new FrameAlphaPage());
+        StatusText.Text = "FrameAlpha";
+    }
+
+    private void NavigateFrameBetaButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        SampleFrame.Navigate(new FrameBetaPage());
+        StatusText.Text = "FrameBeta";
     }
 
     private void LoadListItems()

@@ -142,7 +142,7 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | ID  | シナリオ                       | 競合 | Graft | 優先 | 仮Phase | メモ |
 | --- | ------------------------------ | ---- | ----- | ---- | ------- | ---- |
 | H01 | TabControl 選択                | Yes  | OK    | Done | —       |      |
-| H02 | Frame / NavigationWindow 遷移  | Yes  | NO    | Must | 32      | **Frame のみ**（専用 DSL なし・既存 WaitFor/Expect）。NavigationWindow は本 Must 外 |
+| H02 | Frame / NavigationWindow 遷移  | Yes  | OK    | Done | 32      | **Frame のみ**（専用 DSL なし・既存 WaitFor/Expect）。NavigationWindow は本 Must 外 |
 | H03 | カスタム「ページ」差し替え待ち | Yes  | OK    | Done | 24      | Visibility パネル |
 
 ---
@@ -286,7 +286,7 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 
 （P02 要素クリップは任意のため Phase 番号なし）
 
-残 Must（Avalonia 前）: **H02 · D06**（X04 は Done）。
+残 Must（Avalonia 前）: **D06**（H02 / X04 は Done）。
 
 ---
 
