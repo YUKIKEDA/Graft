@@ -23,6 +23,10 @@ internal static class TodoLaunch
 
     public static async Task<GraftSession> LaunchAsync(string dataDir)
     {
+        // Drop LocalAppData settings + default Data so each run starts clean
+        // (previous E2E paths otherwise linger in settings.json).
+        ResetPersistedAppState();
+
         Directory.CreateDirectory(dataDir);
         var timelineDir = ResolveTimelineDirectory(dataDir);
         Directory.CreateDirectory(timelineDir);
@@ -64,5 +68,27 @@ internal static class TodoLaunch
         await app.GetByAutomationId("SettingsCloseButton").InvokeAsync();
         await app.GetByAutomationId("SettingsView").ExpectGoneAsync();
         await app.GetByAutomationId("StatusText").ExpectNameAsync("DataDirectoryChanged");
+    }
+
+    /// <summary>
+    /// Deletes <c>%LocalAppData%\GraftSampleTodo</c> (settings.json + default Data).
+    /// </summary>
+    public static void ResetPersistedAppState()
+    {
+        var appRoot = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "GraftSampleTodo"
+        );
+        try
+        {
+            if (Directory.Exists(appRoot))
+            {
+                Directory.Delete(appRoot, recursive: true);
+            }
+        }
+        catch
+        {
+            // best-effort; next launch may still see a stale path
+        }
     }
 }

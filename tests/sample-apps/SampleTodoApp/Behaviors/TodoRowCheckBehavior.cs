@@ -13,15 +13,22 @@ namespace SampleTodoApp.Behaviors;
 /// </summary>
 public sealed class TodoRowCheckBehavior : Behavior<CheckBox>
 {
+    private bool _syncing;
+
     protected override void OnAttached()
     {
         base.OnAttached();
         AssociatedObject.PreviewMouseLeftButtonDown += OnPreview;
+        // Graft TogglePattern changes IsChecked without raising Click.
+        AssociatedObject.Checked += OnCheckStateChanged;
+        AssociatedObject.Unchecked += OnCheckStateChanged;
     }
 
     protected override void OnDetaching()
     {
         AssociatedObject.PreviewMouseLeftButtonDown -= OnPreview;
+        AssociatedObject.Checked -= OnCheckStateChanged;
+        AssociatedObject.Unchecked -= OnCheckStateChanged;
         base.OnDetaching();
     }
 
@@ -33,7 +40,51 @@ public sealed class TodoRowCheckBehavior : Behavior<CheckBox>
         }
 
         e.Handled = true;
-        FindViewModel(AssociatedObject)?.ToggleItemChecked(item);
+        var vm = FindViewModel(AssociatedObject);
+        if (vm is null)
+        {
+            return;
+        }
+
+        _syncing = true;
+        try
+        {
+            vm.ToggleItemChecked(item);
+        }
+        finally
+        {
+            _syncing = false;
+        }
+    }
+
+    private void OnCheckStateChanged(object sender, RoutedEventArgs e)
+    {
+        if (_syncing || AssociatedObject.DataContext is not TodoItem item)
+        {
+            return;
+        }
+
+        var vm = FindViewModel(AssociatedObject);
+        if (vm is null)
+        {
+            return;
+        }
+
+        var want = AssociatedObject.IsChecked == true;
+        if (item.IsChecked == want)
+        {
+            return;
+        }
+
+        _syncing = true;
+        try
+        {
+            vm.SetItemChecked(item, want);
+        }
+        finally
+        {
+            _syncing = false;
+        }
     }
 
     private static MainWindowViewModel? FindViewModel(DependencyObject start)

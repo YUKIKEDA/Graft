@@ -6,90 +6,83 @@ namespace SampleTodoApp.Tests;
 public sealed class TodoStoryE2ETests
 {
     /// <summary>
-    /// Add a todo via detail window and see it on the main grid.
+    /// End-to-end SampleTodoApp story: settings, CRUD, import/export, filters, theme, checkbox edit/delete.
     /// </summary>
     /// <remarks>
     /// Preconditions:
-    /// - Empty data directory selected via Settings (ArmOpenFolder + Browse)
+    /// - Fresh LocalAppData (TodoLaunch.ResetPersistedAppState)
+    /// - Empty data dir selected via Settings (ArmOpenFolder + Browse)
+    /// - Fixtures/filter-todos.json available for Import
     /// - Timeline Always under %TEMP%\graft-sample-todo-timeline\{leaf}\
     ///
     /// Steps:
-    /// - InvokeOpeningWindowAsync AddButton → DetailWindow
-    /// - SetValue DetailTitleBox, Select Status/Priority, Save
-    /// - WaitForWindow Main; Expect StatusText ItemAdded
-    /// - SelectRow Title=Graft E2E Task
+    /// - Add via DetailWindow → ItemAdded
+    /// - ArmOpenFile filter-todos + Import → ImportDone (replaces list with 3 rows)
+    /// - SearchBox filter → SelectRow → ClearFilters
+    /// - PriorityFilter → ClearFilters
+    /// - StatusFilter → ClearFilters
+    /// - Settings → DarkTheme → ThemeDark
+    /// - TodoSelectAllCheckBox → uncheck 2 rows (leave 1) → Edit title → Delete → Export
     /// - Dispose session; expect timeline index.html
     ///
     /// Expected:
-    /// - New row is selectable; StatusText is ItemAdded; timeline viewer exists
+    /// - StatusText updates at each stage; export file exists; timeline viewer exists
     /// </remarks>
     [Fact]
-    public async Task Story_AddViaDetailWindow_AppearsInGrid()
+    public async Task Story_FullWorkflow_CoversFiltersThemeAndCrud()
     {
         var dataDir = NewDataDir();
         var timelineDir = TodoLaunch.ResolveTimelineDirectory(dataDir);
+        var importFixture = Path.Combine(AppContext.BaseDirectory, "Fixtures", "filter-todos.json");
+        var exportPath = Path.Combine(dataDir, "exported.json");
+        Assert.True(File.Exists(importFixture), importFixture);
+
         try
         {
             await using (var app = await TodoLaunch.LaunchAsync(dataDir))
             {
-                await app.GetByAutomationId("StatusText").WaitForAsync();
+                // --- Add ---
                 var detail = await app.GetByAutomationId("AddButton").InvokeOpeningWindowAsync();
                 Assert.NotNull(detail);
                 Assert.Equal("DetailWindow", detail.AutomationId);
-
                 await app.GetByAutomationId("DetailTitleBox").SetValueAsync("Graft E2E Task");
                 await app.GetByAutomationId("DetailStatusCombo").SelectAsync(1); // 進行中
                 await app.GetByAutomationId("DetailPriorityCombo").SelectAsync(2); // 高
                 await app.GetByAutomationId("DetailSaveButton").InvokeAsync();
-
                 await app.WaitForWindowAsync(automationId: "Main");
                 await app.GetByAutomationId("StatusText").ExpectNameAsync("ItemAdded");
-
-                // SelectRow fails if the title is missing from the bound grid.
                 await app.GetByAutomationId("TodoGrid").SelectRowAsync("Title", "Graft E2E Task");
-            }
 
-            AssertTimelineWritten(timelineDir);
-        }
-        finally
-        {
-            TryDelete(dataDir);
-            TryDelete(timelineDir);
-        }
-    }
-
-    /// <summary>
-    /// Filter by search text and toggle theme with persistence side effects.
-    /// </summary>
-    /// <remarks>
-    /// Preconditions:
-    /// - Fixture filter-todos.json copied to data dir as todos.json
-    /// - Timeline Always under %TEMP%\graft-sample-todo-timeline\{leaf}\
-    ///
-    /// Steps:
-    /// - SetValue SearchBox ドキュメント
-    /// - SelectRow Title=サンプル: ドキュメント更新
-    /// - Settings → toggle DarkTheme → Close → Expect ThemeDark
-    /// - Clear filters → Expect FiltersCleared
-    /// - Dispose session; expect timeline index.html
-    ///
-    /// Expected:
-    /// - Filter narrows rows; theme status updates; timeline viewer exists
-    /// </remarks>
-    [Fact]
-    public async Task Story_FilterAndTheme_UpdatesStatus()
-    {
-        var dataDir = NewDataDir();
-        var timelineDir = TodoLaunch.ResolveTimelineDirectory(dataDir);
-        try
-        {
-            SeedDataFile(dataDir, "filter-todos.json");
-            await using (var app = await TodoLaunch.LaunchAsync(dataDir))
-            {
-                await app.GetByAutomationId("SearchBox").SetValueAsync("ドキュメント");
+                // --- Import (replaces items with fixture) ---
+                await app.ArmOpenFileAsync(importFixture);
+                _ = await app.GetByAutomationId("ImportButton")
+                    .InvokeOpeningWindowAsync(waitForNewWindow: false);
+                await app.GetByAutomationId("StatusText").ExpectNameAsync("ImportDone");
                 await app.GetByAutomationId("TodoGrid")
                     .SelectRowAsync("Title", "サンプル: ドキュメント更新");
 
+                // --- Search filter ---
+                await app.GetByAutomationId("SearchBox").SetValueAsync("ドキュメント");
+                await app.GetByAutomationId("TodoGrid")
+                    .SelectRowAsync("Title", "サンプル: ドキュメント更新");
+                await app.GetByAutomationId("ClearFiltersButton").InvokeAsync();
+                await app.GetByAutomationId("StatusText").ExpectNameAsync("FiltersCleared");
+
+                // --- Priority filter ---
+                await app.GetByAutomationId("PriorityFilter").SelectAsync(3); // 高
+                await app.GetByAutomationId("TodoGrid")
+                    .SelectRowAsync("Title", "サンプル: 設計レビュー");
+                await app.GetByAutomationId("ClearFiltersButton").InvokeAsync();
+                await app.GetByAutomationId("StatusText").ExpectNameAsync("FiltersCleared");
+
+                // --- Status filter ---
+                await app.GetByAutomationId("StatusFilter").SelectAsync(3); // 完了
+                await app.GetByAutomationId("TodoGrid")
+                    .SelectRowAsync("Title", "サンプル: 完了済みタスク");
+                await app.GetByAutomationId("ClearFiltersButton").InvokeAsync();
+                await app.GetByAutomationId("StatusText").ExpectNameAsync("FiltersCleared");
+
+                // --- Theme ---
                 await app.GetByAutomationId("SettingsButton").InvokeAsync();
                 await app.GetByAutomationId("SettingsView").WaitForAsync();
                 await app.GetByAutomationId("SettingsDarkThemeCheckBox").ToggleAsync();
@@ -97,80 +90,34 @@ public sealed class TodoStoryE2ETests
                 await app.GetByAutomationId("SettingsView").ExpectGoneAsync();
                 await app.GetByAutomationId("StatusText").ExpectNameAsync("ThemeDark");
 
-                await app.GetByAutomationId("ClearFiltersButton").InvokeAsync();
-                await app.GetByAutomationId("StatusText").ExpectNameAsync("FiltersCleared");
-            }
+                // --- Checkbox: select all → leave one → edit → delete ---
+                await app.GetByAutomationId("TodoSelectAllCheckBox").ToggleAsync();
+                await app.GetByAutomationId("TodoRowCheck_1").ToggleAsync();
+                await app.GetByAutomationId("TodoRowCheck_3").ToggleAsync();
 
-            AssertTimelineWritten(timelineDir);
-        }
-        finally
-        {
-            TryDelete(dataDir);
-            TryDelete(timelineDir);
-        }
-    }
+                // Id 2 (ドキュメント更新) remains checked — Edit enables only for a single check.
+                await app.GetByAutomationId("EditButton").WaitForAsync();
+                var edit = await app.GetByAutomationId("EditButton").InvokeOpeningWindowAsync();
+                Assert.NotNull(edit);
+                Assert.Equal("DetailWindow", edit.AutomationId);
+                await app.GetByAutomationId("DetailTitleBox").SetValueAsync("編集済みタスク");
+                await app.GetByAutomationId("DetailSaveButton").InvokeAsync();
+                await app.WaitForWindowAsync(automationId: "Main");
+                await app.GetByAutomationId("StatusText").ExpectNameAsync("ItemUpdated");
+                await app.GetByAutomationId("TodoGrid").SelectRowAsync("Title", "編集済みタスク");
 
-    /// <summary>
-    /// Export then import JSON through real file dialogs (Graft seams).
-    /// </summary>
-    /// <remarks>
-    /// Preconditions:
-    /// - Fixture import-todos.json in test output
-    /// - Timeline Always for each session
-    ///
-    /// Steps:
-    /// - ArmSaveFile + Export → ExportDone
-    /// - New session on fresh data dir
-    /// - ArmOpenFile fixture + Import → ImportDone
-    /// - SelectRow インポート済みタスク
-    ///
-    /// Expected:
-    /// - Imported title is present after real file import; each session wrote index.html
-    /// </remarks>
-    [Fact]
-    public async Task Story_ExportThenImport_RestoresItemsFromFile()
-    {
-        var dataDir = NewDataDir();
-        var timelineDir = TodoLaunch.ResolveTimelineDirectory(dataDir);
-        var exportPath = Path.Combine(dataDir, "exported.json");
-        var importFixture = Path.Combine(AppContext.BaseDirectory, "Fixtures", "import-todos.json");
-        Assert.True(File.Exists(importFixture), importFixture);
+                await app.GetByAutomationId("DeleteButton").InvokeAsync();
+                await app.GetByAutomationId("StatusText").ExpectNameAsync("ItemDeleted");
 
-        try
-        {
-            await using (var app = await TodoLaunch.LaunchAsync(dataDir))
-            {
+                // --- Export remaining rows ---
                 await app.ArmSaveFileAsync(exportPath);
                 _ = await app.GetByAutomationId("ExportButton")
                     .InvokeOpeningWindowAsync(waitForNewWindow: false);
                 await app.GetByAutomationId("StatusText").ExpectNameAsync("ExportDone");
-                Assert.True(File.Exists(exportPath));
+                Assert.True(File.Exists(exportPath), exportPath);
             }
 
             AssertTimelineWritten(timelineDir);
-
-            var importDir = NewDataDir();
-            var importTimelineDir = TodoLaunch.ResolveTimelineDirectory(importDir);
-            try
-            {
-                await using (var app2 = await TodoLaunch.LaunchAsync(importDir))
-                {
-                    await app2.ArmOpenFileAsync(importFixture);
-                    _ = await app2
-                        .GetByAutomationId("ImportButton")
-                        .InvokeOpeningWindowAsync(waitForNewWindow: false);
-                    await app2.GetByAutomationId("StatusText").ExpectNameAsync("ImportDone");
-                    await app2.GetByAutomationId("TodoGrid")
-                        .SelectRowAsync("Title", "インポート済みタスク");
-                }
-
-                AssertTimelineWritten(importTimelineDir);
-            }
-            finally
-            {
-                TryDelete(importDir);
-                TryDelete(importTimelineDir);
-            }
         }
         finally
         {
@@ -181,14 +128,6 @@ public sealed class TodoStoryE2ETests
 
     private static string NewDataDir() =>
         Path.Combine(Path.GetTempPath(), "graft-sample-todo", Guid.NewGuid().ToString("N"));
-
-    private static void SeedDataFile(string dataDir, string fixtureFileName)
-    {
-        var fixture = Path.Combine(AppContext.BaseDirectory, "Fixtures", fixtureFileName);
-        Assert.True(File.Exists(fixture), fixture);
-        Directory.CreateDirectory(dataDir);
-        File.Copy(fixture, Path.Combine(dataDir, "todos.json"), overwrite: true);
-    }
 
     private static void AssertTimelineWritten(string timelineDir)
     {

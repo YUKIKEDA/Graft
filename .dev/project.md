@@ -531,4 +531,4 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q139 | H02: Frame のみ・専用 DSL なし・Sample + WaitFor/Expect。NavigationWindow は本 Must 外。`task_phase32.md` |
 | Q140 | D06: Core オプション・Always/OnFailure・Dispose+Save・操作後1枚・PNG+HTML（速度・字幕）・画像系 NuGet/FFmpeg なし。Must。`task_phase33.md` |
 | Q141 | Avalonia 前に SampleTodoApp を利用ガイド正本化。MVVM+DI+テーマ+実 JSON。R3/ObservableCollections。`task_phase34.md` |
-| Q142 | LaunchOptions.Environment 汎用（任意）。SampleTodo 保存先は UI/OpenFolder（settings.json）。E2E は ArmOpenFolder。ストーリー 3 本。R3（CommunityToolkit.Mvvm 不使用）。デモシードなし |
+| Q142 | LaunchOptions.Environment 汎用（任意）。SampleTodo 保存先は UI/OpenFolder（settings.json）。E2E は ArmOpenFolder。ストーリー 1 本。R3（CommunityToolkit.Mvvm 不使用）。デモシードなし |

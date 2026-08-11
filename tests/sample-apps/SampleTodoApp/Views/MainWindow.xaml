@@ -173,6 +173,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <CheckBox IsChecked="{Binding IsChecked, Mode=OneWay}"
+                                          AutomationProperties.AutomationId="{Binding Id, StringFormat=TodoRowCheck_{0}}"
                                           ToolTip="選択（複数可・行クリックとは独立）"
                                           HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
