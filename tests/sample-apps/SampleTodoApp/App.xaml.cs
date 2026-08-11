@@ -11,7 +11,6 @@ namespace SampleTodoApp;
 public partial class App : Application
 {
     private ServiceProvider? _services;
-    private MainWindowViewModel? _mainVm;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -29,14 +28,14 @@ public partial class App : Application
         _services = new ServiceCollection()
             .AddSingleton<ITodoStore, JsonTodoStore>()
             .AddSingleton<ThemeService>()
-            .AddTransient<MainWindowViewModel>()
+            .AddSingleton<MainWindowViewModel>()
             .BuildServiceProvider();
 
-        _mainVm = _services.GetRequiredService<MainWindowViewModel>();
-        var window = new MainWindow { DataContext = _mainVm };
+        var mainVm = _services.GetRequiredService<MainWindowViewModel>();
+        var window = new MainWindow { DataContext = mainVm };
         MainWindow = window;
         window.Show();
-        _ = _mainVm.InitializeAsync();
+        _ = mainVm.InitializeAsync();
     }
 
     protected override void OnExit(ExitEventArgs e)
@@ -44,8 +43,9 @@ public partial class App : Application
 #if GRAFT_TEST
         Graft.Instrumentation.Agent.Stop();
 #endif
-        _mainVm?.Dispose();
+        // Singleton IDisposable (incl. MainWindowViewModel) is disposed with the container.
         _services?.Dispose();
+        _services = null;
         base.OnExit(e);
     }
 }
