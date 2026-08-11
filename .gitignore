@@ -53,6 +53,11 @@ BundleArtifacts/
 PublishOutputs/
 [Pp]ublish/
 
+## Python (skill scripts under .cursor/)
+__pycache__/
+*.py[cod]
+*$py.class
+
 ## OS
 Thumbs.db
 ehthumbs.db

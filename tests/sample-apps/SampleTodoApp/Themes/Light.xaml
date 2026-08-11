@@ -1,0 +1,48 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+      Accessible light theme (WCAG AA+ body text).
+      Palette: slate neutrals + blue accent (color-vision safer than teal/red pairs).
+      Body: #0F172A on #F8FAFC / #FFFFFF ≈ 16:1
+      Muted: #334155 on #FFFFFF ≈ 10:1
+    -->
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#FFF1F5F9" />
+    <SolidColorBrush x:Key="AppSurfaceBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="AppSurfaceAltBrush" Color="#FFF1F5F9" />
+    <SolidColorBrush x:Key="AppInputBackgroundBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="AppHeaderBrush" Color="#FFFFFFFF" />
+
+    <SolidColorBrush x:Key="AppForegroundBrush" Color="#FF0F172A" />
+    <SolidColorBrush x:Key="AppMutedForegroundBrush" Color="#FF334155" />
+
+    <SolidColorBrush x:Key="AppBorderBrush" Color="#FF94A3B8" />
+    <SolidColorBrush x:Key="AppGridLineBrush" Color="#FFCBD5E1" />
+    <SolidColorBrush x:Key="AppOverlayBrush" Color="#B30F172A" />
+
+    <!-- Primary / accent: blue (readable for most CVD types; not green/red dependent) -->
+    <SolidColorBrush x:Key="AppAccentBrush" Color="#FF1D4ED8" />
+    <SolidColorBrush x:Key="AppAccentHoverBrush" Color="#FF1E40AF" />
+    <SolidColorBrush x:Key="AppAccentPressedBrush" Color="#FF1E3A8A" />
+    <SolidColorBrush x:Key="AppAccentForegroundBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="AppAccentMutedBrush" Color="#FFDBEAFE" />
+
+    <SolidColorBrush x:Key="AppButtonBackgroundBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="AppButtonHoverBrush" Color="#FFEFF6FF" />
+    <SolidColorBrush x:Key="AppButtonPressedBrush" Color="#FFDBEAFE" />
+    <SolidColorBrush x:Key="AppSelectionBrush" Color="#FFBFDBFE" />
+    <SolidColorBrush x:Key="AppRowHoverBrush" Color="#FFEFF6FF" />
+
+    <!-- Disabled: readable gray (no opacity wash that turns labels into fog) -->
+    <SolidColorBrush x:Key="AppDisabledBackgroundBrush" Color="#FFE2E8F0" />
+    <SolidColorBrush x:Key="AppDisabledBorderBrush" Color="#FF94A3B8" />
+    <SolidColorBrush x:Key="AppDisabledForegroundBrush" Color="#FF475569" />
+
+    <!-- Danger: hue + label in UI; avoid green success pairing as sole cue -->
+    <SolidColorBrush x:Key="AppDangerBrush" Color="#FFB91C1C" />
+    <SolidColorBrush x:Key="AppDangerHoverBrush" Color="#FF991B1B" />
+    <SolidColorBrush x:Key="AppDangerForegroundBrush" Color="#FFFFFFFF" />
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Controls.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

@@ -47,4 +47,15 @@ public sealed class LaunchOptions
     /// Recording is Core-session only (no Scenario/MCP surface in v1).
     /// </remarks>
     public TimelineOptions? Timeline { get; init; }
+
+    /// <summary>
+    /// Gets extra environment variables merged into the child process
+    /// (after Graft's own <c>GRAFT_*</c> values).
+    /// </summary>
+    /// <remarks>
+    /// Optional extra process environment for the child app.
+    /// Prefer app UI / settings for end-user configuration; use this when the host must inject process-level values.
+    /// Null or empty keys are ignored. Values overwrite any inherited variable of the same name.
+    /// </remarks>
+    public IReadOnlyDictionary<string, string>? Environment { get; init; }
 }

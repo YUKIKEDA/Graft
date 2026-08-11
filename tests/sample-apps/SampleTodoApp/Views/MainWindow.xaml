@@ -1,0 +1,199 @@
+<Window x:Class="SampleTodoApp.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:SampleTodoApp.Views"
+        xmlns:vm="clr-namespace:SampleTodoApp.ViewModels"
+        Title="Graft Sample Todo"
+        AutomationProperties.AutomationId="Main"
+        Background="{DynamicResource AppBackgroundBrush}"
+        Width="1000"
+        Height="680"
+        MinWidth="720"
+        MinHeight="480">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </Window.Resources>
+    <Grid Background="{DynamicResource AppBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Toolbar: actions (+ settings right) then filters -->
+        <StackPanel Grid.Row="0"
+                    Margin="12,10,12,8"
+                    Background="{DynamicResource AppBackgroundBrush}">
+            <DockPanel Margin="0,0,0,8" LastChildFill="True">
+                <Button x:Name="SettingsButton"
+                        DockPanel.Dock="Right"
+                        AutomationProperties.AutomationId="SettingsButton"
+                        Content="設定"
+                        Margin="12,0,0,0"
+                        VerticalAlignment="Center"
+                        Command="{Binding OpenSettingsCommand}" />
+                <WrapPanel VerticalAlignment="Center">
+                    <Button x:Name="AddButton"
+                            AutomationProperties.AutomationId="AddButton"
+                            Style="{DynamicResource AccentButton}"
+                            Content="追加"
+                            Margin="0,0,6,0"
+                            Command="{Binding AddCommand}" />
+                    <Button x:Name="EditButton"
+                            AutomationProperties.AutomationId="EditButton"
+                            Content="編集"
+                            Margin="0,0,6,0"
+                            Command="{Binding EditCommand}" />
+                    <Button x:Name="DeleteButton"
+                            AutomationProperties.AutomationId="DeleteButton"
+                            Style="{DynamicResource DangerButton}"
+                            Content="削除"
+                            Margin="0,0,12,0"
+                            Command="{Binding DeleteCommand}" />
+                    <Button x:Name="ExportButton"
+                            AutomationProperties.AutomationId="ExportButton"
+                            Content="エクスポート"
+                            Margin="0,0,6,0"
+                            Command="{Binding ExportCommand}" />
+                    <Button x:Name="ImportButton"
+                            AutomationProperties.AutomationId="ImportButton"
+                            Content="インポート"
+                            Command="{Binding ImportCommand}" />
+                </WrapPanel>
+            </DockPanel>
+
+            <Grid VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0"
+                           Text="検索"
+                           Style="{DynamicResource AppSectionLabel}"
+                           Margin="0,0,8,0"
+                           VerticalAlignment="Center" />
+                <TextBox x:Name="SearchBox"
+                         Grid.Column="1"
+                         AutomationProperties.AutomationId="SearchBox"
+                         Margin="0,0,12,0"
+                         VerticalAlignment="Center"
+                         Text="{Binding SearchText.Value, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Grid.Column="2"
+                           Text="状態"
+                           Style="{DynamicResource AppSectionLabel}"
+                           Margin="0,0,8,0"
+                           VerticalAlignment="Center" />
+                <ComboBox x:Name="StatusFilter"
+                          Grid.Column="3"
+                          AutomationProperties.AutomationId="StatusFilter"
+                          Margin="0,0,12,0"
+                          VerticalAlignment="Center"
+                          SelectedValue="{Binding StatusFilter.Value}"
+                          SelectedValuePath="Content">
+                    <ComboBoxItem Content="" />
+                    <ComboBoxItem Content="未着手" />
+                    <ComboBoxItem Content="進行中" />
+                    <ComboBoxItem Content="完了" />
+                </ComboBox>
+                <TextBlock Grid.Column="4"
+                           Text="優先度"
+                           Style="{DynamicResource AppSectionLabel}"
+                           Margin="0,0,8,0"
+                           VerticalAlignment="Center" />
+                <ComboBox x:Name="PriorityFilter"
+                          Grid.Column="5"
+                          AutomationProperties.AutomationId="PriorityFilter"
+                          Margin="0,0,8,0"
+                          VerticalAlignment="Center"
+                          SelectedValue="{Binding PriorityFilter.Value}"
+                          SelectedValuePath="Content">
+                    <ComboBoxItem Content="" />
+                    <ComboBoxItem Content="低" />
+                    <ComboBoxItem Content="中" />
+                    <ComboBoxItem Content="高" />
+                </ComboBox>
+                <Button x:Name="ClearFiltersButton"
+                        Grid.Column="6"
+                        AutomationProperties.AutomationId="ClearFiltersButton"
+                        Content="クリア"
+                        VerticalAlignment="Center"
+                        Command="{Binding ClearFiltersCommand}" />
+            </Grid>
+        </StackPanel>
+
+        <!-- List fills remaining space -->
+        <Border Grid.Row="1"
+                Margin="12,0,12,8"
+                Background="{DynamicResource AppSurfaceBrush}"
+                BorderBrush="{DynamicResource AppBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                ClipToBounds="True">
+            <DataGrid x:Name="TodoGrid"
+                      AutomationProperties.AutomationId="TodoGrid"
+                      ItemsSource="{Binding ItemsView}"
+                      SelectedItem="{Binding SelectedItem.Value, Mode=TwoWay}"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      IsReadOnly="True"
+                      SelectionMode="Extended"
+                      SelectionUnit="FullRow"
+                      HeadersVisibility="Column"
+                      BorderThickness="0"
+                      MouseDoubleClick="TodoGrid_OnMouseDoubleClick">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Id"
+                                        Width="72"
+                                        Binding="{Binding Id}"
+                                        ElementStyle="{DynamicResource AppDataGridTextElement}" />
+                    <DataGridTextColumn Header="Title"
+                                        Width="*"
+                                        Binding="{Binding Title}"
+                                        ElementStyle="{DynamicResource AppDataGridTextElement}" />
+                    <DataGridTextColumn Header="Status"
+                                        Width="120"
+                                        Binding="{Binding Status}"
+                                        ElementStyle="{DynamicResource AppDataGridTextElement}" />
+                    <DataGridTextColumn Header="Priority"
+                                        Width="100"
+                                        Binding="{Binding Priority}"
+                                        ElementStyle="{DynamicResource AppDataGridTextElement}" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <Border Grid.Row="2"
+                Background="{DynamicResource AppHeaderBrush}"
+                BorderBrush="{DynamicResource AppBorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="12,8">
+            <TextBlock x:Name="StatusText"
+                       AutomationProperties.AutomationId="StatusText"
+                       Text="{Binding StatusMessage.Value}"
+                       Foreground="{DynamicResource AppForegroundBrush}"
+                       FontWeight="SemiBold" />
+        </Border>
+
+        <Grid Grid.RowSpan="3"
+              x:Name="SettingsOverlay"
+              AutomationProperties.AutomationId="SettingsOverlay"
+              Background="{DynamicResource AppOverlayBrush}"
+              Visibility="{Binding IsSettingsOpen.Value, Converter={StaticResource BoolToVis}}">
+            <ContentControl HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Content="{Binding Settings.Value}">
+                <ContentControl.Resources>
+                    <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+                        <views:SettingsView />
+                    </DataTemplate>
+                </ContentControl.Resources>
+            </ContentControl>
+        </Grid>
+    </Grid>
+</Window>

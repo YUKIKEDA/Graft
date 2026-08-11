@@ -364,7 +364,8 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 31 | SendInput 並列対策                                   | X04。正本 `-m:1` で Done（mutex 見送り）   |
 | Phase 32 | Frame 遷移（H02）                                    | Frame のみ。専用 DSL なし                  |
 | Phase 33 | 操作タイムライン（D06）                              | PNG 連番 + HTML。Must。GIF/FFmpeg なし     |
-| （次）   | Avalonia（Must 全 Done 後）                          | 対照表: `competitive-gap.md`。Inspector 任意 |
+| Phase 34 | SampleTodoApp（利用ガイド正本）                      | MVVM/DI/テーマ + 実 JSON E2E。Avalonia 前  |
+| （次）   | Avalonia（Phase 34 後）                              | 対照表: `competitive-gap.md`。Inspector 任意 |
 
 ## 9. 未検討・今後の課題
 
@@ -529,3 +530,5 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q138 | ロードマップ: H02 → 操作タイムライン(D06) → Avalonia。X04 は `-m:1` で Done。単一 FW 完成度優先 |
 | Q139 | H02: Frame のみ・専用 DSL なし・Sample + WaitFor/Expect。NavigationWindow は本 Must 外。`task_phase32.md` |
 | Q140 | D06: Core オプション・Always/OnFailure・Dispose+Save・操作後1枚・PNG+HTML（速度・字幕）・画像系 NuGet/FFmpeg なし。Must。`task_phase33.md` |
+| Q141 | Avalonia 前に SampleTodoApp を利用ガイド正本化。MVVM+DI+テーマ+実 JSON。R3/ObservableCollections。`task_phase34.md` |
+| Q142 | LaunchOptions.Environment 汎用（任意）。SampleTodo 保存先は UI/OpenFolder（settings.json）。E2E は ArmOpenFolder。ストーリー 3 本。R3（CommunityToolkit.Mvvm 不使用）。デモシードなし |

@@ -12,7 +12,13 @@ internal static class AppProcessLauncher
     private const string PipeNameEnv = "GRAFT_PIPE_NAME";
     private const string ConnectTokenEnv = "GRAFT_CONNECT_TOKEN";
 
-    public static Process Start(string appPath, string pipeName, string token, string configuration)
+    public static Process Start(
+        string appPath,
+        string pipeName,
+        string token,
+        string configuration,
+        IReadOnlyDictionary<string, string>? extraEnvironment = null
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(appPath);
         ArgumentException.ThrowIfNullOrWhiteSpace(pipeName);
@@ -38,6 +44,19 @@ internal static class AppProcessLauncher
         psi.Environment[EnableEnv] = "1";
         psi.Environment[PipeNameEnv] = pipeName;
         psi.Environment[ConnectTokenEnv] = token;
+
+        if (extraEnvironment is not null)
+        {
+            foreach (var (key, value) in extraEnvironment)
+            {
+                if (string.IsNullOrWhiteSpace(key) || value is null)
+                {
+                    continue;
+                }
+
+                psi.Environment[key] = value;
+            }
+        }
 
         if (appPath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
         {
