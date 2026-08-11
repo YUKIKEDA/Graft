@@ -74,6 +74,8 @@ await app.GetByAutomationId("TodoGrid").SelectRowAsync("Title", "Graft E2E Task"
 dotnet test tests/sample-apps/SampleTodoApp.Tests
 # 機能マトリクス:
 dotnet test tests/sample-apps/SampleWpfApp.Tests
+# 任意・手動（FlaUI 比較。対話デスクトップ前提）:
+dotnet test tests/sample-apps/SampleTodoApp.FlaUI.Tests
 ```
 
 ## 補足

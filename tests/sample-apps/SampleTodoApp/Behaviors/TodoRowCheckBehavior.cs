@@ -19,6 +19,7 @@ public sealed class TodoRowCheckBehavior : Behavior<CheckBox>
     {
         base.OnAttached();
         AssociatedObject.PreviewMouseLeftButtonDown += OnPreview;
+
         // Graft TogglePattern changes IsChecked without raising Click.
         AssociatedObject.Checked += OnCheckStateChanged;
         AssociatedObject.Unchecked += OnCheckStateChanged;

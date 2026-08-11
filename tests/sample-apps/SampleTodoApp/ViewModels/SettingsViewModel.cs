@@ -53,7 +53,7 @@ public sealed class SettingsViewModel : IDisposable
     private async Task BrowseDataDirectoryAsync()
     {
         var dialog = new OpenFolderDialog { Title = "データ保存先を選択" };
-        if (dialog.ShowDialog() != true)
+        if (dialog.ShowDialog(System.Windows.Application.Current?.MainWindow) != true)
         {
             return;
         }

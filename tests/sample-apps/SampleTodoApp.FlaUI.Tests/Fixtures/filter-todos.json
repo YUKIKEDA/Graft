@@ -1,0 +1,26 @@
+{
+  "isDarkTheme": false,
+  "items": [
+    {
+      "id": 1,
+      "title": "サンプル: 設計レビュー",
+      "status": "進行中",
+      "priority": "高",
+      "isDone": false
+    },
+    {
+      "id": 2,
+      "title": "サンプル: ドキュメント更新",
+      "status": "未着手",
+      "priority": "中",
+      "isDone": false
+    },
+    {
+      "id": 3,
+      "title": "サンプル: 完了済みタスク",
+      "status": "完了",
+      "priority": "低",
+      "isDone": true
+    }
+  ]
+}

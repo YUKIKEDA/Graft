@@ -17,11 +17,14 @@ public sealed class TodoSelectAllBehavior : Behavior<CheckBox>
     protected override void OnAttached()
     {
         base.OnAttached();
+
         // Mouse: take the click so three-state chrome does not fight HeaderCheckState.
         AssociatedObject.PreviewMouseLeftButtonDown += OnPreview;
+
         // Graft TogglePattern changes IsChecked without raising Click.
         AssociatedObject.Checked += OnCheckStateChanged;
         AssociatedObject.Unchecked += OnCheckStateChanged;
+
         // Do not handle Indeterminate: partial selection updates HeaderCheckState via binding
         // and must not clear row checks.
     }

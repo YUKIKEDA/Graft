@@ -337,7 +337,9 @@ public sealed class MainWindowViewModel : IDisposable
             Filter = "JSON (*.json)|*.json",
             FileName = "todos-export.json",
         };
-        if (dialog.ShowDialog() != true)
+
+        // Owner: Win32 dialog hosts as a descendant of Main (needed for UIA discovery).
+        if (dialog.ShowDialog(Application.Current?.MainWindow) != true)
         {
             StatusMessage.Value = "ExportCancelled";
             return;
@@ -350,7 +352,7 @@ public sealed class MainWindowViewModel : IDisposable
     private async Task ImportAsync()
     {
         var dialog = new OpenFileDialog { Filter = "JSON (*.json)|*.json" };
-        if (dialog.ShowDialog() != true)
+        if (dialog.ShowDialog(Application.Current?.MainWindow) != true)
         {
             StatusMessage.Value = "ImportCancelled";
             return;
