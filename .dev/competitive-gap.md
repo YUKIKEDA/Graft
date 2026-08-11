@@ -243,7 +243,7 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | D03 | 失敗時ツリー添付             | Yes  | OK    | Done   | —       |      |
 | D04 | ツリー差分 JSON              | PART | NO    | 任意   | —       |      |
 | D05 | シナリオファイル自動書き換え | PART | NO    | 非目標 | —       |      |
-| D06 | 操作タイムライン（目視レビュー） | PART | NO    | Must | 33      | PNG 連番 + HTML（速度・操作名字幕）。GIF/FFmpeg/ImageSharp なし。`task_phase33.md` |
+| D06 | 操作タイムライン（目視レビュー） | PART | OK    | Done | 33      | PNG 連番 + HTML（速度・操作名字幕）。GIF/FFmpeg/ImageSharp なし。`task_phase33.md` |
 
 ---
 
@@ -286,7 +286,7 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 
 （P02 要素クリップは任意のため Phase 番号なし）
 
-残 Must（Avalonia 前）: **D06**（H02 / X04 は Done）。
+残 Must（Avalonia 前）: **なし**（H02 / X04 / D06 は Done）。Avalonia 解禁可。
 
 ---
 

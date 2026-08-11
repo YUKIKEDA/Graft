@@ -33,32 +33,32 @@ ID: `D06`（[competitive-gap.md](./competitive-gap.md)）。
 
 ## Batch 1 — Core
 
-- [ ] セッションオプション（有効化・保持モード・出力先・フレーム表示既定など）
-- [ ] 公開操作完了後にスクショ＋ラベルを溜める
-- [ ] Save / Dispose で PNG + `index.html`（＋必要なら manifest）確定
-- [ ] OnFailure 時は成功パスで成果物破棄
+- [x] セッションオプション（有効化・保持モード・出力先・フレーム表示既定など）
+- [x] 公開操作完了後にスクショ＋ラベルを溜める
+- [x] Save / Dispose で PNG + `index.html`（＋ `timeline.json`）確定
+- [x] OnFailure 時は成功パスで成果物破棄
 
 ---
 
 ## Batch 2 — Sample / 契約テスト
 
-- [ ] オプトイン E2E（短い操作列 → HTML/PNG 存在）
-- [ ] OnFailure 振る舞いの単体または契約テスト
-- [ ] 完了チェック
+- [x] オプトイン E2E（`Phase33TimelineE2ETests`）
+- [x] OnFailure 振る舞いの単体テスト（`OperationTimelineTests`）
+- [x] 完了チェック
 
 ---
 
 ## Phase 33 完了チェック
 
-- [ ] D06 が Sample / 契約で緑
-- [ ] `competitive-gap.md` の D06 を OK / Done に更新
-- [ ] GIF / FFmpeg / ImageSharp を入れてない
-- [ ] Avalonia は含めない
-- [ ] ゲート上の残 Must が空であることを文書化
+- [x] D06 が Sample / 契約で緑
+- [x] `competitive-gap.md` の D06 を OK / Done に更新
+- [x] GIF / FFmpeg / ImageSharp を入れてない
+- [x] Avalonia は含めない
+- [x] ゲート上の残 Must が空であることを文書化
 
 ---
 
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` / `competitive-gap.md` 優先
-- **次:** Avalonia（Must 全 Done 後）
+- **次:** Avalonia（Must 全 Done）
