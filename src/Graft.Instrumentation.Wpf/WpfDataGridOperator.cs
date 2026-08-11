@@ -167,7 +167,8 @@ internal sealed class WpfDataGridOperator : IDataGridOperator
         dataGrid.UpdateLayout();
         Idle(dataGrid);
 
-        dataGrid.SelectedItems.Clear();
+        // SelectedItems can only be mutated when SelectionMode is Extended.
+        ClearDataGridSelection(dataGrid);
         dataGrid.SelectedItem = matchItem;
         dataGrid.SelectedIndex = matchRow;
         Idle(dataGrid);
@@ -332,9 +333,25 @@ internal sealed class WpfDataGridOperator : IDataGridOperator
             list.Remove(item);
         }
 
-        dataGrid.SelectedItems.Clear();
+        ClearDataGridSelection(dataGrid);
         dataGrid.SelectedItem = null;
         Idle(dataGrid);
+    }
+
+    /// <summary>
+    /// Clears row selection without throwing on <see cref="DataGridSelectionMode.Single"/>
+    /// (WPF forbids mutating <c>DataGrid.SelectedItems</c> in Single mode).
+    /// </summary>
+    private static void ClearDataGridSelection(DataGrid dataGrid)
+    {
+        if (dataGrid.SelectionMode == DataGridSelectionMode.Extended)
+        {
+            dataGrid.SelectedItems.Clear();
+        }
+        else
+        {
+            dataGrid.SelectedItem = null;
+        }
     }
 
     private static DataGrid ResolveActionableDataGrid(ElementSelector selector)
