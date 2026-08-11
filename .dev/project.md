@@ -364,7 +364,7 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 31 | SendInput 並列対策                                   | X04。正本 `-m:1` で Done（mutex 見送り）   |
 | Phase 32 | Frame 遷移（H02）                                    | Frame のみ。専用 DSL なし                  |
 | Phase 33 | 操作タイムライン（D06）                              | PNG 連番 + HTML。Must。GIF/FFmpeg なし     |
-| （次）   | Avalonia（H02・D06 完了後）                          | 対照表: `competitive-gap.md`。Inspector 任意 |
+| （次）   | Avalonia（Must 全 Done 後）                          | 対照表: `competitive-gap.md`。Inspector 任意 |
 
 ## 9. 未検討・今後の課題
 

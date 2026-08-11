@@ -15,6 +15,7 @@ public sealed class ElementQuery
     private readonly Selector _selector;
     private readonly WaitOptions _waitOptions;
     private readonly OperationLog _operationLog;
+    private readonly OperationTimeline? _timeline;
     private readonly IReadOnlyList<RelativeStep> _relativeSteps;
     private Selector _effectiveSelector;
     private bool _healApplied;
@@ -24,7 +25,8 @@ public sealed class ElementQuery
         Selector selector,
         WaitOptions waitOptions,
         OperationLog operationLog,
-        IReadOnlyList<RelativeStep>? relativeSteps = null
+        IReadOnlyList<RelativeStep>? relativeSteps = null,
+        OperationTimeline? timeline = null
     )
     {
         _connection = connection;
@@ -32,6 +34,7 @@ public sealed class ElementQuery
         _effectiveSelector = selector;
         _waitOptions = waitOptions;
         _operationLog = operationLog;
+        _timeline = timeline;
         _relativeSteps = relativeSteps ?? [];
     }
 
@@ -106,7 +109,8 @@ public sealed class ElementQuery
                 },
                 _waitOptions,
                 _operationLog,
-                _relativeSteps
+                _relativeSteps,
+                _timeline
             );
         }
 
@@ -138,7 +142,8 @@ public sealed class ElementQuery
             await _connection
                 .InvokeAsync(node.AutomationId, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.Invoke, node.AutomationId);
+            await RecordSuccessAsync(FailureSteps.Invoke, node.AutomationId, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -178,7 +183,8 @@ public sealed class ElementQuery
             await _connection
                 .RightClickAsync(node.AutomationId, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.RightClick, node.AutomationId);
+            await RecordSuccessAsync(FailureSteps.RightClick, node.AutomationId, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -217,7 +223,8 @@ public sealed class ElementQuery
             await _connection
                 .DoubleClickAsync(node.AutomationId, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.DoubleClick, node.AutomationId);
+            await RecordSuccessAsync(FailureSteps.DoubleClick, node.AutomationId, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -256,7 +263,8 @@ public sealed class ElementQuery
             await _connection
                 .HoverAsync(node.AutomationId, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.Hover, node.AutomationId);
+            await RecordSuccessAsync(FailureSteps.Hover, node.AutomationId, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -300,7 +308,12 @@ public sealed class ElementQuery
             await _connection
                 .DragAsync(node.AutomationId, toAutomationId, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.Drag, $"{node.AutomationId}->{toAutomationId}");
+            await RecordSuccessAsync(
+                    FailureSteps.Drag,
+                    $"{node.AutomationId}->{toAutomationId}",
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -345,10 +358,12 @@ public sealed class ElementQuery
             await _connection
                 .ClickAtAsync(node.AutomationId, offsetX, offsetY, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(
-                FailureSteps.ClickAt,
-                $"{node.AutomationId}@({offsetX},{offsetY})"
-            );
+            await RecordSuccessAsync(
+                    FailureSteps.ClickAt,
+                    $"{node.AutomationId}@({offsetX},{offsetY})",
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -388,7 +403,12 @@ public sealed class ElementQuery
             await _connection
                 .WheelAsync(node.AutomationId, delta, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.Wheel, $"{node.AutomationId}:{delta}");
+            await RecordSuccessAsync(
+                    FailureSteps.Wheel,
+                    $"{node.AutomationId}:{delta}",
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -478,10 +498,12 @@ public sealed class ElementQuery
 
         if (!waitForNewWindow)
         {
-            _operationLog.Record(
-                FailureSteps.InvokeOpeningWindow,
-                $"{node.AutomationId};waitForNewWindow=false"
-            );
+            await RecordSuccessAsync(
+                    FailureSteps.InvokeOpeningWindow,
+                    $"{node.AutomationId};waitForNewWindow=false",
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
             return null;
         }
 
@@ -519,10 +541,12 @@ public sealed class ElementQuery
                         .ConfigureAwait(false);
                 }
 
-                _operationLog.Record(
-                    FailureSteps.InvokeOpeningWindow,
-                    $"{node.AutomationId}->windowId={newborn.WindowId}"
-                );
+                await RecordSuccessAsync(
+                        FailureSteps.InvokeOpeningWindow,
+                        $"{node.AutomationId}->windowId={newborn.WindowId}",
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
                 return newborn;
             }
 
@@ -576,7 +600,12 @@ public sealed class ElementQuery
             await _connection
                 .SetValueAsync(node.AutomationId, value, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.SetValue, $"{node.AutomationId}={value}");
+            await RecordSuccessAsync(
+                    FailureSteps.SetValue,
+                    $"{node.AutomationId}={value}",
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -617,7 +646,8 @@ public sealed class ElementQuery
             await _connection
                 .ToggleAsync(node.AutomationId, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.Toggle, node.AutomationId);
+            await RecordSuccessAsync(FailureSteps.Toggle, node.AutomationId, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -661,7 +691,12 @@ public sealed class ElementQuery
             await _connection
                 .SendKeysAsync(node.AutomationId, text, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.SendKeys, $"{node.AutomationId}={text}");
+            await RecordSuccessAsync(
+                    FailureSteps.SendKeys,
+                    $"{node.AutomationId}={text}",
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -715,7 +750,12 @@ public sealed class ElementQuery
             await _connection
                 .PressKeysAsync(node.AutomationId, keys, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.PressKeys, $"{node.AutomationId}={keys}");
+            await RecordSuccessAsync(
+                    FailureSteps.PressKeys,
+                    $"{node.AutomationId}={keys}",
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -781,7 +821,12 @@ public sealed class ElementQuery
             await _connection
                 .SelectAsync(node.AutomationId, index, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.Select, $"{node.AutomationId}[{index}]");
+            await RecordSuccessAsync(
+                    FailureSteps.Select,
+                    $"{node.AutomationId}[{index}]",
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -825,7 +870,12 @@ public sealed class ElementQuery
             await _connection
                 .SelectByKeyAsync(node.AutomationId, key, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.Select, $"{node.AutomationId}[key={key}]");
+            await RecordSuccessAsync(
+                    FailureSteps.Select,
+                    $"{node.AutomationId}[key={key}]",
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -869,7 +919,12 @@ public sealed class ElementQuery
             await _connection
                 .SelectTreeAsync(node.AutomationId, path, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.SelectTree, $"{node.AutomationId}:{path}");
+            await RecordSuccessAsync(
+                    FailureSteps.SelectTree,
+                    $"{node.AutomationId}:{path}",
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -916,10 +971,12 @@ public sealed class ElementQuery
             await _connection
                 .SelectManyAsync(node.AutomationId, indexes, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(
-                FailureSteps.SelectMany,
-                $"{node.AutomationId}[{string.Join(',', indexes)}]"
-            );
+            await RecordSuccessAsync(
+                    FailureSteps.SelectMany,
+                    $"{node.AutomationId}[{string.Join(',', indexes)}]",
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -962,7 +1019,12 @@ public sealed class ElementQuery
             await _connection
                 .SelectMenuAsync(node.AutomationId, path, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.SelectMenu, $"{node.AutomationId}:{path}");
+            await RecordSuccessAsync(
+                    FailureSteps.SelectMenu,
+                    $"{node.AutomationId}:{path}",
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -1109,10 +1171,12 @@ public sealed class ElementQuery
             await _connection
                 .SelectRowAsync(node.AutomationId, columnKey, value, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(
-                FailureSteps.SelectRow,
-                $"{node.AutomationId}[{columnKey}={value}]"
-            );
+            await RecordSuccessAsync(
+                    FailureSteps.SelectRow,
+                    $"{node.AutomationId}[{columnKey}={value}]",
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -1157,10 +1221,12 @@ public sealed class ElementQuery
             await _connection
                 .ClickColumnHeaderAsync(node.AutomationId, columnKey, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(
-                FailureSteps.ClickColumnHeader,
-                $"{node.AutomationId}:{columnKey}"
-            );
+            await RecordSuccessAsync(
+                    FailureSteps.ClickColumnHeader,
+                    $"{node.AutomationId}:{columnKey}",
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -1199,7 +1265,8 @@ public sealed class ElementQuery
             await _connection
                 .AddRowAsync(node.AutomationId, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.AddRow, node.AutomationId);
+            await RecordSuccessAsync(FailureSteps.AddRow, node.AutomationId, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -1238,7 +1305,12 @@ public sealed class ElementQuery
             await _connection
                 .DeleteSelectedRowsAsync(node.AutomationId, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.DeleteSelectedRows, node.AutomationId);
+            await RecordSuccessAsync(
+                    FailureSteps.DeleteSelectedRows,
+                    node.AutomationId,
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -1326,7 +1398,8 @@ public sealed class ElementQuery
             await _connection
                 .ExpandAsync(node.AutomationId, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.Expand, node.AutomationId);
+            await RecordSuccessAsync(FailureSteps.Expand, node.AutomationId, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -1366,7 +1439,8 @@ public sealed class ElementQuery
             await _connection
                 .CollapseAsync(node.AutomationId, cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.Collapse, node.AutomationId);
+            await RecordSuccessAsync(FailureSteps.Collapse, node.AutomationId, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -1421,7 +1495,12 @@ public sealed class ElementQuery
                 sawElement = true;
                 if (string.Equals(node.Name, expectedName, StringComparison.Ordinal))
                 {
-                    _operationLog.Record(FailureSteps.ExpectName, expectedName);
+                    await RecordSuccessAsync(
+                            FailureSteps.ExpectName,
+                            expectedName,
+                            cancellationToken
+                        )
+                        .ConfigureAwait(false);
                     return node;
                 }
 
@@ -1625,7 +1704,12 @@ public sealed class ElementQuery
                 sawElement = true;
                 if (node.Name.Contains(substring, StringComparison.Ordinal))
                 {
-                    _operationLog.Record(FailureSteps.ExpectNameContains, substring);
+                    await RecordSuccessAsync(
+                            FailureSteps.ExpectNameContains,
+                            substring,
+                            cancellationToken
+                        )
+                        .ConfigureAwait(false);
                     return node;
                 }
 
@@ -1710,7 +1794,12 @@ public sealed class ElementQuery
                 sawElement = true;
                 if (regex.IsMatch(node.Name))
                 {
-                    _operationLog.Record(FailureSteps.ExpectNameMatches, pattern);
+                    await RecordSuccessAsync(
+                            FailureSteps.ExpectNameMatches,
+                            pattern,
+                            cancellationToken
+                        )
+                        .ConfigureAwait(false);
                     return node;
                 }
 
@@ -1801,7 +1890,12 @@ public sealed class ElementQuery
                     && string.Equals(node.Value, expectedValue, StringComparison.Ordinal)
                 )
                 {
-                    _operationLog.Record(FailureSteps.ExpectValue, expectedValue);
+                    await RecordSuccessAsync(
+                            FailureSteps.ExpectValue,
+                            expectedValue,
+                            cancellationToken
+                        )
+                        .ConfigureAwait(false);
                     return node;
                 }
 
@@ -1892,7 +1986,12 @@ public sealed class ElementQuery
                     && string.Equals(node.ToolTip, expectedToolTip, StringComparison.Ordinal)
                 )
                 {
-                    _operationLog.Record(FailureSteps.ExpectToolTip, expectedToolTip);
+                    await RecordSuccessAsync(
+                            FailureSteps.ExpectToolTip,
+                            expectedToolTip,
+                            cancellationToken
+                        )
+                        .ConfigureAwait(false);
                     return node;
                 }
 
@@ -1964,7 +2063,8 @@ public sealed class ElementQuery
                 var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
                 lastRoot = tree.Root;
                 var node = ResolveNode(tree.Root);
-                _operationLog.Record(FailureSteps.WaitFor, node.AutomationId);
+                await RecordSuccessAsync(FailureSteps.WaitFor, node.AutomationId, cancellationToken)
+                    .ConfigureAwait(false);
                 return node;
             }
             catch (GraftException ex)
@@ -2020,7 +2120,12 @@ public sealed class ElementQuery
                 var node = ResolveNode(tree.Root);
                 if (!node.Visible)
                 {
-                    _operationLog.Record(FailureSteps.ExpectGone, "not-visible");
+                    await RecordSuccessAsync(
+                            FailureSteps.ExpectGone,
+                            "not-visible",
+                            cancellationToken
+                        )
+                        .ConfigureAwait(false);
                     return;
                 }
 
@@ -2028,7 +2133,8 @@ public sealed class ElementQuery
             }
             catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound)
             {
-                _operationLog.Record(FailureSteps.ExpectGone, "not-found");
+                await RecordSuccessAsync(FailureSteps.ExpectGone, "not-found", cancellationToken)
+                    .ConfigureAwait(false);
                 return;
             }
             catch (GraftException ex) when (ex.Code is GraftErrorCodes.ActionFailed)
@@ -2092,7 +2198,8 @@ public sealed class ElementQuery
             var detail = columnKey is null
                 ? $"{node.AutomationId}[{row},{column}]"
                 : $"{node.AutomationId}[{row},{columnKey}]";
-            _operationLog.Record(FailureSteps.GetCellText, detail);
+            await RecordSuccessAsync(FailureSteps.GetCellText, detail, cancellationToken)
+                .ConfigureAwait(false);
             return text;
         }
         catch (GraftException ex) when (ex.Report is null)
@@ -2155,7 +2262,8 @@ public sealed class ElementQuery
             var detail = columnKey is null
                 ? $"{node.AutomationId}[{row},{column}]={value}"
                 : $"{node.AutomationId}[{row},{columnKey}]={value}";
-            _operationLog.Record(FailureSteps.SetCellValue, detail);
+            await RecordSuccessAsync(FailureSteps.SetCellValue, detail, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -2208,7 +2316,8 @@ public sealed class ElementQuery
             var detail = columnKey is null
                 ? $"{node.AutomationId}[{row},{column}]"
                 : $"{node.AutomationId}[{row},{columnKey}]";
-            _operationLog.Record(FailureSteps.SelectCell, detail);
+            await RecordSuccessAsync(FailureSteps.SelectCell, detail, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -2270,7 +2379,12 @@ public sealed class ElementQuery
                 sawCell = true;
                 if (string.Equals(actual, expectedText, StringComparison.Ordinal))
                 {
-                    _operationLog.Record(FailureSteps.ExpectCellText, expectedText);
+                    await RecordSuccessAsync(
+                            FailureSteps.ExpectCellText,
+                            expectedText,
+                            cancellationToken
+                        )
+                        .ConfigureAwait(false);
                     return;
                 }
 
@@ -2349,7 +2463,8 @@ public sealed class ElementQuery
                 var actual = getter(node);
                 if (actual is { } value && value == expected)
                 {
-                    _operationLog.Record(step, expectedText);
+                    await RecordSuccessAsync(step, expectedText, cancellationToken)
+                        .ConfigureAwait(false);
                     return node;
                 }
 
@@ -2480,6 +2595,7 @@ public sealed class ElementQuery
         CancellationToken cancellationToken = default
     )
     {
+        _timeline?.MarkFailed();
         var tree = treeRoot;
         if (tree is null)
         {
@@ -2566,7 +2682,8 @@ public sealed class ElementQuery
             var detail = index is null
                 ? node.AutomationId
                 : $"{node.AutomationId}[{index}]->{identity.AutomationId}";
-            _operationLog.Record(FailureSteps.ScrollIntoView, detail);
+            await RecordSuccessAsync(FailureSteps.ScrollIntoView, detail, cancellationToken)
+                .ConfigureAwait(false);
             return identity;
         }
         catch (GraftException ex) when (ex.Report is null)
@@ -2578,6 +2695,21 @@ public sealed class ElementQuery
                     cancellationToken: cancellationToken,
                     innerException: ex
                 )
+                .ConfigureAwait(false);
+        }
+    }
+
+    private async Task RecordSuccessAsync(
+        string action,
+        string? detail,
+        CancellationToken cancellationToken
+    )
+    {
+        _operationLog.Record(action, detail);
+        if (_timeline is not null)
+        {
+            await _timeline
+                .CaptureAfterAsync(action, detail, cancellationToken)
                 .ConfigureAwait(false);
         }
     }
@@ -2639,7 +2771,14 @@ public sealed class ElementQuery
         var steps = new List<RelativeStep>(_relativeSteps.Count + 1);
         steps.AddRange(_relativeSteps);
         steps.Add(step);
-        return new ElementQuery(_connection, _selector, _waitOptions, _operationLog, steps);
+        return new ElementQuery(
+            _connection,
+            _selector,
+            _waitOptions,
+            _operationLog,
+            steps,
+            _timeline
+        );
     }
 
     internal abstract record RelativeStep;

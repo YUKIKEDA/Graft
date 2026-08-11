@@ -24,6 +24,10 @@ public static class Application
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentException.ThrowIfNullOrWhiteSpace(options.AppPath);
+        if (options.Timeline is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(options.Timeline.OutputDirectory);
+        }
 
         var timeout =
             options.Timeout <= TimeSpan.Zero ? LaunchOptions.DefaultTimeout : options.Timeout;
@@ -43,7 +47,7 @@ public static class Application
             var connection = await AgentConnection
                 .ConnectAsync(pipeName, token, timeout, cancellationToken)
                 .ConfigureAwait(false);
-            return new GraftSession(process, connection);
+            return new GraftSession(process, connection, options.Timeline);
         }
         catch
         {

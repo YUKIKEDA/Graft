@@ -38,4 +38,13 @@ public sealed class LaunchOptions
     /// Gets the MSBuild configuration used when <see cref="AppPath"/> is a csproj.
     /// </summary>
     public string Configuration { get; init; } = "GraftTest";
+
+    /// <summary>
+    /// Gets optional operation timeline recording (PNG sequence + HTML viewer).
+    /// </summary>
+    /// <remarks>
+    /// When set, <see cref="TimelineOptions.OutputDirectory"/> is required.
+    /// Recording is Core-session only (no Scenario/MCP surface in v1).
+    /// </remarks>
+    public TimelineOptions? Timeline { get; init; }
 }

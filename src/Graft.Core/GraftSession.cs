@@ -17,12 +17,28 @@ public sealed class GraftSession : IAsyncDisposable
     private readonly Process _process;
     private readonly AgentConnection _connection;
     private readonly OperationLog _operationLog = new();
+    private readonly OperationTimeline? _timeline;
     private bool _disposed;
 
-    internal GraftSession(Process process, AgentConnection connection)
+    internal GraftSession(
+        Process process,
+        AgentConnection connection,
+        TimelineOptions? timeline = null
+    )
     {
         _process = process;
         _connection = connection;
+        if (timeline is not null)
+        {
+            _timeline = new OperationTimeline(
+                timeline,
+                async ct =>
+                {
+                    var (_, pngBytes) = await _connection.ScreenshotAsync(ct).ConfigureAwait(false);
+                    return pngBytes;
+                }
+            );
+        }
     }
 
     /// <summary>
@@ -36,6 +52,11 @@ public sealed class GraftSession : IAsyncDisposable
     public WaitOptions WaitOptions { get; set; } = new();
 
     /// <summary>
+    /// Gets the path to the timeline <c>index.html</c> after save/dispose finalize, when kept.
+    /// </summary>
+    public string? TimelineIndexPath => _timeline?.IndexPath;
+
+    /// <summary>
     /// Creates an element query for the given selector (resolved via getTree scoring).
     /// </summary>
     /// <param name="selector">Composite selector.</param>
@@ -43,7 +64,13 @@ public sealed class GraftSession : IAsyncDisposable
     public ElementQuery GetBy(Selector selector)
     {
         ArgumentNullException.ThrowIfNull(selector);
-        return new ElementQuery(_connection, selector, WaitOptions, _operationLog);
+        return new ElementQuery(
+            _connection,
+            selector,
+            WaitOptions,
+            _operationLog,
+            timeline: _timeline
+        );
     }
 
     /// <summary>
@@ -84,11 +111,17 @@ public sealed class GraftSession : IAsyncDisposable
             var result = await _connection
                 .ListWindowsAsync(cancellationToken)
                 .ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.ListWindows, $"{result.Windows.Count} window(s)");
+            await RecordSuccessAsync(
+                    FailureSteps.ListWindows,
+                    $"{result.Windows.Count} window(s)",
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
             return result;
         }
         catch (GraftException)
         {
+            _timeline?.MarkFailed();
             throw;
         }
     }
@@ -108,10 +141,16 @@ public sealed class GraftSession : IAsyncDisposable
         try
         {
             await _connection.SwitchWindowAsync(windowId, cancellationToken).ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.SwitchWindow, $"windowId={windowId}");
+            await RecordSuccessAsync(
+                    FailureSteps.SwitchWindow,
+                    $"windowId={windowId}",
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         catch (GraftException)
         {
+            _timeline?.MarkFailed();
             throw;
         }
     }
@@ -168,14 +207,21 @@ public sealed class GraftSession : IAsyncDisposable
                     await _connection
                         .SwitchWindowAsync(match.WindowId, cancellationToken)
                         .ConfigureAwait(false);
-                    _operationLog.Record(
-                        FailureSteps.WaitForWindow,
-                        $"windowId={match.WindowId};switched"
-                    );
+                    await RecordSuccessAsync(
+                            FailureSteps.WaitForWindow,
+                            $"windowId={match.WindowId};switched",
+                            cancellationToken
+                        )
+                        .ConfigureAwait(false);
                 }
                 else
                 {
-                    _operationLog.Record(FailureSteps.WaitForWindow, $"windowId={match.WindowId}");
+                    await RecordSuccessAsync(
+                            FailureSteps.WaitForWindow,
+                            $"windowId={match.WindowId}",
+                            cancellationToken
+                        )
+                        .ConfigureAwait(false);
                 }
 
                 return match;
@@ -196,6 +242,7 @@ public sealed class GraftSession : IAsyncDisposable
             : hasTitle ? $"title='{title}'"
             : $"automationId='{automationId}'";
 
+        _timeline?.MarkFailed();
         throw new GraftException(
             GraftErrorCodes.ActionTimeout,
             $"Timed out after {timeout.TotalSeconds:0.###}s waiting for window ({criteria})."
@@ -251,7 +298,12 @@ public sealed class GraftSession : IAsyncDisposable
                     hasTitle && hasAutomationId ? $"title='{title}', automationId='{automationId}'"
                     : hasTitle ? $"title='{title}'"
                     : $"automationId='{automationId}'";
-                _operationLog.Record(FailureSteps.WaitForWindowClosed, detail);
+                await RecordSuccessAsync(
+                        FailureSteps.WaitForWindowClosed,
+                        detail,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
                 return;
             }
 
@@ -270,6 +322,7 @@ public sealed class GraftSession : IAsyncDisposable
             : hasTitle ? $"title='{title}'"
             : $"automationId='{automationId}'";
 
+        _timeline?.MarkFailed();
         throw new GraftException(
             GraftErrorCodes.ActionTimeout,
             $"Timed out after {timeout.TotalSeconds:0.###}s waiting for window to close ({criteria})."
@@ -289,10 +342,12 @@ public sealed class GraftSession : IAsyncDisposable
         try
         {
             await _connection.ArmOpenFileAsync(path, cancellationToken).ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.ArmOpenFile, path);
+            await RecordSuccessAsync(FailureSteps.ArmOpenFile, path, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (GraftException)
         {
+            _timeline?.MarkFailed();
             throw;
         }
     }
@@ -308,10 +363,12 @@ public sealed class GraftSession : IAsyncDisposable
         try
         {
             await _connection.ArmOpenFileCancelAsync(cancellationToken).ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.ArmOpenFileCancel, "cancel");
+            await RecordSuccessAsync(FailureSteps.ArmOpenFileCancel, "cancel", cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (GraftException)
         {
+            _timeline?.MarkFailed();
             throw;
         }
     }
@@ -329,10 +386,12 @@ public sealed class GraftSession : IAsyncDisposable
         try
         {
             await _connection.ArmSaveFileAsync(path, cancellationToken).ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.ArmSaveFile, path);
+            await RecordSuccessAsync(FailureSteps.ArmSaveFile, path, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (GraftException)
         {
+            _timeline?.MarkFailed();
             throw;
         }
     }
@@ -348,10 +407,12 @@ public sealed class GraftSession : IAsyncDisposable
         try
         {
             await _connection.ArmSaveFileCancelAsync(cancellationToken).ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.ArmSaveFileCancel, "cancel");
+            await RecordSuccessAsync(FailureSteps.ArmSaveFileCancel, "cancel", cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (GraftException)
         {
+            _timeline?.MarkFailed();
             throw;
         }
     }
@@ -369,10 +430,12 @@ public sealed class GraftSession : IAsyncDisposable
         try
         {
             await _connection.ArmOpenFolderAsync(path, cancellationToken).ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.ArmOpenFolder, path);
+            await RecordSuccessAsync(FailureSteps.ArmOpenFolder, path, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (GraftException)
         {
+            _timeline?.MarkFailed();
             throw;
         }
     }
@@ -388,10 +451,12 @@ public sealed class GraftSession : IAsyncDisposable
         try
         {
             await _connection.ArmOpenFolderCancelAsync(cancellationToken).ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.ArmOpenFolderCancel, "cancel");
+            await RecordSuccessAsync(FailureSteps.ArmOpenFolderCancel, "cancel", cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (GraftException)
         {
+            _timeline?.MarkFailed();
             throw;
         }
     }
@@ -412,10 +477,12 @@ public sealed class GraftSession : IAsyncDisposable
         try
         {
             await _connection.ArmMessageBoxAsync(result, cancellationToken).ConfigureAwait(false);
-            _operationLog.Record(FailureSteps.ArmMessageBox, result);
+            await RecordSuccessAsync(FailureSteps.ArmMessageBox, result, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (GraftException)
         {
+            _timeline?.MarkFailed();
             throw;
         }
     }
@@ -434,14 +501,17 @@ public sealed class GraftSession : IAsyncDisposable
                 .ScreenshotAsync(cancellationToken)
                 .ConfigureAwait(false);
             var shot = new Screenshot(meta.Format, meta.Width, meta.Height, pngBytes);
-            _operationLog.Record(
-                FailureSteps.Screenshot,
-                $"{shot.Width}x{shot.Height}:{shot.PngBytes.Length}"
-            );
+            await RecordSuccessAsync(
+                    FailureSteps.Screenshot,
+                    $"{shot.Width}x{shot.Height}:{shot.PngBytes.Length}",
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
             return shot;
         }
         catch (GraftException)
         {
+            _timeline?.MarkFailed();
             throw;
         }
     }
@@ -475,12 +545,38 @@ public sealed class GraftSession : IAsyncDisposable
         _disposed = true;
         try
         {
+            _ = _timeline?.FinalizeArtifacts();
             await _connection.DisposeAsync().ConfigureAwait(false);
         }
         finally
         {
             TryKill(_process);
             _process.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Finalizes timeline artifacts now (idempotent). Also runs automatically on dispose.
+    /// </summary>
+    /// <returns>Path to index.html when kept; otherwise null.</returns>
+    public string? SaveTimeline()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        return _timeline?.FinalizeArtifacts();
+    }
+
+    private async Task RecordSuccessAsync(
+        string action,
+        string? detail,
+        CancellationToken cancellationToken
+    )
+    {
+        _operationLog.Record(action, detail);
+        if (_timeline is not null)
+        {
+            await _timeline
+                .CaptureAfterAsync(action, detail, cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 

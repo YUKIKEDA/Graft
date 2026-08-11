@@ -8,4 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Graft.Protocol\Graft.Protocol.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Graft.Core.Tests" />
+  </ItemGroup>
 </Project>

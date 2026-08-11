@@ -99,4 +99,5 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - invoke / setValue はネイティブ → Peer → SendInput フォールバック（クリック / クリア+タイプ）
 - 全解テスト並列（Phase 31 / X04）: 正本は `dotnet test Graft.slnx -m:1`（アセンブリ内は `SampleUiCollection` / `McpUiCollection`）。プロセス mutex だけでは SendInput 前景不足が残るため未採用。X04 は運用 Done（[task_phase31.md](./task_phase31.md)）
 - Frame 遷移（Phase 32 / H02）: Sample `SampleFrame` + Page ナビ。専用 DSL なし（既存 WaitFor / Expect）。Done（[task_phase32.md](./task_phase32.md)）
-- 未実装（後続 Must）: [D06 操作タイムライン](./task_phase33.md)。**Avalonia はその後**。正本は [competitive-gap.md](./competitive-gap.md)。要素クリップ / typeHuman / Inspector / 画像 diff 等は任意または非目標
+- 操作タイムライン（Phase 33 / D06）: `LaunchOptions.Timeline`（`OutputDirectory` 必須、`Always`/`OnFailure`）。操作完了後 PNG + `index.html`（速度・字幕）。`SaveTimeline()` / Dispose で確定。Done（[task_phase33.md](./task_phase33.md)）
+- 未実装（後続）: **Avalonia**（Must 全 Done）。正本は [competitive-gap.md](./competitive-gap.md)。要素クリップ / typeHuman / Inspector / 画像 diff 等は任意または非目標
