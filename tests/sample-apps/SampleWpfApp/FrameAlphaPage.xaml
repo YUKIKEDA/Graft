@@ -1,0 +1,12 @@
+<Page x:Class="SampleWpfApp.FrameAlphaPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Frame Alpha"
+      Background="White">
+    <StackPanel Margin="8">
+        <TextBlock x:Name="FrameAlphaLabel"
+                   AutomationProperties.AutomationId="FrameAlphaLabel"
+                   Text="FrameAlphaReady"
+                   FontSize="16" />
+    </StackPanel>
+</Page>

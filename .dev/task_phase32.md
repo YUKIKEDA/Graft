@@ -28,19 +28,19 @@ ID: `H02`（[competitive-gap.md](./competitive-gap.md)）。
 
 ## Batch 1 — Sample + E2E
 
-- [ ] Sample: Frame ホスト + Page 群 + ナビ UI（AutomationId 付き）
-- [ ] Walker / ツリー: Frame 内コンテンツが既存探索で取れることを確認（必要なら最小修正）
-- [ ] Core / Sample E2E: ナビ → WaitFor / Expect*
-- [ ] 完了チェック
+- [x] Sample: Frame ホスト + Page 群 + ナビ UI（AutomationId 付き）
+- [x] Walker / ツリー: Frame 内コンテンツが既存探索で取れることを確認（追加修正なし）
+- [x] Core / Sample E2E: ナビ → WaitFor / Expect*（`Phase32FrameE2ETests`）
+- [x] 完了チェック
 
 ---
 
 ## Phase 32 完了チェック
 
-- [ ] H02 が Sample E2E で緑
-- [ ] `competitive-gap.md` の H02 を OK / Done に更新
-- [ ] NavigationWindow・専用 DSL を入れてない
-- [ ] Avalonia は含めない
+- [x] H02 が Sample E2E で緑
+- [x] `competitive-gap.md` の H02 を OK / Done に更新
+- [x] NavigationWindow・専用 DSL を入れてない
+- [x] Avalonia は含めない
 
 ---
 

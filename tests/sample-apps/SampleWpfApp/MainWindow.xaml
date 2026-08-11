@@ -531,6 +531,35 @@
                 </Hyperlink>
             </TextBlock>
 
+            <TextBlock Text="Frame navigation" Margin="0,8,0,4" />
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <Button x:Name="NavigateFrameHomeButton"
+                        AutomationProperties.AutomationId="NavigateFrameHomeButton"
+                        Content="Frame Home"
+                        Padding="12,6"
+                        Margin="0,0,8,0"
+                        Click="NavigateFrameHomeButton_OnClick" />
+                <Button x:Name="NavigateFrameAlphaButton"
+                        AutomationProperties.AutomationId="NavigateFrameAlphaButton"
+                        Content="Frame Alpha"
+                        Padding="12,6"
+                        Margin="0,0,8,0"
+                        Click="NavigateFrameAlphaButton_OnClick" />
+                <Button x:Name="NavigateFrameBetaButton"
+                        AutomationProperties.AutomationId="NavigateFrameBetaButton"
+                        Content="Frame Beta"
+                        Padding="12,6"
+                        Click="NavigateFrameBetaButton_OnClick" />
+            </StackPanel>
+            <Frame x:Name="SampleFrame"
+                   AutomationProperties.AutomationId="SampleFrame"
+                   NavigationUIVisibility="Hidden"
+                   JournalOwnership="OwnsJournal"
+                   Height="96"
+                   Margin="0,0,0,16"
+                   BorderBrush="#FFCCCCCC"
+                   BorderThickness="1" />
+
             <TextBlock Text="Windows" Margin="0,8,0,4" />
             <Button x:Name="OpenChildWindowButton"
                     AutomationProperties.AutomationId="OpenChildWindowButton"

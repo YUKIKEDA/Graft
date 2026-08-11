@@ -1,0 +1,12 @@
+<Page x:Class="SampleWpfApp.FrameHomePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Frame Home"
+      Background="White">
+    <StackPanel Margin="8">
+        <TextBlock x:Name="FrameHomeLabel"
+                   AutomationProperties.AutomationId="FrameHomeLabel"
+                   Text="FrameHomeReady"
+                   FontSize="16" />
+    </StackPanel>
+</Page>
