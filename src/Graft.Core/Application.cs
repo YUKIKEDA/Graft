@@ -41,7 +41,13 @@ public static class Application
             ? "GraftTest"
             : options.Configuration;
 
-        var process = AppProcessLauncher.Start(options.AppPath, pipeName, token, configuration);
+        var process = AppProcessLauncher.Start(
+            options.AppPath,
+            pipeName,
+            token,
+            configuration,
+            options.Environment
+        );
         try
         {
             var connection = await AgentConnection

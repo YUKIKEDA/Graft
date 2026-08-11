@@ -4,10 +4,11 @@
 
 | 側 | プロジェクト例 | 参照するパッケージ | やること |
 | -- | -------------- | ------------------ | -------- |
-| **対象アプリ** | `SampleWpfApp` | `Graft.Instrumentation.Wpf` | `GRAFT_TEST` ビルドで `WpfGraft.Use()` + `Agent.Start()` |
-| **E2E テスト** | `SampleWpfApp.Tests` | **`Graft.Core` のみ** | `Application.LaunchAsync` → `GetBy…` で操作・検証 |
+| **対象アプリ（正本）** | `SampleTodoApp` | `Graft.Instrumentation.Wpf` | MVVM/DI/テーマ付き実アプリ。`GRAFT_TEST` で Agent |
+| **E2E（正本）** | `SampleTodoApp.Tests` | **`Graft.Core` のみ** | ストーリー E2E 1 本（保存先→追加→Import→フィルタ→テーマ→編集／削除→Export） |
+| **機能マトリクス** | `SampleWpfApp` / `.Tests` | 同上 | コントロール網羅・Phase 回帰 |
 
-SmokeClient / `Graft.Core.Tests` はライブラリ自身の検証用。**プロダクト側の書き方の正本は `tests/sample-apps/SampleWpfApp.Tests`。**
+SmokeClient / `Graft.Core.Tests` はライブラリ自身の検証用。**プロダクト側の書き方の正本は `tests/sample-apps/SampleTodoApp.Tests`。**
 
 ## 対象アプリ側（組み込み）
 
@@ -20,48 +21,61 @@ Graft.Instrumentation.Agent.Start();
 #endif
 ```
 
-（実装例: `tests/sample-apps/SampleWpfApp/App.xaml.cs`）
+（実装例: `tests/sample-apps/SampleTodoApp/App.xaml.cs`）
 
 ## テスト側（コントローラ）
 
 ```csharp
 using Graft.Core;
 
+var dataDir = Path.Combine(Path.GetTempPath(), "my-todo-e2e");
+Directory.CreateDirectory(dataDir);
+
+var timelineDir = Path.Combine(Path.GetTempPath(), "my-todo-timeline");
 await using var app = await Application.LaunchAsync(
     new LaunchOptions
     {
-        AppPath = @"path\to\YourApp.csproj", // or .exe
-        Configuration = "GraftTest",         // csproj のとき GRAFT_TEST 付きで起動
-        Timeout = TimeSpan.FromSeconds(60),  // 起動+Handshake（既定 30s）
+        AppPath = @"path\to\SampleTodoApp.csproj",
+        Configuration = "GraftTest",
+        Timeout = TimeSpan.FromSeconds(90),
+        // 操作タイムライン（任意）。Dispose 後に index.html / frames/*.png
+        Timeline = new TimelineOptions
+        {
+            OutputDirectory = timelineDir,
+            Retention = TimelineRetention.Always,
+        },
     }
 );
 
-await app.GetByAutomationId("SampleButton").InvokeAsync();
-await app.GetByAutomationId("StatusText").ExpectNameAsync("Clicked 1");
+// 設定は UserControl オーバーレイ。保存先変更は OpenFolder + ArmOpenFolder
+await app.GetByAutomationId("SettingsButton").InvokeAsync();
+await app.GetByAutomationId("SettingsView").WaitForAsync();
+await app.ArmOpenFolderAsync(dataDir);
+_ = await app.GetByAutomationId("SettingsBrowseDataDirectoryButton")
+    .InvokeOpeningWindowAsync(waitForNewWindow: false);
+await app.GetByAutomationId("SettingsCloseButton").InvokeAsync();
+await app.GetByAutomationId("StatusText").ExpectNameAsync("DataDirectoryChanged");
 
-await app.GetByAutomationId("SampleTextBox").SetValueAsync("hello-graft");
-await app.GetByAutomationId("SampleTextBox").ExpectNameAsync("hello-graft");
-// Dispose でパイプ切断 + 対象プロセス終了
+// モーダル詳細窓は InvokeOpeningWindowAsync（素の Invoke は ShowDialog でハングしうる）
+var detail = await app.GetByAutomationId("AddButton").InvokeOpeningWindowAsync();
+await app.GetByAutomationId("DetailTitleBox").SetValueAsync("Graft E2E Task");
+await app.GetByAutomationId("DetailSaveButton").InvokeAsync();
+await app.WaitForWindowAsync(automationId: "Main");
+await app.GetByAutomationId("StatusText").ExpectNameAsync("ItemAdded");
+await app.GetByAutomationId("TodoGrid").SelectRowAsync("Title", "Graft E2E Task");
 ```
 
-Scenario JSON 経路:
-
-```csharp
-using Graft.Core.Scenario;
-
-var scenario = ScenarioJson.ParseFile(@"path\to\sample-main-window.scenario.json");
-await ScenarioRunner.RunAsync(
-    scenario,
-    new ScenarioRunOptions { AppPath = @"path\to\YourApp.csproj" }
-);
-```
-
-実ファイル: [`MainWindowE2ETests.cs`](../tests/sample-apps/SampleWpfApp.Tests/MainWindowE2ETests.cs) / [`ScenarioE2ETests.cs`](../tests/sample-apps/SampleWpfApp.Tests/ScenarioE2ETests.cs)
+実ファイル: [`TodoStoryE2ETests.cs`](../tests/sample-apps/SampleTodoApp.Tests/TodoStoryE2ETests.cs)  
+機能マトリクス例: [`MainWindowE2ETests.cs`](../tests/sample-apps/SampleWpfApp.Tests/MainWindowE2ETests.cs)
 
 ## 実行
 
 ```bash
+dotnet test tests/sample-apps/SampleTodoApp.Tests
+# 機能マトリクス:
 dotnet test tests/sample-apps/SampleWpfApp.Tests
+# 任意・手動（FlaUI 比較。対話デスクトップ前提）:
+dotnet test tests/sample-apps/SampleTodoApp.FlaUI.Tests
 ```
 
 ## 補足
@@ -100,4 +114,5 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 - 全解テスト並列（Phase 31 / X04）: 正本は `dotnet test Graft.slnx -m:1`（アセンブリ内は `SampleUiCollection` / `McpUiCollection`）。プロセス mutex だけでは SendInput 前景不足が残るため未採用。X04 は運用 Done（[task_phase31.md](./task_phase31.md)）
 - Frame 遷移（Phase 32 / H02）: Sample `SampleFrame` + Page ナビ。専用 DSL なし（既存 WaitFor / Expect）。Done（[task_phase32.md](./task_phase32.md)）
 - 操作タイムライン（Phase 33 / D06）: `LaunchOptions.Timeline`（`OutputDirectory` 必須、`Always`/`OnFailure`）。操作完了後 PNG + `index.html`（速度・字幕）。`SaveTimeline()` / Dispose で確定。Done（[task_phase33.md](./task_phase33.md)）
-- 未実装（後続）: **Avalonia**（Must 全 Done）。正本は [competitive-gap.md](./competitive-gap.md)。要素クリップ / typeHuman / Inspector / 画像 diff 等は任意または非目標
+- SampleTodoApp（Phase 34）: 利用ガイド正本。R3 + ObservableCollections + MS.DI、実 JSON（設定 UserControl オーバーレイで保存先/`OpenFolderDialog`・テーマ。LocalAppData `settings.json`）、詳細 Window、Export/Import シーム。E2E 隔離は Settings オーバーレイ + `ArmOpenFolder`。ストーリー E2E 1 本（フィルタ／テーマ／チェック編集削除含む）+ `Timeline` Always（`%TEMP%\graft-sample-todo-timeline\{leaf}\index.html`）。`LaunchOptions.Environment` は Core 汎用（任意）。Done（[task_phase34.md](./task_phase34.md)）
+- 未実装（後続）: **Avalonia**（Phase 34 後）。正本は [competitive-gap.md](./competitive-gap.md)。要素クリップ / typeHuman / Inspector / 画像 diff 等は任意または非目標

@@ -1,0 +1,43 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+      Dark theme: clear surface hierarchy (page < surface < input).
+      Labels/body stay near-white; inputs are elevated so they don't melt into the page.
+    -->
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#FF0B1220" />
+    <SolidColorBrush x:Key="AppSurfaceBrush" Color="#FF111827" />
+    <SolidColorBrush x:Key="AppSurfaceAltBrush" Color="#FF1F2937" />
+    <SolidColorBrush x:Key="AppInputBackgroundBrush" Color="#FF1F2937" />
+    <SolidColorBrush x:Key="AppHeaderBrush" Color="#FF111827" />
+
+    <SolidColorBrush x:Key="AppForegroundBrush" Color="#FFF9FAFB" />
+    <SolidColorBrush x:Key="AppMutedForegroundBrush" Color="#FFE5E7EB" />
+
+    <SolidColorBrush x:Key="AppBorderBrush" Color="#FF9CA3AF" />
+    <SolidColorBrush x:Key="AppGridLineBrush" Color="#FF4B5563" />
+    <SolidColorBrush x:Key="AppOverlayBrush" Color="#CC020617" />
+
+    <SolidColorBrush x:Key="AppAccentBrush" Color="#FF3B82F6" />
+    <SolidColorBrush x:Key="AppAccentHoverBrush" Color="#FF60A5FA" />
+    <SolidColorBrush x:Key="AppAccentPressedBrush" Color="#FF2563EB" />
+    <SolidColorBrush x:Key="AppAccentForegroundBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="AppAccentMutedBrush" Color="#FF1E3A5F" />
+
+    <SolidColorBrush x:Key="AppButtonBackgroundBrush" Color="#FF1F2937" />
+    <SolidColorBrush x:Key="AppButtonHoverBrush" Color="#FF374151" />
+    <SolidColorBrush x:Key="AppButtonPressedBrush" Color="#FF111827" />
+    <SolidColorBrush x:Key="AppSelectionBrush" Color="#FF1D4ED8" />
+    <SolidColorBrush x:Key="AppRowHoverBrush" Color="#FF1F2937" />
+
+    <SolidColorBrush x:Key="AppDisabledBackgroundBrush" Color="#FF1F2937" />
+    <SolidColorBrush x:Key="AppDisabledBorderBrush" Color="#FF4B5563" />
+    <SolidColorBrush x:Key="AppDisabledForegroundBrush" Color="#FF9CA3AF" />
+
+    <SolidColorBrush x:Key="AppDangerBrush" Color="#FFEF4444" />
+    <SolidColorBrush x:Key="AppDangerHoverBrush" Color="#FFF87171" />
+    <SolidColorBrush x:Key="AppDangerForegroundBrush" Color="#FFFFFFFF" />
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Controls.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

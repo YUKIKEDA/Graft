@@ -61,4 +61,4 @@ ID: `D06`（[competitive-gap.md](./competitive-gap.md)）。
 ## 進め方メモ
 
 - 設計矛盾時は `project.md` / `competitive-gap.md` 優先
-- **次:** Avalonia（Must 全 Done）
+- **次:** [task_phase34.md](./task_phase34.md)（SampleTodoApp）→ Avalonia

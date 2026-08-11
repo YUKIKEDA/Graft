@@ -16,6 +16,9 @@
     <Project Path="tests/Graft.Protocol.Tests/Graft.Protocol.Tests.csproj" />
   </Folder>
   <Folder Name="/tests/sample-apps/">
+    <Project Path="tests/sample-apps/SampleTodoApp/SampleTodoApp.csproj" />
+    <Project Path="tests/sample-apps/SampleTodoApp.Tests/SampleTodoApp.Tests.csproj" />
+    <Project Path="tests/sample-apps/SampleTodoApp.FlaUI.Tests/SampleTodoApp.FlaUI.Tests.csproj" />
     <Project Path="tests/sample-apps/SampleWpfApp/SampleWpfApp.csproj" />
     <Project Path="tests/sample-apps/SampleWpfApp.Tests/SampleWpfApp.Tests.csproj" />
   </Folder>
