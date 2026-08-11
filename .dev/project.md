@@ -361,7 +361,7 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Phase 28 | DataGrid 残り                                        | Template/セル選択/行キー/ソート/行 CRUD    |
 | Phase 29a | 入力・トグル・キー穴                                | V03/V05/T03/T04/K03/K04                    |
 | Phase 29b | リスト / その他 UI 穴                               | L04/L06/C01/C03–C06                        |
-| Phase 31 | SendInput 並列対策                                   | X04（`Local\Graft.UiSession`）             |
+| Phase 31 | SendInput 並列対策                                   | X04。正本は `-m:1`（mutex 見送り）         |
 | （次）   | Avalonia（Must 完了後）                              | 対照表: `competitive-gap.md`。Inspector 任意 |
 
 ## 9. 未検討・今後の課題
@@ -379,7 +379,7 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - .NET Framework WPF 対応の要否（需要が固まってから）
 - 多言語バインディング / gRPC（v1 スコープ外。再検討は操作モデル安定後）
 - （参考・不採用）プロセス注入方式の AV/EDR・コード署名問題は、事前組み込みへの変更で実質解消
-- **テスト並列と SendInput:** `Application.LaunchAsync` が `Local\Graft.UiSession` をセッション寿命で保持（Phase 31 / X04）。キュー待ちは既定 15 分。アセンブリ内は従来どおり `SampleUiCollection` / `McpUiCollection`。補助: `dotnet test Graft.slnx -m:1`
+- **テスト並列と SendInput:** `SampleUiCollection` / `McpUiCollection` はアセンブリ内直列化のみ。`dotnet test Graft.slnx` を並列のまま回すと Core / Sample / MCP が同時に SampleWpfApp を起動し、SendInput（click / keys / chord / rightClick）がフォーカス競合でフレークしうる（症状例: PressKeys 後に `ello` 残存、SendKeys 空振り、ContextMenu が開かず MenuItem 待ちタイムアウト）。**正本: `dotnet test Graft.slnx -m:1`**（または UI 系プロジェクトを順実行）。プロセス横断 mutex の試作は前景確保不足で見送り（[task_phase31.md](./task_phase31.md)）
 
 ## 10. 設計決定ログ
 
@@ -523,4 +523,4 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q134 | Phase 28: Template/SelectCell/SelectRow/ClickColumnHeader/AddRow/DeleteSelectedRows。G09=ソート UI のみ。`task_phase28.md` |
 | Q135 | Phase 29a: Password Set / RichText 平文 / Radio·Toggle checked / ExpectFocused / F+NumPad（Win 除外）。29b=L04/L06/C01/C03–C06。`task_phase29.md` |
 | Q136 | Phase 29b: DatePicker yyyy-MM-dd / ComboBox Expand / ListView GridView Read / ExpectToolTip / ToolBar·StatusBar Sample / Popup 開時合流 / Hyperlink Click。`task_phase29.md` |
-| Q137 | Phase 31: `LaunchAsync`〜Dispose で `Local\Graft.UiSession`。キュー待ち=既定15分（Launch timeout と長い方）/ Abandoned 引き継ぎ / Connect 除外。`-m:1` は補助。`task_phase31.md` |
+| Q137 | Phase 31: 全解の正本は `-m:1`。named mutex 試作は前景不足で見送り。`task_phase31.md` |

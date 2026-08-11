@@ -371,14 +371,6 @@ internal static class WpfVisualTreeWalker
             return;
         }
 
-        // Open Menu bar submenu: same idea — Items walk only. Visual/Popup walk would
-        // duplicate MenuItem nodes (Phase 20 + Phase 29b open-Popup merge).
-        if (parent is MenuItem { IsSubmenuOpen: true } openSubmenu)
-        {
-            WalkMenuItems(openSubmenu, state, onFrameworkChild);
-            return;
-        }
-
         var childCount = VisualTreeHelper.GetChildrenCount(parent);
         for (var i = 0; i < childCount; i++)
         {
@@ -431,6 +423,12 @@ internal static class WpfVisualTreeWalker
         )
         {
             state.Truncated = true;
+        }
+
+        // Open Menu bar submenu also lives in a Popup (Phase 20).
+        if (parent is MenuItem { IsSubmenuOpen: true } openSubmenu)
+        {
+            WalkMenuItems(openSubmenu, state, onFrameworkChild);
         }
     }
 

@@ -16,16 +16,13 @@ public sealed class GraftSession : IAsyncDisposable
 {
     private readonly Process _process;
     private readonly AgentConnection _connection;
-    private readonly UiSessionLock _uiSessionLock;
     private readonly OperationLog _operationLog = new();
     private bool _disposed;
 
-    internal GraftSession(Process process, AgentConnection connection, UiSessionLock uiSessionLock)
+    internal GraftSession(Process process, AgentConnection connection)
     {
-        ArgumentNullException.ThrowIfNull(uiSessionLock);
         _process = process;
         _connection = connection;
-        _uiSessionLock = uiSessionLock;
     }
 
     /// <summary>
@@ -484,7 +481,6 @@ public sealed class GraftSession : IAsyncDisposable
         {
             TryKill(_process);
             _process.Dispose();
-            _uiSessionLock.Dispose();
         }
     }
 

@@ -23,9 +23,9 @@ dotnet tool restore
 dotnet csharpier format .
 dotnet build Graft.slnx
 dotnet test tests/sample-apps/SampleWpfApp.Tests
-# Full solution: LaunchAsync holds Local\Graft.UiSession (Phase 31 / X04).
-# Optional insurance if a machine still flakes: -m:1. See .dev/project.md §9.
-dotnet test Graft.slnx
+# Full solution: SendInput UI tests flake under cross-assembly parallel launches.
+# Required: -m:1 (or run UI projects sequentially). See .dev/project.md §9 / task_phase31.md.
+dotnet test Graft.slnx -m:1
 ```
 
 ## Commit style (summary)
