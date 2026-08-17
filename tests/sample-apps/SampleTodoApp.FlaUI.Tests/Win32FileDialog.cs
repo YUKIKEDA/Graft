@@ -111,10 +111,7 @@ internal static class Win32FileDialog
         Thread.Sleep(200);
 
         var open =
-            SafeFind(
-                dialog,
-                cf => cf.ByControlType(ControlType.Button).And(cf.ByName("開く(O)"))
-            )
+            SafeFind(dialog, cf => cf.ByControlType(ControlType.Button).And(cf.ByName("開く(O)")))
             ?? SafeFind(dialog, cf => cf.ByControlType(ControlType.Button).And(cf.ByName("開く")))
             ?? SafeFind(dialog, cf => cf.ByControlType(ControlType.Button).And(cf.ByName("Open")));
 

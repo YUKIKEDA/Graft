@@ -20,7 +20,9 @@ public sealed class ItemDetailViewModel : IDisposable
             .Select(static t => !string.IsNullOrWhiteSpace(t))
             .ToReactiveCommand(_ => Save())
             .AddTo(ref _disposables);
-        CancelCommand = new ReactiveCommand(_ => DialogResult.Value = false).AddTo(ref _disposables);
+        CancelCommand = new ReactiveCommand(_ => DialogResult.Value = false).AddTo(
+            ref _disposables
+        );
     }
 
     public TodoItem Item { get; }

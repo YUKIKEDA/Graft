@@ -1343,7 +1343,8 @@ public sealed partial class GraftAtomicTools
     )]
     public partial Task<CallToolResult> Screenshot(
         [Description("Destination PNG path (optional; temp when omitted).")] string? path = null,
-        [Description("Optional automationId to clip; window when omitted.")] string? automationId = null,
+        [Description("Optional automationId to clip; window when omitted.")]
+            string? automationId = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(

@@ -81,11 +81,7 @@ public sealed class OperationTimelineTests
             var windowPng = new byte[] { 0x89, (byte)'P', (byte)'N', (byte)'G', 9, 9, 9 };
             var clipPng = new byte[] { 0x89, (byte)'P', (byte)'N', (byte)'G', 1, 2, 3 };
             var timeline = new OperationTimeline(
-                new TimelineOptions
-                {
-                    OutputDirectory = dir,
-                    Retention = TimelineRetention.Always,
-                },
+                new TimelineOptions { OutputDirectory = dir, Retention = TimelineRetention.Always },
                 _ =>
                 {
                     captures++;

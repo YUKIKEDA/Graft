@@ -95,10 +95,9 @@ internal sealed class OperationTimeline
 
         try
         {
-            var png =
-                pngBytes is { Length: > 0 }
-                    ? pngBytes
-                    : await _capturePng(cancellationToken).ConfigureAwait(false);
+            var png = pngBytes is { Length: > 0 }
+                ? pngBytes
+                : await _capturePng(cancellationToken).ConfigureAwait(false);
             if (png is null || png.Length == 0)
             {
                 return;

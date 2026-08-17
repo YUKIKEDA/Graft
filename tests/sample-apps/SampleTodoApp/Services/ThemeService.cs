@@ -20,10 +20,7 @@ public sealed class ThemeService
 
         var theme = new ResourceDictionary
         {
-            Source = new Uri(
-                isDark ? "Themes/Dark.xaml" : "Themes/Light.xaml",
-                UriKind.Relative
-            ),
+            Source = new Uri(isDark ? "Themes/Dark.xaml" : "Themes/Light.xaml", UriKind.Relative),
         };
 
         // Replace in place — Clear() briefly drops styles and causes half-light flashes.
@@ -63,10 +60,7 @@ public sealed class ThemeService
             }
 
             var value = isDark ? 1 : 0;
-            if (
-                DwmSetWindowAttribute(hwnd, DwmwaUseImmersiveDarkMode, ref value, sizeof(int))
-                != 0
-            )
+            if (DwmSetWindowAttribute(hwnd, DwmwaUseImmersiveDarkMode, ref value, sizeof(int)) != 0)
             {
                 DwmSetWindowAttribute(
                     hwnd,

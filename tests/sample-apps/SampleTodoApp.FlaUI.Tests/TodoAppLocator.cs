@@ -58,10 +58,7 @@ internal static class TodoAppLocator
 
         if (!File.Exists(exe))
         {
-            throw new FileNotFoundException(
-                "SampleTodoApp.exe not found after Debug build.",
-                exe
-            );
+            throw new FileNotFoundException("SampleTodoApp.exe not found after Debug build.", exe);
         }
 
         return exe;
@@ -78,7 +75,9 @@ internal static class TodoAppLocator
             RedirectStandardError = true,
             CreateNoWindow = true,
         };
-        using var process = Process.Start(psi) ?? throw new InvalidOperationException("dotnet build failed to start.");
+        using var process =
+            Process.Start(psi)
+            ?? throw new InvalidOperationException("dotnet build failed to start.");
         process.WaitForExit();
         if (process.ExitCode != 0)
         {
