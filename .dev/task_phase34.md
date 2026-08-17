@@ -60,4 +60,4 @@
 ## 進め方メモ
 
 - 設計矛盾時は本ファイル / `project.md` 優先
-- **次:** Avalonia
+- **次:** [task_phase35.md](./task_phase35.md)（P02 要素クリップ。Must 昇格）。Avalonia はその後

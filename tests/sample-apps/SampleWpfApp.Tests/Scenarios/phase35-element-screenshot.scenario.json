@@ -1,0 +1,17 @@
+{
+  "v": 1,
+  "name": "phase35-element-screenshot",
+  "steps": [
+    {
+      "action": "launch",
+      "appPath": "SampleWpfApp.csproj",
+      "configuration": "GraftTest",
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "screenshot",
+      "automationId": "SampleButton",
+      "path": "Artifacts/phase35-element-screenshot.png"
+    }
+  ]
+}

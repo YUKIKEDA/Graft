@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Elements;
 using Graft.Instrumentation.Screenshot;
@@ -30,6 +31,7 @@ public sealed class WpfUiCaptureTests
     ///
     /// Steps:
     /// - Call GetTree / screenshot / resolve as before
+    /// - Capture SampleButton clip, collapsed empty clip, open Popup opener+child clips, open ToolTip node clip, ancestor clip with ToolTip, window with open ToolTip, runtimeId after open ToolTip, window with open ContextMenu
     /// - Invoke SampleButton then GetTree StatusText
     /// - setValue SampleTextBox then GetTree name
     /// - Toggle SampleCheckBox then expect name On
@@ -38,6 +40,7 @@ public sealed class WpfUiCaptureTests
     ///
     /// Expected:
     /// - SampleButton name/bounds and PNG signature as before
+    /// - Element clip smaller than window; collapsed → notActionable; Popup/ToolTip/ContextMenu overlays have PNG signature
     /// - After invoke, StatusText name is "Clicked 1"
     /// - After setValue, SampleTextBox name matches the set text
     /// - After toggle, SampleCheckBox name is On
@@ -84,6 +87,233 @@ public sealed class WpfUiCaptureTests
                 capture.PngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature),
                 "Expected PNG signature on captured bytes."
             );
+
+            var buttonClip = screenshotProvider.Capture(
+                new ScreenshotOptions
+                {
+                    Selector = new ElementSelector { AutomationId = "SampleButton" },
+                }
+            );
+            Assert.Equal("png", buttonClip.Meta.Format);
+            Assert.True(buttonClip.Meta.Width > 0);
+            Assert.True(buttonClip.Meta.Height > 0);
+            Assert.True(
+                buttonClip.Meta.Width < capture.Meta.Width
+                    || buttonClip.Meta.Height < capture.Meta.Height,
+                "Element clip should be smaller than the window screenshot."
+            );
+            Assert.True(
+                buttonClip.PngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature),
+                "Expected PNG signature on element clip."
+            );
+
+            var collapsed = new Button { Content = "Hidden", Visibility = Visibility.Collapsed };
+            AutomationProperties.SetAutomationId(collapsed, "CollapsedShotButton");
+            ((StackPanel)window.Content).Children.Add(collapsed);
+            window.UpdateLayout();
+            var emptyClip = Assert.Throws<ElementActionException>(() =>
+                screenshotProvider.Capture(
+                    new ScreenshotOptions
+                    {
+                        Selector = new ElementSelector { AutomationId = "CollapsedShotButton" },
+                    }
+                )
+            );
+            Assert.Equal(GraftErrorCodes.ElementNotActionable, emptyClip.Code);
+
+            var popupHost = new Button
+            {
+                Content = "OpenPopup",
+                Width = 80,
+                Height = 32,
+            };
+            AutomationProperties.SetAutomationId(popupHost, "PopupShotOpener");
+            var popupButton = new Button
+            {
+                Content = "InPopup",
+                Width = 72,
+                Height = 28,
+            };
+            AutomationProperties.SetAutomationId(popupButton, "PopupShotButton");
+            var popup = new System.Windows.Controls.Primitives.Popup
+            {
+                PlacementTarget = popupHost,
+                Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom,
+                StaysOpen = true,
+                Child = new Border
+                {
+                    Background = System.Windows.Media.Brushes.White,
+                    Padding = new Thickness(8),
+                    Child = popupButton,
+                },
+            };
+            var popupGrid = new Grid();
+            popupGrid.Children.Add(popupHost);
+            popupGrid.Children.Add(popup);
+            ((StackPanel)window.Content).Children.Add(popupGrid);
+            window.UpdateLayout();
+            var openerClosed = screenshotProvider.Capture(
+                new ScreenshotOptions
+                {
+                    Selector = new ElementSelector { AutomationId = "PopupShotOpener" },
+                }
+            );
+            popup.IsOpen = true;
+            window.UpdateLayout();
+            window.Dispatcher.Invoke(() => { }, DispatcherPriority.Background);
+            var openerClip = screenshotProvider.Capture(
+                new ScreenshotOptions
+                {
+                    Selector = new ElementSelector { AutomationId = "PopupShotOpener" },
+                }
+            );
+            Assert.True(openerClip.Meta.Width > 0);
+            Assert.True(openerClip.Meta.Height > 0);
+            Assert.True(
+                openerClip.PngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature),
+                "Expected PNG signature on opener clip with popup."
+            );
+            Assert.True(
+                openerClip.Meta.Width > openerClosed.Meta.Width
+                    || openerClip.Meta.Height > openerClosed.Meta.Height,
+                "Open Popup targeting the opener should be composited into the opener clip."
+            );
+            var popupClip = screenshotProvider.Capture(
+                new ScreenshotOptions
+                {
+                    Selector = new ElementSelector { AutomationId = "PopupShotButton" },
+                }
+            );
+            Assert.True(popupClip.Meta.Width > 0);
+            Assert.True(popupClip.Meta.Height > 0);
+            Assert.True(
+                popupClip.PngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature),
+                "Expected PNG signature on popup clip."
+            );
+
+            var tipSection = new StackPanel { Margin = new Thickness(8) };
+            AutomationProperties.SetAutomationId(tipSection, "TipShotSection");
+            tipSection.Children.Add(new TextBlock { Text = "Tip section" });
+            var tipHost = new Button { Content = "TipHost" };
+            AutomationProperties.SetAutomationId(tipHost, "TipShotHost");
+            var tip = new ToolTip { Content = "HelloTip" };
+            tipHost.ToolTip = tip;
+            tipSection.Children.Add(tipHost);
+            ((StackPanel)window.Content).Children.Add(tipSection);
+            window.UpdateLayout();
+            tip.IsOpen = true;
+            window.UpdateLayout();
+            var treeWithTip = treeProvider.GetTree(new GetTreeOptions());
+            var tipHostNode = FindByAutomationId(treeWithTip.Root, "TipShotHost");
+            Assert.NotNull(tipHostNode);
+            var tipNode = FindByControlType(tipHostNode, "ToolTip");
+            Assert.NotNull(tipNode);
+            Assert.Equal("HelloTip", tipNode.Name);
+            var tipClip = screenshotProvider.Capture(
+                new ScreenshotOptions
+                {
+                    Selector = new ElementSelector { RuntimeId = tipNode.RuntimeId },
+                }
+            );
+            Assert.True(tipClip.Meta.Width > 0);
+            Assert.True(tipClip.Meta.Height > 0);
+            Assert.True(
+                tipClip.PngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature),
+                "Expected PNG signature on tooltip clip."
+            );
+            var sectionClip = screenshotProvider.Capture(
+                new ScreenshotOptions
+                {
+                    Selector = new ElementSelector { AutomationId = "TipShotSection" },
+                }
+            );
+            Assert.True(sectionClip.Meta.Width > 0);
+            Assert.True(sectionClip.Meta.Height > 0);
+            Assert.True(
+                sectionClip.Meta.Width > tipClip.Meta.Width
+                    || sectionClip.Meta.Height > tipClip.Meta.Height,
+                "Ancestor clip should be larger than the tooltip composite."
+            );
+            Assert.True(
+                sectionClip.PngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature),
+                "Expected PNG signature on ancestor clip with tooltip."
+            );
+            var windowWithTip = screenshotProvider.Capture(ScreenshotOptions.Default);
+            Assert.True(windowWithTip.Meta.Width > 0);
+            Assert.True(windowWithTip.Meta.Height > 0);
+            Assert.True(
+                windowWithTip.PngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature),
+                "Expected PNG signature on window screenshot with tooltip."
+            );
+
+            var afterTip = new Button { Content = "AfterTip" };
+            AutomationProperties.SetAutomationId(afterTip, "AfterOpenTip");
+            ((StackPanel)window.Content).Children.Add(afterTip);
+            window.UpdateLayout();
+            var treeAfterTip = treeProvider.GetTree(new GetTreeOptions());
+            var afterTipNode = FindByAutomationId(treeAfterTip.Root, "AfterOpenTip");
+            Assert.NotNull(afterTipNode);
+            var afterById = screenshotProvider.Capture(
+                new ScreenshotOptions
+                {
+                    Selector = new ElementSelector { AutomationId = "AfterOpenTip" },
+                }
+            );
+            var afterByRuntime = screenshotProvider.Capture(
+                new ScreenshotOptions
+                {
+                    Selector = new ElementSelector { RuntimeId = afterTipNode.RuntimeId },
+                }
+            );
+            Assert.Equal(afterById.Meta.Width, afterByRuntime.Meta.Width);
+            Assert.Equal(afterById.Meta.Height, afterByRuntime.Meta.Height);
+
+            var menuHost = new Button
+            {
+                Content = "MenuHost",
+                Width = 96,
+                Height = 32,
+            };
+            AutomationProperties.SetAutomationId(menuHost, "ContextMenuShotHost");
+            var contextMenu = new ContextMenu();
+            contextMenu.Items.Add(new MenuItem { Header = "ShotPing" });
+            menuHost.ContextMenu = contextMenu;
+            ((StackPanel)window.Content).Children.Add(menuHost);
+            window.UpdateLayout();
+            var hostOnly = screenshotProvider.Capture(
+                new ScreenshotOptions
+                {
+                    Selector = new ElementSelector { AutomationId = "ContextMenuShotHost" },
+                }
+            );
+            contextMenu.IsOpen = true;
+            window.UpdateLayout();
+            window.Dispatcher.Invoke(() => { }, DispatcherPriority.Background);
+            var hostWithMenu = screenshotProvider.Capture(
+                new ScreenshotOptions
+                {
+                    Selector = new ElementSelector { AutomationId = "ContextMenuShotHost" },
+                }
+            );
+            Assert.True(hostWithMenu.Meta.Width > 0);
+            Assert.True(hostWithMenu.Meta.Height > 0);
+            Assert.True(
+                hostWithMenu.PngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature),
+                "Expected PNG signature on host clip with context menu."
+            );
+            Assert.True(
+                hostWithMenu.Meta.Width > hostOnly.Meta.Width
+                    || hostWithMenu.Meta.Height > hostOnly.Meta.Height,
+                "Open ContextMenu should be composited with its host, not host-only."
+            );
+            var windowWithMenu = screenshotProvider.Capture(ScreenshotOptions.Default);
+            Assert.True(windowWithMenu.Meta.Width > 0);
+            Assert.True(windowWithMenu.Meta.Height > 0);
+            Assert.True(
+                windowWithMenu.PngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature),
+                "Expected PNG signature on window screenshot with context menu."
+            );
+            contextMenu.IsOpen = false;
 
             var resolver =
                 AgentServices.ElementResolver
@@ -240,6 +470,25 @@ public sealed class WpfUiCaptureTests
         foreach (var child in node.Children)
         {
             var match = FindByAutomationId(child, automationId);
+            if (match is not null)
+            {
+                return match;
+            }
+        }
+
+        return null;
+    }
+
+    private static TreeNode? FindByControlType(TreeNode node, string controlType)
+    {
+        if (string.Equals(node.ControlType, controlType, StringComparison.Ordinal))
+        {
+            return node;
+        }
+
+        foreach (var child in node.Children)
+        {
+            var match = FindByControlType(child, controlType);
             if (match is not null)
             {
                 return match;

@@ -32,7 +32,8 @@ public static class ProtocolMethods
     public const string InvokeOpeningWindow = "invokeOpeningWindow";
 
     /// <summary>
-    /// Captures a window screenshot: JSON meta result followed by a raw PNG frame.
+    /// Captures a window or element screenshot: JSON meta result followed by a raw PNG frame.
+    /// Optional <c>params.automationId</c> / <c>params.runtimeId</c> clip to that element.
     /// </summary>
     public const string Screenshot = "screenshot";
 

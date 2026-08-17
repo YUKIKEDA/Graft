@@ -329,43 +329,44 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 
 ### 実装フェーズと優先順位
 
-| フェーズ | 内容                                                 | 位置づけ                                   |
-| -------- | ---------------------------------------------------- | ------------------------------------------ |
-| Phase 1  | Instrumentation 本体 + スクショ + 原子的操作コマンド | 基盤。Wait/Expect は Core                  |
-| Phase 2  | 構造化失敗診断 + 宣言的 JSON シナリオ                | LLM が使える中核。操作モデルを Core に集約 |
-| Phase 3  | `Graft.McpServer`                                    | Phase 1〜2 の薄い公開層                    |
-| Phase 4  | 自己修復セレクタ                                     | Core 側で精度を磨き込む                    |
-| Phase 5  | WPF 残アクション（scroll / select / expand）         | 仮想化対応を含む操作面の穴埋め             |
-| Phase 6  | ツリー状態（`selected` / `expanded`）+ Expect        | 診断・LLM。Phase 5 操作の状態検証          |
-| Phase 7  | ウィンドウ／モーダル（list/switch/wait/開封）        | WPF カバレッジ。競合ギャップの窓面         |
-| Phase 8  | DataGrid 行中心 MVP + `checked`                      | 複雑ホスト UI。セル R/W は次フェーズ       |
-| Phase 9  | DataGrid セル R/W（Text 列 MVP）                     | ホスト＋(row, col)。OS ダイアログは次      |
-| Phase 10 | OpenFile ダイアログ・シーム（方針 + MVP）            | Arm + Harmony CommonItemDialog.RunDialog   |
-| Phase 11 | SaveFile ダイアログ・シーム（OpenFile 同型 MVP）     | Arm + 同一 RunDialog パッチ（Save のみ）   |
-| Phase 12 | OpenFolder ダイアログ・シーム（同型 MVP）            | Arm + 同一 RunDialog（`FolderName`）       |
-| Phase 13 | MessageBox シーム（Runtime MVP）                     | Arm + Harmony `MessageBox.Show`            |
-| Phase 14 | キー chord / 特殊キー（`pressKeys`）                 | `PressAsync`。Avalonia は後ろへ            |
-| Phase 15 | 公開 Screenshot（Session / Scenario / MCP）          | 既存 wire を第一級化。要素クリップは含めない |
-| Phase 16 | 右クリック + ContextMenu / MenuItem                  | `RightClickAsync` + 開いたメニューをツリーに |
-| Phase 17 | TabControl 選択（`select` 拡張）                     | 既存 `SelectAsync(index)`。Slider 等は次   |
-| Phase 18 | Slider 値設定（`setValue` 拡張）                     | Invariant double → `Slider.Value`。複数選択は次 |
-| Phase 19 | ListBox 複数選択（`selectMany`）                     | 置換セマンティクス。DataGrid 複数行は含めない |
-| Phase 20 | Menu バー（既存 `invoke`）                           | トップ+1段サブ。開いたサブをツリーに       |
-| Phase 21 | DataGrid 列キー + CheckBox 列                        | Header `columnKey`。複数行選択は次         |
-| Phase 22 | DataGrid 複数行選択（`selectMany` 拡張）             | Extended + FullRow。次はギャップ洗い出し   |
-| Phase 23 | 競合シナリオ対照表（WPF Must 洗い出し）              | 文書のみ。Must 確定。Avalonia は Must 後   |
-| Phase 24 | 待ち / Expect / 画面遷移・進捗                       | Wait/Expect 強化 + value + 進捗 Sample     |
-| Phase 25 | マウス高度                                           | dbl/hover/drag/clickAt/wheel（SendInput）  |
-| Phase 26 | メニュー深さ                                         | `SelectMenuAsync` / ContextMenu サブ / U04 |
-| Phase 27 | 探索・パス・キー指定                                 | GetByName/相対/Select key/SelectTree       |
-| Phase 28 | DataGrid 残り                                        | Template/セル選択/行キー/ソート/行 CRUD    |
-| Phase 29a | 入力・トグル・キー穴                                | V03/V05/T03/T04/K03/K04                    |
-| Phase 29b | リスト / その他 UI 穴                               | L04/L06/C01/C03–C06                        |
-| Phase 31 | SendInput 並列対策                                   | X04。正本 `-m:1` で Done（mutex 見送り）   |
-| Phase 32 | Frame 遷移（H02）                                    | Frame のみ。専用 DSL なし                  |
-| Phase 33 | 操作タイムライン（D06）                              | PNG 連番 + HTML。Must。GIF/FFmpeg なし     |
-| Phase 34 | SampleTodoApp（利用ガイド正本）                      | MVVM/DI/テーマ + 実 JSON E2E。Avalonia 前  |
-| （次）   | Avalonia（Phase 34 後）                              | 対照表: `competitive-gap.md`。Inspector 任意 |
+| フェーズ  | 内容                                                 | 位置づけ                                                   |
+| --------- | ---------------------------------------------------- | ---------------------------------------------------------- |
+| Phase 1   | Instrumentation 本体 + スクショ + 原子的操作コマンド | 基盤。Wait/Expect は Core                                  |
+| Phase 2   | 構造化失敗診断 + 宣言的 JSON シナリオ                | LLM が使える中核。操作モデルを Core に集約                 |
+| Phase 3   | `Graft.McpServer`                                    | Phase 1〜2 の薄い公開層                                    |
+| Phase 4   | 自己修復セレクタ                                     | Core 側で精度を磨き込む                                    |
+| Phase 5   | WPF 残アクション（scroll / select / expand）         | 仮想化対応を含む操作面の穴埋め                             |
+| Phase 6   | ツリー状態（`selected` / `expanded`）+ Expect        | 診断・LLM。Phase 5 操作の状態検証                          |
+| Phase 7   | ウィンドウ／モーダル（list/switch/wait/開封）        | WPF カバレッジ。競合ギャップの窓面                         |
+| Phase 8   | DataGrid 行中心 MVP + `checked`                      | 複雑ホスト UI。セル R/W は次フェーズ                       |
+| Phase 9   | DataGrid セル R/W（Text 列 MVP）                     | ホスト＋(row, col)。OS ダイアログは次                      |
+| Phase 10  | OpenFile ダイアログ・シーム（方針 + MVP）            | Arm + Harmony CommonItemDialog.RunDialog                   |
+| Phase 11  | SaveFile ダイアログ・シーム（OpenFile 同型 MVP）     | Arm + 同一 RunDialog パッチ（Save のみ）                   |
+| Phase 12  | OpenFolder ダイアログ・シーム（同型 MVP）            | Arm + 同一 RunDialog（`FolderName`）                       |
+| Phase 13  | MessageBox シーム（Runtime MVP）                     | Arm + Harmony `MessageBox.Show`                            |
+| Phase 14  | キー chord / 特殊キー（`pressKeys`）                 | `PressAsync`。Avalonia は後ろへ                            |
+| Phase 15  | 公開 Screenshot（Session / Scenario / MCP）          | 既存 wire を第一級化。要素クリップは含めない               |
+| Phase 16  | 右クリック + ContextMenu / MenuItem                  | `RightClickAsync` + 開いたメニューをツリーに               |
+| Phase 17  | TabControl 選択（`select` 拡張）                     | 既存 `SelectAsync(index)`。Slider 等は次                   |
+| Phase 18  | Slider 値設定（`setValue` 拡張）                     | Invariant double → `Slider.Value`。複数選択は次            |
+| Phase 19  | ListBox 複数選択（`selectMany`）                     | 置換セマンティクス。DataGrid 複数行は含めない              |
+| Phase 20  | Menu バー（既存 `invoke`）                           | トップ+1段サブ。開いたサブをツリーに                       |
+| Phase 21  | DataGrid 列キー + CheckBox 列                        | Header `columnKey`。複数行選択は次                         |
+| Phase 22  | DataGrid 複数行選択（`selectMany` 拡張）             | Extended + FullRow。次はギャップ洗い出し                   |
+| Phase 23  | 競合シナリオ対照表（WPF Must 洗い出し）              | 文書のみ。Must 確定。Avalonia は Must 後                   |
+| Phase 24  | 待ち / Expect / 画面遷移・進捗                       | Wait/Expect 強化 + value + 進捗 Sample                     |
+| Phase 25  | マウス高度                                           | dbl/hover/drag/clickAt/wheel（SendInput）                  |
+| Phase 26  | メニュー深さ                                         | `SelectMenuAsync` / ContextMenu サブ / U04                 |
+| Phase 27  | 探索・パス・キー指定                                 | GetByName/相対/Select key/SelectTree                       |
+| Phase 28  | DataGrid 残り                                        | Template/セル選択/行キー/ソート/行 CRUD                    |
+| Phase 29a | 入力・トグル・キー穴                                 | V03/V05/T03/T04/K03/K04                                    |
+| Phase 29b | リスト / その他 UI 穴                                | L04/L06/C01/C03–C06                                        |
+| Phase 31  | SendInput 並列対策                                   | X04。正本 `-m:1` で Done（mutex 見送り）                   |
+| Phase 32  | Frame 遷移（H02）                                    | Frame のみ。専用 DSL なし                                  |
+| Phase 33  | 操作タイムライン（D06）                              | PNG 連番 + HTML。Must。GIF/FFmpeg なし                     |
+| Phase 34  | SampleTodoApp（利用ガイド正本）                      | MVVM/DI/テーマ + 実 JSON E2E。Avalonia 前                  |
+| Phase 35  | 要素クリップ Screenshot（P02）                       | Must。窓クリップ + Popup RTB + ToolTip ノード。開時 overlay はホスト合成。Avalonia 前 |
+| （次）    | Avalonia（Phase 35 後）                              | 対照表: `competitive-gap.md`。Inspector 任意               |
 
 ## 9. 未検討・今後の課題
 
@@ -377,7 +378,7 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 - scroll/select の項目キー・表示名指定（index 正本の次候補）
 - 実 OS コモンダイアログの UIA 操作（方針上非採用。必要なら別検討）
 - WPF 競合ギャップ（正本: [competitive-gap.md](./competitive-gap.md)。Must 確定済み → Phase 24+）
-- Avalonia アダプタ（**残 Must = H02・D06 完了後**）。Inspector は任意（自社アプリでは getTree で代替しやすい）
+- Avalonia アダプタ（**残 Must なし。Phase 35 / P02 Done 後に解禁**）。Inspector は任意（自社アプリでは getTree で代替しやすい）
 - MessagePack 評価用の実測ログ形式
 - .NET Framework WPF 対応の要否（需要が固まってから）
 - 多言語バインディング / gRPC（v1 スコープ外。再検討は操作モデル安定後）
@@ -388,147 +389,148 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 
 設計詰め（grill）で合意した事項。本文と矛盾する場合は本節および反映済み本文を正とする。
 
-| ID  | 決定                                                                                              |
-| --- | ------------------------------------------------------------------------------------------------- |
-| Q1  | 初期ランタイムは .NET 8+ の WPF/Avalonia のみ。.NET Framework WPF は需要後                        |
-| Q2  | Instrumentation は共有コア + `.Wpf` / `.Avalonia` に分割                                          |
-| Q3  | 有効化は `GRAFT_TEST`（コンパイル）+ Analyzer エラー + 実行時オプトイン                           |
-| Q4  | 実行時オプトインは環境変数（ランナーが付与）                                                      |
-| Q5  | パイプ名はランナー生成 → `GRAFT_PIPE_NAME` で渡す                                                 |
-| Q6  | プロセス寿命はデフォルト起動→終了。再利用はオプトイン                                             |
-| Q7  | 公開セレクタは複合キー。runtimeId は内部ハンドル                                                  |
-| Q8  | Fluent / Scenario / MCP は同じ内部操作モデルへ。唯一の正本は置かない                              |
-| Q9  | 宣言的シナリオの正本は JSON。YAML は後回し                                                        |
-| Q10 | Scenario は Core 内。MCP のみ `Graft.McpServer` に分離                                            |
-| Q11 | 自己修復は Core。Instrumentation はツリーとヒント提供                                             |
-| Q12 | 条件付き参照を推奨。常時参照も可。Analyzer + シンボル + 環境変数が最低ライン                      |
-| Q13 | マルチウィンドウを API 初期から設計。Phase 1 実装はメインから                                     |
-| Q14 | UI 操作はディスパッチャへマーシャリングし同期・直列                                               |
-| Q15 | actionable 待ち + Expect 正本。イベント優先、なければポーリング                                   |
-| Q16 | フレーミングは 4byte 長さプレフィックス + ボディ                                                  |
-| Q17 | スクショデフォルトはウィンドウ PNG。JPEG/クロップはオプション                                     |
-| Q18 | バイナリは JSON メタの後続 raw フレーム                                                           |
-| Q19 | パイプ ACL は同一ユーザー。版 + CONNECT_TOKEN でハンドシェイク                                    |
-| Q20 | 共通エンベロープ `{v,id,method,params}` / `{v,id,ok,result\|error}`                               |
-| Q21 | `GRAFT_TEST` 外は Start API 消去 + 呼び出し Analyzer エラー。DEBUG 判定は使わない                 |
-| Q22 | 失敗診断は最小必須 + 標準添付デフォルト。自己修復候補は Phase 4 任意                              |
-| Q23 | 仮想化は実現済みツリーがデフォルト。実現/スクロール API を別途                                    |
-| Q24 | Phase 1 エージェントは原子的操作まで。Wait/Expect は Core                                         |
-| Q25 | Phase 1 必須ツリー項目は B セット。パターン/値/セレクタ候補は完了条件外                           |
-| Q26 | タイムアウト既定: アクション 5s / Expect 10s / 起動+Handshake 30s                                 |
-| Q27 | CI はインタラクティブセッション前提。推奨セルフホスト構成を文書化。Graft は仮想ディスプレイ非提供 |
-| Q28 | Avalonia Headless とは相補。Graft は実プロセス E2E。Headless 対応は需要後                         |
-| Q29 | 環境変数: `GRAFT_ENABLE` / `GRAFT_PIPE_NAME` / `GRAFT_CONNECT_TOKEN`                              |
-| Q30 | 主経路は Launch。`Connect` は低レベル API                                                         |
-| Q31 | MessagePack は計測後検討。多言語/gRPC は v1 外                                                    |
-| Q32 | Core は FW 非依存。TestUtilities/サンプルは xUnit から                                            |
-| Q33 | Analyzer は Instrumentation.Wpf / .Avalonia から自動導入                                          |
-| Q34 | 本決定を section 10 に記録し、構成・着手順・本文へ反映                                            |
-| Q35 | Analyzer 判定は `GRAFT_TEST` 記号のみ。Configuration / `#if` 緩和は使わない                       |
-| Q36 | `Graft.props`/`targets` 本線（`GraftTest=true`）。README にコピー例も                             |
-| Q37 | GetTree はデフォルト上限＋`truncated`＋ depth/maxNodes/起点指定                                   |
-| Q38 | デフォルト 25/2,000。expanded 50/10,000                                                           |
-| Q39 | ツリー差分は初期 Core 側のみ。エージェント差分は後回し                                            |
-| Q40 | 論理操作はネイティブ → Peer → SendInput                                                           |
-| Q41 | Phase 1 完了は `invoke`+`setValue`。toggle/キー次点。scroll/select/expand は後続                  |
-| Q42 | MessagePack は計測＋仮閾値で評価。即切替しない                                                    |
-| Q43 | 単一クライアント。再接続＋Handshake 可                                                            |
-| Q44 | 外部座標はウィンドウクライアント論理 DIP。変換はエージェント内                                    |
-| Q45 | セレクタはスコアリング＋閾値。同点は ambiguous。ショートハンド別途                                |
-| Q46 | `error` は `{code,message,details?}`。安定コードを文書化                                          |
-| Q47 | `v` は整数。Handshake 完全一致。版交渉は後回し                                                    |
-| Q48 | Q35〜 を本文・section 9/10 へ即反映                                                               |
-| Q49 | セレクタ仮重み: automationId=100, name=40, controlType=15, 近傍パス=20, 閾値=60                   |
-| Q50 | 安定エラーコード初期セット（handshake/protocol/element/action/window/pipe/agent/expect/selector） |
-| Q51 | setValue はネイティブ置換優先、失敗時クリア+SendInput。append/typeHuman は後付け                  |
-| Q52 | SendInput クリックは Peer 点→中心。オフセットオプション可                                         |
-| Q53 | ツリー差分デフォルトは診断向け。JSON Patch は後回し                                               |
-| Q54 | Analyzer 必須は GRAFT001 Error のみ。追加ルールは後追い                                           |
-| Q55 | GraftTest=true が正本。Configuration=GraftTest はサンプル便利構成。Debug 紐づけなし               |
-| Q56 | よくある型は対応表、未知型は Peer→SendInput。ホワイトリスト制限なし                               |
-| Q57 | Q49〜反映後、最初の実装マイルストーン受け入れ条件を詰める                                         |
-| Q58 | マイルストーンを M0/M1/M2 の三段に分ける                                                          |
-| Q59 | M0 に GRAFT_TEST+環境変数+Analyzer。props/targets は M1                                           |
-| Q60 | M0 手動クライアントは `tools/Graft.SmokeClient`                                                   |
-| Q61 | M0 直結をあと数問してから閉じ、実装へ                                                             |
-| Q62 | SmokeClient は Launch と Connect 両方。M0 デモ正本は Launch                                       |
-| Q63 | Sample は Button + TextBox + クリックで変わる TextBlock                                           |
-| Q64 | 最初は M0 一式 + Directory.Build.props + tests 土台。空スケルトンは作らない                       |
-| Q65 | 実装は gitignore + 雛形から。M0 は task_m0.md の Batch 単位で進める                                |
-| Q66 | Phase 5: scrollIntoView / select / expand・collapse。詳細は `task_phase5.md`                      |
-| Q67 | Phase 6: TreeNode に `selected`/`expanded` を `bool?`（非該当は null/省略）。プロトコル v1 のまま  |
-| Q68 | selected は選択系のみ（項目ノード）。expanded は開閉対象（TreeViewItem/Expander）。checked は別途 |
-| Q69 | ExpectSelectedAsync / ExpectExpandedAsync。null は expect.failed。Scenario/MCP は薄い追従         |
-| Q70 | Phase 6 受け入れは ListBox 実現済み項目 + TreeViewItem。Combo 項目 Expect は完了条件外            |
-| Q71 | Phase 6 時点の次候補は Avalonia → Inspector だったが、Q72 で WPF カバレッジを先行に改訂           |
-| Q72 | Phase 7: マルチウィンドウ + WPF モーダル。Avalonia/Inspector は WPF カバレッジ後。詳細は `task_phase7.md` |
-| Q73 | 窓はセッション内 `windowId`。List/Switch。メタ: title/automationId/isModal/isActive。既定ターゲット切替 |
-| Q74 | ShowDialog 開封は `InvokeOpeningWindow`（BeginInvoke+出現待ち、既定自動 Switch）。素の Invoke は非対応 |
-| Q75 | WaitForWindow は title および／または automationId。全窓マージツリー・OS ダイアログ実装は含めない   |
-| Q76 | Phase 7 の次は OS ダイアログ方針 or 複雑 UI。Avalonia → Inspector は最後寄り                      |
-| Q77 | Phase 8: DataGrid **行中心 MVP** + 同一 Phase 最終 Batch で `checked`。詳細は `task_phase8.md`     |
-| Q78 | API は既存 `scrollIntoView` / `select`（ホスト＋index）。新 wire なし。Sample は FullRow+Single のみ |
-| Q79 | ツリーは実現済み `DataGridRow` + `selected`。行に安定 automationId。セル座標／編集／ソートは含めない |
-| Q80 | 公開は既存 Scenario ステップの薄い E2E。DataGrid 専用 MCP は作らない                               |
-| Q81 | Phase 8 の次は DataGrid **セル R/W**。OS ダイアログ・Avalonia・Inspector はさらに後               |
-| Q82 | Phase 9: DataGrid **セル R/W**（Text 列）。詳細は `task_phase9.md`                                |
-| Q83 | 指定はホスト＋(rowIndex, columnIndex)。API: GetCellText / SetCellValue / ExpectCellText + 同名 wire |
-| Q84 | 書込は BeginEdit→値→CommitEdit。列は DataGridTextColumn のみ。ツリーに DataGridCell は出さない     |
-| Q85 | Sample は FullRow+Single のまま編集可能 Text 列。Scenario/MCP 薄い追従                             |
-| Q86 | Phase 9 の次は **OS 共通ダイアログ方針**。列キー／他列種は後続                                     |
-| Q87 | Phase 10: OpenFile **Runtime シーム**（方針+MVP）。実 OS UIA はしない。詳細は `task_phase10.md`     |
-| Q88 | アプリは素の `OpenFileDialog`。Harmony で `CommonItemDialog.RunDialog` を差し替え。業務コードに Graft API なし |
-| Q89 | 事前 Arm（単一パス OK / Cancel、一回限り）。未アームは実ダイアログ。開封は `waitForNewWindow:false`   |
-| Q90 | Phase 10 の次は **SaveFile シーム**。Avalonia / Inspector は後ろ                                     |
-| Q91 | Phase 11: SaveFile **Runtime シーム**（OpenFile 同型）。詳細は `task_phase11.md`                      |
-| Q92 | 素の `SaveFileDialog`。同一 `CommonItemDialog.RunDialog` パッチ。`SaveFileArm` は OpenFile と独立      |
-| Q93 | `ArmSaveFile` / `ArmSaveFileCancel`、一回限り、`waitForNewWindow:false`。Scenario/MCP 薄い追従        |
-| Q94 | Phase 11 の次は **Folder シーム**。Avalonia / Inspector は後ろ                                        |
-| Q95 | Phase 12: OpenFolder **Runtime シーム**（Open/Save 同型）。詳細は `task_phase12.md`                   |
-| Q96 | 素の `OpenFolderDialog`。同一 `RunDialog` パッチ。結果は `FolderName`。`OpenFolderArm` は独立         |
-| Q97 | `ArmOpenFolder` / `ArmOpenFolderCancel`、一回限り、`waitForNewWindow:false`。Scenario/MCP 薄い追従    |
-| Q98 | Phase 12 の次は **MessageBox シーム**。Avalonia / Inspector は後ろ                                    |
-| Q99 | Phase 13: MessageBox **Runtime シーム**。詳細は `task_phase13.md`                                      |
-| Q100 | 素の `MessageBox.Show`。Harmony で主要オーバーロードを差し替え。業務コードに Graft API なし          |
-| Q101 | `ArmMessageBox(result)`（OK/Cancel/Yes/No/None）、一回限り、`waitForNewWindow:false`。Scenario/MCP   |
-| Q102 | Phase 13 の次は当初 Avalonia だったが、WPF 競合ギャップ埋めを優先（Q103）                            |
-| Q103 | Avalonia を後ろへ。Phase 14 は **キー chord**。次は Screenshot → 右クリック/Menu → … → Avalonia       |
-| Q104 | `PressAsync` / wire `pressKeys`。`sendKeys` はリテラルのまま。1 呼び出し = 1 chord、フォーカス付き   |
-| Q105 | DSL: `Control`/`Alt`/`Shift` + `A`–`Z`/`0`–`9`/Enter/Tab/Escape/Backspace/Delete/Space/Arrow*      |
-| Q106 | Sample E2E: TextBox SetValue → Control+A → Delete → Expect 空。詳細は `task_phase14.md`               |
-| Q107 | Phase 15 は **公開 Screenshot**。Fluent 戻りは meta+bytes の `Screenshot` + `SaveAsync`               |
-| Q108 | 対象は現在ターゲット窓のみ。Scenario は path 必須。MCP は path 任意（省略時 temp）                    |
-| Q109 | E2E: Fluent PNG シグネチャ+size / Scenario path 書き。画像 diff・要素クリップは含めない。`task_phase15.md` |
-| Q110 | Phase 16: `RightClickAsync` + 開いた ContextMenu をツリーに載せ MenuItem は既存 `invoke`               |
-| Q111 | 実装は SendInput 右クリック + flush。待ちは呼び出し側。Menu バー/サブメニューは含めない。`task_phase16.md` |
-| Q112 | Phase 17 は **TabControl** のみ。既存 `SelectAsync(index)` 拡張。ExpectSelected + StatusText。`task_phase17.md` |
-| Q113 | Scenario は既存 `select`。MCP 変更なし。Slider / 複数選択 / ヘッダー指定は含めない                              |
-| Q114 | Phase 18 は **Slider のみ**。既存 `SetValueAsync` / `setValue`。InvariantCulture double → `Slider.Value`。`task_phase18.md` |
-| Q115 | 検証は StatusText 副作用のみ（tree `value` なし）。Scenario 既存 `setValue`。MCP 変更なし。複数選択は含めない   |
-| Q116 | Phase 19: ListBox のみ。新 `SelectManyAsync` / wire `selectMany`（置換、空 indexes=クリア）。`task_phase19.md`          |
-| Q117 | Sample は別 `SampleMultiList`（Extended）。Single はエラー。ExpectSelected + StatusText。Scenario/MCP 薄い追従          |
-| Q118 | Phase 20: Menu バー。既存 `invoke` のみ。トップ+1段サブ。開いたサブをツリーに。`task_phase20.md`                        |
-| Q119 | Sample File→Ping。Scenario 既存 `invoke`。MCP 変更なし。任意深さ／パス DSL／新 wire は含めない                          |
-| Q120 | Phase 21: 列キーは Header（Ordinal）。wire `column` xor `columnKey`。CheckBox は `"True"`/`"False"`。`task_phase21.md` |
-| Q121 | SampleGrid に Active CheckBox 列。Scenario/MCP 薄い追従。複数行選択・Template 列は含めない                                |
-| Q122 | Phase 22: DataGrid 複数行選択（`selectMany` 拡張）— grill 開始                                                           |
-| Q123 | Phase 22: 既存 `selectMany` を DataGrid 行に拡張。置換・空クリア・Single エラー。FullRow のみ。`task_phase22.md`          |
-| Q124 | Sample は別 `SampleMultiGrid`（Extended）。ExpectSelected + StatusText + 空クリア Fluent。Scenario 薄い追従。MCP 新ツールなし |
-| Q125 | Avalonia 前に競合シナリオ対照を正本化。FlaUI 系操作・検証面。Must 完了まで Avalonia 禁止。`competitive-gap.md` / `task_phase23.md` |
-| Q126 | Phase 23 は文書のみ。Must は表レビュー後確定。画面遷移・進捗（出現/消失）は Must候補。仮 Phase 24+ で分割実装 |
-| Q127 | Must 確定: 提示 ID 群 + X04。K05/V06/W12/A08/P02 は任意。Inspector 任意。`competitive-gap.md` 更新 |
-| Q128 | Phase 24: Expect* 系拡張 + WaitFor/Gone + WaitForWindowClosed + TreeNode.value。`task_phase24.md`   |
-| Q129 | Sample: 進捗 Window → 同一窓内次パネル。Frame なし。Scenario/MCP 薄い追従。W11 専用 API なし          |
-| Q130 | Phase 25: DoubleClick/Hover/Drag(要素→要素)/ClickAt(DIP)/Wheel。SendInput。`task_phase25.md`       |
-| Q131 | Hover は移動+短 dwell。ToolTip 待ちは Phase 29b。Sample は Mouse セクション 1 つ。Scenario/MCP 薄い追従 |
-| Q132 | Phase 26: `SelectMenuAsync` パス DSL（AutomationId/`/`）。wire `selectMenu`。ContextMenu は RightClick 後。U04=`element.notActionable`。`task_phase26.md` |
-| Q133 | Phase 27: GetByName/ControlType・Child/Sibling/Nth・SelectAsync(key)・SelectTreeAsync。`task_phase27.md` |
-| Q134 | Phase 28: Template/SelectCell/SelectRow/ClickColumnHeader/AddRow/DeleteSelectedRows。G09=ソート UI のみ。`task_phase28.md` |
-| Q135 | Phase 29a: Password Set / RichText 平文 / Radio·Toggle checked / ExpectFocused / F+NumPad（Win 除外）。29b=L04/L06/C01/C03–C06。`task_phase29.md` |
-| Q136 | Phase 29b: DatePicker yyyy-MM-dd / ComboBox Expand / ListView GridView Read / ExpectToolTip / ToolBar·StatusBar Sample / Popup 開時合流 / Hyperlink Click。`task_phase29.md` |
-| Q137 | Phase 31: 全解の正本は `-m:1`。named mutex 試作は前景不足で見送り。`task_phase31.md` |
-| Q138 | ロードマップ: H02 → 操作タイムライン(D06) → Avalonia。X04 は `-m:1` で Done。単一 FW 完成度優先 |
-| Q139 | H02: Frame のみ・専用 DSL なし・Sample + WaitFor/Expect。NavigationWindow は本 Must 外。`task_phase32.md` |
-| Q140 | D06: Core オプション・Always/OnFailure・Dispose+Save・操作後1枚・PNG+HTML（速度・字幕）・画像系 NuGet/FFmpeg なし。Must。`task_phase33.md` |
-| Q141 | Avalonia 前に SampleTodoApp を利用ガイド正本化。MVVM+DI+テーマ+実 JSON。R3/ObservableCollections。`task_phase34.md` |
-| Q142 | LaunchOptions.Environment 汎用（任意）。SampleTodo 保存先は UI/OpenFolder（settings.json）。E2E は ArmOpenFolder。ストーリー 1 本。R3（CommunityToolkit.Mvvm 不使用）。デモシードなし |
+| ID   | 決定                                                                                                                                                                                         |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q1   | 初期ランタイムは .NET 8+ の WPF/Avalonia のみ。.NET Framework WPF は需要後                                                                                                                   |
+| Q2   | Instrumentation は共有コア + `.Wpf` / `.Avalonia` に分割                                                                                                                                     |
+| Q3   | 有効化は `GRAFT_TEST`（コンパイル）+ Analyzer エラー + 実行時オプトイン                                                                                                                      |
+| Q4   | 実行時オプトインは環境変数（ランナーが付与）                                                                                                                                                 |
+| Q5   | パイプ名はランナー生成 → `GRAFT_PIPE_NAME` で渡す                                                                                                                                            |
+| Q6   | プロセス寿命はデフォルト起動→終了。再利用はオプトイン                                                                                                                                        |
+| Q7   | 公開セレクタは複合キー。runtimeId は内部ハンドル                                                                                                                                             |
+| Q8   | Fluent / Scenario / MCP は同じ内部操作モデルへ。唯一の正本は置かない                                                                                                                         |
+| Q9   | 宣言的シナリオの正本は JSON。YAML は後回し                                                                                                                                                   |
+| Q10  | Scenario は Core 内。MCP のみ `Graft.McpServer` に分離                                                                                                                                       |
+| Q11  | 自己修復は Core。Instrumentation はツリーとヒント提供                                                                                                                                        |
+| Q12  | 条件付き参照を推奨。常時参照も可。Analyzer + シンボル + 環境変数が最低ライン                                                                                                                 |
+| Q13  | マルチウィンドウを API 初期から設計。Phase 1 実装はメインから                                                                                                                                |
+| Q14  | UI 操作はディスパッチャへマーシャリングし同期・直列                                                                                                                                          |
+| Q15  | actionable 待ち + Expect 正本。イベント優先、なければポーリング                                                                                                                              |
+| Q16  | フレーミングは 4byte 長さプレフィックス + ボディ                                                                                                                                             |
+| Q17  | スクショデフォルトはウィンドウ PNG。JPEG/クロップはオプション                                                                                                                                |
+| Q18  | バイナリは JSON メタの後続 raw フレーム                                                                                                                                                      |
+| Q19  | パイプ ACL は同一ユーザー。版 + CONNECT_TOKEN でハンドシェイク                                                                                                                               |
+| Q20  | 共通エンベロープ `{v,id,method,params}` / `{v,id,ok,result\|error}`                                                                                                                          |
+| Q21  | `GRAFT_TEST` 外は Start API 消去 + 呼び出し Analyzer エラー。DEBUG 判定は使わない                                                                                                            |
+| Q22  | 失敗診断は最小必須 + 標準添付デフォルト。自己修復候補は Phase 4 任意                                                                                                                         |
+| Q23  | 仮想化は実現済みツリーがデフォルト。実現/スクロール API を別途                                                                                                                               |
+| Q24  | Phase 1 エージェントは原子的操作まで。Wait/Expect は Core                                                                                                                                    |
+| Q25  | Phase 1 必須ツリー項目は B セット。パターン/値/セレクタ候補は完了条件外                                                                                                                      |
+| Q26  | タイムアウト既定: アクション 5s / Expect 10s / 起動+Handshake 30s                                                                                                                            |
+| Q27  | CI はインタラクティブセッション前提。推奨セルフホスト構成を文書化。Graft は仮想ディスプレイ非提供                                                                                            |
+| Q28  | Avalonia Headless とは相補。Graft は実プロセス E2E。Headless 対応は需要後                                                                                                                    |
+| Q29  | 環境変数: `GRAFT_ENABLE` / `GRAFT_PIPE_NAME` / `GRAFT_CONNECT_TOKEN`                                                                                                                         |
+| Q30  | 主経路は Launch。`Connect` は低レベル API                                                                                                                                                    |
+| Q31  | MessagePack は計測後検討。多言語/gRPC は v1 外                                                                                                                                               |
+| Q32  | Core は FW 非依存。TestUtilities/サンプルは xUnit から                                                                                                                                       |
+| Q33  | Analyzer は Instrumentation.Wpf / .Avalonia から自動導入                                                                                                                                     |
+| Q34  | 本決定を section 10 に記録し、構成・着手順・本文へ反映                                                                                                                                       |
+| Q35  | Analyzer 判定は `GRAFT_TEST` 記号のみ。Configuration / `#if` 緩和は使わない                                                                                                                  |
+| Q36  | `Graft.props`/`targets` 本線（`GraftTest=true`）。README にコピー例も                                                                                                                        |
+| Q37  | GetTree はデフォルト上限＋`truncated`＋ depth/maxNodes/起点指定                                                                                                                              |
+| Q38  | デフォルト 25/2,000。expanded 50/10,000                                                                                                                                                      |
+| Q39  | ツリー差分は初期 Core 側のみ。エージェント差分は後回し                                                                                                                                       |
+| Q40  | 論理操作はネイティブ → Peer → SendInput                                                                                                                                                      |
+| Q41  | Phase 1 完了は `invoke`+`setValue`。toggle/キー次点。scroll/select/expand は後続                                                                                                             |
+| Q42  | MessagePack は計測＋仮閾値で評価。即切替しない                                                                                                                                               |
+| Q43  | 単一クライアント。再接続＋Handshake 可                                                                                                                                                       |
+| Q44  | 外部座標はウィンドウクライアント論理 DIP。変換はエージェント内                                                                                                                               |
+| Q45  | セレクタはスコアリング＋閾値。同点は ambiguous。ショートハンド別途                                                                                                                           |
+| Q46  | `error` は `{code,message,details?}`。安定コードを文書化                                                                                                                                     |
+| Q47  | `v` は整数。Handshake 完全一致。版交渉は後回し                                                                                                                                               |
+| Q48  | Q35〜 を本文・section 9/10 へ即反映                                                                                                                                                          |
+| Q49  | セレクタ仮重み: automationId=100, name=40, controlType=15, 近傍パス=20, 閾値=60                                                                                                              |
+| Q50  | 安定エラーコード初期セット（handshake/protocol/element/action/window/pipe/agent/expect/selector）                                                                                            |
+| Q51  | setValue はネイティブ置換優先、失敗時クリア+SendInput。append/typeHuman は後付け                                                                                                             |
+| Q52  | SendInput クリックは Peer 点→中心。オフセットオプション可                                                                                                                                    |
+| Q53  | ツリー差分デフォルトは診断向け。JSON Patch は後回し                                                                                                                                          |
+| Q54  | Analyzer 必須は GRAFT001 Error のみ。追加ルールは後追い                                                                                                                                      |
+| Q55  | GraftTest=true が正本。Configuration=GraftTest はサンプル便利構成。Debug 紐づけなし                                                                                                          |
+| Q56  | よくある型は対応表、未知型は Peer→SendInput。ホワイトリスト制限なし                                                                                                                          |
+| Q57  | Q49〜反映後、最初の実装マイルストーン受け入れ条件を詰める                                                                                                                                    |
+| Q58  | マイルストーンを M0/M1/M2 の三段に分ける                                                                                                                                                     |
+| Q59  | M0 に GRAFT_TEST+環境変数+Analyzer。props/targets は M1                                                                                                                                      |
+| Q60  | M0 手動クライアントは `tools/Graft.SmokeClient`                                                                                                                                              |
+| Q61  | M0 直結をあと数問してから閉じ、実装へ                                                                                                                                                        |
+| Q62  | SmokeClient は Launch と Connect 両方。M0 デモ正本は Launch                                                                                                                                  |
+| Q63  | Sample は Button + TextBox + クリックで変わる TextBlock                                                                                                                                      |
+| Q64  | 最初は M0 一式 + Directory.Build.props + tests 土台。空スケルトンは作らない                                                                                                                  |
+| Q65  | 実装は gitignore + 雛形から。M0 は task_m0.md の Batch 単位で進める                                                                                                                          |
+| Q66  | Phase 5: scrollIntoView / select / expand・collapse。詳細は `task_phase5.md`                                                                                                                 |
+| Q67  | Phase 6: TreeNode に `selected`/`expanded` を `bool?`（非該当は null/省略）。プロトコル v1 のまま                                                                                            |
+| Q68  | selected は選択系のみ（項目ノード）。expanded は開閉対象（TreeViewItem/Expander）。checked は別途                                                                                            |
+| Q69  | ExpectSelectedAsync / ExpectExpandedAsync。null は expect.failed。Scenario/MCP は薄い追従                                                                                                    |
+| Q70  | Phase 6 受け入れは ListBox 実現済み項目 + TreeViewItem。Combo 項目 Expect は完了条件外                                                                                                       |
+| Q71  | Phase 6 時点の次候補は Avalonia → Inspector だったが、Q72 で WPF カバレッジを先行に改訂                                                                                                      |
+| Q72  | Phase 7: マルチウィンドウ + WPF モーダル。Avalonia/Inspector は WPF カバレッジ後。詳細は `task_phase7.md`                                                                                    |
+| Q73  | 窓はセッション内 `windowId`。List/Switch。メタ: title/automationId/isModal/isActive。既定ターゲット切替                                                                                      |
+| Q74  | ShowDialog 開封は `InvokeOpeningWindow`（BeginInvoke+出現待ち、既定自動 Switch）。素の Invoke は非対応                                                                                       |
+| Q75  | WaitForWindow は title および／または automationId。全窓マージツリー・OS ダイアログ実装は含めない                                                                                            |
+| Q76  | Phase 7 の次は OS ダイアログ方針 or 複雑 UI。Avalonia → Inspector は最後寄り                                                                                                                 |
+| Q77  | Phase 8: DataGrid **行中心 MVP** + 同一 Phase 最終 Batch で `checked`。詳細は `task_phase8.md`                                                                                               |
+| Q78  | API は既存 `scrollIntoView` / `select`（ホスト＋index）。新 wire なし。Sample は FullRow+Single のみ                                                                                         |
+| Q79  | ツリーは実現済み `DataGridRow` + `selected`。行に安定 automationId。セル座標／編集／ソートは含めない                                                                                         |
+| Q80  | 公開は既存 Scenario ステップの薄い E2E。DataGrid 専用 MCP は作らない                                                                                                                         |
+| Q81  | Phase 8 の次は DataGrid **セル R/W**。OS ダイアログ・Avalonia・Inspector はさらに後                                                                                                          |
+| Q82  | Phase 9: DataGrid **セル R/W**（Text 列）。詳細は `task_phase9.md`                                                                                                                           |
+| Q83  | 指定はホスト＋(rowIndex, columnIndex)。API: GetCellText / SetCellValue / ExpectCellText + 同名 wire                                                                                          |
+| Q84  | 書込は BeginEdit→値→CommitEdit。列は DataGridTextColumn のみ。ツリーに DataGridCell は出さない                                                                                               |
+| Q85  | Sample は FullRow+Single のまま編集可能 Text 列。Scenario/MCP 薄い追従                                                                                                                       |
+| Q86  | Phase 9 の次は **OS 共通ダイアログ方針**。列キー／他列種は後続                                                                                                                               |
+| Q87  | Phase 10: OpenFile **Runtime シーム**（方針+MVP）。実 OS UIA はしない。詳細は `task_phase10.md`                                                                                              |
+| Q88  | アプリは素の `OpenFileDialog`。Harmony で `CommonItemDialog.RunDialog` を差し替え。業務コードに Graft API なし                                                                               |
+| Q89  | 事前 Arm（単一パス OK / Cancel、一回限り）。未アームは実ダイアログ。開封は `waitForNewWindow:false`                                                                                          |
+| Q90  | Phase 10 の次は **SaveFile シーム**。Avalonia / Inspector は後ろ                                                                                                                             |
+| Q91  | Phase 11: SaveFile **Runtime シーム**（OpenFile 同型）。詳細は `task_phase11.md`                                                                                                             |
+| Q92  | 素の `SaveFileDialog`。同一 `CommonItemDialog.RunDialog` パッチ。`SaveFileArm` は OpenFile と独立                                                                                            |
+| Q93  | `ArmSaveFile` / `ArmSaveFileCancel`、一回限り、`waitForNewWindow:false`。Scenario/MCP 薄い追従                                                                                               |
+| Q94  | Phase 11 の次は **Folder シーム**。Avalonia / Inspector は後ろ                                                                                                                               |
+| Q95  | Phase 12: OpenFolder **Runtime シーム**（Open/Save 同型）。詳細は `task_phase12.md`                                                                                                          |
+| Q96  | 素の `OpenFolderDialog`。同一 `RunDialog` パッチ。結果は `FolderName`。`OpenFolderArm` は独立                                                                                                |
+| Q97  | `ArmOpenFolder` / `ArmOpenFolderCancel`、一回限り、`waitForNewWindow:false`。Scenario/MCP 薄い追従                                                                                           |
+| Q98  | Phase 12 の次は **MessageBox シーム**。Avalonia / Inspector は後ろ                                                                                                                           |
+| Q99  | Phase 13: MessageBox **Runtime シーム**。詳細は `task_phase13.md`                                                                                                                            |
+| Q100 | 素の `MessageBox.Show`。Harmony で主要オーバーロードを差し替え。業務コードに Graft API なし                                                                                                  |
+| Q101 | `ArmMessageBox(result)`（OK/Cancel/Yes/No/None）、一回限り、`waitForNewWindow:false`。Scenario/MCP                                                                                           |
+| Q102 | Phase 13 の次は当初 Avalonia だったが、WPF 競合ギャップ埋めを優先（Q103）                                                                                                                    |
+| Q103 | Avalonia を後ろへ。Phase 14 は **キー chord**。次は Screenshot → 右クリック/Menu → … → Avalonia                                                                                              |
+| Q104 | `PressAsync` / wire `pressKeys`。`sendKeys` はリテラルのまま。1 呼び出し = 1 chord、フォーカス付き                                                                                           |
+| Q105 | DSL: `Control`/`Alt`/`Shift` + `A`–`Z`/`0`–`9`/Enter/Tab/Escape/Backspace/Delete/Space/Arrow*                                                                                                |
+| Q106 | Sample E2E: TextBox SetValue → Control+A → Delete → Expect 空。詳細は `task_phase14.md`                                                                                                      |
+| Q107 | Phase 15 は **公開 Screenshot**。Fluent 戻りは meta+bytes の `Screenshot` + `SaveAsync`                                                                                                      |
+| Q108 | 対象は現在ターゲット窓のみ。Scenario は path 必須。MCP は path 任意（省略時 temp）                                                                                                           |
+| Q109 | E2E: Fluent PNG シグネチャ+size / Scenario path 書き。画像 diff・要素クリップは含めない。`task_phase15.md`                                                                                   |
+| Q110 | Phase 16: `RightClickAsync` + 開いた ContextMenu をツリーに載せ MenuItem は既存 `invoke`                                                                                                     |
+| Q111 | 実装は SendInput 右クリック + flush。待ちは呼び出し側。Menu バー/サブメニューは含めない。`task_phase16.md`                                                                                   |
+| Q112 | Phase 17 は **TabControl** のみ。既存 `SelectAsync(index)` 拡張。ExpectSelected + StatusText。`task_phase17.md`                                                                              |
+| Q113 | Scenario は既存 `select`。MCP 変更なし。Slider / 複数選択 / ヘッダー指定は含めない                                                                                                           |
+| Q114 | Phase 18 は **Slider のみ**。既存 `SetValueAsync` / `setValue`。InvariantCulture double → `Slider.Value`。`task_phase18.md`                                                                  |
+| Q115 | 検証は StatusText 副作用のみ（tree `value` なし）。Scenario 既存 `setValue`。MCP 変更なし。複数選択は含めない                                                                                |
+| Q116 | Phase 19: ListBox のみ。新 `SelectManyAsync` / wire `selectMany`（置換、空 indexes=クリア）。`task_phase19.md`                                                                               |
+| Q117 | Sample は別 `SampleMultiList`（Extended）。Single はエラー。ExpectSelected + StatusText。Scenario/MCP 薄い追従                                                                               |
+| Q118 | Phase 20: Menu バー。既存 `invoke` のみ。トップ+1段サブ。開いたサブをツリーに。`task_phase20.md`                                                                                             |
+| Q119 | Sample File→Ping。Scenario 既存 `invoke`。MCP 変更なし。任意深さ／パス DSL／新 wire は含めない                                                                                               |
+| Q120 | Phase 21: 列キーは Header（Ordinal）。wire `column` xor `columnKey`。CheckBox は `"True"`/`"False"`。`task_phase21.md`                                                                       |
+| Q121 | SampleGrid に Active CheckBox 列。Scenario/MCP 薄い追従。複数行選択・Template 列は含めない                                                                                                   |
+| Q122 | Phase 22: DataGrid 複数行選択（`selectMany` 拡張）— grill 開始                                                                                                                               |
+| Q123 | Phase 22: 既存 `selectMany` を DataGrid 行に拡張。置換・空クリア・Single エラー。FullRow のみ。`task_phase22.md`                                                                             |
+| Q124 | Sample は別 `SampleMultiGrid`（Extended）。ExpectSelected + StatusText + 空クリア Fluent。Scenario 薄い追従。MCP 新ツールなし                                                                |
+| Q125 | Avalonia 前に競合シナリオ対照を正本化。FlaUI 系操作・検証面。Must 完了まで Avalonia 禁止。`competitive-gap.md` / `task_phase23.md`                                                           |
+| Q126 | Phase 23 は文書のみ。Must は表レビュー後確定。画面遷移・進捗（出現/消失）は Must候補。仮 Phase 24+ で分割実装                                                                                |
+| Q127 | Must 確定: 提示 ID 群 + X04。K05/V06/W12/A08/P02 は任意。Inspector 任意。`competitive-gap.md` 更新                                                                                           |
+| Q128 | Phase 24: Expect* 系拡張 + WaitFor/Gone + WaitForWindowClosed + TreeNode.value。`task_phase24.md`                                                                                            |
+| Q129 | Sample: 進捗 Window → 同一窓内次パネル。Frame なし。Scenario/MCP 薄い追従。W11 専用 API なし                                                                                                 |
+| Q130 | Phase 25: DoubleClick/Hover/Drag(要素→要素)/ClickAt(DIP)/Wheel。SendInput。`task_phase25.md`                                                                                                 |
+| Q131 | Hover は移動+短 dwell。ToolTip 待ちは Phase 29b。Sample は Mouse セクション 1 つ。Scenario/MCP 薄い追従                                                                                      |
+| Q132 | Phase 26: `SelectMenuAsync` パス DSL（AutomationId/`/`）。wire `selectMenu`。ContextMenu は RightClick 後。U04=`element.notActionable`。`task_phase26.md`                                    |
+| Q133 | Phase 27: GetByName/ControlType・Child/Sibling/Nth・SelectAsync(key)・SelectTreeAsync。`task_phase27.md`                                                                                     |
+| Q134 | Phase 28: Template/SelectCell/SelectRow/ClickColumnHeader/AddRow/DeleteSelectedRows。G09=ソート UI のみ。`task_phase28.md`                                                                   |
+| Q135 | Phase 29a: Password Set / RichText 平文 / Radio·Toggle checked / ExpectFocused / F+NumPad（Win 除外）。29b=L04/L06/C01/C03–C06。`task_phase29.md`                                            |
+| Q136 | Phase 29b: DatePicker yyyy-MM-dd / ComboBox Expand / ListView GridView Read / ExpectToolTip / ToolBar·StatusBar Sample / Popup 開時合流 / Hyperlink Click。`task_phase29.md`                 |
+| Q137 | Phase 31: 全解の正本は `-m:1`。named mutex 試作は前景不足で見送り。`task_phase31.md`                                                                                                         |
+| Q138 | ロードマップ: H02 → 操作タイムライン(D06) → Avalonia。X04 は `-m:1` で Done。単一 FW 完成度優先                                                                                              |
+| Q139 | H02: Frame のみ・専用 DSL なし・Sample + WaitFor/Expect。NavigationWindow は本 Must 外。`task_phase32.md`                                                                                    |
+| Q140 | D06: Core オプション・Always/OnFailure・Dispose+Save・操作後1枚・PNG+HTML（速度・字幕）・画像系 NuGet/FFmpeg なし。Must。`task_phase33.md`                                                   |
+| Q141 | Avalonia 前に SampleTodoApp を利用ガイド正本化。MVVM+DI+テーマ+実 JSON。R3/ObservableCollections。`task_phase34.md`                                                                          |
+| Q142 | LaunchOptions.Environment 汎用（任意）。SampleTodo 保存先は UI/OpenFolder（settings.json）。E2E は ArmOpenFolder。ストーリー 1 本。R3（CommunityToolkit.Mvvm 不使用）。デモシードなし        |
+| Q143 | P02 を Must 昇格（Phase 35）。Avalonia 再禁止。`element.ScreenshotAsync`。窓 RTB 交差クリップ + Popup ルート RTB。開時 ToolTip 子ノード。開時 overlay は要素・窓 SS に合成。wire 任意 automationId/runtimeId。`task_phase35.md` |

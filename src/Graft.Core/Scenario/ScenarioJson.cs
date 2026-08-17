@@ -346,8 +346,26 @@ public static class ScenarioJson
         return new PressKeysOperation(automationId, keys);
     }
 
-    private static ScreenshotOperation CompileScreenshot(JsonElement step, int index) =>
-        new(RequireNonEmptyString(step, "path", index));
+    private static ScreenshotOperation CompileScreenshot(JsonElement step, int index)
+    {
+        var path = RequireNonEmptyString(step, "path", index);
+        string? automationId = null;
+        if (step.TryGetProperty("automationId", out var idElement))
+        {
+            if (idElement.ValueKind != JsonValueKind.String)
+            {
+                throw Invalid($"steps[{index}] screenshot.automationId must be a string.");
+            }
+
+            automationId = idElement.GetString();
+            if (string.IsNullOrWhiteSpace(automationId))
+            {
+                throw Invalid($"steps[{index}].automationId must be non-empty.");
+            }
+        }
+
+        return new ScreenshotOperation(path, automationId);
+    }
 
     private static ScrollIntoViewOperation CompileScrollIntoView(JsonElement step, int index)
     {

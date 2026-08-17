@@ -204,7 +204,8 @@
       "required": ["action", "path"],
       "properties": {
         "action": { "const": "screenshot" },
-        "path": { "type": "string", "minLength": 1 }
+        "path": { "type": "string", "minLength": 1 },
+        "automationId": { "type": "string", "minLength": 1 }
       }
     },
     "scrollIntoView": {

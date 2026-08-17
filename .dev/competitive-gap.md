@@ -26,9 +26,9 @@ Playwright DX（codegen / trace / video）や TestComplete Object Spy 全体は�
 
 ## 確定 Must（レビュー結果）
 
-提示リストをベースに、K05 / V06 / W12 / A08 / P02 は任意。**X04 は Must（`-m:1` 運用で Done）**。**D06（操作タイムライン）を Must に追加**（単一 FW 完成度優先。Avalonia はその後）。
+提示リストをベースに、K05 / V06 / W12 / A08 は任意。**X04 は Must（`-m:1` 運用で Done）**。**D06（操作タイムライン）を Must に追加**（単一 FW 完成度優先）。**P02（要素クリップ Screenshot）を Must に昇格**（Phase 35。Avalonia はその後）。
 
-`F02 F04 F05` · `M03–M08` · `K03 K04` · `V03 V05` · `T03 T04` · `L04 L05 L06` · `E04` · `H02 H03` · `U02 U03 U04` · `G06–G10` · `C01–C06` · `W06–W11` · `A04–A07` · `X04` · `D06`
+`F02 F04 F05` · `M03–M08` · `K03 K04` · `V03 V05` · `T03 T04` · `L04 L05 L06` · `E04` · `H02 H03` · `U02 U03 U04` · `G06–G10` · `C01–C06` · `W06–W11` · `A04–A07` · `X04` · `D06` · `P02`
 
 Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄いため **任意**（ゲート外・ロードマップ必須ではない）。
 
@@ -212,7 +212,7 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | ID  | シナリオ                | 競合 | Graft | 優先   | 仮Phase | メモ |
 | --- | ----------------------- | ---- | ----- | ------ | ------- | ---- |
 | P01 | ウィンドウ全体 PNG      | Yes  | OK    | Done   | —       |      |
-| P02 | 要素クリップ Screenshot | Yes  | NO    | 任意   | —       |      |
+| P02 | 要素クリップ Screenshot | Yes  | OK    | **Must** | 35      | 窓 RTB 交差クリップ + Popup ルート RTB。開時 ToolTip 子ノード。開時 overlay は要素・窓 SS に合成。Done（`task_phase35.md`） |
 | P03 | 画像 expect / diff      | Yes  | NO    | 任意   | —       |      |
 | P04 | デスクトップ全体        | PART | NO    | 非目標 | —       |      |
 | P05 | 動画 / trace 記録       | Yes  | NO    | 非目標 | —       |      |
@@ -283,18 +283,18 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | 31      | SendInput 並列対策             | X04（`-m:1` で Done）                                |
 | 32      | Frame 遷移                     | H02（Frame のみ）                                    |
 | 33      | 操作タイムライン               | D06                                                  |
+| 35      | 要素クリップ Screenshot        | P02                                                  |
 
-（P02 要素クリップは任意のため Phase 番号なし）
-
-残 Must（Avalonia 前）: **なし**（H02 / X04 / D06 は Done）。Avalonia 解禁可。
+残 Must（Avalonia 前）: **なし**（P02 / H02 / X04 / D06 は Done）。Avalonia 解禁可。
 
 ---
 
 ## レビューチェックリスト
 
 - [x] Must を行単位で確定した
-- [x] K05 / V06 / W12 / A08 / P02 は任意、X04 は Must（運用 Done）
+- [x] K05 / V06 / W12 / A08 は任意、X04 は Must（運用 Done）
 - [x] D06 を Must に追加（単一 FW 完成度優先）
+- [x] P02 を Must に昇格（Phase 35。Avalonia 再禁止）
 - [x] Inspector は任意（ゲート外）
 - [x] Avalonia 再開ゲート（Must 全緑）に合意
 - [x] Phase 24 受け入れ線は `task_phase24.md` で固定（以降も各 `task_phaseN.md`）

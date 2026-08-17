@@ -489,6 +489,7 @@ public sealed class GraftSession : IAsyncDisposable
 
     /// <summary>
     /// Captures a PNG screenshot of the current target window.
+    /// Open ToolTips, Popups, and ContextMenus are composited in screen space.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Screenshot meta and PNG bytes.</returns>
@@ -504,7 +505,8 @@ public sealed class GraftSession : IAsyncDisposable
             await RecordSuccessAsync(
                     FailureSteps.Screenshot,
                     $"{shot.Width}x{shot.Height}:{shot.PngBytes.Length}",
-                    cancellationToken
+                    cancellationToken,
+                    shot.PngBytes
                 )
                 .ConfigureAwait(false);
             return shot;
@@ -568,14 +570,15 @@ public sealed class GraftSession : IAsyncDisposable
     private async Task RecordSuccessAsync(
         string action,
         string? detail,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        byte[]? pngBytes = null
     )
     {
         _operationLog.Record(action, detail);
         if (_timeline is not null)
         {
             await _timeline
-                .CaptureAfterAsync(action, detail, cancellationToken)
+                .CaptureAfterAsync(action, detail, cancellationToken, pngBytes)
                 .ConfigureAwait(false);
         }
     }

@@ -810,6 +810,65 @@ public sealed class ScenarioE2ETests
     }
 
     /// <summary>
+    /// phase35-element-screenshot.scenario.json writes a clipped PNG of SampleButton.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Scenarios/phase35-element-screenshot.scenario.json is copied to the test output
+    ///
+    /// Steps:
+    /// - Parse Scenario JSON
+    /// - ScenarioRunner.RunAsync with AppPath override
+    /// - Read Artifacts/phase35-element-screenshot.png
+    ///
+    /// Expected:
+    /// - File exists with PNG signature
+    /// </remarks>
+    [Fact]
+    public async Task Phase35ElementScreenshot_Scenario_WritesPng()
+    {
+        var scenarioPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Scenarios",
+            "phase35-element-screenshot.scenario.json"
+        );
+        Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
+
+        var outPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Artifacts",
+            "phase35-element-screenshot.png"
+        );
+        if (File.Exists(outPath))
+        {
+            File.Delete(outPath);
+        }
+
+        var scenario = ScenarioJson.ParseFile(scenarioPath);
+        var previousCwd = Directory.GetCurrentDirectory();
+        try
+        {
+            Directory.SetCurrentDirectory(AppContext.BaseDirectory);
+            await ScenarioRunner.RunAsync(
+                scenario,
+                new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
+            );
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(previousCwd);
+        }
+
+        Assert.True(File.Exists(outPath), $"Missing screenshot: {outPath}");
+        var bytes = await File.ReadAllBytesAsync(outPath);
+        Assert.True(bytes.Length >= 8);
+        Assert.Equal(0x89, bytes[0]);
+        Assert.Equal((byte)'P', bytes[1]);
+        Assert.Equal((byte)'N', bytes[2]);
+        Assert.Equal((byte)'G', bytes[3]);
+    }
+
+    /// <summary>
     /// phase14-press-keys.scenario.json clears SampleTextBox via Control+A / Delete.
     /// </summary>
     /// <remarks>
