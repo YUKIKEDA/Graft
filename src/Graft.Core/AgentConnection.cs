@@ -1270,11 +1270,34 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Screenshot meta and PNG bytes.</returns>
     /// <exception cref="GraftException">RPC failed or frame mismatch.</exception>
+    public Task<(ScreenshotResult Meta, byte[] PngBytes)> ScreenshotAsync(
+        CancellationToken cancellationToken = default
+    ) => ScreenshotAsync(automationId: null, runtimeId: null, cancellationToken);
+
+    /// <summary>
+    /// Calls <c>screenshot</c> for the target window, or an element clip when a selector is given.
+    /// </summary>
+    /// <param name="automationId">Optional automation id to clip.</param>
+    /// <param name="runtimeId">Optional runtime id to clip (used when automation id is empty).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Screenshot meta and PNG bytes.</returns>
+    /// <exception cref="GraftException">RPC failed or frame mismatch.</exception>
     public async Task<(ScreenshotResult Meta, byte[] PngBytes)> ScreenshotAsync(
+        string? automationId,
+        int? runtimeId,
         CancellationToken cancellationToken = default
     )
     {
         ThrowIfDisposed();
+
+        JsonElement? paramsElement = null;
+        if (!string.IsNullOrWhiteSpace(automationId) || runtimeId is not null)
+        {
+            paramsElement = JsonSerializer.SerializeToElement(
+                new { automationId, runtimeId },
+                JsonMessageCodec.Options
+            );
+        }
 
         var response = await SendAsync(
                 new RequestMessage
@@ -1282,6 +1305,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.Screenshot,
+                    Params = paramsElement,
                 },
                 cancellationToken
             )

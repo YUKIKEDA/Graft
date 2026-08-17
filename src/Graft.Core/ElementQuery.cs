@@ -2095,6 +2095,45 @@ public sealed class ElementQuery
     }
 
     /// <summary>
+    /// Waits until the element is present, then captures a PNG clip of it.
+    /// Open ToolTips and Popup overlays of this element or its descendants are composited in screen space.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Screenshot meta and PNG bytes.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or screenshot failed (may include <see cref="GraftException.Report"/>).</exception>
+    public async Task<Screenshot> ScreenshotAsync(CancellationToken cancellationToken = default)
+    {
+        var node = await WaitUntilPresentAsync(cancellationToken).ConfigureAwait(false);
+        var automationId = string.IsNullOrWhiteSpace(node.AutomationId) ? null : node.AutomationId;
+        int? runtimeId = automationId is null ? node.RuntimeId : null;
+        try
+        {
+            var (meta, pngBytes) = await _connection
+                .ScreenshotAsync(automationId, runtimeId, cancellationToken)
+                .ConfigureAwait(false);
+            var shot = new Screenshot(meta.Format, meta.Width, meta.Height, pngBytes);
+            await RecordSuccessAsync(
+                    FailureSteps.Screenshot,
+                    $"{shot.Width}x{shot.Height}:{shot.PngBytes.Length}",
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
+            return shot;
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.Screenshot,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
     /// Waits until the element is not found or not visible.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -2506,6 +2545,52 @@ public sealed class ElementQuery
                 $"Timed out after {timeout.TotalSeconds:0.###}s waiting for {propertyName} '{expectedText}'.",
                 step,
                 expected: expectedText,
+                timedOut: true,
+                treeRoot: lastRoot,
+                cancellationToken: cancellationToken
+            )
+            .ConfigureAwait(false);
+    }
+
+    private async Task<TreeNode> WaitUntilPresentAsync(CancellationToken cancellationToken)
+    {
+        var timeout = PositiveOrDefault(
+            _waitOptions.ActionTimeout,
+            WaitOptions.DefaultActionTimeout
+        );
+        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
+        var deadline = DateTime.UtcNow + timeout;
+        TreeNode? lastRoot = null;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
+                lastRoot = tree.Root;
+                return ResolveNode(tree.Root);
+            }
+            catch (GraftException ex)
+                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+            {
+                // Keep polling.
+            }
+
+            var remaining = deadline - DateTime.UtcNow;
+            if (remaining <= TimeSpan.Zero)
+            {
+                break;
+            }
+
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        throw await CreateFailureAsync(
+                GraftErrorCodes.ActionTimeout,
+                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for element to appear.",
+                FailureSteps.Screenshot,
                 timedOut: true,
                 treeRoot: lastRoot,
                 cancellationToken: cancellationToken

@@ -88,7 +88,7 @@ dotnet test tests/sample-apps/SampleTodoApp.FlaUI.Tests
 - テキスト入力: `GetByAutomationId(…).SetValueAsync(value)`（エージェント wire `setValue`。TextBox 置換。**PasswordBox** は `Password` 代入（tree/value には載せない）。**RichTextBox** は平文全文置換。**Slider** は InvariantCulture の double 文字列 → `Value`。**DatePicker** は `yyyy-MM-dd` → `SelectedDate`）。キー入力: `SendKeysAsync(text)`（リテラル）。chord / 特殊キー: `PressAsync("Control+A")` / `F5` / `NumPad0` 等（wire `pressKeys`。1 呼び出し = 1 chord。**Win/Meta なし**）
 - トグル: `GetByAutomationId(…).ToggleAsync()`（CheckBox / RadioButton / ToggleButton。Radio は選択側へ）
 - フォーカス（Phase 29a）: `ExpectFocusedAsync()`（tree `focused`）
-- ToolTip（Phase 29b）: `ExpectToolTipAsync(text)`（開いているときだけ tree `toolTip`）
+- ToolTip（Phase 29b）: `ExpectToolTipAsync(text)`（開いているときだけ tree `toolTip`）。Phase 35 で開時はオーナーの子ノード（`ControlType = ToolTip`）としても合流
 - スクロール: `ScrollIntoViewAsync()`（実現済み要素）/ `ScrollIntoViewAsync(index)`（リスト。仮想化対応、identity 返却）
 - 選択: `SelectAsync(index)`（単一。内部で自動 scroll/realize）。ホストは ListBox / **ListView** / ComboBox / **DataGrid（行）** / **TabControl**。複数選択: `SelectManyAsync(indexes)`（wire `selectMany`。**ListBox** Multiple/Extended、**DataGrid** Extended+FullRow。置換。空配列でクリア）
 - 開閉: `ExpandAsync()` / `CollapseAsync()`（TreeViewItem / Expander / **ComboBox** `IsDropDownOpen`）
@@ -97,7 +97,8 @@ dotnet test tests/sample-apps/SampleTodoApp.FlaUI.Tests
 - DataGrid / ListView セル（Phase 9/21/28/29b）: ホスト＋`(row, column)` または `(row, columnKey)`（Header 文字列）で `GetCellTextAsync` / `ExpectCellTextAsync`。DataGrid は Set 可（Text/CheckBox/Template）。**ListView+GridView は Read のみ**。ツリーにセルは出さない
 - DataGrid 高度（Phase 28）: `SelectCellAsync(row, column|columnKey)`（SelectionUnit Cell/CellOrRowHeader）。`SelectRowAsync(columnKey, value)`（表示順非依存・曖昧は `element.ambiguous`）。`ClickColumnHeaderAsync(columnKey)`（ソート UI）。`AddRowAsync` / `DeleteSelectedRowsAsync`
 - ウィンドウ（Phase 7）: `ListWindowsAsync` / `SwitchToWindowAsync(windowId)` / `WaitForWindowAsync(title:, automationId:)`（既定で自動 Switch）。getTree / resolve / screenshot / アクションは既定ターゲット窓のみ
-- Screenshot（Phase 15）: `ScreenshotAsync()` → `Screenshot`（Format / Width / Height / PngBytes）+ `SaveAsync(path)`。現在ターゲット窓。Scenario `screenshot` は path 必須。MCP `graft_screenshot` は path 任意（省略時 temp）
+- Screenshot（Phase 15 / 35）: `session.ScreenshotAsync()` → `Screenshot`（Format / Width / Height / PngBytes）+ `SaveAsync(path)`。現在ターゲット窓。開いている ToolTip / Popup / ContextMenu は画面座標で合成。Scenario `screenshot` は path 必須。MCP `graft_screenshot` は path 任意（省略時 temp）
+- 要素クリップ（Phase 35 / P02 Must）: `GetBy…().ScreenshotAsync()`。窓内は窓 RTB の bounds 交差クリップ（空交差は `element.notActionable`）。開いた Popup 配下は Popup ルート RTB。開時 ToolTip はオーナーの子ノード（`ExpectToolTip` / `toolTip` 文字列は残す）。**開いている ToolTip / Popup は、撮った要素とその子孫の overlay を画面座標で合成**（親コンテナ SS でも内側の Tip が乗る）。wire は既存 `screenshot` + 任意 `automationId` / `runtimeId`。Scenario/MCP は任意 `automationId` のみ。自動 scroll なし。Done（[task_phase35.md](./task_phase35.md)）
 - 右クリック（Phase 16）: `RightClickAsync()`（wire `rightClick`）。開いた ContextMenu の MenuItem は通常の `InvokeAsync`（getTree / resolve に開いている ContextMenu を含む）
 - マウス高度（Phase 25）: `DoubleClickAsync` / `HoverAsync` / `DragAsync(toAutomationId)`（要素→要素）/ `ClickAtAsync(offsetX, offsetY)`（クリック点相対 DIP）/ `WheelAsync(delta)`。いずれも SendInput。`invoke` は意味的クリックのまま
 - Menu バー（Phase 20）: トップレベル / 1段サブとも既存 `InvokeAsync`。開いているサブメニュー（`IsSubmenuOpen`）の MenuItem を getTree / resolve に含む
@@ -115,4 +116,4 @@ dotnet test tests/sample-apps/SampleTodoApp.FlaUI.Tests
 - Frame 遷移（Phase 32 / H02）: Sample `SampleFrame` + Page ナビ。専用 DSL なし（既存 WaitFor / Expect）。Done（[task_phase32.md](./task_phase32.md)）
 - 操作タイムライン（Phase 33 / D06）: `LaunchOptions.Timeline`（`OutputDirectory` 必須、`Always`/`OnFailure`）。操作完了後 PNG + `index.html`（速度・字幕）。`SaveTimeline()` / Dispose で確定。Done（[task_phase33.md](./task_phase33.md)）
 - SampleTodoApp（Phase 34）: 利用ガイド正本。R3 + ObservableCollections + MS.DI、実 JSON（設定 UserControl オーバーレイで保存先/`OpenFolderDialog`・テーマ。LocalAppData `settings.json`）、詳細 Window、Export/Import シーム。E2E 隔離は Settings オーバーレイ + `ArmOpenFolder`。ストーリー E2E 1 本（フィルタ／テーマ／チェック編集削除含む）+ `Timeline` Always（`%TEMP%\graft-sample-todo-timeline\{leaf}\index.html`）。`LaunchOptions.Environment` は Core 汎用（任意）。Done（[task_phase34.md](./task_phase34.md)）
-- 未実装（後続）: **Avalonia**（Phase 34 後）。正本は [competitive-gap.md](./competitive-gap.md)。要素クリップ / typeHuman / Inspector / 画像 diff 等は任意または非目標
+- 未実装（後続）: **Avalonia**（Phase 35 後）。正本は [competitive-gap.md](./competitive-gap.md)。typeHuman / Inspector / 画像 diff（P03）等は任意または非目標

@@ -479,16 +479,21 @@
                     </GridView>
                 </ListView.View>
             </ListView>
-            <Button x:Name="SamplePhase29bTipHost"
-                    AutomationProperties.AutomationId="SamplePhase29bTipHost"
-                    Content="Hover tip"
-                    Padding="12,6"
-                    HorizontalAlignment="Left"
-                    Margin="0,0,0,8">
-                <Button.ToolTip>
-                    <ToolTip Content="Phase29bTip" />
-                </Button.ToolTip>
-            </Button>
+            <StackPanel x:Name="SamplePhase29bTipSection"
+                        AutomationProperties.AutomationId="SamplePhase29bTipSection"
+                        HorizontalAlignment="Left"
+                        Margin="0,0,0,8">
+                <TextBlock Text="Tip section" Margin="0,0,0,4" />
+                <Button x:Name="SamplePhase29bTipHost"
+                        AutomationProperties.AutomationId="SamplePhase29bTipHost"
+                        Content="Hover tip"
+                        Padding="12,6"
+                        HorizontalAlignment="Left">
+                    <Button.ToolTip>
+                        <ToolTip Content="Phase29bTip" />
+                    </Button.ToolTip>
+                </Button>
+            </StackPanel>
             <ToolBar Margin="0,0,0,8" HorizontalAlignment="Left">
                 <Button x:Name="SamplePhase29bToolBarButton"
                         AutomationProperties.AutomationId="SamplePhase29bToolBarButton"

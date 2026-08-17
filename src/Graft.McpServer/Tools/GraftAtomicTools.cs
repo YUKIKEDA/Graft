@@ -1331,23 +1331,30 @@ public sealed partial class GraftAtomicTools
         );
 
     /// <summary>
-    /// Captures a PNG screenshot of the current target window and writes it to a path.
+    /// Captures a PNG screenshot of the current target window (or an element clip) and writes it to a path.
     /// </summary>
     /// <param name="path">Destination PNG path (optional; temp file when omitted).</param>
+    /// <param name="automationId">Optional element to clip; window when omitted.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result with meta and path.</returns>
     [McpServerTool(Name = "graft_screenshot")]
     [Description(
-        "Capture the current target window as PNG. Optional path; when omitted writes a temp file."
+        "Capture the current target window, or an element when automationId is set, as PNG. Optional path; when omitted writes a temp file."
     )]
     public partial Task<CallToolResult> Screenshot(
         [Description("Destination PNG path (optional; temp when omitted).")] string? path = null,
+        [Description("Optional automationId to clip; window when omitted.")] string? automationId = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                var shot = await session.ScreenshotAsync(cancellationToken).ConfigureAwait(false);
+                var shot = string.IsNullOrWhiteSpace(automationId)
+                    ? await session.ScreenshotAsync(cancellationToken).ConfigureAwait(false)
+                    : await session
+                        .GetByAutomationId(automationId)
+                        .ScreenshotAsync(cancellationToken)
+                        .ConfigureAwait(false);
                 var dest = string.IsNullOrWhiteSpace(path)
                     ? Path.Combine(Path.GetTempPath(), $"graft-mcp-{Guid.NewGuid():N}.png")
                     : path;

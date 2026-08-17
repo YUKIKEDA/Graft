@@ -489,6 +489,7 @@ public sealed class GraftSession : IAsyncDisposable
 
     /// <summary>
     /// Captures a PNG screenshot of the current target window.
+    /// Open ToolTips, Popups, and ContextMenus are composited in screen space.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Screenshot meta and PNG bytes.</returns>
