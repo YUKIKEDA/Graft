@@ -155,9 +155,14 @@ public static class ScenarioRunner
 
                     case ScreenshotOperation screenshot:
                         EnsureSession(session);
-                        var shot = await session!
-                            .ScreenshotAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        var shot = screenshot.AutomationId is { } shotId
+                            ? await session!
+                                .GetByAutomationId(shotId)
+                                .ScreenshotAsync(cancellationToken)
+                                .ConfigureAwait(false)
+                            : await session!
+                                .ScreenshotAsync(cancellationToken)
+                                .ConfigureAwait(false);
                         await shot.SaveAsync(screenshot.Path, cancellationToken)
                             .ConfigureAwait(false);
                         break;

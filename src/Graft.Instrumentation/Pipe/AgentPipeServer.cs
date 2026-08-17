@@ -486,12 +486,29 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var capture = provider.Capture(ScreenshotOptions.Default);
+            var options = ReadScreenshotOptions(request.Params);
+            var capture = provider.Capture(options);
             var resultJson = JsonSerializer.SerializeToElement(
                 capture.Meta,
                 JsonMessageCodec.Options
             );
             return (Ok(request.Id, resultJson), CloseAfterWrite: false, capture.PngBytes);
+        }
+        catch (ElementResolveException ex)
+        {
+            return (
+                Error(request.Id, ex.Code, ex.Message),
+                CloseAfterWrite: false,
+                BinaryFollowUp: null
+            );
+        }
+        catch (ElementActionException ex)
+        {
+            return (
+                Error(request.Id, ex.Code, ex.Message),
+                CloseAfterWrite: false,
+                BinaryFollowUp: null
+            );
         }
         catch (InvalidOperationException ex)
             when (ex.Message.Contains("Main window", StringComparison.OrdinalIgnoreCase))
@@ -1536,6 +1553,17 @@ internal sealed class AgentPipeServer : IDisposable
         }
 
         return new ElementSelector { AutomationId = automationId, RuntimeId = runtimeId };
+    }
+
+    private static ScreenshotOptions ReadScreenshotOptions(JsonElement? paramsElement)
+    {
+        var selector = ReadElementSelector(paramsElement);
+        if (string.IsNullOrWhiteSpace(selector.AutomationId) && selector.RuntimeId is null)
+        {
+            return ScreenshotOptions.Default;
+        }
+
+        return new ScreenshotOptions { Selector = selector };
     }
 
     private static (ElementSelector Selector, string Value) ReadSetValueParams(

@@ -56,6 +56,64 @@ public sealed class OperationTimelineTests
     }
 
     /// <summary>
+    /// Supplied PNG bytes are stored as the frame instead of recapturing the window.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Window-capture callback returns a distinct PNG
+    /// - Clip PNG bytes are provided to CaptureAfterAsync
+    ///
+    /// Steps:
+    /// - CaptureAfterAsync with pngBytes
+    /// - FinalizeArtifacts
+    ///
+    /// Expected:
+    /// - Frame file equals the clip bytes
+    /// - Window-capture callback is not invoked
+    /// </remarks>
+    [Fact]
+    public async Task CaptureAfter_WithPngBytes_WritesThoseBytesNotWindowCapture()
+    {
+        var dir = NewTempDir();
+        try
+        {
+            var captures = 0;
+            var windowPng = new byte[] { 0x89, (byte)'P', (byte)'N', (byte)'G', 9, 9, 9 };
+            var clipPng = new byte[] { 0x89, (byte)'P', (byte)'N', (byte)'G', 1, 2, 3 };
+            var timeline = new OperationTimeline(
+                new TimelineOptions
+                {
+                    OutputDirectory = dir,
+                    Retention = TimelineRetention.Always,
+                },
+                _ =>
+                {
+                    captures++;
+                    return Task.FromResult(windowPng);
+                }
+            );
+
+            await timeline.CaptureAfterAsync(
+                "screenshot",
+                "12x8:7",
+                CancellationToken.None,
+                clipPng
+            );
+
+            var index = timeline.FinalizeArtifacts();
+            Assert.NotNull(index);
+            Assert.Equal(0, captures);
+            var frame = Path.Combine(dir, "frames", "0001.png");
+            Assert.True(File.Exists(frame));
+            Assert.Equal(clipPng, await File.ReadAllBytesAsync(frame));
+        }
+        finally
+        {
+            TryDelete(dir);
+        }
+    }
+
+    /// <summary>
     /// OnFailure discards artifacts when MarkFailed was never called.
     /// </summary>
     /// <remarks>

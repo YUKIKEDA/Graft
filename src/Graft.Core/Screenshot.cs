@@ -1,7 +1,7 @@
 namespace Graft.Core;
 
 /// <summary>
-/// A captured window screenshot (PNG bytes plus size metadata).
+/// A captured PNG screenshot (window or element clip) plus size metadata.
 /// </summary>
 public sealed class Screenshot
 {

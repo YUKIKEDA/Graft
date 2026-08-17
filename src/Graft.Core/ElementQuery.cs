@@ -2095,6 +2095,46 @@ public sealed class ElementQuery
     }
 
     /// <summary>
+    /// Waits until the element is present (<see cref="WaitForAsync"/> / ExpectTimeout), then captures a PNG clip of it.
+    /// Open ToolTips and Popup overlays of this element or its descendants are composited in screen space.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Screenshot meta and PNG bytes.</returns>
+    /// <exception cref="GraftException">Wait, resolve, or screenshot failed (may include <see cref="GraftException.Report"/>).</exception>
+    public async Task<Screenshot> ScreenshotAsync(CancellationToken cancellationToken = default)
+    {
+        var node = await WaitForAsync(cancellationToken).ConfigureAwait(false);
+        var automationId = string.IsNullOrWhiteSpace(node.AutomationId) ? null : node.AutomationId;
+        int? runtimeId = automationId is null ? node.RuntimeId : null;
+        try
+        {
+            var (meta, pngBytes) = await _connection
+                .ScreenshotAsync(automationId, runtimeId, cancellationToken)
+                .ConfigureAwait(false);
+            var shot = new Screenshot(meta.Format, meta.Width, meta.Height, pngBytes);
+            await RecordSuccessAsync(
+                    FailureSteps.Screenshot,
+                    $"{shot.Width}x{shot.Height}:{shot.PngBytes.Length}",
+                    cancellationToken,
+                    shot.PngBytes
+                )
+                .ConfigureAwait(false);
+            return shot;
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.Screenshot,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
     /// Waits until the element is not found or not visible.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -2702,14 +2742,15 @@ public sealed class ElementQuery
     private async Task RecordSuccessAsync(
         string action,
         string? detail,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        byte[]? pngBytes = null
     )
     {
         _operationLog.Record(action, detail);
         if (_timeline is not null)
         {
             await _timeline
-                .CaptureAfterAsync(action, detail, cancellationToken)
+                .CaptureAfterAsync(action, detail, cancellationToken, pngBytes)
                 .ConfigureAwait(false);
         }
     }

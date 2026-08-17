@@ -178,6 +178,39 @@ public sealed class ScenarioParserTests
         var shot = Assert.IsType<ScreenshotOperation>(scenario.Operations[1]);
         Assert.Equal(ScenarioActions.Screenshot, shot.Action);
         Assert.Equal("out/shot.png", shot.Path);
+        Assert.Null(shot.AutomationId);
+    }
+
+    /// <summary>
+    /// screenshot steps compile with an optional automationId clip.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with launch + screenshot automationId
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - ScreenshotOperation with path and automationId
+    /// </remarks>
+    [Fact]
+    public void Parse_ScreenshotStepWithAutomationId_CompilesClip()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "screenshot", "path": "out/clip.png", "automationId": "SampleButton" }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var shot = Assert.IsType<ScreenshotOperation>(scenario.Operations[1]);
+        Assert.Equal("out/clip.png", shot.Path);
+        Assert.Equal("SampleButton", shot.AutomationId);
     }
 
     /// <summary>

@@ -71,11 +71,16 @@ internal sealed class OperationTimeline
     /// <param name="action">FailureSteps / action id.</param>
     /// <param name="detail">Optional detail (automation id, etc.).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="pngBytes">
+    /// Optional PNG to store as the frame. When omitted, <c>capturePng</c> (target window) is used.
+    /// Pass the bytes from an element-clip screenshot so the frame matches the clip label.
+    /// </param>
     /// <returns>A task that completes when the frame is stored or skipped.</returns>
     public async Task CaptureAfterAsync(
         string action,
         string? detail,
-        CancellationToken cancellationToken = default
+        CancellationToken cancellationToken = default,
+        byte[]? pngBytes = null
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(action);
@@ -90,7 +95,10 @@ internal sealed class OperationTimeline
 
         try
         {
-            var png = await _capturePng(cancellationToken).ConfigureAwait(false);
+            var png =
+                pngBytes is { Length: > 0 }
+                    ? pngBytes
+                    : await _capturePng(cancellationToken).ConfigureAwait(false);
             if (png is null || png.Length == 0)
             {
                 return;

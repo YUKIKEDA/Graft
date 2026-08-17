@@ -43,12 +43,33 @@ internal static class WpfVisualTreeWalker
     /// <param name="selector">automationId required; runtimeId optional.</param>
     /// <returns>The unique match.</returns>
     /// <exception cref="ElementResolveException">Invalid selector, not found, or ambiguous.</exception>
-    public static ResolvedElement Resolve(Window root, ElementSelector selector)
+    public static ResolvedElement Resolve(Window root, ElementSelector selector) =>
+        ResolveCore(root, selector, requireAutomationId: true);
+
+    /// <summary>
+    /// Resolves a live element for screenshot: <c>automationId</c> and/or <c>runtimeId</c>.
+    /// </summary>
+    /// <param name="root">Window to search.</param>
+    /// <param name="selector">automationId and/or runtimeId.</param>
+    /// <returns>The unique match.</returns>
+    /// <exception cref="ElementResolveException">Invalid selector, not found, or ambiguous.</exception>
+    public static ResolvedElement ResolveForScreenshot(Window root, ElementSelector selector) =>
+        ResolveCore(root, selector, requireAutomationId: false);
+
+    private static ResolvedElement ResolveCore(
+        Window root,
+        ElementSelector selector,
+        bool requireAutomationId
+    )
     {
         ArgumentNullException.ThrowIfNull(root);
         ArgumentNullException.ThrowIfNull(selector);
 
-        if (string.IsNullOrWhiteSpace(selector.AutomationId))
+        var automationId = string.IsNullOrWhiteSpace(selector.AutomationId)
+            ? null
+            : selector.AutomationId.Trim();
+
+        if (requireAutomationId && automationId is null)
         {
             throw new ElementResolveException(
                 GraftErrorCodes.SelectorInvalid,
@@ -56,28 +77,42 @@ internal static class WpfVisualTreeWalker
             );
         }
 
-        var automationId = selector.AutomationId.Trim();
+        if (!requireAutomationId && automationId is null && selector.RuntimeId is null)
+        {
+            throw new ElementResolveException(
+                GraftErrorCodes.SelectorInvalid,
+                "params.automationId or params.runtimeId is required."
+            );
+        }
 
-        // Resolve walks without GetTree truncation so invoke targets are not missed.
-        var state = new WalkState(
-            new GetTreeOptions { MaxDepth = int.MaxValue / 4, MaxNodes = int.MaxValue / 4 }
-        );
+        // runtimeId is assigned by getTree (default depth/maxNodes). An untruncated
+        // walk renumbers later nodes and would screenshot the wrong visual.
+        var walkOptions = selector.RuntimeId is not null
+            ? new GetTreeOptions()
+            : new GetTreeOptions { MaxDepth = int.MaxValue / 4, MaxNodes = int.MaxValue / 4 };
+        var state = new WalkState(walkOptions);
         var matches = new List<(object Target, int RuntimeId, string ControlType)>();
         CollectMatches(root, depth: 0, state, automationId, selector.RuntimeId, matches);
 
         if (matches.Count == 0)
         {
+            var detail = automationId is not null
+                ? $"automationId '{automationId}'"
+                : $"runtimeId {selector.RuntimeId}";
             throw new ElementResolveException(
                 GraftErrorCodes.ElementNotFound,
-                $"No element matched automationId '{automationId}'."
+                $"No element matched {detail}."
             );
         }
 
         if (matches.Count > 1)
         {
+            var detail = automationId is not null
+                ? $"automationId '{automationId}'"
+                : $"runtimeId {selector.RuntimeId}";
             throw new ElementResolveException(
                 GraftErrorCodes.ElementAmbiguous,
-                $"Multiple elements matched automationId '{automationId}' ({matches.Count})."
+                $"Multiple elements matched {detail} ({matches.Count})."
             );
         }
 
@@ -85,7 +120,7 @@ internal static class WpfVisualTreeWalker
         return new ResolvedElement
         {
             Target = target,
-            AutomationId = automationId,
+            AutomationId = automationId ?? string.Empty,
             RuntimeId = runtimeId,
             ControlType = controlType,
         };
@@ -95,7 +130,7 @@ internal static class WpfVisualTreeWalker
         FrameworkElement element,
         int depth,
         WalkState state,
-        string automationId,
+        string? automationId,
         int? runtimeIdFilter,
         List<(object Target, int RuntimeId, string ControlType)> matches
     )
@@ -103,10 +138,7 @@ internal static class WpfVisualTreeWalker
         state.NodeCount++;
         var runtimeId = state.NextRuntimeId++;
         var elementAutomationId = AutomationProperties.GetAutomationId(element) ?? string.Empty;
-        if (
-            string.Equals(elementAutomationId, automationId, StringComparison.Ordinal)
-            && (runtimeIdFilter is null || runtimeIdFilter == runtimeId)
-        )
+        if (IsMatch(elementAutomationId, automationId, runtimeId, runtimeIdFilter))
         {
             matches.Add((element, runtimeId, element.GetType().Name));
         }
@@ -119,12 +151,13 @@ internal static class WpfVisualTreeWalker
         );
 
         CollectHyperlinkMatches(element, state, automationId, runtimeIdFilter, matches);
+        CollectOpenToolTipMatches(element, depth, state, automationId, runtimeIdFilter, matches);
     }
 
     private static void CollectHyperlinkMatches(
         FrameworkElement element,
         WalkState state,
-        string automationId,
+        string? automationId,
         int? runtimeIdFilter,
         List<(object Target, int RuntimeId, string ControlType)> matches
     )
@@ -145,14 +178,49 @@ internal static class WpfVisualTreeWalker
             state.NodeCount++;
             var runtimeId = state.NextRuntimeId++;
             var linkId = AutomationProperties.GetAutomationId(hyperlink) ?? string.Empty;
-            if (
-                string.Equals(linkId, automationId, StringComparison.Ordinal)
-                && (runtimeIdFilter is null || runtimeIdFilter == runtimeId)
-            )
+            if (IsMatch(linkId, automationId, runtimeId, runtimeIdFilter))
             {
                 matches.Add((hyperlink, runtimeId, nameof(Hyperlink)));
             }
         }
+    }
+
+    private static void CollectOpenToolTipMatches(
+        FrameworkElement element,
+        int depth,
+        WalkState state,
+        string? automationId,
+        int? runtimeIdFilter,
+        List<(object Target, int RuntimeId, string ControlType)> matches
+    )
+    {
+        if (element.ToolTip is not ToolTip { IsOpen: true } toolTip)
+        {
+            return;
+        }
+
+        // Same MaxNodes gate as AppendOpenToolTipChild so runtimeId matches getTree.
+        if (state.NodeCount >= state.Options.MaxNodes)
+        {
+            state.Truncated = true;
+            return;
+        }
+
+        CollectMatches(toolTip, depth + 1, state, automationId, runtimeIdFilter, matches);
+    }
+
+    private static bool IsMatch(
+        string elementAutomationId,
+        string? automationId,
+        int runtimeId,
+        int? runtimeIdFilter
+    )
+    {
+        var idMatches =
+            automationId is null
+            || string.Equals(elementAutomationId, automationId, StringComparison.Ordinal);
+        var runtimeMatches = runtimeIdFilter is null || runtimeIdFilter == runtimeId;
+        return idMatches && runtimeMatches;
     }
 
     private static TreeNode BuildNode(
@@ -174,6 +242,7 @@ internal static class WpfVisualTreeWalker
         );
 
         AppendHyperlinkChildren(element, window, boundsOrigin, children, state);
+        AppendOpenToolTipChild(element, window, boundsOrigin, children, state, depth);
 
         return new TreeNode
         {
@@ -233,6 +302,29 @@ internal static class WpfVisualTreeWalker
                 }
             );
         }
+    }
+
+    private static void AppendOpenToolTipChild(
+        FrameworkElement element,
+        Window window,
+        Visual boundsOrigin,
+        List<TreeNode> children,
+        WalkState state,
+        int depth
+    )
+    {
+        if (element.ToolTip is not ToolTip { IsOpen: true } toolTip)
+        {
+            return;
+        }
+
+        if (state.NodeCount >= state.Options.MaxNodes)
+        {
+            state.Truncated = true;
+            return;
+        }
+
+        children.Add(BuildNode(toolTip, window, boundsOrigin, depth + 1, state));
     }
 
     private static IEnumerable<Hyperlink> EnumerateHyperlinks(InlineCollection inlines)
