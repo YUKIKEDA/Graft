@@ -5,5 +5,4 @@ namespace Graft.Core.Scenario;
 /// </summary>
 /// <param name="AutomationId">Target automation id.</param>
 /// <param name="Value">Replacement text.</param>
-public sealed record SetValueOperation(string AutomationId, string Value)
-    : ScenarioOperation(ScenarioActions.SetValue);
+public sealed record SetValueOperation(string AutomationId, string Value) : ScenarioOperation(ScenarioActions.SetValue);

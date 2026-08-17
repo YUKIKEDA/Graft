@@ -4,6 +4,7 @@ using Graft.Protocol;
 namespace Graft.Core.Tests;
 
 [Collection(SampleUiCollection.Name)]
+[Trait("Category", "UI")]
 public sealed class WaitActionTests
 {
     /// <summary>
@@ -26,26 +27,14 @@ public sealed class WaitActionTests
     public async Task ExpectName_WrongValue_ThrowsExpectFailedWithFailureReport()
     {
         var appPath = SampleAppPaths.ResolveSampleWpfAppProject();
-        await using var session = await Application.LaunchAsync(
-            new LaunchOptions { AppPath = appPath, Timeout = TimeSpan.FromSeconds(60) }
-        );
-        session.WaitOptions = new WaitOptions
-        {
-            ExpectTimeout = TimeSpan.FromMilliseconds(800),
-            PollInterval = TimeSpan.FromMilliseconds(50),
-        };
+        await using var session = await Application.LaunchAsync(new LaunchOptions { AppPath = appPath, Timeout = TimeSpan.FromSeconds(60) });
+        session.WaitOptions = new WaitOptions { ExpectTimeout = TimeSpan.FromMilliseconds(800), PollInterval = TimeSpan.FromMilliseconds(50) };
 
         _ = await session.GetByAutomationId("StatusText").ExpectNameAsync("Ready");
 
-        session.WaitOptions = new WaitOptions
-        {
-            ExpectTimeout = TimeSpan.FromMilliseconds(500),
-            PollInterval = TimeSpan.FromMilliseconds(50),
-        };
+        session.WaitOptions = new WaitOptions { ExpectTimeout = TimeSpan.FromMilliseconds(500), PollInterval = TimeSpan.FromMilliseconds(50) };
 
-        var ex = await Assert.ThrowsAsync<GraftException>(() =>
-            session.GetByAutomationId("StatusText").ExpectNameAsync("never-matches")
-        );
+        var ex = await Assert.ThrowsAsync<GraftException>(() => session.GetByAutomationId("StatusText").ExpectNameAsync("never-matches"));
         Assert.Equal(GraftErrorCodes.ExpectFailed, ex.Code);
         Assert.NotNull(ex.Report);
         Assert.Equal(FailureSteps.ExpectName, ex.Report.Step);
@@ -57,10 +46,7 @@ public sealed class WaitActionTests
         Assert.NotNull(ex.Report.Tree);
         Assert.False(string.IsNullOrWhiteSpace(ex.Report.Tree.ControlType));
         Assert.NotNull(ex.Report.RecentOperations);
-        Assert.Contains(
-            ex.Report.RecentOperations,
-            op => op.Action == FailureSteps.ExpectName && op.Detail == "Ready"
-        );
+        Assert.Contains(ex.Report.RecentOperations, op => op.Action == FailureSteps.ExpectName && op.Detail == "Ready");
         Assert.False(string.IsNullOrWhiteSpace(ex.Report.ScreenshotPath));
         Assert.True(File.Exists(ex.Report.ScreenshotPath));
         try

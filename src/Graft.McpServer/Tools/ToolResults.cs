@@ -11,11 +11,7 @@ namespace Graft.McpServer.Tools;
 /// </summary>
 internal static class ToolResults
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy = null,
-        WriteIndented = false,
-    };
+    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNamingPolicy = null, WriteIndented = false };
 
     public static CallToolResult Ok(JsonObject payload)
     {
@@ -40,9 +36,7 @@ internal static class ToolResults
         return Text(node.ToJsonString(JsonOptions), isError: true);
     }
 
-    public static CallToolResult FromException(GraftException ex) =>
-        Error(ex.Code, ex.Message, ex.Report);
+    public static CallToolResult FromException(GraftException ex) => Error(ex.Code, ex.Message, ex.Report);
 
-    private static CallToolResult Text(string text, bool isError) =>
-        new() { IsError = isError, Content = [new TextContentBlock { Text = text }] };
+    private static CallToolResult Text(string text, bool isError) => new() { IsError = isError, Content = [new TextContentBlock { Text = text }] };
 }

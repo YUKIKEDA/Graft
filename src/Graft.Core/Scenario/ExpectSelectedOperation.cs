@@ -5,5 +5,4 @@ namespace Graft.Core.Scenario;
 /// </summary>
 /// <param name="AutomationId">Target automation id.</param>
 /// <param name="Selected">Expected selection state.</param>
-public sealed record ExpectSelectedOperation(string AutomationId, bool Selected)
-    : ScenarioOperation(ScenarioActions.ExpectSelected);
+public sealed record ExpectSelectedOperation(string AutomationId, bool Selected) : ScenarioOperation(ScenarioActions.ExpectSelected);

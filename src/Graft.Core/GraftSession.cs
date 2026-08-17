@@ -20,11 +20,7 @@ public sealed class GraftSession : IAsyncDisposable
     private readonly OperationTimeline? _timeline;
     private bool _disposed;
 
-    internal GraftSession(
-        Process process,
-        AgentConnection connection,
-        TimelineOptions? timeline = null
-    )
+    internal GraftSession(Process process, AgentConnection connection, TimelineOptions? timeline = null)
     {
         _process = process;
         _connection = connection;
@@ -64,13 +60,7 @@ public sealed class GraftSession : IAsyncDisposable
     public ElementQuery GetBy(Selector selector)
     {
         ArgumentNullException.ThrowIfNull(selector);
-        return new ElementQuery(
-            _connection,
-            selector,
-            WaitOptions,
-            _operationLog,
-            timeline: _timeline
-        );
+        return new ElementQuery(_connection, selector, WaitOptions, _operationLog, timeline: _timeline);
     }
 
     /// <summary>
@@ -78,8 +68,7 @@ public sealed class GraftSession : IAsyncDisposable
     /// </summary>
     /// <param name="automationId">Automation id shorthand.</param>
     /// <returns>A query that can invoke or expect against the live tree.</returns>
-    public ElementQuery GetByAutomationId(string automationId) =>
-        GetBy(Selector.ByAutomationId(automationId));
+    public ElementQuery GetByAutomationId(string automationId) => GetBy(Selector.ByAutomationId(automationId));
 
     /// <summary>
     /// Creates an element query for an exact automation / display name.
@@ -93,8 +82,7 @@ public sealed class GraftSession : IAsyncDisposable
     /// </summary>
     /// <param name="controlType">Control type (e.g. <c>Button</c>).</param>
     /// <returns>A query that can invoke or expect against the live tree.</returns>
-    public ElementQuery GetByControlType(string controlType) =>
-        GetBy(Selector.ByControlType(controlType));
+    public ElementQuery GetByControlType(string controlType) => GetBy(Selector.ByControlType(controlType));
 
     /// <summary>
     /// Lists open windows with session-local <c>windowId</c> values.
@@ -102,21 +90,12 @@ public sealed class GraftSession : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Window list result.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task<ListWindowsResult> ListWindowsAsync(
-        CancellationToken cancellationToken = default
-    )
+    public async Task<ListWindowsResult> ListWindowsAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            var result = await _connection
-                .ListWindowsAsync(cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(
-                    FailureSteps.ListWindows,
-                    $"{result.Windows.Count} window(s)",
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            var result = await _connection.ListWindowsAsync(cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.ListWindows, $"{result.Windows.Count} window(s)", cancellationToken).ConfigureAwait(false);
             return result;
         }
         catch (GraftException)
@@ -133,20 +112,12 @@ public sealed class GraftSession : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when the switch succeeds.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task SwitchToWindowAsync(
-        int windowId,
-        CancellationToken cancellationToken = default
-    )
+    public async Task SwitchToWindowAsync(int windowId, CancellationToken cancellationToken = default)
     {
         try
         {
             await _connection.SwitchWindowAsync(windowId, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(
-                    FailureSteps.SwitchWindow,
-                    $"windowId={windowId}",
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.SwitchWindow, $"windowId={windowId}", cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException)
         {
@@ -179,49 +150,30 @@ public sealed class GraftSession : IAsyncDisposable
             throw new ArgumentException("At least one of title or automationId must be provided.");
         }
 
-        var timeout = PositiveOrDefault(
-            WaitOptions.ExpectTimeout,
-            WaitOptions.DefaultExpectTimeout
-        );
+        var timeout = PositiveOrDefault(WaitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
         var poll = PositiveOrDefault(WaitOptions.PollInterval, WaitOptions.DefaultPollInterval);
         var deadline = DateTime.UtcNow + timeout;
 
         while (DateTime.UtcNow <= deadline)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var listed = await _connection
-                .ListWindowsAsync(cancellationToken)
-                .ConfigureAwait(false);
+            var listed = await _connection.ListWindowsAsync(cancellationToken).ConfigureAwait(false);
             var match = listed.Windows.FirstOrDefault(window =>
                 (!hasTitle || string.Equals(window.Title, title, StringComparison.Ordinal))
-                && (
-                    !hasAutomationId
-                    || string.Equals(window.AutomationId, automationId, StringComparison.Ordinal)
-                )
+                && (!hasAutomationId || string.Equals(window.AutomationId, automationId, StringComparison.Ordinal))
             );
 
             if (match is not null)
             {
                 if (switchTo)
                 {
-                    await _connection
-                        .SwitchWindowAsync(match.WindowId, cancellationToken)
-                        .ConfigureAwait(false);
-                    await RecordSuccessAsync(
-                            FailureSteps.WaitForWindow,
-                            $"windowId={match.WindowId};switched",
-                            cancellationToken
-                        )
+                    await _connection.SwitchWindowAsync(match.WindowId, cancellationToken).ConfigureAwait(false);
+                    await RecordSuccessAsync(FailureSteps.WaitForWindow, $"windowId={match.WindowId};switched", cancellationToken)
                         .ConfigureAwait(false);
                 }
                 else
                 {
-                    await RecordSuccessAsync(
-                            FailureSteps.WaitForWindow,
-                            $"windowId={match.WindowId}",
-                            cancellationToken
-                        )
-                        .ConfigureAwait(false);
+                    await RecordSuccessAsync(FailureSteps.WaitForWindow, $"windowId={match.WindowId}", cancellationToken).ConfigureAwait(false);
                 }
 
                 return match;
@@ -233,8 +185,7 @@ public sealed class GraftSession : IAsyncDisposable
                 break;
             }
 
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
-                .ConfigureAwait(false);
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
         }
 
         var criteria =
@@ -243,10 +194,7 @@ public sealed class GraftSession : IAsyncDisposable
             : $"automationId='{automationId}'";
 
         _timeline?.MarkFailed();
-        throw new GraftException(
-            GraftErrorCodes.ActionTimeout,
-            $"Timed out after {timeout.TotalSeconds:0.###}s waiting for window ({criteria})."
-        );
+        throw new GraftException(GraftErrorCodes.ActionTimeout, $"Timed out after {timeout.TotalSeconds:0.###}s waiting for window ({criteria}).");
     }
 
     /// <summary>
@@ -258,11 +206,7 @@ public sealed class GraftSession : IAsyncDisposable
     /// <returns>A task that completes when the window is no longer listed.</returns>
     /// <exception cref="ArgumentException">Neither title nor automationId was provided.</exception>
     /// <exception cref="GraftException">Timed out or RPC failed.</exception>
-    public async Task WaitForWindowClosedAsync(
-        string? title = null,
-        string? automationId = null,
-        CancellationToken cancellationToken = default
-    )
+    public async Task WaitForWindowClosedAsync(string? title = null, string? automationId = null, CancellationToken cancellationToken = default)
     {
         var hasTitle = !string.IsNullOrWhiteSpace(title);
         var hasAutomationId = !string.IsNullOrWhiteSpace(automationId);
@@ -271,25 +215,17 @@ public sealed class GraftSession : IAsyncDisposable
             throw new ArgumentException("At least one of title or automationId must be provided.");
         }
 
-        var timeout = PositiveOrDefault(
-            WaitOptions.ExpectTimeout,
-            WaitOptions.DefaultExpectTimeout
-        );
+        var timeout = PositiveOrDefault(WaitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
         var poll = PositiveOrDefault(WaitOptions.PollInterval, WaitOptions.DefaultPollInterval);
         var deadline = DateTime.UtcNow + timeout;
 
         while (DateTime.UtcNow <= deadline)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var listed = await _connection
-                .ListWindowsAsync(cancellationToken)
-                .ConfigureAwait(false);
+            var listed = await _connection.ListWindowsAsync(cancellationToken).ConfigureAwait(false);
             var match = listed.Windows.FirstOrDefault(window =>
                 (!hasTitle || string.Equals(window.Title, title, StringComparison.Ordinal))
-                && (
-                    !hasAutomationId
-                    || string.Equals(window.AutomationId, automationId, StringComparison.Ordinal)
-                )
+                && (!hasAutomationId || string.Equals(window.AutomationId, automationId, StringComparison.Ordinal))
             );
 
             if (match is null)
@@ -298,12 +234,7 @@ public sealed class GraftSession : IAsyncDisposable
                     hasTitle && hasAutomationId ? $"title='{title}', automationId='{automationId}'"
                     : hasTitle ? $"title='{title}'"
                     : $"automationId='{automationId}'";
-                await RecordSuccessAsync(
-                        FailureSteps.WaitForWindowClosed,
-                        detail,
-                        cancellationToken
-                    )
-                    .ConfigureAwait(false);
+                await RecordSuccessAsync(FailureSteps.WaitForWindowClosed, detail, cancellationToken).ConfigureAwait(false);
                 return;
             }
 
@@ -313,8 +244,7 @@ public sealed class GraftSession : IAsyncDisposable
                 break;
             }
 
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
-                .ConfigureAwait(false);
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
         }
 
         var criteria =
@@ -342,8 +272,7 @@ public sealed class GraftSession : IAsyncDisposable
         try
         {
             await _connection.ArmOpenFileAsync(path, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.ArmOpenFile, path, cancellationToken)
-                .ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.ArmOpenFile, path, cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException)
         {
@@ -363,8 +292,7 @@ public sealed class GraftSession : IAsyncDisposable
         try
         {
             await _connection.ArmOpenFileCancelAsync(cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.ArmOpenFileCancel, "cancel", cancellationToken)
-                .ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.ArmOpenFileCancel, "cancel", cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException)
         {
@@ -386,8 +314,7 @@ public sealed class GraftSession : IAsyncDisposable
         try
         {
             await _connection.ArmSaveFileAsync(path, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.ArmSaveFile, path, cancellationToken)
-                .ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.ArmSaveFile, path, cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException)
         {
@@ -407,8 +334,7 @@ public sealed class GraftSession : IAsyncDisposable
         try
         {
             await _connection.ArmSaveFileCancelAsync(cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.ArmSaveFileCancel, "cancel", cancellationToken)
-                .ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.ArmSaveFileCancel, "cancel", cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException)
         {
@@ -430,8 +356,7 @@ public sealed class GraftSession : IAsyncDisposable
         try
         {
             await _connection.ArmOpenFolderAsync(path, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.ArmOpenFolder, path, cancellationToken)
-                .ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.ArmOpenFolder, path, cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException)
         {
@@ -451,8 +376,7 @@ public sealed class GraftSession : IAsyncDisposable
         try
         {
             await _connection.ArmOpenFolderCancelAsync(cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.ArmOpenFolderCancel, "cancel", cancellationToken)
-                .ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.ArmOpenFolderCancel, "cancel", cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException)
         {
@@ -468,17 +392,13 @@ public sealed class GraftSession : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when arming succeeds.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task ArmMessageBoxAsync(
-        string result,
-        CancellationToken cancellationToken = default
-    )
+    public async Task ArmMessageBoxAsync(string result, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(result);
         try
         {
             await _connection.ArmMessageBoxAsync(result, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.ArmMessageBox, result, cancellationToken)
-                .ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.ArmMessageBox, result, cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException)
         {
@@ -498,16 +418,9 @@ public sealed class GraftSession : IAsyncDisposable
     {
         try
         {
-            var (meta, pngBytes) = await _connection
-                .ScreenshotAsync(cancellationToken)
-                .ConfigureAwait(false);
+            var (meta, pngBytes) = await _connection.ScreenshotAsync(cancellationToken).ConfigureAwait(false);
             var shot = new Screenshot(meta.Format, meta.Width, meta.Height, pngBytes);
-            await RecordSuccessAsync(
-                    FailureSteps.Screenshot,
-                    $"{shot.Width}x{shot.Height}:{shot.PngBytes.Length}",
-                    cancellationToken,
-                    shot.PngBytes
-                )
+            await RecordSuccessAsync(FailureSteps.Screenshot, $"{shot.Width}x{shot.Height}:{shot.PngBytes.Length}", cancellationToken, shot.PngBytes)
                 .ConfigureAwait(false);
             return shot;
         }
@@ -567,24 +480,16 @@ public sealed class GraftSession : IAsyncDisposable
         return _timeline?.FinalizeArtifacts();
     }
 
-    private async Task RecordSuccessAsync(
-        string action,
-        string? detail,
-        CancellationToken cancellationToken,
-        byte[]? pngBytes = null
-    )
+    private async Task RecordSuccessAsync(string action, string? detail, CancellationToken cancellationToken, byte[]? pngBytes = null)
     {
         _operationLog.Record(action, detail);
         if (_timeline is not null)
         {
-            await _timeline
-                .CaptureAfterAsync(action, detail, cancellationToken, pngBytes)
-                .ConfigureAwait(false);
+            await _timeline.CaptureAfterAsync(action, detail, cancellationToken, pngBytes).ConfigureAwait(false);
         }
     }
 
-    private static TimeSpan PositiveOrDefault(TimeSpan value, TimeSpan fallback) =>
-        value <= TimeSpan.Zero ? fallback : value;
+    private static TimeSpan PositiveOrDefault(TimeSpan value, TimeSpan fallback) => value <= TimeSpan.Zero ? fallback : value;
 
     private static void TryKill(Process process)
     {

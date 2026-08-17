@@ -7,13 +7,7 @@ internal static class SampleAppPaths
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null)
         {
-            var candidate = Path.Combine(
-                dir.FullName,
-                "tests",
-                "sample-apps",
-                "SampleWpfApp",
-                "SampleWpfApp.csproj"
-            );
+            var candidate = Path.Combine(dir.FullName, "tests", "sample-apps", "SampleWpfApp", "SampleWpfApp.csproj");
             if (File.Exists(candidate))
             {
                 return candidate;
@@ -22,8 +16,6 @@ internal static class SampleAppPaths
             dir = dir.Parent;
         }
 
-        throw new InvalidOperationException(
-            "Could not locate SampleWpfApp.csproj from the test base directory."
-        );
+        throw new InvalidOperationException("Could not locate SampleWpfApp.csproj from the test base directory.");
     }
 }

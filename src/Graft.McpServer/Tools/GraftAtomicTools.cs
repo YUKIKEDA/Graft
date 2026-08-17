@@ -34,9 +34,7 @@ public sealed partial class GraftAtomicTools
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_launch")]
-    [Description(
-        "Launch an instrumented app and open a Graft session. Fails if a session is already open."
-    )]
+    [Description("Launch an instrumented app and open a Graft session. Fails if a session is already open.")]
     public partial Task<CallToolResult> Launch(
         [Description("Absolute path to the app exe or csproj.")] string appPath,
         [Description("MSBuild configuration (default GraftTest).")] string? configuration = null,
@@ -48,18 +46,12 @@ public sealed partial class GraftAtomicTools
             {
                 if (session is not null)
                 {
-                    return ToolResults.Error(
-                        GraftErrorCodes.ActionFailed,
-                        "A session is already open. Call graft_dispose first."
-                    );
+                    return ToolResults.Error(GraftErrorCodes.ActionFailed, "A session is already open. Call graft_dispose first.");
                 }
 
                 if (string.IsNullOrWhiteSpace(appPath))
                 {
-                    return ToolResults.Error(
-                        GraftErrorCodes.ActionFailed,
-                        "appPath must be non-empty."
-                    );
+                    return ToolResults.Error(GraftErrorCodes.ActionFailed, "appPath must be non-empty.");
                 }
 
                 try
@@ -67,25 +59,13 @@ public sealed partial class GraftAtomicTools
                     var options = new LaunchOptions
                     {
                         AppPath = appPath,
-                        Configuration = string.IsNullOrWhiteSpace(configuration)
-                            ? "GraftTest"
-                            : configuration!,
-                        Timeout = timeoutSeconds is > 0
-                            ? TimeSpan.FromSeconds(timeoutSeconds.Value)
-                            : LaunchOptions.DefaultTimeout,
+                        Configuration = string.IsNullOrWhiteSpace(configuration) ? "GraftTest" : configuration!,
+                        Timeout = timeoutSeconds is > 0 ? TimeSpan.FromSeconds(timeoutSeconds.Value) : LaunchOptions.DefaultTimeout,
                     };
 
-                    var launched = await Application
-                        .LaunchAsync(options, cancellationToken)
-                        .ConfigureAwait(false);
+                    var launched = await Application.LaunchAsync(options, cancellationToken).ConfigureAwait(false);
                     _hub.SetSession(launched);
-                    return ToolResults.Ok(
-                        new JsonObject
-                        {
-                            ["processId"] = launched.ProcessId,
-                            ["appPath"] = Path.GetFullPath(appPath),
-                        }
-                    );
+                    return ToolResults.Ok(new JsonObject { ["processId"] = launched.ProcessId, ["appPath"] = Path.GetFullPath(appPath) });
                 }
                 catch (GraftException ex)
                 {
@@ -110,10 +90,7 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .InvokeAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                await session.GetByAutomationId(automationId).InvokeAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -134,10 +111,7 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .RightClickAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                await session.GetByAutomationId(automationId).RightClickAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -158,10 +132,7 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .DoubleClickAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                await session.GetByAutomationId(automationId).DoubleClickAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -182,10 +153,7 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .HoverAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                await session.GetByAutomationId(automationId).HoverAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -208,17 +176,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .DragAsync(toAutomationId, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject
-                    {
-                        ["automationId"] = automationId,
-                        ["toAutomationId"] = toAutomationId,
-                    }
-                );
+                await session.GetByAutomationId(automationId).DragAsync(toAutomationId, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["toAutomationId"] = toAutomationId });
             },
             cancellationToken
         );
@@ -242,10 +201,7 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .ClickAtAsync(offsetX, offsetY, cancellationToken)
-                    .ConfigureAwait(false);
+                await session.GetByAutomationId(automationId).ClickAtAsync(offsetX, offsetY, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(
                     new JsonObject
                     {
@@ -275,13 +231,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .WheelAsync(delta, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["delta"] = delta }
-                );
+                await session.GetByAutomationId(automationId).WheelAsync(delta, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["delta"] = delta });
             },
             cancellationToken
         );
@@ -303,13 +254,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .SetValueAsync(value, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["value"] = value }
-                );
+                await session.GetByAutomationId(automationId).SetValueAsync(value, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["value"] = value });
             },
             cancellationToken
         );
@@ -329,10 +275,7 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .ToggleAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                await session.GetByAutomationId(automationId).ToggleAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -355,13 +298,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .SendKeysAsync(text, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["text"] = text }
-                );
+                await session.GetByAutomationId(automationId).SendKeysAsync(text, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["text"] = text });
             },
             cancellationToken
         );
@@ -374,9 +312,7 @@ public sealed partial class GraftAtomicTools
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_press_keys")]
-    [Description(
-        "pressKeys: one keyboard chord (e.g. Control+A, Delete) on an element by automationId."
-    )]
+    [Description("pressKeys: one keyboard chord (e.g. Control+A, Delete) on an element by automationId.")]
     public partial Task<CallToolResult> PressKeys(
         [Description("Target automation id.")] string automationId,
         [Description("Chord DSL (one chord per call).")] string keys,
@@ -385,13 +321,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .PressAsync(keys, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["keys"] = keys }
-                );
+                await session.GetByAutomationId(automationId).PressAsync(keys, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["keys"] = keys });
             },
             cancellationToken
         );
@@ -404,9 +335,7 @@ public sealed partial class GraftAtomicTools
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result including realized identity.</returns>
     [McpServerTool(Name = "graft_scroll_into_view")]
-    [Description(
-        "scrollIntoView for an element or list item (optional index) in the open session."
-    )]
+    [Description("scrollIntoView for an element or list item (optional index) in the open session.")]
     public partial Task<CallToolResult> ScrollIntoView(
         [Description("Target element or list automation id.")] string automationId,
         [Description("Optional zero-based list item index.")] int? index = null,
@@ -418,14 +347,8 @@ public sealed partial class GraftAtomicTools
                 var query = session.GetByAutomationId(automationId);
                 var identity = index is null
                     ? await query.ScrollIntoViewAsync(cancellationToken).ConfigureAwait(false)
-                    : await query
-                        .ScrollIntoViewAsync(index.Value, cancellationToken)
-                        .ConfigureAwait(false);
-                var payload = new JsonObject
-                {
-                    ["automationId"] = identity.AutomationId,
-                    ["listAutomationId"] = automationId,
-                };
+                    : await query.ScrollIntoViewAsync(index.Value, cancellationToken).ConfigureAwait(false);
+                var payload = new JsonObject { ["automationId"] = identity.AutomationId, ["listAutomationId"] = automationId };
                 if (identity.RuntimeId is { } runtimeId)
                 {
                     payload["runtimeId"] = runtimeId;
@@ -458,13 +381,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .SelectAsync(index, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["index"] = index }
-                );
+                await session.GetByAutomationId(automationId).SelectAsync(index, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["index"] = index });
             },
             cancellationToken
         );
@@ -486,13 +404,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .SelectAsync(key, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["key"] = key }
-                );
+                await session.GetByAutomationId(automationId).SelectAsync(key, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["key"] = key });
             },
             cancellationToken
         );
@@ -514,13 +427,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .SelectTreeAsync(path, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["path"] = path }
-                );
+                await session.GetByAutomationId(automationId).SelectTreeAsync(path, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["path"] = path });
             },
             cancellationToken
         );
@@ -533,9 +441,7 @@ public sealed partial class GraftAtomicTools
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_select_many")]
-    [Description(
-        "Replace ListBox or DataGrid multi-selection by indexes in the open session (empty clears)."
-    )]
+    [Description("Replace ListBox or DataGrid multi-selection by indexes in the open session (empty clears).")]
     public partial Task<CallToolResult> SelectMany(
         [Description("ListBox or DataGrid automation id.")] string automationId,
         [Description("Zero-based item/row indexes (empty clears selection).")] int[] indexes,
@@ -545,19 +451,14 @@ public sealed partial class GraftAtomicTools
             async session =>
             {
                 ArgumentNullException.ThrowIfNull(indexes);
-                await session
-                    .GetByAutomationId(automationId)
-                    .SelectManyAsync(indexes, cancellationToken)
-                    .ConfigureAwait(false);
+                await session.GetByAutomationId(automationId).SelectManyAsync(indexes, cancellationToken).ConfigureAwait(false);
                 var indexesJson = new JsonArray();
                 foreach (var index in indexes)
                 {
                     indexesJson.Add(index);
                 }
 
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["indexes"] = indexesJson }
-                );
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["indexes"] = indexesJson });
             },
             cancellationToken
         );
@@ -570,9 +471,7 @@ public sealed partial class GraftAtomicTools
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_select_menu")]
-    [Description(
-        "selectMenu under Menu/ContextMenu automationId via slash-separated AutomationId path."
-    )]
+    [Description("selectMenu under Menu/ContextMenu automationId via slash-separated AutomationId path.")]
     public partial Task<CallToolResult> SelectMenu(
         [Description("Menu or open ContextMenu automation id.")] string automationId,
         [Description("Slash-separated AutomationId path (root not included).")] string path,
@@ -581,13 +480,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .SelectMenuAsync(path, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["path"] = path }
-                );
+                await session.GetByAutomationId(automationId).SelectMenuAsync(path, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["path"] = path });
             },
             cancellationToken
         );
@@ -602,9 +496,7 @@ public sealed partial class GraftAtomicTools
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result with text.</returns>
     [McpServerTool(Name = "graft_get_cell_text")]
-    [Description(
-        "Get DataGrid cell text by row and column index or columnKey (Header) in the open session."
-    )]
+    [Description("Get DataGrid cell text by row and column index or columnKey (Header) in the open session.")]
     public partial Task<CallToolResult> GetCellText(
         [Description("DataGrid automation id.")] string automationId,
         [Description("Zero-based row index.")] int row,
@@ -617,14 +509,8 @@ public sealed partial class GraftAtomicTools
             {
                 EnsureColumnXor(column, columnKey);
                 var text = columnKey is null
-                    ? await session
-                        .GetByAutomationId(automationId)
-                        .GetCellTextAsync(row, column!.Value, cancellationToken)
-                        .ConfigureAwait(false)
-                    : await session
-                        .GetByAutomationId(automationId)
-                        .GetCellTextAsync(row, columnKey, cancellationToken)
-                        .ConfigureAwait(false);
+                    ? await session.GetByAutomationId(automationId).GetCellTextAsync(row, column!.Value, cancellationToken).ConfigureAwait(false)
+                    : await session.GetByAutomationId(automationId).GetCellTextAsync(row, columnKey, cancellationToken).ConfigureAwait(false);
                 var payload = new JsonObject
                 {
                     ["automationId"] = automationId,
@@ -656,9 +542,7 @@ public sealed partial class GraftAtomicTools
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_set_cell_value")]
-    [Description(
-        "Set DataGrid cell value by row and column index or columnKey (Header) in the open session."
-    )]
+    [Description("Set DataGrid cell value by row and column index or columnKey (Header) in the open session.")]
     public partial Task<CallToolResult> SetCellValue(
         [Description("DataGrid automation id.")] string automationId,
         [Description("Zero-based row index.")] int row,
@@ -680,10 +564,7 @@ public sealed partial class GraftAtomicTools
                 }
                 else
                 {
-                    await session
-                        .GetByAutomationId(automationId)
-                        .SetCellValueAsync(row, columnKey, value, cancellationToken)
-                        .ConfigureAwait(false);
+                    await session.GetByAutomationId(automationId).SetCellValueAsync(row, columnKey, value, cancellationToken).ConfigureAwait(false);
                 }
 
                 var payload = new JsonObject
@@ -730,17 +611,11 @@ public sealed partial class GraftAtomicTools
                 EnsureColumnXor(column, columnKey);
                 if (columnKey is null)
                 {
-                    await session
-                        .GetByAutomationId(automationId)
-                        .SelectCellAsync(row, column!.Value, cancellationToken)
-                        .ConfigureAwait(false);
+                    await session.GetByAutomationId(automationId).SelectCellAsync(row, column!.Value, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
-                    await session
-                        .GetByAutomationId(automationId)
-                        .SelectCellAsync(row, columnKey, cancellationToken)
-                        .ConfigureAwait(false);
+                    await session.GetByAutomationId(automationId).SelectCellAsync(row, columnKey, cancellationToken).ConfigureAwait(false);
                 }
 
                 var payload = new JsonObject { ["automationId"] = automationId, ["row"] = row };
@@ -777,10 +652,7 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .SelectRowAsync(columnKey, value, cancellationToken)
-                    .ConfigureAwait(false);
+                await session.GetByAutomationId(automationId).SelectRowAsync(columnKey, value, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(
                     new JsonObject
                     {
@@ -810,13 +682,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .ClickColumnHeaderAsync(columnKey, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["columnKey"] = columnKey }
-                );
+                await session.GetByAutomationId(automationId).ClickColumnHeaderAsync(columnKey, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["columnKey"] = columnKey });
             },
             cancellationToken
         );
@@ -829,17 +696,11 @@ public sealed partial class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_add_row")]
     [Description("addRow on a DataGrid in the open session.")]
-    public Task<CallToolResult> AddRow(
-        [Description("DataGrid automation id.")] string automationId,
-        CancellationToken cancellationToken = default
-    ) =>
+    public Task<CallToolResult> AddRow([Description("DataGrid automation id.")] string automationId, CancellationToken cancellationToken = default) =>
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .AddRowAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                await session.GetByAutomationId(automationId).AddRowAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -860,10 +721,7 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .DeleteSelectedRowsAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                await session.GetByAutomationId(automationId).DeleteSelectedRowsAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -880,9 +738,7 @@ public sealed partial class GraftAtomicTools
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_cell_text")]
-    [Description(
-        "Expect DataGrid cell text by row and column index or columnKey (Header) in the open session."
-    )]
+    [Description("Expect DataGrid cell text by row and column index or columnKey (Header) in the open session.")]
     public partial Task<CallToolResult> ExpectCellText(
         [Description("DataGrid automation id.")] string automationId,
         [Description("Zero-based row index.")] int row,
@@ -904,10 +760,7 @@ public sealed partial class GraftAtomicTools
                 }
                 else
                 {
-                    await session
-                        .GetByAutomationId(automationId)
-                        .ExpectCellTextAsync(row, columnKey, text, cancellationToken)
-                        .ConfigureAwait(false);
+                    await session.GetByAutomationId(automationId).ExpectCellTextAsync(row, columnKey, text, cancellationToken).ConfigureAwait(false);
                 }
 
                 var payload = new JsonObject
@@ -945,10 +798,7 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .ExpandAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                await session.GetByAutomationId(automationId).ExpandAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -969,10 +819,7 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .CollapseAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                await session.GetByAutomationId(automationId).CollapseAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -995,13 +842,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .ExpectNameAsync(name, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["name"] = name }
-                );
+                await session.GetByAutomationId(automationId).ExpectNameAsync(name, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["name"] = name });
             },
             cancellationToken
         );
@@ -1023,13 +865,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .ExpectSelectedAsync(selected, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["selected"] = selected }
-                );
+                await session.GetByAutomationId(automationId).ExpectSelectedAsync(selected, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["selected"] = selected });
             },
             cancellationToken
         );
@@ -1051,13 +888,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .ExpectExpandedAsync(expanded, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["expanded"] = expanded }
-                );
+                await session.GetByAutomationId(automationId).ExpectExpandedAsync(expanded, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["expanded"] = expanded });
             },
             cancellationToken
         );
@@ -1079,13 +911,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .ExpectCheckedAsync(checkedState, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["checked"] = checkedState }
-                );
+                await session.GetByAutomationId(automationId).ExpectCheckedAsync(checkedState, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["checked"] = checkedState });
             },
             cancellationToken
         );
@@ -1107,13 +934,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .ExpectEnabledAsync(enabled, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["enabled"] = enabled }
-                );
+                await session.GetByAutomationId(automationId).ExpectEnabledAsync(enabled, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["enabled"] = enabled });
             },
             cancellationToken
         );
@@ -1135,13 +957,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .ExpectVisibleAsync(visible, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["visible"] = visible }
-                );
+                await session.GetByAutomationId(automationId).ExpectVisibleAsync(visible, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["visible"] = visible });
             },
             cancellationToken
         );
@@ -1161,10 +978,7 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .ExpectFocusedAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                await session.GetByAutomationId(automationId).ExpectFocusedAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -1187,13 +1001,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .ExpectToolTipAsync(toolTip, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["toolTip"] = toolTip }
-                );
+                await session.GetByAutomationId(automationId).ExpectToolTipAsync(toolTip, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["toolTip"] = toolTip });
             },
             cancellationToken
         );
@@ -1215,13 +1024,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .ExpectNameContainsAsync(substring, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["substring"] = substring }
-                );
+                await session.GetByAutomationId(automationId).ExpectNameContainsAsync(substring, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["substring"] = substring });
             },
             cancellationToken
         );
@@ -1243,13 +1047,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .ExpectNameMatchesAsync(pattern, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["pattern"] = pattern }
-                );
+                await session.GetByAutomationId(automationId).ExpectNameMatchesAsync(pattern, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["pattern"] = pattern });
             },
             cancellationToken
         );
@@ -1271,13 +1070,8 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .ExpectValueAsync(value, cancellationToken)
-                    .ConfigureAwait(false);
-                return ToolResults.Ok(
-                    new JsonObject { ["automationId"] = automationId, ["value"] = value }
-                );
+                await session.GetByAutomationId(automationId).ExpectValueAsync(value, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["value"] = value });
             },
             cancellationToken
         );
@@ -1297,10 +1091,7 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .WaitForAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                await session.GetByAutomationId(automationId).WaitForAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -1321,10 +1112,7 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .GetByAutomationId(automationId)
-                    .ExpectGoneAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                await session.GetByAutomationId(automationId).ExpectGoneAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -1351,13 +1139,8 @@ public sealed partial class GraftAtomicTools
             {
                 var shot = string.IsNullOrWhiteSpace(automationId)
                     ? await session.ScreenshotAsync(cancellationToken).ConfigureAwait(false)
-                    : await session
-                        .GetByAutomationId(automationId)
-                        .ScreenshotAsync(cancellationToken)
-                        .ConfigureAwait(false);
-                var dest = string.IsNullOrWhiteSpace(path)
-                    ? Path.Combine(Path.GetTempPath(), $"graft-mcp-{Guid.NewGuid():N}.png")
-                    : path;
+                    : await session.GetByAutomationId(automationId).ScreenshotAsync(cancellationToken).ConfigureAwait(false);
+                var dest = string.IsNullOrWhiteSpace(path) ? Path.Combine(Path.GetTempPath(), $"graft-mcp-{Guid.NewGuid():N}.png") : path;
                 await shot.SaveAsync(dest, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(
                     new JsonObject
@@ -1380,15 +1163,11 @@ public sealed partial class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_list_windows")]
     [Description("List open windows with session-local windowId values.")]
-    public partial Task<CallToolResult> ListWindows(
-        CancellationToken cancellationToken = default
-    ) =>
+    public partial Task<CallToolResult> ListWindows(CancellationToken cancellationToken = default) =>
         WithSessionAsync(
             async session =>
             {
-                var result = await session
-                    .ListWindowsAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                var result = await session.ListWindowsAsync(cancellationToken).ConfigureAwait(false);
                 var windows = new JsonArray();
                 foreach (var window in result.Windows)
                 {
@@ -1424,9 +1203,7 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .SwitchToWindowAsync(windowId, cancellationToken)
-                    .ConfigureAwait(false);
+                await session.SwitchToWindowAsync(windowId, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["windowId"] = windowId });
             },
             cancellationToken
@@ -1441,9 +1218,7 @@ public sealed partial class GraftAtomicTools
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_wait_for_window")]
-    [Description(
-        "Wait for a window by title and/or automationId. Defaults to switching the target to the match."
-    )]
+    [Description("Wait for a window by title and/or automationId. Defaults to switching the target to the match.")]
     public partial Task<CallToolResult> WaitForWindow(
         [Description("Exact title (optional).")] string? title = null,
         [Description("Exact automation id (optional).")] string? automationId = null,
@@ -1453,9 +1228,7 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                var window = await session
-                    .WaitForWindowAsync(title, automationId, switchTo, cancellationToken)
-                    .ConfigureAwait(false);
+                var window = await session.WaitForWindowAsync(title, automationId, switchTo, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(
                     new JsonObject
                     {
@@ -1488,9 +1261,7 @@ public sealed partial class GraftAtomicTools
         WithSessionAsync(
             async session =>
             {
-                await session
-                    .WaitForWindowClosedAsync(title, automationId, cancellationToken)
-                    .ConfigureAwait(false);
+                await session.WaitForWindowClosedAsync(title, automationId, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(
                     new JsonObject
                     {
@@ -1528,13 +1299,7 @@ public sealed partial class GraftAtomicTools
                     .ConfigureAwait(false);
                 if (window is null)
                 {
-                    return ToolResults.Ok(
-                        new JsonObject
-                        {
-                            ["automationId"] = automationId,
-                            ["waitForNewWindow"] = false,
-                        }
-                    );
+                    return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["waitForNewWindow"] = false });
                 }
 
                 return ToolResults.Ok(
@@ -1558,9 +1323,7 @@ public sealed partial class GraftAtomicTools
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_arm_open_file")]
-    [Description(
-        "Arm the next OpenFileDialog.ShowDialog (RunDialog seam) to return a path (one-shot)."
-    )]
+    [Description("Arm the next OpenFileDialog.ShowDialog (RunDialog seam) to return a path (one-shot).")]
     public partial Task<CallToolResult> ArmOpenFile(
         [Description("File path to return.")] string path,
         CancellationToken cancellationToken = default
@@ -1581,9 +1344,7 @@ public sealed partial class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_arm_open_file_cancel")]
     [Description("Arm the next OpenFileDialog.ShowDialog (RunDialog seam) as cancel (one-shot).")]
-    public partial Task<CallToolResult> ArmOpenFileCancel(
-        CancellationToken cancellationToken = default
-    ) =>
+    public partial Task<CallToolResult> ArmOpenFileCancel(CancellationToken cancellationToken = default) =>
         WithSessionAsync(
             async session =>
             {
@@ -1600,9 +1361,7 @@ public sealed partial class GraftAtomicTools
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_arm_save_file")]
-    [Description(
-        "Arm the next SaveFileDialog.ShowDialog (RunDialog seam) to return a path (one-shot)."
-    )]
+    [Description("Arm the next SaveFileDialog.ShowDialog (RunDialog seam) to return a path (one-shot).")]
     public partial Task<CallToolResult> ArmSaveFile(
         [Description("File path to return.")] string path,
         CancellationToken cancellationToken = default
@@ -1623,9 +1382,7 @@ public sealed partial class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_arm_save_file_cancel")]
     [Description("Arm the next SaveFileDialog.ShowDialog (RunDialog seam) as cancel (one-shot).")]
-    public partial Task<CallToolResult> ArmSaveFileCancel(
-        CancellationToken cancellationToken = default
-    ) =>
+    public partial Task<CallToolResult> ArmSaveFileCancel(CancellationToken cancellationToken = default) =>
         WithSessionAsync(
             async session =>
             {
@@ -1642,9 +1399,7 @@ public sealed partial class GraftAtomicTools
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_arm_open_folder")]
-    [Description(
-        "Arm the next OpenFolderDialog.ShowDialog (RunDialog seam) to return a folder path (one-shot)."
-    )]
+    [Description("Arm the next OpenFolderDialog.ShowDialog (RunDialog seam) to return a folder path (one-shot).")]
     public partial Task<CallToolResult> ArmOpenFolder(
         [Description("Folder path to return.")] string path,
         CancellationToken cancellationToken = default
@@ -1665,9 +1420,7 @@ public sealed partial class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_arm_open_folder_cancel")]
     [Description("Arm the next OpenFolderDialog.ShowDialog (RunDialog seam) as cancel (one-shot).")]
-    public partial Task<CallToolResult> ArmOpenFolderCancel(
-        CancellationToken cancellationToken = default
-    ) =>
+    public partial Task<CallToolResult> ArmOpenFolderCancel(CancellationToken cancellationToken = default) =>
         WithSessionAsync(
             async session =>
             {
@@ -1684,9 +1437,7 @@ public sealed partial class GraftAtomicTools
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_arm_message_box")]
-    [Description(
-        "Arm the next MessageBox.Show to return a MessageBoxResult (None/OK/Cancel/Yes/No, one-shot)."
-    )]
+    [Description("Arm the next MessageBox.Show to return a MessageBoxResult (None/OK/Cancel/Yes/No, one-shot).")]
     public partial Task<CallToolResult> ArmMessageBox(
         [Description("MessageBoxResult name: None, OK, Cancel, Yes, or No.")] string result,
         CancellationToken cancellationToken = default
@@ -1707,18 +1458,13 @@ public sealed partial class GraftAtomicTools
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_dispose")]
     [Description("Dispose the open Graft session (closes pipe and kills the app process).")]
-    public partial Task<CallToolResult> DisposeSession(
-        CancellationToken cancellationToken = default
-    ) =>
+    public partial Task<CallToolResult> DisposeSession(CancellationToken cancellationToken = default) =>
         _hub.RunAsync(
             async session =>
             {
                 if (session is null)
                 {
-                    return ToolResults.Error(
-                        GraftErrorCodes.ActionFailed,
-                        "No open session to dispose."
-                    );
+                    return ToolResults.Error(GraftErrorCodes.ActionFailed, "No open session to dispose.");
                 }
 
                 await session.DisposeAsync().ConfigureAwait(false);
@@ -1734,26 +1480,17 @@ public sealed partial class GraftAtomicTools
         var hasKey = !string.IsNullOrWhiteSpace(columnKey);
         if (hasColumn == hasKey)
         {
-            throw new GraftException(
-                GraftErrorCodes.SelectorInvalid,
-                "Exactly one of column or columnKey is required."
-            );
+            throw new GraftException(GraftErrorCodes.SelectorInvalid, "Exactly one of column or columnKey is required.");
         }
     }
 
-    private Task<CallToolResult> WithSessionAsync(
-        Func<GraftSession, Task<CallToolResult>> action,
-        CancellationToken cancellationToken
-    ) =>
+    private Task<CallToolResult> WithSessionAsync(Func<GraftSession, Task<CallToolResult>> action, CancellationToken cancellationToken) =>
         _hub.RunAsync(
             async session =>
             {
                 if (session is null)
                 {
-                    return ToolResults.Error(
-                        GraftErrorCodes.ActionFailed,
-                        "No open session. Call graft_launch first."
-                    );
+                    return ToolResults.Error(GraftErrorCodes.ActionFailed, "No open session. Call graft_launch first.");
                 }
 
                 try

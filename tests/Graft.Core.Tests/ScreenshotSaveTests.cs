@@ -20,12 +20,7 @@ public sealed class ScreenshotSaveTests
     {
         var png = new byte[] { 0x89, (byte)'P', (byte)'N', (byte)'G', 0, 1, 2, 3 };
         var shot = new Screenshot("png", 10, 20, png);
-        var path = Path.Combine(
-            Path.GetTempPath(),
-            "graft-screenshot-tests",
-            Guid.NewGuid().ToString("N"),
-            "shot.png"
-        );
+        var path = Path.Combine(Path.GetTempPath(), "graft-screenshot-tests", Guid.NewGuid().ToString("N"), "shot.png");
 
         try
         {

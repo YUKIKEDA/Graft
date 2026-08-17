@@ -26,13 +26,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
     }
 
     /// <inheritdoc />
-    public void SetCellValue(
-        ElementSelector selector,
-        int row,
-        int? column,
-        string? columnKey,
-        string value
-    )
+    public void SetCellValue(ElementSelector selector, int row, int? column, string? columnKey, string value)
     {
         ArgumentNullException.ThrowIfNull(selector);
         ArgumentNullException.ThrowIfNull(value);
@@ -43,12 +37,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         });
     }
 
-    private static string GetCellTextOnUiThread(
-        ElementSelector selector,
-        int row,
-        int? column,
-        string? columnKey
-    )
+    private static string GetCellTextOnUiThread(ElementSelector selector, int row, int? column, string? columnKey)
     {
         var host = ResolveCellHost(selector);
         if (host is ListView listView)
@@ -69,10 +58,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         var content = dataColumn.GetCellContent(rowContainer);
         if (content is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"Failed to get cell content at row {row}, column {columnIndex}."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, $"Failed to get cell content at row {row}, column {columnIndex}.");
         }
 
         return dataColumn switch
@@ -87,12 +73,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         };
     }
 
-    private static string GetListViewCellText(
-        ListView listView,
-        int row,
-        int? column,
-        string? columnKey
-    )
+    private static string GetListViewCellText(ListView listView, int row, int? column, string? columnKey)
     {
         if (listView.View is not GridView gridView)
         {
@@ -111,10 +92,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         var item = listView.Items[row];
         if (item is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"ListView row {row} is null."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, $"ListView row {row} is null.");
         }
 
         var gridColumn = gridView.Columns[columnIndex];
@@ -172,21 +150,12 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         return Convert.ToString(current, CultureInfo.InvariantCulture) ?? string.Empty;
     }
 
-    private static void SetCellValueOnUiThread(
-        ElementSelector selector,
-        int row,
-        int? column,
-        string? columnKey,
-        string value
-    )
+    private static void SetCellValueOnUiThread(ElementSelector selector, int row, int? column, string? columnKey, string value)
     {
         var host = ResolveCellHost(selector);
         if (host is ListView)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "setCellValue is not supported for ListView/GridView (read-only)."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "setCellValue is not supported for ListView/GridView (read-only).");
         }
 
         var dataGrid = (DataGrid)host;
@@ -196,10 +165,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
 
         if (dataGrid.IsReadOnly || dataColumn.IsReadOnly)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"DataGrid cell at column {columnIndex} is read-only."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, $"DataGrid cell at column {columnIndex} is read-only.");
         }
 
         if (!dataGrid.IsEnabled || !dataGrid.IsVisible)
@@ -219,10 +185,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         dataGrid.CurrentCell = new DataGridCellInfo(item, dataColumn);
         if (!dataGrid.BeginEdit())
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"BeginEdit failed at row {row}, column {columnIndex}."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, $"BeginEdit failed at row {row}, column {columnIndex}.");
         }
 
         dataGrid.UpdateLayout();
@@ -251,16 +214,10 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
                     );
             }
 
-            if (
-                !dataGrid.CommitEdit(DataGridEditingUnit.Cell, true)
-                || !dataGrid.CommitEdit(DataGridEditingUnit.Row, true)
-            )
+            if (!dataGrid.CommitEdit(DataGridEditingUnit.Cell, true) || !dataGrid.CommitEdit(DataGridEditingUnit.Row, true))
             {
                 dataGrid.CancelEdit();
-                throw new ElementActionException(
-                    GraftErrorCodes.ActionFailed,
-                    $"CommitEdit failed at row {row}, column {columnIndex}."
-                );
+                throw new ElementActionException(GraftErrorCodes.ActionFailed, $"CommitEdit failed at row {row}, column {columnIndex}.");
             }
         }
         catch
@@ -280,66 +237,39 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         Idle(dataGrid);
     }
 
-    private static void SetTextCell(
-        FrameworkElement? content,
-        string value,
-        int row,
-        int columnIndex,
-        DataGrid dataGrid
-    )
+    private static void SetTextCell(FrameworkElement? content, string value, int row, int columnIndex, DataGrid dataGrid)
     {
         var textBox = content as TextBox ?? FindVisualChild<TextBox>(content);
         if (textBox is null)
         {
             dataGrid.CancelEdit();
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"No TextBox editor found at row {row}, column {columnIndex}."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, $"No TextBox editor found at row {row}, column {columnIndex}.");
         }
 
         textBox.Text = value;
         textBox.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
     }
 
-    private static void SetCheckBoxCell(
-        FrameworkElement? content,
-        string value,
-        int row,
-        int columnIndex,
-        DataGrid dataGrid
-    )
+    private static void SetCheckBoxCell(FrameworkElement? content, string value, int row, int columnIndex, DataGrid dataGrid)
     {
         if (!TryParseCheckBoxValue(value, out var isChecked))
         {
             dataGrid.CancelEdit();
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"setCellValue for CheckBox requires 'True' or 'False' (got '{value}')."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, $"setCellValue for CheckBox requires 'True' or 'False' (got '{value}').");
         }
 
         var checkBox = content as CheckBox ?? FindVisualChild<CheckBox>(content);
         if (checkBox is null)
         {
             dataGrid.CancelEdit();
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"No CheckBox editor found at row {row}, column {columnIndex}."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, $"No CheckBox editor found at row {row}, column {columnIndex}.");
         }
 
         checkBox.IsChecked = isChecked;
         checkBox.GetBindingExpression(ToggleButton.IsCheckedProperty)?.UpdateSource();
     }
 
-    private static void SetTemplateCell(
-        FrameworkElement? content,
-        string value,
-        int row,
-        int columnIndex,
-        DataGrid dataGrid
-    )
+    private static void SetTemplateCell(FrameworkElement? content, string value, int row, int columnIndex, DataGrid dataGrid)
     {
         var textBox = content as TextBox ?? FindVisualChild<TextBox>(content);
         if (textBox is not null)
@@ -411,10 +341,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         var hasKey = !string.IsNullOrWhiteSpace(columnKey);
         if (hasColumn == hasKey)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.SelectorInvalid,
-                "Exactly one of params.column or params.columnKey is required."
-            );
+            throw new ElementActionException(GraftErrorCodes.SelectorInvalid, "Exactly one of params.column or params.columnKey is required.");
         }
 
         if (hasColumn)
@@ -422,10 +349,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
             var index = column!.Value;
             if (index < 0)
             {
-                throw new ElementActionException(
-                    GraftErrorCodes.SelectorInvalid,
-                    "params.column must be >= 0."
-                );
+                throw new ElementActionException(GraftErrorCodes.SelectorInvalid, "params.column must be >= 0.");
             }
 
             if (index >= gridView.Columns.Count)
@@ -443,13 +367,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         var matches = new List<int>();
         for (var i = 0; i < gridView.Columns.Count; i++)
         {
-            if (
-                string.Equals(
-                    FormatHeader(gridView.Columns[i].Header),
-                    key,
-                    StringComparison.Ordinal
-                )
-            )
+            if (string.Equals(FormatHeader(gridView.Columns[i].Header), key, StringComparison.Ordinal))
             {
                 matches.Add(i);
             }
@@ -457,10 +375,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
 
         if (matches.Count == 0)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotFound,
-                $"No GridView column Header matched columnKey '{key}'."
-            );
+            throw new ElementActionException(GraftErrorCodes.ElementNotFound, $"No GridView column Header matched columnKey '{key}'.");
         }
 
         if (matches.Count > 1)
@@ -478,18 +393,12 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
     {
         if (row < 0)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.row must be >= 0."
-            );
+            throw new ElementActionException(GraftErrorCodes.SelectorInvalid, "params.row must be >= 0.");
         }
 
         if (row >= itemsControl.Items.Count)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotFound,
-                $"Row index {row} is out of range (count={itemsControl.Items.Count})."
-            );
+            throw new ElementActionException(GraftErrorCodes.ElementNotFound, $"Row index {row} is out of range (count={itemsControl.Items.Count}).");
         }
     }
 
@@ -518,10 +427,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         var hasKey = !string.IsNullOrWhiteSpace(columnKey);
         if (hasColumn == hasKey)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.SelectorInvalid,
-                "Exactly one of params.column or params.columnKey is required."
-            );
+            throw new ElementActionException(GraftErrorCodes.SelectorInvalid, "Exactly one of params.column or params.columnKey is required.");
         }
 
         if (hasColumn)
@@ -529,10 +435,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
             var index = column!.Value;
             if (index < 0)
             {
-                throw new ElementActionException(
-                    GraftErrorCodes.SelectorInvalid,
-                    "params.column must be >= 0."
-                );
+                throw new ElementActionException(GraftErrorCodes.SelectorInvalid, "params.column must be >= 0.");
             }
 
             if (index >= dataGrid.Columns.Count)
@@ -550,13 +453,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         var matches = new List<int>();
         for (var i = 0; i < dataGrid.Columns.Count; i++)
         {
-            if (
-                string.Equals(
-                    FormatHeader(dataGrid.Columns[i].Header),
-                    key,
-                    StringComparison.Ordinal
-                )
-            )
+            if (string.Equals(FormatHeader(dataGrid.Columns[i].Header), key, StringComparison.Ordinal))
             {
                 matches.Add(i);
             }
@@ -564,10 +461,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
 
         if (matches.Count == 0)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotFound,
-                $"No DataGrid column Header matched columnKey '{key}'."
-            );
+            throw new ElementActionException(GraftErrorCodes.ElementNotFound, $"No DataGrid column Header matched columnKey '{key}'.");
         }
 
         if (matches.Count > 1)
@@ -585,18 +479,12 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
     {
         if (row < 0)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.row must be >= 0."
-            );
+            throw new ElementActionException(GraftErrorCodes.SelectorInvalid, "params.row must be >= 0.");
         }
 
         if (row >= dataGrid.Items.Count)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotFound,
-                $"Row index {row} is out of range (count={dataGrid.Items.Count})."
-            );
+            throw new ElementActionException(GraftErrorCodes.ElementNotFound, $"Row index {row} is out of range (count={dataGrid.Items.Count}).");
         }
     }
 
@@ -612,10 +500,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
     {
         if (dataGrid.ItemContainerGenerator.ContainerFromIndex(row) is not DataGridRow rowContainer)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"Failed to realize DataGrid row at index {row}."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, $"Failed to realize DataGrid row at index {row}.");
         }
 
         return rowContainer;
@@ -626,10 +511,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         {
             TextBlock textBlock => textBlock.Text ?? string.Empty,
             TextBox textBox => textBox.Text ?? string.Empty,
-            _ => FindVisualChild<TextBlock>(content)?.Text
-                ?? FindVisualChild<TextBox>(content)?.Text
-                ?? content.ToString()
-                ?? string.Empty,
+            _ => FindVisualChild<TextBlock>(content)?.Text ?? FindVisualChild<TextBox>(content)?.Text ?? content.ToString() ?? string.Empty,
         };
 
     private static string ReadCheckBoxText(FrameworkElement content)
@@ -637,10 +519,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         var checkBox = content as CheckBox ?? FindVisualChild<CheckBox>(content);
         if (checkBox is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "Failed to read CheckBox cell content."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "Failed to read CheckBox cell content.");
         }
 
         return checkBox.IsChecked == true ? "True" : "False";
@@ -691,18 +570,14 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         return null;
     }
 
-    private static void Idle(DispatcherObject element) =>
-        element.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
+    private static void Idle(DispatcherObject element) => element.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
 
     private static T InvokeOnUi<T>(Func<T> action)
     {
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "WPF Application.Current is not available; cannot access DataGrid cells."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "WPF Application.Current is not available; cannot access DataGrid cells.");
         }
 
         if (dispatcher.CheckAccess())

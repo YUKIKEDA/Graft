@@ -78,9 +78,7 @@ public sealed class FrameIOTests
         await using var stream = new MemoryStream();
         var payload = new byte[8];
 
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await FrameIO.WriteAsync(stream, payload, maxPayloadBytes: 4)
-        );
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await FrameIO.WriteAsync(stream, payload, maxPayloadBytes: 4));
     }
 
     /// <summary>
@@ -105,8 +103,6 @@ public sealed class FrameIOTests
         await FrameIO.WriteAsync(stream, new byte[16]);
         stream.Position = 0;
 
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await FrameIO.ReadAsync(stream, maxPayloadBytes: 8)
-        );
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await FrameIO.ReadAsync(stream, maxPayloadBytes: 8));
     }
 }

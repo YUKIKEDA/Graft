@@ -5,6 +5,7 @@ using Graft.Protocol;
 namespace Graft.Core.Tests;
 
 [Collection(SampleUiCollection.Name)]
+[Trait("Category", "UI")]
 public sealed class SelfHealTests
 {
     /// <summary>
@@ -26,9 +27,7 @@ public sealed class SelfHealTests
     public async Task Invoke_StaleAutomationId_AutoHealsAndClicks()
     {
         var appPath = SampleAppPaths.ResolveSampleWpfAppProject();
-        await using var session = await Application.LaunchAsync(
-            new LaunchOptions { AppPath = appPath, Timeout = TimeSpan.FromSeconds(60) }
-        );
+        await using var session = await Application.LaunchAsync(new LaunchOptions { AppPath = appPath, Timeout = TimeSpan.FromSeconds(60) });
 
         await session
             .GetBy(
@@ -62,18 +61,10 @@ public sealed class SelfHealTests
     public async Task Invoke_MissingAutomationId_FailureReportIncludesHealingCandidates()
     {
         var appPath = SampleAppPaths.ResolveSampleWpfAppProject();
-        await using var session = await Application.LaunchAsync(
-            new LaunchOptions { AppPath = appPath, Timeout = TimeSpan.FromSeconds(60) }
-        );
-        session.WaitOptions = new WaitOptions
-        {
-            ActionTimeout = TimeSpan.FromMilliseconds(600),
-            PollInterval = TimeSpan.FromMilliseconds(50),
-        };
+        await using var session = await Application.LaunchAsync(new LaunchOptions { AppPath = appPath, Timeout = TimeSpan.FromSeconds(60) });
+        session.WaitOptions = new WaitOptions { ActionTimeout = TimeSpan.FromMilliseconds(600), PollInterval = TimeSpan.FromMilliseconds(50) };
 
-        var ex = await Assert.ThrowsAsync<GraftException>(() =>
-            session.GetByAutomationId("DoesNotExist").InvokeAsync()
-        );
+        var ex = await Assert.ThrowsAsync<GraftException>(() => session.GetByAutomationId("DoesNotExist").InvokeAsync());
         Assert.Equal(GraftErrorCodes.ActionTimeout, ex.Code);
         Assert.NotNull(ex.Report);
         Assert.NotNull(ex.Report.HealingCandidates);

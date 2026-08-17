@@ -46,11 +46,7 @@ public sealed class ConnectTests : IDisposable
         AgentServices.RegisterTreeProvider(new FakeTreeProvider());
         StartAgent();
 
-        await using var connection = await Application.ConnectAsync(
-            _pipeName,
-            Token,
-            TimeSpan.FromSeconds(5)
-        );
+        await using var connection = await Application.ConnectAsync(_pipeName, Token, TimeSpan.FromSeconds(5));
         var tree = await connection.GetTreeAsync();
 
         Assert.Equal("SampleButton", tree.Root.AutomationId);
@@ -75,9 +71,7 @@ public sealed class ConnectTests : IDisposable
     {
         StartAgent();
 
-        var ex = await Assert.ThrowsAsync<GraftException>(() =>
-            Application.ConnectAsync(_pipeName, "wrong", TimeSpan.FromSeconds(5))
-        );
+        var ex = await Assert.ThrowsAsync<GraftException>(() => Application.ConnectAsync(_pipeName, "wrong", TimeSpan.FromSeconds(5)));
         Assert.Equal(GraftErrorCodes.HandshakeRejected, ex.Code);
     }
 
@@ -101,11 +95,7 @@ public sealed class ConnectTests : IDisposable
         AgentServices.RegisterElementInvoker(fake);
         StartAgent();
 
-        await using var connection = await Application.ConnectAsync(
-            _pipeName,
-            Token,
-            TimeSpan.FromSeconds(5)
-        );
+        await using var connection = await Application.ConnectAsync(_pipeName, Token, TimeSpan.FromSeconds(5));
         await connection.InvokeAsync("SampleButton");
 
         Assert.Equal("SampleButton", fake.LastAutomationId);
@@ -131,11 +121,7 @@ public sealed class ConnectTests : IDisposable
         AgentServices.RegisterElementValueSetter(fake);
         StartAgent();
 
-        await using var connection = await Application.ConnectAsync(
-            _pipeName,
-            Token,
-            TimeSpan.FromSeconds(5)
-        );
+        await using var connection = await Application.ConnectAsync(_pipeName, Token, TimeSpan.FromSeconds(5));
         await connection.SetValueAsync("SampleTextBox", "hello");
 
         Assert.Equal("SampleTextBox", fake.LastAutomationId);
@@ -200,8 +186,7 @@ public sealed class ConnectTests : IDisposable
 
         public void Drag(ElementSelector from, ElementSelector to) => Invoke(from);
 
-        public void ClickAt(ElementSelector selector, double offsetX, double offsetY) =>
-            Invoke(selector);
+        public void ClickAt(ElementSelector selector, double offsetX, double offsetY) => Invoke(selector);
 
         public void Wheel(ElementSelector selector, int delta) => Invoke(selector);
     }

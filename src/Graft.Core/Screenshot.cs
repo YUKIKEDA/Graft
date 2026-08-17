@@ -23,11 +23,7 @@ public sealed class Screenshot
 
         if (height <= 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(height),
-                height,
-                "Height must be positive."
-            );
+            throw new ArgumentOutOfRangeException(nameof(height), height, "Height must be positive.");
         }
 
         Format = format;

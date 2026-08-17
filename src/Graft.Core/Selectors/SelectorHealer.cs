@@ -30,10 +30,7 @@ public static class SelectorHealer
     /// <param name="root">Tree root.</param>
     /// <param name="failedSelector">Selector that failed to resolve.</param>
     /// <returns>Up to <see cref="MaxCandidates"/> candidates, highest score first.</returns>
-    public static IReadOnlyList<HealingCandidate> ProposeCandidates(
-        TreeNode root,
-        Selector failedSelector
-    )
+    public static IReadOnlyList<HealingCandidate> ProposeCandidates(TreeNode root, Selector failedSelector)
     {
         ArgumentNullException.ThrowIfNull(root);
         ArgumentNullException.ThrowIfNull(failedSelector);
@@ -109,10 +106,7 @@ public static class SelectorHealer
         return true;
     }
 
-    private static List<(Selector Selector, int Score, string Reason)> CollectSuccessful(
-        TreeNode root,
-        Selector failedSelector
-    )
+    private static List<(Selector Selector, int Score, string Reason)> CollectSuccessful(TreeNode root, Selector failedSelector)
     {
         var results = new List<(Selector Selector, int Score, string Reason)>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
@@ -217,9 +211,7 @@ public static class SelectorHealer
         }
     }
 
-    private static IEnumerable<(Selector Selector, int Score)> EnumerateStableIdentityCandidates(
-        TreeNode root
-    )
+    private static IEnumerable<(Selector Selector, int Score)> EnumerateStableIdentityCandidates(TreeNode root)
     {
         foreach (var (node, ancestors) in WalkWithAncestors(root, []))
         {
@@ -251,13 +243,7 @@ public static class SelectorHealer
             try
             {
                 var resolved = TreeSelector.Resolve(root, selector);
-                if (
-                    !string.Equals(
-                        resolved.AutomationId,
-                        node.AutomationId,
-                        StringComparison.Ordinal
-                    )
-                )
+                if (!string.Equals(resolved.AutomationId, node.AutomationId, StringComparison.Ordinal))
                 {
                     continue;
                 }
@@ -284,8 +270,7 @@ public static class SelectorHealer
             var node = TreeSelector.Resolve(root, selector);
             var ancestors = FindAncestors(root, node);
             score = TreeSelector.Score(node, selector, ancestors);
-            return score >= SelectorWeights.Threshold
-                && !string.IsNullOrWhiteSpace(node.AutomationId);
+            return score >= SelectorWeights.Threshold && !string.IsNullOrWhiteSpace(node.AutomationId);
         }
         catch (GraftException)
         {
@@ -293,10 +278,7 @@ public static class SelectorHealer
         }
     }
 
-    private static IEnumerable<(TreeNode Node, IReadOnlyList<string> Ancestors)> WalkWithAncestors(
-        TreeNode node,
-        List<string> ancestors
-    )
+    private static IEnumerable<(TreeNode Node, IReadOnlyList<string> Ancestors)> WalkWithAncestors(TreeNode node, List<string> ancestors)
     {
         yield return (node, ancestors);
         var next = new List<string>(ancestors) { node.AutomationId };
@@ -337,8 +319,7 @@ public static class SelectorHealer
     }
 
     private static bool NodesEqual(TreeNode a, TreeNode b) =>
-        a.RuntimeId == b.RuntimeId
-        && string.Equals(a.AutomationId, b.AutomationId, StringComparison.Ordinal);
+        a.RuntimeId == b.RuntimeId && string.Equals(a.AutomationId, b.AutomationId, StringComparison.Ordinal);
 
     private static string SelectorKey(Selector s) =>
         string.Join(
@@ -350,27 +331,10 @@ public static class SelectorHealer
         );
 
     private static bool SelectorEquals(Selector a, Selector b) =>
-        string.Equals(
-            NullIfWhiteSpace(a.AutomationId),
-            NullIfWhiteSpace(b.AutomationId),
-            StringComparison.Ordinal
-        )
-        && string.Equals(
-            NullIfWhiteSpace(a.Name),
-            NullIfWhiteSpace(b.Name),
-            StringComparison.Ordinal
-        )
-        && string.Equals(
-            NullIfWhiteSpace(a.ControlType),
-            NullIfWhiteSpace(b.ControlType),
-            StringComparison.Ordinal
-        )
-        && string.Equals(
-            NullIfWhiteSpace(a.NearAutomationId),
-            NullIfWhiteSpace(b.NearAutomationId),
-            StringComparison.Ordinal
-        );
+        string.Equals(NullIfWhiteSpace(a.AutomationId), NullIfWhiteSpace(b.AutomationId), StringComparison.Ordinal)
+        && string.Equals(NullIfWhiteSpace(a.Name), NullIfWhiteSpace(b.Name), StringComparison.Ordinal)
+        && string.Equals(NullIfWhiteSpace(a.ControlType), NullIfWhiteSpace(b.ControlType), StringComparison.Ordinal)
+        && string.Equals(NullIfWhiteSpace(a.NearAutomationId), NullIfWhiteSpace(b.NearAutomationId), StringComparison.Ordinal);
 
-    private static string? NullIfWhiteSpace(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value;
+    private static string? NullIfWhiteSpace(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
 }

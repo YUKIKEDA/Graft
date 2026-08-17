@@ -36,8 +36,7 @@ public sealed class Phase26MenuDepthE2ETests
             }
         );
 
-        await app.GetByAutomationId("SampleMenu")
-            .SelectMenuAsync("SampleMenuFile/SampleMenuRecent/SampleMenuOpenRecent");
+        await app.GetByAutomationId("SampleMenu").SelectMenuAsync("SampleMenuFile/SampleMenuRecent/SampleMenuOpenRecent");
         await app.GetByAutomationId("StatusText").ExpectNameAsync("MenuOpenRecent");
     }
 
@@ -69,8 +68,7 @@ public sealed class Phase26MenuDepthE2ETests
         );
 
         await app.GetByAutomationId("ContextMenuTarget").RightClickAsync();
-        await app.GetByAutomationId("SampleContextMenu")
-            .SelectMenuAsync("ContextMenuMore/ContextMenuSubPing");
+        await app.GetByAutomationId("SampleContextMenu").SelectMenuAsync("ContextMenuMore/ContextMenuSubPing");
         await app.GetByAutomationId("StatusText").ExpectNameAsync("ContextMenuSubPing");
     }
 

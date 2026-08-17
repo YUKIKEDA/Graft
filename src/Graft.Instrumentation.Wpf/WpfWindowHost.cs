@@ -15,14 +15,8 @@ namespace Graft.Instrumentation.Wpf;
 internal sealed class WpfWindowHost : IWindowCatalog
 {
     private static readonly PropertyInfo? IsShowingAsDialogProperty =
-        typeof(Window).GetProperty(
-            "IsShowingAsDialog",
-            BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public
-        )
-        ?? typeof(Window).GetProperty(
-            "IsModal",
-            BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public
-        );
+        typeof(Window).GetProperty("IsShowingAsDialog", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+        ?? typeof(Window).GetProperty("IsModal", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
     private readonly object _gate = new();
     private readonly Dictionary<Window, int> _idsByWindow = new();
@@ -57,10 +51,7 @@ internal sealed class WpfWindowHost : IWindowCatalog
             PruneClosed_NoLock();
             if (!_windowsById.TryGetValue(windowId, out var window))
             {
-                throw new ElementResolveException(
-                    GraftErrorCodes.WindowNotFound,
-                    $"Window id {windowId} was not found."
-                );
+                throw new ElementResolveException(GraftErrorCodes.WindowNotFound, $"Window id {windowId} was not found.");
             }
 
             _target = window;
@@ -73,17 +64,12 @@ internal sealed class WpfWindowHost : IWindowCatalog
         InvokeOnUi(() =>
         {
             PruneClosed_NoLock();
-            if (
-                _target is not null
-                && Application.Current.Windows.OfType<Window>().Contains(_target)
-            )
+            if (_target is not null && Application.Current.Windows.OfType<Window>().Contains(_target))
             {
                 return _target;
             }
 
-            var main =
-                Application.Current?.MainWindow
-                ?? throw new InvalidOperationException("Main window was not found.");
+            var main = Application.Current?.MainWindow ?? throw new InvalidOperationException("Main window was not found.");
             EnsureId_NoLock(main);
             _target = main;
             return main;
@@ -91,9 +77,7 @@ internal sealed class WpfWindowHost : IWindowCatalog
 
     private T InvokeOnUi<T>(Func<T> action)
     {
-        var dispatcher =
-            Application.Current?.Dispatcher
-            ?? throw new InvalidOperationException("WPF Application.Current is not available.");
+        var dispatcher = Application.Current?.Dispatcher ?? throw new InvalidOperationException("WPF Application.Current is not available.");
 
         if (dispatcher.CheckAccess())
         {
@@ -169,8 +153,7 @@ internal sealed class WpfWindowHost : IWindowCatalog
     {
         try
         {
-            return Application.Current is not null
-                && Application.Current.Windows.OfType<Window>().Contains(window);
+            return Application.Current is not null && Application.Current.Windows.OfType<Window>().Contains(window);
         }
         catch
         {

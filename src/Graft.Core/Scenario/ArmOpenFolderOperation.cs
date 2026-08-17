@@ -4,5 +4,4 @@ namespace Graft.Core.Scenario;
 /// Arms the next OpenFolder seam with a folder path (OK).
 /// </summary>
 /// <param name="Path">Folder path to return.</param>
-public sealed record ArmOpenFolderOperation(string Path)
-    : ScenarioOperation(ScenarioActions.ArmOpenFolder);
+public sealed record ArmOpenFolderOperation(string Path) : ScenarioOperation(ScenarioActions.ArmOpenFolder);

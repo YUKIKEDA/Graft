@@ -6,9 +6,7 @@ namespace Graft.Protocol;
 /// </summary>
 public static class KeyChordParser
 {
-    private static readonly Dictionary<string, string> CanonicalKeys = new(
-        StringComparer.OrdinalIgnoreCase
-    )
+    private static readonly Dictionary<string, string> CanonicalKeys = new(StringComparer.OrdinalIgnoreCase)
     {
         ["Enter"] = "Enter",
         ["Tab"] = "Tab",
@@ -76,28 +74,19 @@ public static class KeyChordParser
             var raw = parts[i].Trim();
             if (raw.Length == 0)
             {
-                throw new ArgumentException(
-                    $"Invalid chord '{keys}': empty token between '+' separators.",
-                    nameof(keys)
-                );
+                throw new ArgumentException($"Invalid chord '{keys}': empty token between '+' separators.", nameof(keys));
             }
 
             if (TryCanonicalModifier(raw, out var modifier))
             {
                 if (key is not null)
                 {
-                    throw new ArgumentException(
-                        $"Invalid chord '{keys}': modifier '{raw}' cannot follow the key.",
-                        nameof(keys)
-                    );
+                    throw new ArgumentException($"Invalid chord '{keys}': modifier '{raw}' cannot follow the key.", nameof(keys));
                 }
 
                 if (modifiers.Contains(modifier, StringComparer.Ordinal))
                 {
-                    throw new ArgumentException(
-                        $"Invalid chord '{keys}': duplicate modifier '{modifier}'.",
-                        nameof(keys)
-                    );
+                    throw new ArgumentException($"Invalid chord '{keys}': duplicate modifier '{modifier}'.", nameof(keys));
                 }
 
                 modifiers.Add(modifier);
@@ -106,18 +95,12 @@ public static class KeyChordParser
 
             if (!TryCanonicalKey(raw, out var canonicalKey))
             {
-                throw new ArgumentException(
-                    $"Invalid chord '{keys}': unknown key '{raw}'.",
-                    nameof(keys)
-                );
+                throw new ArgumentException($"Invalid chord '{keys}': unknown key '{raw}'.", nameof(keys));
             }
 
             if (key is not null)
             {
-                throw new ArgumentException(
-                    $"Invalid chord '{keys}': only one non-modifier key is allowed per call.",
-                    nameof(keys)
-                );
+                throw new ArgumentException($"Invalid chord '{keys}': only one non-modifier key is allowed per call.", nameof(keys));
             }
 
             key = canonicalKey;
@@ -125,10 +108,7 @@ public static class KeyChordParser
 
         if (key is null)
         {
-            throw new ArgumentException(
-                $"Invalid chord '{keys}': missing key (modifiers alone are not allowed).",
-                nameof(keys)
-            );
+            throw new ArgumentException($"Invalid chord '{keys}': missing key (modifiers alone are not allowed).", nameof(keys));
         }
 
         return new KeyChord(modifiers, key);

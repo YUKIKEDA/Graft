@@ -35,8 +35,7 @@ public sealed class Phase11SaveFileE2ETests
         );
 
         await app.ArmSaveFileAsync(path);
-        _ = await app.GetByAutomationId("SaveFileButton")
-            .InvokeOpeningWindowAsync(waitForNewWindow: false);
+        _ = await app.GetByAutomationId("SaveFileButton").InvokeOpeningWindowAsync(waitForNewWindow: false);
         await app.GetByAutomationId("StatusText").ExpectNameAsync($"SaveFile {path}");
     }
 
@@ -68,8 +67,7 @@ public sealed class Phase11SaveFileE2ETests
         );
 
         await app.ArmSaveFileCancelAsync();
-        _ = await app.GetByAutomationId("SaveFileButton")
-            .InvokeOpeningWindowAsync(waitForNewWindow: false);
+        _ = await app.GetByAutomationId("SaveFileButton").InvokeOpeningWindowAsync(waitForNewWindow: false);
         await app.GetByAutomationId("StatusText").ExpectNameAsync("SaveFileCancel");
     }
 }

@@ -9,11 +9,7 @@ namespace Graft.Core.Diagnostics;
 /// </summary>
 internal sealed class OperationTimeline
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    };
+    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     private readonly TimelineOptions _options;
     private readonly Func<CancellationToken, Task<byte[]>> _capturePng;
@@ -28,10 +24,7 @@ internal sealed class OperationTimeline
     /// </summary>
     /// <param name="options">Output and retention options.</param>
     /// <param name="capturePng">Captures PNG bytes of the current target window.</param>
-    public OperationTimeline(
-        TimelineOptions options,
-        Func<CancellationToken, Task<byte[]>> capturePng
-    )
+    public OperationTimeline(TimelineOptions options, Func<CancellationToken, Task<byte[]>> capturePng)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentException.ThrowIfNullOrWhiteSpace(options.OutputDirectory);
@@ -76,12 +69,7 @@ internal sealed class OperationTimeline
     /// Pass the bytes from an element-clip screenshot so the frame matches the clip label.
     /// </param>
     /// <returns>A task that completes when the frame is stored or skipped.</returns>
-    public async Task CaptureAfterAsync(
-        string action,
-        string? detail,
-        CancellationToken cancellationToken = default,
-        byte[]? pngBytes = null
-    )
+    public async Task CaptureAfterAsync(string action, string? detail, CancellationToken cancellationToken = default, byte[]? pngBytes = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(action);
 
@@ -95,10 +83,7 @@ internal sealed class OperationTimeline
 
         try
         {
-            var png =
-                pngBytes is { Length: > 0 }
-                    ? pngBytes
-                    : await _capturePng(cancellationToken).ConfigureAwait(false);
+            var png = pngBytes is { Length: > 0 } ? pngBytes : await _capturePng(cancellationToken).ConfigureAwait(false);
             if (png is null || png.Length == 0)
             {
                 return;
@@ -154,9 +139,7 @@ internal sealed class OperationTimeline
 
             _finalized = true;
 
-            var keep =
-                _options.Retention == TimelineRetention.Always
-                || (_options.Retention == TimelineRetention.OnFailure && _failed);
+            var keep = _options.Retention == TimelineRetention.Always || (_options.Retention == TimelineRetention.OnFailure && _failed);
 
             if (!keep || _frames.Count == 0)
             {
@@ -174,22 +157,10 @@ internal sealed class OperationTimeline
                 delay = TimelineOptions.DefaultFrameDelayMilliseconds;
             }
 
-            var manifest = new TimelineManifest
-            {
-                FrameDelayMilliseconds = delay,
-                Frames = _frames.ToArray(),
-            };
+            var manifest = new TimelineManifest { FrameDelayMilliseconds = delay, Frames = _frames.ToArray() };
 
-            File.WriteAllText(
-                manifestPath,
-                JsonSerializer.Serialize(manifest, JsonOptions),
-                Encoding.UTF8
-            );
-            File.WriteAllText(
-                indexPath,
-                TimelineHtml.Build(manifest),
-                new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)
-            );
+            File.WriteAllText(manifestPath, JsonSerializer.Serialize(manifest, JsonOptions), Encoding.UTF8);
+            File.WriteAllText(indexPath, TimelineHtml.Build(manifest), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             _indexPath = indexPath;
             return _indexPath;
         }

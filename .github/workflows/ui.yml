@@ -1,0 +1,42 @@
+name: UI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ui-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  e2e:
+    name: Full solution tests (-m:1)
+    if: github.event_name == 'workflow_dispatch' || vars.GRAFT_ENABLE_UI_CI == 'true'
+    runs-on: [self-hosted, windows, interactive]
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore local tools
+        run: dotnet tool restore
+
+      - name: Test solution
+        run: dotnet test Graft.slnx -m:1 -c Debug --logger "trx;LogFileName=ui.trx"

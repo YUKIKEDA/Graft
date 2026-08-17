@@ -17,16 +17,8 @@
   </ItemGroup>
   <!-- NuGet: auto-import as package-id props/targets (buildTransitive). Source names stay Graft.*. -->
   <ItemGroup>
-    <None
-      Include="build\Graft.props"
-      Pack="true"
-      PackagePath="buildTransitive\Graft.Instrumentation.Wpf.props"
-    />
-    <None
-      Include="build\Graft.targets"
-      Pack="true"
-      PackagePath="buildTransitive\Graft.Instrumentation.Wpf.targets"
-    />
+    <None Include="build\Graft.props" Pack="true" PackagePath="buildTransitive\Graft.Instrumentation.Wpf.props" />
+    <None Include="build\Graft.targets" Pack="true" PackagePath="buildTransitive\Graft.Instrumentation.Wpf.targets" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Lib.Harmony" Version="2.3.6" />

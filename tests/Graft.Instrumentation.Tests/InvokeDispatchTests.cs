@@ -126,9 +126,7 @@ public sealed class InvokeDispatchTests : IDisposable
     [Fact]
     public async Task Invoke_WhenResolverFails_ReturnsElementNotFound()
     {
-        AgentServices.RegisterElementInvoker(
-            new FakeElementInvoker(throwCode: GraftErrorCodes.ElementNotFound)
-        );
+        AgentServices.RegisterElementInvoker(new FakeElementInvoker(throwCode: GraftErrorCodes.ElementNotFound));
         StartAgent();
 
         await using var client = await ConnectAsync(_pipeName);
@@ -149,12 +147,7 @@ public sealed class InvokeDispatchTests : IDisposable
 
     private static async Task<NamedPipeClientStream> ConnectAsync(string pipeName)
     {
-        var client = new NamedPipeClientStream(
-            ".",
-            pipeName,
-            PipeDirection.InOut,
-            PipeOptions.Asynchronous
-        );
+        var client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
 
         var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
         Exception? last = null;
@@ -165,8 +158,7 @@ public sealed class InvokeDispatchTests : IDisposable
                 await client.ConnectAsync(200).ConfigureAwait(false);
                 return client;
             }
-            catch (Exception ex)
-                when (ex is TimeoutException or IOException or UnauthorizedAccessException)
+            catch (Exception ex) when (ex is TimeoutException or IOException or UnauthorizedAccessException)
             {
                 last = ex;
                 await Task.Delay(50).ConfigureAwait(false);
@@ -206,10 +198,7 @@ public sealed class InvokeDispatchTests : IDisposable
         return await JsonMessageCodec.ReadResponseAsync(stream).ConfigureAwait(false);
     }
 
-    private static async Task<ResponseMessage> SendRightClickAsync(
-        Stream stream,
-        string automationId
-    )
+    private static async Task<ResponseMessage> SendRightClickAsync(Stream stream, string automationId)
     {
         var request = new RequestMessage
         {
@@ -257,8 +246,7 @@ public sealed class InvokeDispatchTests : IDisposable
 
         public void Drag(ElementSelector from, ElementSelector to) => Invoke(from);
 
-        public void ClickAt(ElementSelector selector, double offsetX, double offsetY) =>
-            Invoke(selector);
+        public void ClickAt(ElementSelector selector, double offsetX, double offsetY) => Invoke(selector);
 
         public void Wheel(ElementSelector selector, int delta) => Invoke(selector);
     }

@@ -26,10 +26,7 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "WPF Application.Current is not available; cannot setValue."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "WPF Application.Current is not available; cannot setValue.");
         }
 
         if (dispatcher.CheckAccess())
@@ -72,10 +69,7 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
         {
             if (textBox.IsReadOnly)
             {
-                throw new ElementActionException(
-                    GraftErrorCodes.ElementNotActionable,
-                    $"Element '{resolved.AutomationId}' is read-only."
-                );
+                throw new ElementActionException(GraftErrorCodes.ElementNotActionable, $"Element '{resolved.AutomationId}' is read-only.");
             }
 
             textBox.Text = value;
@@ -92,10 +86,7 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
         {
             if (richTextBox.IsReadOnly)
             {
-                throw new ElementActionException(
-                    GraftErrorCodes.ElementNotActionable,
-                    $"Element '{resolved.AutomationId}' is read-only."
-                );
+                throw new ElementActionException(GraftErrorCodes.ElementNotActionable, $"Element '{resolved.AutomationId}' is read-only.");
             }
 
             SetRichTextPlain(richTextBox, value);
@@ -131,14 +122,7 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
 
     private static void SetSliderValue(Slider slider, string value, string automationId)
     {
-        if (
-            !double.TryParse(
-                value,
-                NumberStyles.Float,
-                CultureInfo.InvariantCulture,
-                out var parsed
-            )
-        )
+        if (!double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed))
         {
             throw new ElementActionException(
                 GraftErrorCodes.ActionFailed,
@@ -160,15 +144,7 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
 
     private static void SetDatePickerValue(DatePicker datePicker, string value, string automationId)
     {
-        if (
-            !DateTime.TryParseExact(
-                value,
-                "yyyy-MM-dd",
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.None,
-                out var parsed
-            )
-        )
+        if (!DateTime.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
         {
             throw new ElementActionException(
                 GraftErrorCodes.ActionFailed,
@@ -195,10 +171,7 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
 
         if (valueProvider.IsReadOnly)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotActionable,
-                "Element ValuePattern is read-only."
-            );
+            throw new ElementActionException(GraftErrorCodes.ElementNotActionable, "Element ValuePattern is read-only.");
         }
 
         valueProvider.SetValue(value);

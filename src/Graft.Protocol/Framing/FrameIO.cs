@@ -37,9 +37,7 @@ public static class FrameIO
 
         if (payload.Length > maxPayloadBytes)
         {
-            throw new InvalidOperationException(
-                $"Payload length {payload.Length} exceeds maximum {maxPayloadBytes}."
-            );
+            throw new InvalidOperationException($"Payload length {payload.Length} exceeds maximum {maxPayloadBytes}.");
         }
 
         var prefix = new byte[LengthPrefixSize];
@@ -78,9 +76,7 @@ public static class FrameIO
 
         if (length > maxPayloadBytes)
         {
-            throw new InvalidOperationException(
-                $"Frame length {length} exceeds maximum {maxPayloadBytes}."
-            );
+            throw new InvalidOperationException($"Frame length {length} exceeds maximum {maxPayloadBytes}.");
         }
 
         if (length == 0)
@@ -93,23 +89,15 @@ public static class FrameIO
         return payload;
     }
 
-    private static async Task ReadExactAsync(
-        Stream stream,
-        Memory<byte> buffer,
-        CancellationToken cancellationToken
-    )
+    private static async Task ReadExactAsync(Stream stream, Memory<byte> buffer, CancellationToken cancellationToken)
     {
         var offset = 0;
         while (offset < buffer.Length)
         {
-            var read = await stream
-                .ReadAsync(buffer[offset..], cancellationToken)
-                .ConfigureAwait(false);
+            var read = await stream.ReadAsync(buffer[offset..], cancellationToken).ConfigureAwait(false);
             if (read == 0)
             {
-                throw new EndOfStreamException(
-                    $"Unexpected end of stream after {offset} of {buffer.Length} bytes."
-                );
+                throw new EndOfStreamException($"Unexpected end of stream after {offset} of {buffer.Length} bytes.");
             }
 
             offset += read;

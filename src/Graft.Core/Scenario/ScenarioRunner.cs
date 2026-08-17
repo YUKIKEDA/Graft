@@ -20,27 +20,17 @@ public static class ScenarioRunner
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when the scenario finishes successfully.</returns>
     /// <exception cref="GraftException">Validation, launch, or step execution failed.</exception>
-    public static async Task RunAsync(
-        ScenarioDocument scenario,
-        ScenarioRunOptions? options = null,
-        CancellationToken cancellationToken = default
-    )
+    public static async Task RunAsync(ScenarioDocument scenario, ScenarioRunOptions? options = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(scenario);
         if (scenario.Operations.Count == 0)
         {
-            throw new GraftException(
-                GraftErrorCodes.ActionFailed,
-                "Scenario has no operations to run."
-            );
+            throw new GraftException(GraftErrorCodes.ActionFailed, "Scenario has no operations to run.");
         }
 
         if (scenario.Operations[0] is not LaunchOperation)
         {
-            throw new GraftException(
-                GraftErrorCodes.ActionFailed,
-                "Scenario must start with a launch step."
-            );
+            throw new GraftException(GraftErrorCodes.ActionFailed, "Scenario must start with a launch step.");
         }
 
         GraftSession? session = null;
@@ -54,55 +44,35 @@ public static class ScenarioRunner
                     case LaunchOperation launch:
                         if (session is not null)
                         {
-                            throw new GraftException(
-                                GraftErrorCodes.ActionFailed,
-                                "Scenario may contain only one launch step."
-                            );
+                            throw new GraftException(GraftErrorCodes.ActionFailed, "Scenario may contain only one launch step.");
                         }
 
-                        session = await Application
-                            .LaunchAsync(ToLaunchOptions(launch, options), cancellationToken)
-                            .ConfigureAwait(false);
+                        session = await Application.LaunchAsync(ToLaunchOptions(launch, options), cancellationToken).ConfigureAwait(false);
                         break;
 
                     case InvokeOperation invoke:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(invoke.AutomationId)
-                            .InvokeAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetByAutomationId(invoke.AutomationId).InvokeAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case RightClickOperation rightClick:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(rightClick.AutomationId)
-                            .RightClickAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetByAutomationId(rightClick.AutomationId).RightClickAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case DoubleClickOperation doubleClick:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(doubleClick.AutomationId)
-                            .DoubleClickAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetByAutomationId(doubleClick.AutomationId).DoubleClickAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case HoverOperation hover:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(hover.AutomationId)
-                            .HoverAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetByAutomationId(hover.AutomationId).HoverAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case DragOperation drag:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(drag.AutomationId)
-                            .DragAsync(drag.ToAutomationId, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetByAutomationId(drag.AutomationId).DragAsync(drag.ToAutomationId, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ClickAtOperation clickAt:
@@ -115,10 +85,7 @@ public static class ScenarioRunner
 
                     case WheelOperation wheel:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(wheel.AutomationId)
-                            .WheelAsync(wheel.Delta, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetByAutomationId(wheel.AutomationId).WheelAsync(wheel.Delta, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case SetValueOperation setValue:
@@ -131,40 +98,25 @@ public static class ScenarioRunner
 
                     case ToggleOperation toggle:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(toggle.AutomationId)
-                            .ToggleAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetByAutomationId(toggle.AutomationId).ToggleAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case SendKeysOperation sendKeys:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(sendKeys.AutomationId)
-                            .SendKeysAsync(sendKeys.Text, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetByAutomationId(sendKeys.AutomationId).SendKeysAsync(sendKeys.Text, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case PressKeysOperation pressKeys:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(pressKeys.AutomationId)
-                            .PressAsync(pressKeys.Keys, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetByAutomationId(pressKeys.AutomationId).PressAsync(pressKeys.Keys, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ScreenshotOperation screenshot:
                         EnsureSession(session);
                         var shot = screenshot.AutomationId is { } shotId
-                            ? await session!
-                                .GetByAutomationId(shotId)
-                                .ScreenshotAsync(cancellationToken)
-                                .ConfigureAwait(false)
-                            : await session!
-                                .ScreenshotAsync(cancellationToken)
-                                .ConfigureAwait(false);
-                        await shot.SaveAsync(screenshot.Path, cancellationToken)
-                            .ConfigureAwait(false);
+                            ? await session!.GetByAutomationId(shotId).ScreenshotAsync(cancellationToken).ConfigureAwait(false)
+                            : await session!.ScreenshotAsync(cancellationToken).ConfigureAwait(false);
+                        await shot.SaveAsync(screenshot.Path, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ScrollIntoViewOperation scroll:
@@ -178,10 +130,7 @@ public static class ScenarioRunner
                         }
                         else
                         {
-                            await session!
-                                .GetByAutomationId(scroll.AutomationId)
-                                .ScrollIntoViewAsync(cancellationToken)
-                                .ConfigureAwait(false);
+                            await session!.GetByAutomationId(scroll.AutomationId).ScrollIntoViewAsync(cancellationToken).ConfigureAwait(false);
                         }
 
                         break;
@@ -190,10 +139,7 @@ public static class ScenarioRunner
                         EnsureSession(session);
                         if (select.Key is not null)
                         {
-                            await session!
-                                .GetByAutomationId(select.AutomationId)
-                                .SelectAsync(select.Key, cancellationToken)
-                                .ConfigureAwait(false);
+                            await session!.GetByAutomationId(select.AutomationId).SelectAsync(select.Key, cancellationToken).ConfigureAwait(false);
                         }
                         else
                         {
@@ -231,18 +177,12 @@ public static class ScenarioRunner
 
                     case ExpandOperation expand:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(expand.AutomationId)
-                            .ExpandAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetByAutomationId(expand.AutomationId).ExpandAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case CollapseOperation collapse:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(collapse.AutomationId)
-                            .CollapseAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetByAutomationId(collapse.AutomationId).CollapseAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ExpectNameOperation expectName:
@@ -295,20 +235,14 @@ public static class ScenarioRunner
 
                     case ExpectFocusedOperation expectFocused:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(expectFocused.AutomationId)
-                            .ExpectFocusedAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetByAutomationId(expectFocused.AutomationId).ExpectFocusedAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ExpectNameContainsOperation expectNameContains:
                         EnsureSession(session);
                         await session!
                             .GetByAutomationId(expectNameContains.AutomationId)
-                            .ExpectNameContainsAsync(
-                                expectNameContains.Substring,
-                                cancellationToken
-                            )
+                            .ExpectNameContainsAsync(expectNameContains.Substring, cancellationToken)
                             .ConfigureAwait(false);
                         break;
 
@@ -338,18 +272,12 @@ public static class ScenarioRunner
 
                     case WaitForOperation waitFor:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(waitFor.AutomationId)
-                            .WaitForAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetByAutomationId(waitFor.AutomationId).WaitForAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ExpectGoneOperation expectGone:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(expectGone.AutomationId)
-                            .ExpectGoneAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetByAutomationId(expectGone.AutomationId).ExpectGoneAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case GetCellTextOperation getCellText:
@@ -357,19 +285,11 @@ public static class ScenarioRunner
                         _ = getCellText.ColumnKey is null
                             ? await session!
                                 .GetByAutomationId(getCellText.AutomationId)
-                                .GetCellTextAsync(
-                                    getCellText.Row,
-                                    getCellText.Column!.Value,
-                                    cancellationToken
-                                )
+                                .GetCellTextAsync(getCellText.Row, getCellText.Column!.Value, cancellationToken)
                                 .ConfigureAwait(false)
                             : await session!
                                 .GetByAutomationId(getCellText.AutomationId)
-                                .GetCellTextAsync(
-                                    getCellText.Row,
-                                    getCellText.ColumnKey,
-                                    cancellationToken
-                                )
+                                .GetCellTextAsync(getCellText.Row, getCellText.ColumnKey, cancellationToken)
                                 .ConfigureAwait(false);
                         break;
 
@@ -379,24 +299,14 @@ public static class ScenarioRunner
                         {
                             await session!
                                 .GetByAutomationId(setCellValue.AutomationId)
-                                .SetCellValueAsync(
-                                    setCellValue.Row,
-                                    setCellValue.Column!.Value,
-                                    setCellValue.Value,
-                                    cancellationToken
-                                )
+                                .SetCellValueAsync(setCellValue.Row, setCellValue.Column!.Value, setCellValue.Value, cancellationToken)
                                 .ConfigureAwait(false);
                         }
                         else
                         {
                             await session!
                                 .GetByAutomationId(setCellValue.AutomationId)
-                                .SetCellValueAsync(
-                                    setCellValue.Row,
-                                    setCellValue.ColumnKey,
-                                    setCellValue.Value,
-                                    cancellationToken
-                                )
+                                .SetCellValueAsync(setCellValue.Row, setCellValue.ColumnKey, setCellValue.Value, cancellationToken)
                                 .ConfigureAwait(false);
                         }
 
@@ -408,22 +318,14 @@ public static class ScenarioRunner
                         {
                             await session!
                                 .GetByAutomationId(selectCell.AutomationId)
-                                .SelectCellAsync(
-                                    selectCell.Row,
-                                    selectCell.Column!.Value,
-                                    cancellationToken
-                                )
+                                .SelectCellAsync(selectCell.Row, selectCell.Column!.Value, cancellationToken)
                                 .ConfigureAwait(false);
                         }
                         else
                         {
                             await session!
                                 .GetByAutomationId(selectCell.AutomationId)
-                                .SelectCellAsync(
-                                    selectCell.Row,
-                                    selectCell.ColumnKey,
-                                    cancellationToken
-                                )
+                                .SelectCellAsync(selectCell.Row, selectCell.ColumnKey, cancellationToken)
                                 .ConfigureAwait(false);
                         }
 
@@ -447,10 +349,7 @@ public static class ScenarioRunner
 
                     case AddRowOperation addRow:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(addRow.AutomationId)
-                            .AddRowAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetByAutomationId(addRow.AutomationId).AddRowAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case DeleteSelectedRowsOperation deleteSelectedRows:
@@ -467,24 +366,14 @@ public static class ScenarioRunner
                         {
                             await session!
                                 .GetByAutomationId(expectCellText.AutomationId)
-                                .ExpectCellTextAsync(
-                                    expectCellText.Row,
-                                    expectCellText.Column!.Value,
-                                    expectCellText.Text,
-                                    cancellationToken
-                                )
+                                .ExpectCellTextAsync(expectCellText.Row, expectCellText.Column!.Value, expectCellText.Text, cancellationToken)
                                 .ConfigureAwait(false);
                         }
                         else
                         {
                             await session!
                                 .GetByAutomationId(expectCellText.AutomationId)
-                                .ExpectCellTextAsync(
-                                    expectCellText.Row,
-                                    expectCellText.ColumnKey,
-                                    expectCellText.Text,
-                                    cancellationToken
-                                )
+                                .ExpectCellTextAsync(expectCellText.Row, expectCellText.ColumnKey, expectCellText.Text, cancellationToken)
                                 .ConfigureAwait(false);
                         }
 
@@ -492,87 +381,60 @@ public static class ScenarioRunner
 
                     case ArmOpenFileOperation armOpenFile:
                         EnsureSession(session);
-                        await session!
-                            .ArmOpenFileAsync(armOpenFile.Path, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.ArmOpenFileAsync(armOpenFile.Path, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ArmOpenFileCancelOperation:
                         EnsureSession(session);
-                        await session!
-                            .ArmOpenFileCancelAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.ArmOpenFileCancelAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ArmSaveFileOperation armSaveFile:
                         EnsureSession(session);
-                        await session!
-                            .ArmSaveFileAsync(armSaveFile.Path, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.ArmSaveFileAsync(armSaveFile.Path, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ArmSaveFileCancelOperation:
                         EnsureSession(session);
-                        await session!
-                            .ArmSaveFileCancelAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.ArmSaveFileCancelAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ArmOpenFolderOperation armOpenFolder:
                         EnsureSession(session);
-                        await session!
-                            .ArmOpenFolderAsync(armOpenFolder.Path, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.ArmOpenFolderAsync(armOpenFolder.Path, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ArmOpenFolderCancelOperation:
                         EnsureSession(session);
-                        await session!
-                            .ArmOpenFolderCancelAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.ArmOpenFolderCancelAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ArmMessageBoxOperation armMessageBox:
                         EnsureSession(session);
-                        await session!
-                            .ArmMessageBoxAsync(armMessageBox.Result, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.ArmMessageBoxAsync(armMessageBox.Result, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ListWindowsOperation:
                         EnsureSession(session);
-                        _ = await session!
-                            .ListWindowsAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        _ = await session!.ListWindowsAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case SwitchWindowOperation switchWindow:
                         EnsureSession(session);
-                        await session!
-                            .SwitchToWindowAsync(switchWindow.WindowId, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.SwitchToWindowAsync(switchWindow.WindowId, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case WaitForWindowOperation waitForWindow:
                         EnsureSession(session);
                         _ = await session!
-                            .WaitForWindowAsync(
-                                waitForWindow.Title,
-                                waitForWindow.AutomationId,
-                                waitForWindow.SwitchTo,
-                                cancellationToken
-                            )
+                            .WaitForWindowAsync(waitForWindow.Title, waitForWindow.AutomationId, waitForWindow.SwitchTo, cancellationToken)
                             .ConfigureAwait(false);
                         break;
 
                     case WaitForWindowClosedOperation waitForWindowClosed:
                         EnsureSession(session);
                         await session!
-                            .WaitForWindowClosedAsync(
-                                waitForWindowClosed.Title,
-                                waitForWindowClosed.AutomationId,
-                                cancellationToken
-                            )
+                            .WaitForWindowClosedAsync(waitForWindowClosed.Title, waitForWindowClosed.AutomationId, cancellationToken)
                             .ConfigureAwait(false);
                         break;
 
@@ -580,18 +442,12 @@ public static class ScenarioRunner
                         EnsureSession(session);
                         _ = await session!
                             .GetByAutomationId(invokeOpening.AutomationId)
-                            .InvokeOpeningWindowAsync(
-                                invokeOpening.WaitForNewWindow,
-                                cancellationToken
-                            )
+                            .InvokeOpeningWindowAsync(invokeOpening.WaitForNewWindow, cancellationToken)
                             .ConfigureAwait(false);
                         break;
 
                     default:
-                        throw new GraftException(
-                            GraftErrorCodes.ActionFailed,
-                            $"Unsupported Scenario operation '{operation.Action}'."
-                        );
+                        throw new GraftException(GraftErrorCodes.ActionFailed, $"Unsupported Scenario operation '{operation.Action}'.");
                 }
             }
         }
@@ -608,25 +464,17 @@ public static class ScenarioRunner
     {
         if (session is null)
         {
-            throw new GraftException(
-                GraftErrorCodes.ActionFailed,
-                "Scenario step requires an active session; launch must run first."
-            );
+            throw new GraftException(GraftErrorCodes.ActionFailed, "Scenario step requires an active session; launch must run first.");
         }
     }
 
-    private static LaunchOptions ToLaunchOptions(
-        LaunchOperation launch,
-        ScenarioRunOptions? options
-    )
+    private static LaunchOptions ToLaunchOptions(LaunchOperation launch, ScenarioRunOptions? options)
     {
         var appPath = ResolveAppPath(launch.AppPath, options);
         return new LaunchOptions
         {
             AppPath = appPath,
-            Configuration = string.IsNullOrWhiteSpace(launch.Configuration)
-                ? "GraftTest"
-                : launch.Configuration!,
+            Configuration = string.IsNullOrWhiteSpace(launch.Configuration) ? "GraftTest" : launch.Configuration!,
             Timeout = launch.Timeout ?? LaunchOptions.DefaultTimeout,
         };
     }

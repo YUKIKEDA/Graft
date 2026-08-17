@@ -71,8 +71,7 @@ public sealed class Phase27SelectorsE2ETests
     public async Task SelectTree_DeepPath_SelectsGrandchild()
     {
         await using var app = await LaunchAsync();
-        await app.GetByAutomationId("SampleTree")
-            .SelectTreeAsync("SampleTreeRoot/SampleTreeChildA/SampleTreeGrandchild");
+        await app.GetByAutomationId("SampleTree").SelectTreeAsync("SampleTreeRoot/SampleTreeChildA/SampleTreeGrandchild");
         await app.GetByAutomationId("SampleTreeGrandchild").ExpectSelectedAsync(true);
     }
 
@@ -97,10 +96,7 @@ public sealed class Phase27SelectorsE2ETests
         await app.GetByAutomationId("RelativeHost").ChildByName("RelA").InvokeAsync();
         await app.GetByAutomationId("StatusText").ExpectNameAsync("RelA");
 
-        await app.GetByAutomationId("RelativeHost")
-            .Child(Selector.ByControlType("Button"))
-            .Nth(1)
-            .InvokeAsync();
+        await app.GetByAutomationId("RelativeHost").Child(Selector.ByControlType("Button")).Nth(1).InvokeAsync();
         await app.GetByAutomationId("StatusText").ExpectNameAsync("RelB");
     }
 

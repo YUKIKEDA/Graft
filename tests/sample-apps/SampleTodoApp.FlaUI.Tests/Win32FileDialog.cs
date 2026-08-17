@@ -12,26 +12,13 @@ namespace SampleTodoApp.FlaUI.Tests;
 /// </summary>
 internal static class Win32FileDialog
 {
-    public static void CompleteOpen(
-        UIA3Automation automation,
-        AutomationElement ownerWindow,
-        string filePath,
-        TimeSpan timeout
-    ) => Complete(ownerWindow, filePath, isSave: false, timeout);
+    public static void CompleteOpen(UIA3Automation automation, AutomationElement ownerWindow, string filePath, TimeSpan timeout) =>
+        Complete(ownerWindow, filePath, isSave: false, timeout);
 
-    public static void CompleteSave(
-        UIA3Automation automation,
-        AutomationElement ownerWindow,
-        string filePath,
-        TimeSpan timeout
-    ) => Complete(ownerWindow, filePath, isSave: true, timeout);
+    public static void CompleteSave(UIA3Automation automation, AutomationElement ownerWindow, string filePath, TimeSpan timeout) =>
+        Complete(ownerWindow, filePath, isSave: true, timeout);
 
-    private static void Complete(
-        AutomationElement ownerWindow,
-        string filePath,
-        bool isSave,
-        TimeSpan timeout
-    )
+    private static void Complete(AutomationElement ownerWindow, string filePath, bool isSave, TimeSpan timeout)
     {
         var dialog = WaitForFileDialog(ownerWindow, timeout);
         if (isSave)
@@ -52,11 +39,7 @@ internal static class Win32FileDialog
                 {
                     try
                     {
-                        foreach (
-                            var window in ownerWindow.FindAllDescendants(cf =>
-                                cf.ByControlType(ControlType.Window)
-                            )
-                        )
+                        foreach (var window in ownerWindow.FindAllDescendants(cf => cf.ByControlType(ControlType.Window)))
                         {
                             var className = window.ClassName ?? string.Empty;
                             if (className.Contains("32770", StringComparison.Ordinal))
@@ -76,10 +59,7 @@ internal static class Win32FileDialog
             )
             .Result;
 
-        return dialog
-            ?? throw new TimeoutException(
-                "File dialog (#32770) did not appear under the owner window."
-            );
+        return dialog ?? throw new TimeoutException("File dialog (#32770) did not appear under the owner window.");
     }
 
     private static void CompleteOpenViaValuePattern(Window dialog, string filePath)
@@ -89,14 +69,8 @@ internal static class Win32FileDialog
         Thread.Sleep(200);
 
         var edit =
-            SafeFind(
-                dialog,
-                cf => cf.ByControlType(ControlType.Edit).And(cf.ByName("ファイル名(N):"))
-            )
-            ?? SafeFind(
-                dialog,
-                cf => cf.ByControlType(ControlType.Edit).And(cf.ByName("File name:"))
-            )
+            SafeFind(dialog, cf => cf.ByControlType(ControlType.Edit).And(cf.ByName("ファイル名(N):")))
+            ?? SafeFind(dialog, cf => cf.ByControlType(ControlType.Edit).And(cf.ByName("File name:")))
             ?? SafeFind(dialog, cf => cf.ByControlType(ControlType.Edit))
             ?? throw new InvalidOperationException("File-name Edit not found.");
 
@@ -111,10 +85,7 @@ internal static class Win32FileDialog
         Thread.Sleep(200);
 
         var open =
-            SafeFind(
-                dialog,
-                cf => cf.ByControlType(ControlType.Button).And(cf.ByName("開く(O)"))
-            )
+            SafeFind(dialog, cf => cf.ByControlType(ControlType.Button).And(cf.ByName("開く(O)")))
             ?? SafeFind(dialog, cf => cf.ByControlType(ControlType.Button).And(cf.ByName("開く")))
             ?? SafeFind(dialog, cf => cf.ByControlType(ControlType.Button).And(cf.ByName("Open")));
 
@@ -152,10 +123,7 @@ internal static class Win32FileDialog
 
     private static AutomationElement? SafeFind(
         AutomationElement root,
-        Func<
-            global::FlaUI.Core.Conditions.ConditionFactory,
-            global::FlaUI.Core.Conditions.ConditionBase
-        > condition
+        Func<global::FlaUI.Core.Conditions.ConditionFactory, global::FlaUI.Core.Conditions.ConditionBase> condition
     )
     {
         try

@@ -43,11 +43,7 @@ public sealed class PipeHandshakeTests : IDisposable
         StartAgent(token: "secret");
 
         await using var client = await ConnectAsync(_pipeName);
-        var response = await SendHandshakeAsync(
-            client,
-            v: ProtocolVersion.Current,
-            token: "secret"
-        );
+        var response = await SendHandshakeAsync(client, v: ProtocolVersion.Current, token: "secret");
 
         Assert.True(response.Ok);
         Assert.Equal("1", response.Id);
@@ -125,21 +121,12 @@ public sealed class PipeHandshakeTests : IDisposable
 
         await using (var first = await ConnectAsync(_pipeName))
         {
-            var firstResponse = await SendHandshakeAsync(
-                first,
-                v: ProtocolVersion.Current,
-                token: "secret"
-            );
+            var firstResponse = await SendHandshakeAsync(first, v: ProtocolVersion.Current, token: "secret");
             Assert.True(firstResponse.Ok);
         }
 
         await using var second = await ConnectAsync(_pipeName);
-        var secondResponse = await SendHandshakeAsync(
-            second,
-            v: ProtocolVersion.Current,
-            token: "secret",
-            id: "2"
-        );
+        var secondResponse = await SendHandshakeAsync(second, v: ProtocolVersion.Current, token: "secret", id: "2");
 
         Assert.True(secondResponse.Ok);
         Assert.Equal("2", secondResponse.Id);
@@ -156,12 +143,7 @@ public sealed class PipeHandshakeTests : IDisposable
 
     private static async Task<NamedPipeClientStream> ConnectAsync(string pipeName)
     {
-        var client = new NamedPipeClientStream(
-            ".",
-            pipeName,
-            PipeDirection.InOut,
-            PipeOptions.Asynchronous
-        );
+        var client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
 
         var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
         Exception? last = null;
@@ -172,8 +154,7 @@ public sealed class PipeHandshakeTests : IDisposable
                 await client.ConnectAsync(200).ConfigureAwait(false);
                 return client;
             }
-            catch (Exception ex)
-                when (ex is TimeoutException or IOException or UnauthorizedAccessException)
+            catch (Exception ex) when (ex is TimeoutException or IOException or UnauthorizedAccessException)
             {
                 last = ex;
                 await Task.Delay(50).ConfigureAwait(false);
@@ -184,16 +165,9 @@ public sealed class PipeHandshakeTests : IDisposable
         throw new TimeoutException($"Could not connect to pipe '{pipeName}'.", last);
     }
 
-    private static async Task<ResponseMessage> SendHandshakeAsync(
-        Stream stream,
-        int v,
-        string token,
-        string id = "1"
-    )
+    private static async Task<ResponseMessage> SendHandshakeAsync(Stream stream, int v, string token, string id = "1")
     {
-        using var paramsDoc = JsonDocument.Parse(
-            $"{{\"token\":{JsonSerializer.Serialize(token)}}}"
-        );
+        using var paramsDoc = JsonDocument.Parse($"{{\"token\":{JsonSerializer.Serialize(token)}}}");
         var request = new RequestMessage
         {
             V = v,

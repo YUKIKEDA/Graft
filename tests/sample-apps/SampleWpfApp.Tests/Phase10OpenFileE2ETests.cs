@@ -35,8 +35,7 @@ public sealed class Phase10OpenFileE2ETests
         );
 
         await app.ArmOpenFileAsync(path);
-        _ = await app.GetByAutomationId("OpenFileButton")
-            .InvokeOpeningWindowAsync(waitForNewWindow: false);
+        _ = await app.GetByAutomationId("OpenFileButton").InvokeOpeningWindowAsync(waitForNewWindow: false);
         await app.GetByAutomationId("StatusText").ExpectNameAsync($"OpenFile {path}");
     }
 
@@ -68,8 +67,7 @@ public sealed class Phase10OpenFileE2ETests
         );
 
         await app.ArmOpenFileCancelAsync();
-        _ = await app.GetByAutomationId("OpenFileButton")
-            .InvokeOpeningWindowAsync(waitForNewWindow: false);
+        _ = await app.GetByAutomationId("OpenFileButton").InvokeOpeningWindowAsync(waitForNewWindow: false);
         await app.GetByAutomationId("StatusText").ExpectNameAsync("OpenFileCancel");
     }
 }

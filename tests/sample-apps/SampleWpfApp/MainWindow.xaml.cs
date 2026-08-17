@@ -97,14 +97,7 @@ public partial class MainWindow : Window
         var phase28Items = new ObservableCollection<SampleListItem>();
         for (var i = 0; i < 10; i++)
         {
-            phase28Items.Add(
-                new SampleListItem(
-                    $"Phase28Row-{i:D2}",
-                    $"P28-{i}",
-                    active: i % 2 == 0,
-                    notes: $"N{i}"
-                )
-            );
+            phase28Items.Add(new SampleListItem($"Phase28Row-{i:D2}", $"P28-{i}", active: i % 2 == 0, notes: $"N{i}"));
         }
 
         SamplePhase28Grid.ItemsSource = phase28Items;
@@ -235,10 +228,7 @@ public partial class MainWindow : Window
         StatusText.Text = "ContextMenuSubPing";
     }
 
-    private void SampleSlider_OnValueChanged(
-        object sender,
-        RoutedPropertyChangedEventArgs<double> e
-    )
+    private void SampleSlider_OnValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         StatusText.Text = string.Create(CultureInfo.InvariantCulture, $"Slider {e.NewValue}");
     }
@@ -276,10 +266,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        StatusText.Text = string.Create(
-            CultureInfo.InvariantCulture,
-            $"Multi {SampleMultiList.SelectedItems.Count}"
-        );
+        StatusText.Text = string.Create(CultureInfo.InvariantCulture, $"Multi {SampleMultiList.SelectedItems.Count}");
     }
 
     private void SampleGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -302,10 +289,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        StatusText.Text = string.Create(
-            CultureInfo.InvariantCulture,
-            $"MultiGrid {SampleMultiGrid.SelectedItems.Count}"
-        );
+        StatusText.Text = string.Create(CultureInfo.InvariantCulture, $"MultiGrid {SampleMultiGrid.SelectedItems.Count}");
     }
 
     private void SamplePhase28Grid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -315,10 +299,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        StatusText.Text = string.Create(
-            CultureInfo.InvariantCulture,
-            $"Phase28Sel {SamplePhase28Grid.SelectedItems.Count}"
-        );
+        StatusText.Text = string.Create(CultureInfo.InvariantCulture, $"Phase28Sel {SamplePhase28Grid.SelectedItems.Count}");
     }
 
     private void SamplePhase28Grid_OnCurrentCellChanged(object? sender, EventArgs e)
@@ -327,19 +308,13 @@ public partial class MainWindow : Window
         {
             var col = SamplePhase28Grid.CurrentCell.Column?.Header?.ToString() ?? "?";
             var row = SamplePhase28Grid.Items.IndexOf(SamplePhase28Grid.CurrentCell.Item);
-            StatusText.Text = string.Create(
-                CultureInfo.InvariantCulture,
-                $"Phase28Cell {row}:{col}"
-            );
+            StatusText.Text = string.Create(CultureInfo.InvariantCulture, $"Phase28Cell {row}:{col}");
         }
     }
 
     private void SamplePhase29aPassword_OnPasswordChanged(object sender, RoutedEventArgs e)
     {
-        StatusText.Text = string.Create(
-            CultureInfo.InvariantCulture,
-            $"Phase29aPassword len={SamplePhase29aPassword.Password.Length}"
-        );
+        StatusText.Text = string.Create(CultureInfo.InvariantCulture, $"Phase29aPassword len={SamplePhase29aPassword.Password.Length}");
     }
 
     private void SamplePhase29bToolBarButton_OnClick(object sender, RoutedEventArgs e)
@@ -450,13 +425,7 @@ public partial class MainWindow : Window
 
     private void MessageBoxButton_OnClick(object sender, RoutedEventArgs e)
     {
-        var result = MessageBox.Show(
-            this,
-            "Continue?",
-            "Graft Sample",
-            System.Windows.MessageBoxButton.YesNo,
-            MessageBoxImage.Question
-        );
+        var result = MessageBox.Show(this, "Continue?", "Graft Sample", System.Windows.MessageBoxButton.YesNo, MessageBoxImage.Question);
         StatusText.Text = $"MessageBox {result}";
     }
 }

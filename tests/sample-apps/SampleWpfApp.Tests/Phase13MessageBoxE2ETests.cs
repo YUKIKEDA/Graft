@@ -33,8 +33,7 @@ public sealed class Phase13MessageBoxE2ETests
         );
 
         await app.ArmMessageBoxAsync("Yes");
-        _ = await app.GetByAutomationId("MessageBoxButton")
-            .InvokeOpeningWindowAsync(waitForNewWindow: false);
+        _ = await app.GetByAutomationId("MessageBoxButton").InvokeOpeningWindowAsync(waitForNewWindow: false);
         await app.GetByAutomationId("StatusText").ExpectNameAsync("MessageBox Yes");
     }
 
@@ -66,8 +65,7 @@ public sealed class Phase13MessageBoxE2ETests
         );
 
         await app.ArmMessageBoxAsync("No");
-        _ = await app.GetByAutomationId("MessageBoxButton")
-            .InvokeOpeningWindowAsync(waitForNewWindow: false);
+        _ = await app.GetByAutomationId("MessageBoxButton").InvokeOpeningWindowAsync(waitForNewWindow: false);
         await app.GetByAutomationId("StatusText").ExpectNameAsync("MessageBox No");
     }
 }

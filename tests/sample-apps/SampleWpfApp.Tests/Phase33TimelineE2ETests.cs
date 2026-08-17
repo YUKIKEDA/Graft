@@ -23,11 +23,7 @@ public sealed class Phase33TimelineE2ETests
     [Fact]
     public async Task Timeline_Always_WritesViewerAfterOperations()
     {
-        var outDir = Path.Combine(
-            Path.GetTempPath(),
-            "graft-timeline-e2e",
-            Guid.NewGuid().ToString("N")
-        );
+        var outDir = Path.Combine(Path.GetTempPath(), "graft-timeline-e2e", Guid.NewGuid().ToString("N"));
 
         try
         {
@@ -38,11 +34,7 @@ public sealed class Phase33TimelineE2ETests
                         AppPath = SampleAppLocator.ResolveProjectPath(),
                         Configuration = "GraftTest",
                         Timeout = TimeSpan.FromSeconds(60),
-                        Timeline = new TimelineOptions
-                        {
-                            OutputDirectory = outDir,
-                            Retention = TimelineRetention.Always,
-                        },
+                        Timeline = new TimelineOptions { OutputDirectory = outDir, Retention = TimelineRetention.Always },
                     }
                 )
             )

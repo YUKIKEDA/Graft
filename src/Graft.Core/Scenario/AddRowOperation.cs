@@ -4,5 +4,4 @@ namespace Graft.Core.Scenario;
 /// Scenario step: add a DataGrid row.
 /// </summary>
 /// <param name="AutomationId">DataGrid automation id.</param>
-public sealed record AddRowOperation(string AutomationId)
-    : ScenarioOperation(ScenarioActions.AddRow);
+public sealed record AddRowOperation(string AutomationId) : ScenarioOperation(ScenarioActions.AddRow);

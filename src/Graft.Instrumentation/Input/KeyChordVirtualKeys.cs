@@ -26,10 +26,7 @@ internal static class KeyChordVirtualKeys
                 "Control" => NativeMethods.VkControl,
                 "Alt" => NativeMethods.VkMenu,
                 "Shift" => NativeMethods.VkShift,
-                _ => throw new ArgumentException(
-                    $"Unsupported modifier '{chord.Modifiers[i]}'.",
-                    nameof(chord)
-                ),
+                _ => throw new ArgumentException($"Unsupported modifier '{chord.Modifiers[i]}'.", nameof(chord)),
             };
         }
 

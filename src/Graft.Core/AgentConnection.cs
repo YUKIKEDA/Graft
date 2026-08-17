@@ -44,11 +44,7 @@ public sealed class AgentConnection : IAsyncDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(token);
         if (timeout <= TimeSpan.Zero)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(timeout),
-                timeout,
-                "Timeout must be positive."
-            );
+            throw new ArgumentOutOfRangeException(nameof(timeout), timeout, "Timeout must be positive.");
         }
 
         using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -67,10 +63,7 @@ public sealed class AgentConnection : IAsyncDisposable
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            throw new GraftException(
-                GraftErrorCodes.ActionTimeout,
-                $"Connect + handshake timed out after {timeout.TotalSeconds:0.###}s."
-            );
+            throw new GraftException(GraftErrorCodes.ActionTimeout, $"Connect + handshake timed out after {timeout.TotalSeconds:0.###}s.");
         }
         finally
         {
@@ -109,10 +102,7 @@ public sealed class AgentConnection : IAsyncDisposable
         }
 
         return resultElement.Deserialize<GetTreeResult>(JsonMessageCodec.Options)
-            ?? throw new GraftException(
-                GraftErrorCodes.ActionFailed,
-                "getTree result deserialized to null."
-            );
+            ?? throw new GraftException(GraftErrorCodes.ActionFailed, "getTree result deserialized to null.");
     }
 
     /// <summary>
@@ -122,10 +112,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when invoke succeeds.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task InvokeAsync(
-        string automationId,
-        CancellationToken cancellationToken = default
-    )
+    public async Task InvokeAsync(string automationId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
@@ -152,10 +139,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when rightClick succeeds.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task RightClickAsync(
-        string automationId,
-        CancellationToken cancellationToken = default
-    )
+    public async Task RightClickAsync(string automationId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
@@ -181,10 +165,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="automationId">Target automation id.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when doubleClick succeeds.</returns>
-    public async Task DoubleClickAsync(
-        string automationId,
-        CancellationToken cancellationToken = default
-    )
+    public async Task DoubleClickAsync(string automationId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
@@ -237,11 +218,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="toAutomationId">Target automation id.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when drag succeeds.</returns>
-    public async Task DragAsync(
-        string automationId,
-        string toAutomationId,
-        CancellationToken cancellationToken = default
-    )
+    public async Task DragAsync(string automationId, string toAutomationId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(toAutomationId);
@@ -253,9 +230,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.Drag,
-                    Params = JsonSerializer.SerializeToElement(
-                        new { automationId, toAutomationId }
-                    ),
+                    Params = JsonSerializer.SerializeToElement(new { automationId, toAutomationId }),
                 },
                 cancellationToken
             )
@@ -272,12 +247,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="offsetY">Vertical DIP offset.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when clickAt succeeds.</returns>
-    public async Task ClickAtAsync(
-        string automationId,
-        double offsetX,
-        double offsetY,
-        CancellationToken cancellationToken = default
-    )
+    public async Task ClickAtAsync(string automationId, double offsetX, double offsetY, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
@@ -311,11 +281,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="delta">Wheel delta (typically multiples of 120).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when wheel succeeds.</returns>
-    public async Task WheelAsync(
-        string automationId,
-        int delta,
-        CancellationToken cancellationToken = default
-    )
+    public async Task WheelAsync(string automationId, int delta, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
@@ -343,11 +309,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when setValue succeeds.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task SetValueAsync(
-        string automationId,
-        string value,
-        CancellationToken cancellationToken = default
-    )
+    public async Task SetValueAsync(string automationId, string value, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ArgumentNullException.ThrowIfNull(value);
@@ -375,10 +337,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when toggle succeeds.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task ToggleAsync(
-        string automationId,
-        CancellationToken cancellationToken = default
-    )
+    public async Task ToggleAsync(string automationId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
@@ -406,11 +365,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when sendKeys succeeds.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task SendKeysAsync(
-        string automationId,
-        string text,
-        CancellationToken cancellationToken = default
-    )
+    public async Task SendKeysAsync(string automationId, string text, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ArgumentNullException.ThrowIfNull(text);
@@ -439,11 +394,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when pressKeys succeeds.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task PressKeysAsync(
-        string automationId,
-        string keys,
-        CancellationToken cancellationToken = default
-    )
+    public async Task PressKeysAsync(string automationId, string keys, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(keys);
@@ -472,18 +423,12 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Identity of the scrolled element.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task<ElementIdentity> ScrollIntoViewAsync(
-        string automationId,
-        int? index = null,
-        CancellationToken cancellationToken = default
-    )
+    public async Task<ElementIdentity> ScrollIntoViewAsync(string automationId, int? index = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
 
-        object payload = index is null
-            ? new { automationId }
-            : new { automationId, index = index.Value };
+        object payload = index is null ? new { automationId } : new { automationId, index = index.Value };
 
         var response = await SendAsync(
                 new RequestMessage
@@ -500,17 +445,11 @@ public sealed class AgentConnection : IAsyncDisposable
         EnsureOk(response, "scrollIntoView failed.");
         if (response.Result is not { } resultElement)
         {
-            throw new GraftException(
-                GraftErrorCodes.ActionFailed,
-                "scrollIntoView returned no result."
-            );
+            throw new GraftException(GraftErrorCodes.ActionFailed, "scrollIntoView returned no result.");
         }
 
         return resultElement.Deserialize<ElementIdentity>(JsonMessageCodec.Options)
-            ?? throw new GraftException(
-                GraftErrorCodes.ActionFailed,
-                "scrollIntoView result deserialized to null."
-            );
+            ?? throw new GraftException(GraftErrorCodes.ActionFailed, "scrollIntoView result deserialized to null.");
     }
 
     /// <summary>
@@ -521,11 +460,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when select succeeds.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task SelectAsync(
-        string automationId,
-        int index,
-        CancellationToken cancellationToken = default
-    )
+    public async Task SelectAsync(string automationId, int index, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
@@ -552,11 +487,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="key">Item display / automation name.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when select succeeds.</returns>
-    public async Task SelectByKeyAsync(
-        string automationId,
-        string key,
-        CancellationToken cancellationToken = default
-    )
+    public async Task SelectByKeyAsync(string automationId, string key, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
@@ -584,11 +515,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="path">Slash-separated AutomationId segments.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when selectTree succeeds.</returns>
-    public async Task SelectTreeAsync(
-        string automationId,
-        string path,
-        CancellationToken cancellationToken = default
-    )
+    public async Task SelectTreeAsync(string automationId, string path, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
@@ -617,11 +544,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when selectMany succeeds.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task SelectManyAsync(
-        string automationId,
-        IReadOnlyList<int> indexes,
-        CancellationToken cancellationToken = default
-    )
+    public async Task SelectManyAsync(string automationId, IReadOnlyList<int> indexes, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ArgumentNullException.ThrowIfNull(indexes);
@@ -650,11 +573,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when selectMenu succeeds.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task SelectMenuAsync(
-        string automationId,
-        string path,
-        CancellationToken cancellationToken = default
-    )
+    public async Task SelectMenuAsync(string automationId, string path, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
@@ -684,12 +603,8 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Cell display text.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public Task<string> GetCellTextAsync(
-        string automationId,
-        int row,
-        int column,
-        CancellationToken cancellationToken = default
-    ) => GetCellTextCoreAsync(automationId, row, column, columnKey: null, cancellationToken);
+    public Task<string> GetCellTextAsync(string automationId, int row, int column, CancellationToken cancellationToken = default) =>
+        GetCellTextCoreAsync(automationId, row, column, columnKey: null, cancellationToken);
 
     /// <summary>
     /// Calls <c>getCellText</c> for a DataGrid cell by column Header key.
@@ -700,12 +615,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Cell display text.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public Task<string> GetCellTextAsync(
-        string automationId,
-        int row,
-        string columnKey,
-        CancellationToken cancellationToken = default
-    )
+    public Task<string> GetCellTextAsync(string automationId, int row, string columnKey, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
         return GetCellTextCoreAsync(automationId, row, column: null, columnKey, cancellationToken);
@@ -721,13 +631,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when setCellValue succeeds.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public Task SetCellValueAsync(
-        string automationId,
-        int row,
-        int column,
-        string value,
-        CancellationToken cancellationToken = default
-    ) =>
+    public Task SetCellValueAsync(string automationId, int row, int column, string value, CancellationToken cancellationToken = default) =>
         SetCellValueCoreAsync(automationId, row, column, columnKey: null, value, cancellationToken);
 
     /// <summary>
@@ -740,23 +644,10 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when setCellValue succeeds.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public Task SetCellValueAsync(
-        string automationId,
-        int row,
-        string columnKey,
-        string value,
-        CancellationToken cancellationToken = default
-    )
+    public Task SetCellValueAsync(string automationId, int row, string columnKey, string value, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
-        return SetCellValueCoreAsync(
-            automationId,
-            row,
-            column: null,
-            columnKey,
-            value,
-            cancellationToken
-        );
+        return SetCellValueCoreAsync(automationId, row, column: null, columnKey, value, cancellationToken);
     }
 
     /// <summary>
@@ -767,12 +658,8 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="column">Zero-based column index.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when selectCell succeeds.</returns>
-    public Task SelectCellAsync(
-        string automationId,
-        int row,
-        int column,
-        CancellationToken cancellationToken = default
-    ) => SelectCellCoreAsync(automationId, row, column, columnKey: null, cancellationToken);
+    public Task SelectCellAsync(string automationId, int row, int column, CancellationToken cancellationToken = default) =>
+        SelectCellCoreAsync(automationId, row, column, columnKey: null, cancellationToken);
 
     /// <summary>
     /// Calls <c>selectCell</c> by column Header key.
@@ -782,12 +669,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="columnKey">Column Header string.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when selectCell succeeds.</returns>
-    public Task SelectCellAsync(
-        string automationId,
-        int row,
-        string columnKey,
-        CancellationToken cancellationToken = default
-    )
+    public Task SelectCellAsync(string automationId, int row, string columnKey, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
         return SelectCellCoreAsync(automationId, row, column: null, columnKey, cancellationToken);
@@ -801,12 +683,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="value">Exact cell display text.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when selectRow succeeds.</returns>
-    public async Task SelectRowAsync(
-        string automationId,
-        string columnKey,
-        string value,
-        CancellationToken cancellationToken = default
-    )
+    public async Task SelectRowAsync(string automationId, string columnKey, string value, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
@@ -842,11 +719,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="columnKey">Column Header string.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when clickColumnHeader succeeds.</returns>
-    public async Task ClickColumnHeaderAsync(
-        string automationId,
-        string columnKey,
-        CancellationToken cancellationToken = default
-    )
+    public async Task ClickColumnHeaderAsync(string automationId, string columnKey, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
@@ -873,10 +746,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="automationId">DataGrid automation id.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when addRow succeeds.</returns>
-    public async Task AddRowAsync(
-        string automationId,
-        CancellationToken cancellationToken = default
-    )
+    public async Task AddRowAsync(string automationId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
@@ -902,10 +772,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="automationId">DataGrid automation id.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when deleteSelectedRows succeeds.</returns>
-    public async Task DeleteSelectedRowsAsync(
-        string automationId,
-        CancellationToken cancellationToken = default
-    )
+    public async Task DeleteSelectedRowsAsync(string automationId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
@@ -932,10 +799,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when expand succeeds.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task ExpandAsync(
-        string automationId,
-        CancellationToken cancellationToken = default
-    )
+    public async Task ExpandAsync(string automationId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
@@ -962,10 +826,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when collapse succeeds.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task CollapseAsync(
-        string automationId,
-        CancellationToken cancellationToken = default
-    )
+    public async Task CollapseAsync(string automationId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
@@ -991,9 +852,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Open windows in the target process.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task<ListWindowsResult> ListWindowsAsync(
-        CancellationToken cancellationToken = default
-    )
+    public async Task<ListWindowsResult> ListWindowsAsync(CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
         var response = await SendAsync(
@@ -1010,17 +869,11 @@ public sealed class AgentConnection : IAsyncDisposable
         EnsureOk(response, "listWindows failed.");
         if (response.Result is not { } resultElement)
         {
-            throw new GraftException(
-                GraftErrorCodes.ActionFailed,
-                "listWindows returned no result."
-            );
+            throw new GraftException(GraftErrorCodes.ActionFailed, "listWindows returned no result.");
         }
 
         return resultElement.Deserialize<ListWindowsResult>(JsonMessageCodec.Options)
-            ?? throw new GraftException(
-                GraftErrorCodes.ActionFailed,
-                "listWindows result deserialized to null."
-            );
+            ?? throw new GraftException(GraftErrorCodes.ActionFailed, "listWindows result deserialized to null.");
     }
 
     /// <summary>
@@ -1055,10 +908,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when the invoke is queued.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task InvokeOpeningWindowAsync(
-        string automationId,
-        CancellationToken cancellationToken = default
-    )
+    public async Task InvokeOpeningWindowAsync(string automationId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
@@ -1241,10 +1091,7 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when arming succeeds.</returns>
     /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task ArmMessageBoxAsync(
-        string result,
-        CancellationToken cancellationToken = default
-    )
+    public async Task ArmMessageBoxAsync(string result, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(result);
         ThrowIfDisposed();
@@ -1270,9 +1117,8 @@ public sealed class AgentConnection : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Screenshot meta and PNG bytes.</returns>
     /// <exception cref="GraftException">RPC failed or frame mismatch.</exception>
-    public Task<(ScreenshotResult Meta, byte[] PngBytes)> ScreenshotAsync(
-        CancellationToken cancellationToken = default
-    ) => ScreenshotAsync(automationId: null, runtimeId: null, cancellationToken);
+    public Task<(ScreenshotResult Meta, byte[] PngBytes)> ScreenshotAsync(CancellationToken cancellationToken = default) =>
+        ScreenshotAsync(automationId: null, runtimeId: null, cancellationToken);
 
     /// <summary>
     /// Calls <c>screenshot</c> for the target window, or an element clip when a selector is given.
@@ -1293,10 +1139,7 @@ public sealed class AgentConnection : IAsyncDisposable
         JsonElement? paramsElement = null;
         if (!string.IsNullOrWhiteSpace(automationId) || runtimeId is not null)
         {
-            paramsElement = JsonSerializer.SerializeToElement(
-                new { automationId, runtimeId },
-                JsonMessageCodec.Options
-            );
+            paramsElement = JsonSerializer.SerializeToElement(new { automationId, runtimeId }, JsonMessageCodec.Options);
         }
 
         var response = await SendAsync(
@@ -1314,33 +1157,21 @@ public sealed class AgentConnection : IAsyncDisposable
         EnsureOk(response, "screenshot failed.");
         if (response.Result is not { } resultElement)
         {
-            throw new GraftException(
-                GraftErrorCodes.ActionFailed,
-                "screenshot returned no result."
-            );
+            throw new GraftException(GraftErrorCodes.ActionFailed, "screenshot returned no result.");
         }
 
         var meta =
             resultElement.Deserialize<ScreenshotResult>(JsonMessageCodec.Options)
-            ?? throw new GraftException(
-                GraftErrorCodes.ActionFailed,
-                "screenshot result deserialized to null."
-            );
+            ?? throw new GraftException(GraftErrorCodes.ActionFailed, "screenshot result deserialized to null.");
 
         byte[] pngBytes;
         try
         {
-            pngBytes = await FrameIO
-                .ReadAsync(_stream, cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+            pngBytes = await FrameIO.ReadAsync(_stream, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (IOException ex)
         {
-            throw new GraftException(
-                GraftErrorCodes.PipeDisconnected,
-                "Named pipe connection was lost while reading screenshot bytes.",
-                ex
-            );
+            throw new GraftException(GraftErrorCodes.PipeDisconnected, "Named pipe connection was lost while reading screenshot bytes.", ex);
         }
 
         if (pngBytes.Length != meta.ByteLength)
@@ -1366,13 +1197,7 @@ public sealed class AgentConnection : IAsyncDisposable
         await _stream.DisposeAsync().ConfigureAwait(false);
     }
 
-    private async Task<string> GetCellTextCoreAsync(
-        string automationId,
-        int row,
-        int? column,
-        string? columnKey,
-        CancellationToken cancellationToken
-    )
+    private async Task<string> GetCellTextCoreAsync(string automationId, int row, int? column, string? columnKey, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
@@ -1406,18 +1231,12 @@ public sealed class AgentConnection : IAsyncDisposable
         EnsureOk(response, "getCellText failed.");
         if (response.Result is not { } resultElement)
         {
-            throw new GraftException(
-                GraftErrorCodes.ActionFailed,
-                "getCellText returned no result."
-            );
+            throw new GraftException(GraftErrorCodes.ActionFailed, "getCellText returned no result.");
         }
 
         var result =
             resultElement.Deserialize<CellTextResult>(JsonMessageCodec.Options)
-            ?? throw new GraftException(
-                GraftErrorCodes.ActionFailed,
-                "getCellText result deserialized to null."
-            );
+            ?? throw new GraftException(GraftErrorCodes.ActionFailed, "getCellText result deserialized to null.");
         return result.Text;
     }
 
@@ -1465,13 +1284,7 @@ public sealed class AgentConnection : IAsyncDisposable
         EnsureOk(response, "setCellValue failed.");
     }
 
-    private async Task SelectCellCoreAsync(
-        string automationId,
-        int row,
-        int? column,
-        string? columnKey,
-        CancellationToken cancellationToken
-    )
+    private async Task SelectCellCoreAsync(string automationId, int row, int? column, string? columnKey, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
@@ -1507,9 +1320,7 @@ public sealed class AgentConnection : IAsyncDisposable
 
     private async Task HandshakeAsync(string token, CancellationToken cancellationToken)
     {
-        using var paramsDoc = JsonDocument.Parse(
-            $"{{\"token\":{JsonSerializer.Serialize(token)}}}"
-        );
+        using var paramsDoc = JsonDocument.Parse($"{{\"token\":{JsonSerializer.Serialize(token)}}}");
         var response = await SendAsync(
                 new RequestMessage
                 {
@@ -1525,17 +1336,9 @@ public sealed class AgentConnection : IAsyncDisposable
         EnsureOk(response, "Handshake failed.");
     }
 
-    private static async Task<NamedPipeClientStream> ConnectPipeAsync(
-        string pipeName,
-        CancellationToken cancellationToken
-    )
+    private static async Task<NamedPipeClientStream> ConnectPipeAsync(string pipeName, CancellationToken cancellationToken)
     {
-        var stream = new NamedPipeClientStream(
-            ".",
-            pipeName,
-            PipeDirection.InOut,
-            PipeOptions.Asynchronous
-        );
+        var stream = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
 
         try
         {
@@ -1547,8 +1350,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     await stream.ConnectAsync(200, cancellationToken).ConfigureAwait(false);
                     return stream;
                 }
-                catch (Exception ex)
-                    when (ex is TimeoutException or IOException or UnauthorizedAccessException)
+                catch (Exception ex) when (ex is TimeoutException or IOException or UnauthorizedAccessException)
                 {
                     await Task.Delay(50, cancellationToken).ConfigureAwait(false);
                 }
@@ -1561,35 +1363,20 @@ public sealed class AgentConnection : IAsyncDisposable
         }
     }
 
-    private async Task<ResponseMessage> SendAsync(
-        RequestMessage request,
-        CancellationToken cancellationToken
-    )
+    private async Task<ResponseMessage> SendAsync(RequestMessage request, CancellationToken cancellationToken)
     {
         try
         {
-            await JsonMessageCodec
-                .WriteRequestAsync(_stream, request, cancellationToken)
-                .ConfigureAwait(false);
-            return await JsonMessageCodec
-                .ReadResponseAsync(_stream, cancellationToken)
-                .ConfigureAwait(false);
+            await JsonMessageCodec.WriteRequestAsync(_stream, request, cancellationToken).ConfigureAwait(false);
+            return await JsonMessageCodec.ReadResponseAsync(_stream, cancellationToken).ConfigureAwait(false);
         }
         catch (IOException ex)
         {
-            throw new GraftException(
-                GraftErrorCodes.PipeDisconnected,
-                "Named pipe connection was lost.",
-                ex
-            );
+            throw new GraftException(GraftErrorCodes.PipeDisconnected, "Named pipe connection was lost.", ex);
         }
         catch (ObjectDisposedException ex)
         {
-            throw new GraftException(
-                GraftErrorCodes.PipeDisconnected,
-                "Named pipe connection was disposed.",
-                ex
-            );
+            throw new GraftException(GraftErrorCodes.PipeDisconnected, "Named pipe connection was disposed.", ex);
         }
     }
 

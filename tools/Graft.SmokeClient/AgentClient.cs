@@ -21,18 +21,9 @@ internal sealed class AgentClient : IAsyncDisposable
         _stream = stream;
     }
 
-    public static async Task<AgentClient> ConnectAsync(
-        string pipeName,
-        TimeSpan timeout,
-        CancellationToken cancellationToken
-    )
+    public static async Task<AgentClient> ConnectAsync(string pipeName, TimeSpan timeout, CancellationToken cancellationToken)
     {
-        var stream = new NamedPipeClientStream(
-            ".",
-            pipeName,
-            PipeDirection.InOut,
-            PipeOptions.Asynchronous
-        );
+        var stream = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
 
         var deadline = DateTime.UtcNow + timeout;
         Exception? last = null;
@@ -46,8 +37,7 @@ internal sealed class AgentClient : IAsyncDisposable
                 await stream.ConnectAsync(sliceMs, cancellationToken).ConfigureAwait(false);
                 return new AgentClient(stream);
             }
-            catch (Exception ex)
-                when (ex is TimeoutException or IOException or UnauthorizedAccessException)
+            catch (Exception ex) when (ex is TimeoutException or IOException or UnauthorizedAccessException)
             {
                 last = ex;
                 await Task.Delay(50, cancellationToken).ConfigureAwait(false);
@@ -55,18 +45,12 @@ internal sealed class AgentClient : IAsyncDisposable
         }
 
         await stream.DisposeAsync().ConfigureAwait(false);
-        throw new SmokeException(
-            GraftErrorCodes.PipeDisconnected,
-            $"Could not connect to pipe '{pipeName}' within {timeout.TotalSeconds:0}s.",
-            last
-        );
+        throw new SmokeException(GraftErrorCodes.PipeDisconnected, $"Could not connect to pipe '{pipeName}' within {timeout.TotalSeconds:0}s.", last);
     }
 
     public async Task HandshakeAsync(string token, CancellationToken cancellationToken)
     {
-        using var paramsDoc = JsonDocument.Parse(
-            $"{{\"token\":{JsonSerializer.Serialize(token)}}}"
-        );
+        using var paramsDoc = JsonDocument.Parse($"{{\"token\":{JsonSerializer.Serialize(token)}}}");
         var response = await SendAsync(
                 new RequestMessage
                 {
@@ -103,15 +87,10 @@ internal sealed class AgentClient : IAsyncDisposable
         }
 
         return resultElement.Deserialize<GetTreeResult>(JsonMessageCodec.Options)
-            ?? throw new SmokeException(
-                GraftErrorCodes.ActionFailed,
-                "getTree result deserialized to null."
-            );
+            ?? throw new SmokeException(GraftErrorCodes.ActionFailed, "getTree result deserialized to null.");
     }
 
-    public async Task<(ScreenshotResult Meta, byte[] PngBytes)> ScreenshotAsync(
-        CancellationToken cancellationToken
-    )
+    public async Task<(ScreenshotResult Meta, byte[] PngBytes)> ScreenshotAsync(CancellationToken cancellationToken)
     {
         var response = await SendAsync(
                 new RequestMessage
@@ -127,22 +106,14 @@ internal sealed class AgentClient : IAsyncDisposable
         EnsureOk(response, "screenshot failed.");
         if (response.Result is not { } resultElement)
         {
-            throw new SmokeException(
-                GraftErrorCodes.ActionFailed,
-                "screenshot returned no result."
-            );
+            throw new SmokeException(GraftErrorCodes.ActionFailed, "screenshot returned no result.");
         }
 
         var meta =
             resultElement.Deserialize<ScreenshotResult>(JsonMessageCodec.Options)
-            ?? throw new SmokeException(
-                GraftErrorCodes.ActionFailed,
-                "screenshot result deserialized to null."
-            );
+            ?? throw new SmokeException(GraftErrorCodes.ActionFailed, "screenshot result deserialized to null.");
 
-        var pngBytes = await FrameIO
-            .ReadAsync(_stream, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        var pngBytes = await FrameIO.ReadAsync(_stream, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         if (pngBytes.Length != meta.ByteLength)
         {
@@ -152,15 +123,9 @@ internal sealed class AgentClient : IAsyncDisposable
             );
         }
 
-        if (
-            pngBytes.Length < PngSignature.Length
-            || !pngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature)
-        )
+        if (pngBytes.Length < PngSignature.Length || !pngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature))
         {
-            throw new SmokeException(
-                GraftErrorCodes.ActionFailed,
-                "screenshot raw frame does not start with a PNG signature."
-            );
+            throw new SmokeException(GraftErrorCodes.ActionFailed, "screenshot raw frame does not start with a PNG signature.");
         }
 
         return (meta, pngBytes);
@@ -185,17 +150,10 @@ internal sealed class AgentClient : IAsyncDisposable
 
     public async ValueTask DisposeAsync() => await _stream.DisposeAsync().ConfigureAwait(false);
 
-    private async Task<ResponseMessage> SendAsync(
-        RequestMessage request,
-        CancellationToken cancellationToken
-    )
+    private async Task<ResponseMessage> SendAsync(RequestMessage request, CancellationToken cancellationToken)
     {
-        await JsonMessageCodec
-            .WriteRequestAsync(_stream, request, cancellationToken)
-            .ConfigureAwait(false);
-        return await JsonMessageCodec
-            .ReadResponseAsync(_stream, cancellationToken)
-            .ConfigureAwait(false);
+        await JsonMessageCodec.WriteRequestAsync(_stream, request, cancellationToken).ConfigureAwait(false);
+        return await JsonMessageCodec.ReadResponseAsync(_stream, cancellationToken).ConfigureAwait(false);
     }
 
     private string NextId() => Interlocked.Increment(ref _nextId).ToString();

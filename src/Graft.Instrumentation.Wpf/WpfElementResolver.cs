@@ -29,10 +29,7 @@ internal sealed class WpfElementResolver : IElementResolver
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.ActionFailed,
-                "WPF Application.Current is not available; cannot resolve elements."
-            );
+            throw new ElementResolveException(GraftErrorCodes.ActionFailed, "WPF Application.Current is not available; cannot resolve elements.");
         }
 
         if (dispatcher.CheckAccess())

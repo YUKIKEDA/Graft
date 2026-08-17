@@ -6,14 +6,7 @@ namespace Graft.Instrumentation.Dialogs;
 public static class MessageBoxArm
 {
     private static readonly object Gate = new();
-    private static readonly HashSet<string> AllowedResults = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "None",
-        "OK",
-        "Cancel",
-        "Yes",
-        "No",
-    };
+    private static readonly HashSet<string> AllowedResults = new(StringComparer.OrdinalIgnoreCase) { "None", "OK", "Cancel", "Yes", "No" };
 
     private static string? _result;
 
@@ -29,18 +22,13 @@ public static class MessageBoxArm
         ArgumentException.ThrowIfNullOrWhiteSpace(result);
         if (!AllowedResults.Contains(result))
         {
-            throw new ArgumentException(
-                "result must be one of: None, OK, Cancel, Yes, No.",
-                nameof(result)
-            );
+            throw new ArgumentException("result must be one of: None, OK, Cancel, Yes, No.", nameof(result));
         }
 
         lock (Gate)
         {
             // Canonical casing for MessageBoxResult.ToString() parity.
-            _result = AllowedResults.First(r =>
-                string.Equals(r, result, StringComparison.OrdinalIgnoreCase)
-            );
+            _result = AllowedResults.First(r => string.Equals(r, result, StringComparison.OrdinalIgnoreCase));
         }
     }
 

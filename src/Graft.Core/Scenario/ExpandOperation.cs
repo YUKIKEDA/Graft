@@ -4,5 +4,4 @@ namespace Graft.Core.Scenario;
 /// Expand an element by automation id.
 /// </summary>
 /// <param name="AutomationId">Target automation id.</param>
-public sealed record ExpandOperation(string AutomationId)
-    : ScenarioOperation(ScenarioActions.Expand);
+public sealed record ExpandOperation(string AutomationId) : ScenarioOperation(ScenarioActions.Expand);

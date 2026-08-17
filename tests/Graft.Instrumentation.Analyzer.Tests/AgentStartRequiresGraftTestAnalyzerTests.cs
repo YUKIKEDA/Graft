@@ -108,11 +108,7 @@ public sealed class AgentStartRequiresGraftTestAnalyzerTests
         await RunAsync(testCode, defineGraftTest: false, referenceInstrumentation: false);
     }
 
-    private static async Task RunAsync(
-        string testCode,
-        bool defineGraftTest,
-        bool referenceInstrumentation = true
-    )
+    private static async Task RunAsync(string testCode, bool defineGraftTest, bool referenceInstrumentation = true)
     {
         var test = new CSharpAnalyzerTest<AgentStartRequiresGraftTestAnalyzer, DefaultVerifier>
         {
@@ -122,9 +118,7 @@ public sealed class AgentStartRequiresGraftTestAnalyzerTests
 
         if (referenceInstrumentation)
         {
-            test.TestState.AdditionalReferences.Add(
-                MetadataReference.CreateFromFile(typeof(Agent).Assembly.Location)
-            );
+            test.TestState.AdditionalReferences.Add(MetadataReference.CreateFromFile(typeof(Agent).Assembly.Location));
         }
 
         if (defineGraftTest)
@@ -134,10 +128,7 @@ public sealed class AgentStartRequiresGraftTestAnalyzerTests
                 {
                     var project = solution.GetProject(projectId)!;
                     var options = (CSharpParseOptions)project.ParseOptions!;
-                    return solution.WithProjectParseOptions(
-                        projectId,
-                        options.WithPreprocessorSymbols("GRAFT_TEST")
-                    );
+                    return solution.WithProjectParseOptions(projectId, options.WithPreprocessorSymbols("GRAFT_TEST"));
                 }
             );
         }

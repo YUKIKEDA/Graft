@@ -22,11 +22,7 @@ public sealed class ScenarioParserTests
     [Fact]
     public void ParseFile_SampleFixture_CompilesOperations()
     {
-        var path = Path.Combine(
-            AppContext.BaseDirectory,
-            "Fixtures",
-            "sample-main-window.scenario.json"
-        );
+        var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "sample-main-window.scenario.json");
         Assert.True(File.Exists(path), $"Missing fixture: {path}");
 
         var scenario = ScenarioJson.ParseFile(path);

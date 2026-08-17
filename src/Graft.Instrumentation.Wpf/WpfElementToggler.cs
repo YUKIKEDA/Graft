@@ -24,10 +24,7 @@ internal sealed class WpfElementToggler : IElementToggler
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "WPF Application.Current is not available; cannot toggle."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "WPF Application.Current is not available; cannot toggle.");
         }
 
         if (dispatcher.CheckAccess())

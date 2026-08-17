@@ -8,17 +8,7 @@ internal static class SampleAppLocator
     public static string ResolveProjectPath()
     {
         // Prefer relative-to-this-file layout when running from repo builds.
-        var sibling = Path.GetFullPath(
-            Path.Combine(
-                AppContext.BaseDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "SampleWpfApp",
-                "SampleWpfApp.csproj"
-            )
-        );
+        var sibling = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "SampleWpfApp", "SampleWpfApp.csproj"));
         if (File.Exists(sibling))
         {
             return sibling;
@@ -27,13 +17,7 @@ internal static class SampleAppLocator
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null)
         {
-            var candidate = Path.Combine(
-                dir.FullName,
-                "tests",
-                "sample-apps",
-                "SampleWpfApp",
-                "SampleWpfApp.csproj"
-            );
+            var candidate = Path.Combine(dir.FullName, "tests", "sample-apps", "SampleWpfApp", "SampleWpfApp.csproj");
             if (File.Exists(candidate))
             {
                 return candidate;
@@ -42,8 +26,6 @@ internal static class SampleAppLocator
             dir = dir.Parent;
         }
 
-        throw new InvalidOperationException(
-            "Could not locate SampleWpfApp.csproj. Keep SampleWpfApp.Tests next to SampleWpfApp."
-        );
+        throw new InvalidOperationException("Could not locate SampleWpfApp.csproj. Keep SampleWpfApp.Tests next to SampleWpfApp.");
     }
 }

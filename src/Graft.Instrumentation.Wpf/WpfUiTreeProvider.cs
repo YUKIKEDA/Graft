@@ -29,9 +29,7 @@ internal sealed class WpfUiTreeProvider : IUiTreeProvider
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new InvalidOperationException(
-                "WPF Application.Current is not available; cannot capture the UI tree."
-            );
+            throw new InvalidOperationException("WPF Application.Current is not available; cannot capture the UI tree.");
         }
 
         if (dispatcher.CheckAccess())

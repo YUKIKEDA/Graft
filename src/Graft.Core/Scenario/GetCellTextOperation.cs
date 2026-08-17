@@ -8,9 +8,5 @@ namespace Graft.Core.Scenario;
 /// <param name="Row">Zero-based row index.</param>
 /// <param name="Column">Zero-based column index, or <see langword="null"/> when using key.</param>
 /// <param name="ColumnKey">Column Header string, or <see langword="null"/> when using index.</param>
-public sealed record GetCellTextOperation(
-    string AutomationId,
-    int Row,
-    int? Column,
-    string? ColumnKey
-) : ScenarioOperation(ScenarioActions.GetCellText);
+public sealed record GetCellTextOperation(string AutomationId, int Row, int? Column, string? ColumnKey)
+    : ScenarioOperation(ScenarioActions.GetCellText);

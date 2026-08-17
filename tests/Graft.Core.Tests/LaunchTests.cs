@@ -4,6 +4,7 @@ using Graft.Protocol.Messages;
 namespace Graft.Core.Tests;
 
 [Collection(SampleUiCollection.Name)]
+[Trait("Category", "UI")]
 public sealed class LaunchTests
 {
     /// <summary>
@@ -27,9 +28,7 @@ public sealed class LaunchTests
     public async Task Launch_SampleWpfApp_GetTreeFindsSampleButton()
     {
         var appPath = SampleAppPaths.ResolveSampleWpfAppProject();
-        await using var session = await Application.LaunchAsync(
-            new LaunchOptions { AppPath = appPath, Timeout = TimeSpan.FromSeconds(60) }
-        );
+        await using var session = await Application.LaunchAsync(new LaunchOptions { AppPath = appPath, Timeout = TimeSpan.FromSeconds(60) });
 
         var button = await WaitForSampleButtonAsync(session.Connection);
         Assert.Equal("SampleClickMe", button.Name);
@@ -50,13 +49,9 @@ public sealed class LaunchTests
                     return button;
                 }
 
-                last = new GraftException(
-                    GraftErrorCodes.ElementNotFound,
-                    "Element 'SampleButton' was not in the tree yet."
-                );
+                last = new GraftException(GraftErrorCodes.ElementNotFound, "Element 'SampleButton' was not in the tree yet.");
             }
-            catch (GraftException ex)
-                when (ex.Code is GraftErrorCodes.ActionFailed or GraftErrorCodes.ElementNotFound)
+            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ActionFailed or GraftErrorCodes.ElementNotFound)
             {
                 last = ex;
             }
@@ -64,11 +59,7 @@ public sealed class LaunchTests
             await Task.Delay(100);
         }
 
-        throw last
-            ?? new GraftException(
-                GraftErrorCodes.ElementNotFound,
-                "Element 'SampleButton' not found."
-            );
+        throw last ?? new GraftException(GraftErrorCodes.ElementNotFound, "Element 'SampleButton' not found.");
     }
 
     private static TreeNode? FindByAutomationId(TreeNode node, string automationId)

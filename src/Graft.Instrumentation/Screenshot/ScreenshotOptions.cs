@@ -23,9 +23,7 @@ public sealed class ScreenshotOptions
     /// <summary>
     /// Gets a value indicating whether an element clip was requested.
     /// </summary>
-    public bool HasElementSelector =>
-        Selector is not null
-        && (!string.IsNullOrWhiteSpace(Selector.AutomationId) || Selector.RuntimeId is not null);
+    public bool HasElementSelector => Selector is not null && (!string.IsNullOrWhiteSpace(Selector.AutomationId) || Selector.RuntimeId is not null);
 }
 
 #endif

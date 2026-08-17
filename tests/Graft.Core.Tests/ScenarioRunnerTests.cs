@@ -21,11 +21,7 @@ public sealed class ScenarioRunnerTests
     [Fact]
     public async Task RunAsync_WithoutLeadingLaunch_Throws()
     {
-        var scenario = new ScenarioDocument
-        {
-            Version = ScenarioDocument.CurrentVersion,
-            Operations = [new InvokeOperation("SampleButton")],
-        };
+        var scenario = new ScenarioDocument { Version = ScenarioDocument.CurrentVersion, Operations = [new InvokeOperation("SampleButton")] };
 
         var ex = await Assert.ThrowsAsync<GraftException>(() => ScenarioRunner.RunAsync(scenario));
         Assert.Equal(GraftErrorCodes.ActionFailed, ex.Code);

@@ -5,5 +5,4 @@ namespace Graft.Core.Scenario;
 /// </summary>
 /// <param name="AutomationId">Target automation id.</param>
 /// <param name="Enabled">Expected enabled state.</param>
-public sealed record ExpectEnabledOperation(string AutomationId, bool Enabled)
-    : ScenarioOperation(ScenarioActions.ExpectEnabled);
+public sealed record ExpectEnabledOperation(string AutomationId, bool Enabled) : ScenarioOperation(ScenarioActions.ExpectEnabled);

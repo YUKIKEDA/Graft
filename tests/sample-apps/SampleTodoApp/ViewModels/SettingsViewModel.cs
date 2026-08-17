@@ -19,25 +19,17 @@ public sealed class SettingsViewModel : IDisposable
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
-        _applyDataDirectoryAsync =
-            applyDataDirectoryAsync
-            ?? throw new ArgumentNullException(nameof(applyDataDirectoryAsync));
-        _applyThemeAsync =
-            applyThemeAsync ?? throw new ArgumentNullException(nameof(applyThemeAsync));
+        _applyDataDirectoryAsync = applyDataDirectoryAsync ?? throw new ArgumentNullException(nameof(applyDataDirectoryAsync));
+        _applyThemeAsync = applyThemeAsync ?? throw new ArgumentNullException(nameof(applyThemeAsync));
         _close = close ?? throw new ArgumentNullException(nameof(close));
 
         DataDirectory = new BindableReactiveProperty<string>(dataDirectory).AddTo(ref _disposables);
         IsDarkTheme = new BindableReactiveProperty<bool>(isDarkTheme).AddTo(ref _disposables);
 
-        BrowseDataDirectoryCommand = new AsyncReactiveCommand(BrowseDataDirectoryAsync).AddTo(
-            ref _disposables
-        );
+        BrowseDataDirectoryCommand = new AsyncReactiveCommand(BrowseDataDirectoryAsync).AddTo(ref _disposables);
         CloseCommand = new ReactiveCommand(_ => _close()).AddTo(ref _disposables);
 
-        IsDarkTheme
-            .Skip(1)
-            .SubscribeAwait(async (dark, _) => await _applyThemeAsync(dark).ConfigureAwait(true))
-            .AddTo(ref _disposables);
+        IsDarkTheme.Skip(1).SubscribeAwait(async (dark, _) => await _applyThemeAsync(dark).ConfigureAwait(true)).AddTo(ref _disposables);
     }
 
     public BindableReactiveProperty<string> DataDirectory { get; }

@@ -92,12 +92,7 @@ public sealed class ToggleDispatchTests : IDisposable
 
     private static async Task<NamedPipeClientStream> ConnectAsync(string pipeName)
     {
-        var client = new NamedPipeClientStream(
-            ".",
-            pipeName,
-            PipeDirection.InOut,
-            PipeOptions.Asynchronous
-        );
+        var client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
 
         var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
         Exception? last = null;
@@ -108,8 +103,7 @@ public sealed class ToggleDispatchTests : IDisposable
                 await client.ConnectAsync(200).ConfigureAwait(false);
                 return client;
             }
-            catch (Exception ex)
-                when (ex is TimeoutException or IOException or UnauthorizedAccessException)
+            catch (Exception ex) when (ex is TimeoutException or IOException or UnauthorizedAccessException)
             {
                 last = ex;
                 await Task.Delay(50).ConfigureAwait(false);

@@ -10,9 +10,7 @@ internal static class TodoLaunch
     /// </summary>
     public static string ResolveTimelineDirectory(string dataDir)
     {
-        var leaf = Path.GetFileName(
-            dataDir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-        );
+        var leaf = Path.GetFileName(dataDir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
         if (string.IsNullOrWhiteSpace(leaf))
         {
             leaf = Guid.NewGuid().ToString("N");
@@ -37,11 +35,7 @@ internal static class TodoLaunch
                 AppPath = TodoAppLocator.ResolveProjectPath(),
                 Configuration = "GraftTest",
                 Timeout = TimeSpan.FromSeconds(90),
-                Timeline = new TimelineOptions
-                {
-                    OutputDirectory = timelineDir,
-                    Retention = TimelineRetention.Always,
-                },
+                Timeline = new TimelineOptions { OutputDirectory = timelineDir, Retention = TimelineRetention.Always },
             }
         );
 
@@ -63,8 +57,7 @@ internal static class TodoLaunch
         await app.GetByAutomationId("SettingsButton").InvokeAsync();
         await app.GetByAutomationId("SettingsView").WaitForAsync();
         await app.ArmOpenFolderAsync(dataDir);
-        _ = await app.GetByAutomationId("SettingsBrowseDataDirectoryButton")
-            .InvokeOpeningWindowAsync(waitForNewWindow: false);
+        _ = await app.GetByAutomationId("SettingsBrowseDataDirectoryButton").InvokeOpeningWindowAsync(waitForNewWindow: false);
         await app.GetByAutomationId("SettingsCloseButton").InvokeAsync();
         await app.GetByAutomationId("SettingsView").ExpectGoneAsync();
         await app.GetByAutomationId("StatusText").ExpectNameAsync("DataDirectoryChanged");
@@ -75,10 +68,7 @@ internal static class TodoLaunch
     /// </summary>
     public static void ResetPersistedAppState()
     {
-        var appRoot = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "GraftSampleTodo"
-        );
+        var appRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GraftSampleTodo");
         try
         {
             if (Directory.Exists(appRoot))

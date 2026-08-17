@@ -35,22 +35,11 @@ public static class ScenarioJson
         JsonDocument document;
         try
         {
-            document = JsonDocument.Parse(
-                json,
-                new JsonDocumentOptions
-                {
-                    CommentHandling = JsonCommentHandling.Skip,
-                    AllowTrailingCommas = true,
-                }
-            );
+            document = JsonDocument.Parse(json, new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
         }
         catch (JsonException ex)
         {
-            throw new GraftException(
-                GraftErrorCodes.ActionFailed,
-                $"Scenario JSON is invalid: {ex.Message}",
-                ex
-            );
+            throw new GraftException(GraftErrorCodes.ActionFailed, $"Scenario JSON is invalid: {ex.Message}", ex);
         }
 
         using (document)
@@ -79,11 +68,7 @@ public static class ScenarioJson
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            throw new GraftException(
-                GraftErrorCodes.ActionFailed,
-                $"Failed to read Scenario file '{path}': {ex.Message}",
-                ex
-            );
+            throw new GraftException(GraftErrorCodes.ActionFailed, $"Failed to read Scenario file '{path}': {ex.Message}", ex);
         }
     }
 
@@ -100,10 +85,7 @@ public static class ScenarioJson
             throw Invalid("Scenario root must be a JSON object.");
         }
 
-        if (
-            !root.TryGetProperty("v", out var versionElement)
-            || versionElement.ValueKind != JsonValueKind.Number
-        )
+        if (!root.TryGetProperty("v", out var versionElement) || versionElement.ValueKind != JsonValueKind.Number)
         {
             throw Invalid("Scenario requires integer property 'v'.");
         }
@@ -111,9 +93,7 @@ public static class ScenarioJson
         var version = versionElement.GetInt32();
         if (version != ScenarioDocument.CurrentVersion)
         {
-            throw Invalid(
-                $"Unsupported Scenario version {version}; expected {ScenarioDocument.CurrentVersion}."
-            );
+            throw Invalid($"Unsupported Scenario version {version}; expected {ScenarioDocument.CurrentVersion}.");
         }
 
         string? name = null;
@@ -131,10 +111,7 @@ public static class ScenarioJson
             }
         }
 
-        if (
-            !root.TryGetProperty("steps", out var stepsElement)
-            || stepsElement.ValueKind != JsonValueKind.Array
-        )
+        if (!root.TryGetProperty("steps", out var stepsElement) || stepsElement.ValueKind != JsonValueKind.Array)
         {
             throw Invalid("Scenario requires a non-empty 'steps' array.");
         }
@@ -167,10 +144,7 @@ public static class ScenarioJson
             throw Invalid($"steps[{index}] must be a JSON object.");
         }
 
-        if (
-            !step.TryGetProperty("action", out var actionElement)
-            || actionElement.ValueKind != JsonValueKind.String
-        )
+        if (!step.TryGetProperty("action", out var actionElement) || actionElement.ValueKind != JsonValueKind.String)
         {
             throw Invalid($"steps[{index}] requires string property 'action'.");
         }
@@ -264,17 +238,13 @@ public static class ScenarioJson
         return new LaunchOperation(appPath, configuration, timeout);
     }
 
-    private static InvokeOperation CompileInvoke(JsonElement step, int index) =>
-        new(RequireNonEmptyString(step, "automationId", index));
+    private static InvokeOperation CompileInvoke(JsonElement step, int index) => new(RequireNonEmptyString(step, "automationId", index));
 
-    private static RightClickOperation CompileRightClick(JsonElement step, int index) =>
-        new(RequireNonEmptyString(step, "automationId", index));
+    private static RightClickOperation CompileRightClick(JsonElement step, int index) => new(RequireNonEmptyString(step, "automationId", index));
 
-    private static DoubleClickOperation CompileDoubleClick(JsonElement step, int index) =>
-        new(RequireNonEmptyString(step, "automationId", index));
+    private static DoubleClickOperation CompileDoubleClick(JsonElement step, int index) => new(RequireNonEmptyString(step, "automationId", index));
 
-    private static HoverOperation CompileHover(JsonElement step, int index) =>
-        new(RequireNonEmptyString(step, "automationId", index));
+    private static HoverOperation CompileHover(JsonElement step, int index) => new(RequireNonEmptyString(step, "automationId", index));
 
     private static DragOperation CompileDrag(JsonElement step, int index)
     {
@@ -286,11 +256,7 @@ public static class ScenarioJson
     private static ClickAtOperation CompileClickAt(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
-        return new ClickAtOperation(
-            automationId,
-            RequireNumber(step, "offsetX", index),
-            RequireNumber(step, "offsetY", index)
-        );
+        return new ClickAtOperation(automationId, RequireNumber(step, "offsetX", index), RequireNumber(step, "offsetY", index));
     }
 
     private static WheelOperation CompileWheel(JsonElement step, int index)
@@ -302,10 +268,7 @@ public static class ScenarioJson
     private static SetValueOperation CompileSetValue(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
-        if (
-            !step.TryGetProperty("value", out var valueElement)
-            || valueElement.ValueKind != JsonValueKind.String
-        )
+        if (!step.TryGetProperty("value", out var valueElement) || valueElement.ValueKind != JsonValueKind.String)
         {
             throw Invalid($"steps[{index}] setValue requires string property 'value'.");
         }
@@ -313,16 +276,12 @@ public static class ScenarioJson
         return new SetValueOperation(automationId, valueElement.GetString() ?? string.Empty);
     }
 
-    private static ToggleOperation CompileToggle(JsonElement step, int index) =>
-        new(RequireNonEmptyString(step, "automationId", index));
+    private static ToggleOperation CompileToggle(JsonElement step, int index) => new(RequireNonEmptyString(step, "automationId", index));
 
     private static SendKeysOperation CompileSendKeys(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
-        if (
-            !step.TryGetProperty("text", out var textElement)
-            || textElement.ValueKind != JsonValueKind.String
-        )
+        if (!step.TryGetProperty("text", out var textElement) || textElement.ValueKind != JsonValueKind.String)
         {
             throw Invalid($"steps[{index}] sendKeys requires string property 'text'.");
         }
@@ -373,10 +332,7 @@ public static class ScenarioJson
         int? itemIndex = null;
         if (step.TryGetProperty("index", out var indexElement))
         {
-            if (
-                indexElement.ValueKind != JsonValueKind.Number
-                || !indexElement.TryGetInt32(out var i)
-            )
+            if (indexElement.ValueKind != JsonValueKind.Number || !indexElement.TryGetInt32(out var i))
             {
                 throw Invalid($"steps[{index}] scrollIntoView.index must be an integer.");
             }
@@ -412,9 +368,7 @@ public static class ScenarioJson
             throw Invalid($"steps[{index}] select requires exactly one of 'index' or 'key'.");
         }
 
-        return hasIndex
-            ? new SelectOperation(automationId, Index: itemIndex)
-            : new SelectOperation(automationId, Key: key);
+        return hasIndex ? new SelectOperation(automationId, Index: itemIndex) : new SelectOperation(automationId, Key: key);
     }
 
     private static SelectMenuOperation CompileSelectMenu(JsonElement step, int index)
@@ -434,10 +388,7 @@ public static class ScenarioJson
     private static SelectManyOperation CompileSelectMany(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
-        if (
-            !step.TryGetProperty("indexes", out var indexesElement)
-            || indexesElement.ValueKind != JsonValueKind.Array
-        )
+        if (!step.TryGetProperty("indexes", out var indexesElement) || indexesElement.ValueKind != JsonValueKind.Array)
         {
             throw Invalid($"steps[{index}] selectMany requires array property 'indexes'.");
         }
@@ -456,19 +407,14 @@ public static class ScenarioJson
         return new SelectManyOperation(automationId, indexes);
     }
 
-    private static ExpandOperation CompileExpand(JsonElement step, int index) =>
-        new(RequireNonEmptyString(step, "automationId", index));
+    private static ExpandOperation CompileExpand(JsonElement step, int index) => new(RequireNonEmptyString(step, "automationId", index));
 
-    private static CollapseOperation CompileCollapse(JsonElement step, int index) =>
-        new(RequireNonEmptyString(step, "automationId", index));
+    private static CollapseOperation CompileCollapse(JsonElement step, int index) => new(RequireNonEmptyString(step, "automationId", index));
 
     private static ExpectNameOperation CompileExpectName(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
-        if (
-            !step.TryGetProperty("name", out var nameElement)
-            || nameElement.ValueKind != JsonValueKind.String
-        )
+        if (!step.TryGetProperty("name", out var nameElement) || nameElement.ValueKind != JsonValueKind.String)
         {
             throw Invalid($"steps[{index}] expectName requires string property 'name'.");
         }
@@ -509,20 +455,12 @@ public static class ScenarioJson
     private static ExpectFocusedOperation CompileExpectFocused(JsonElement step, int index) =>
         new(RequireNonEmptyString(step, "automationId", index));
 
-    private static ExpectNameContainsOperation CompileExpectNameContains(
-        JsonElement step,
-        int index
-    )
+    private static ExpectNameContainsOperation CompileExpectNameContains(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
-        if (
-            !step.TryGetProperty("substring", out var substringElement)
-            || substringElement.ValueKind != JsonValueKind.String
-        )
+        if (!step.TryGetProperty("substring", out var substringElement) || substringElement.ValueKind != JsonValueKind.String)
         {
-            throw Invalid(
-                $"steps[{index}] expectNameContains requires string property 'substring'."
-            );
+            throw Invalid($"steps[{index}] expectNameContains requires string property 'substring'.");
         }
 
         var substring = substringElement.GetString();
@@ -537,10 +475,7 @@ public static class ScenarioJson
     private static ExpectNameMatchesOperation CompileExpectNameMatches(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
-        if (
-            !step.TryGetProperty("pattern", out var patternElement)
-            || patternElement.ValueKind != JsonValueKind.String
-        )
+        if (!step.TryGetProperty("pattern", out var patternElement) || patternElement.ValueKind != JsonValueKind.String)
         {
             throw Invalid($"steps[{index}] expectNameMatches requires string property 'pattern'.");
         }
@@ -557,10 +492,7 @@ public static class ScenarioJson
     private static ExpectValueOperation CompileExpectValue(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
-        if (
-            !step.TryGetProperty("value", out var valueElement)
-            || valueElement.ValueKind != JsonValueKind.String
-        )
+        if (!step.TryGetProperty("value", out var valueElement) || valueElement.ValueKind != JsonValueKind.String)
         {
             throw Invalid($"steps[{index}] expectValue requires string property 'value'.");
         }
@@ -571,10 +503,7 @@ public static class ScenarioJson
     private static ExpectToolTipOperation CompileExpectToolTip(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
-        if (
-            !step.TryGetProperty("toolTip", out var toolTipElement)
-            || toolTipElement.ValueKind != JsonValueKind.String
-        )
+        if (!step.TryGetProperty("toolTip", out var toolTipElement) || toolTipElement.ValueKind != JsonValueKind.String)
         {
             throw Invalid($"steps[{index}] expectToolTip requires string property 'toolTip'.");
         }
@@ -582,31 +511,21 @@ public static class ScenarioJson
         return new ExpectToolTipOperation(automationId, toolTipElement.GetString() ?? string.Empty);
     }
 
-    private static WaitForOperation CompileWaitFor(JsonElement step, int index) =>
-        new(RequireNonEmptyString(step, "automationId", index));
+    private static WaitForOperation CompileWaitFor(JsonElement step, int index) => new(RequireNonEmptyString(step, "automationId", index));
 
-    private static ExpectGoneOperation CompileExpectGone(JsonElement step, int index) =>
-        new(RequireNonEmptyString(step, "automationId", index));
+    private static ExpectGoneOperation CompileExpectGone(JsonElement step, int index) => new(RequireNonEmptyString(step, "automationId", index));
 
     private static GetCellTextOperation CompileGetCellText(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
         var (column, columnKey) = RequireColumnOrColumnKey(step, index, "getCellText");
-        return new GetCellTextOperation(
-            automationId,
-            RequireNonNegativeInt(step, "row", index),
-            column,
-            columnKey
-        );
+        return new GetCellTextOperation(automationId, RequireNonNegativeInt(step, "row", index), column, columnKey);
     }
 
     private static SetCellValueOperation CompileSetCellValue(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
-        if (
-            !step.TryGetProperty("value", out var valueElement)
-            || valueElement.ValueKind != JsonValueKind.String
-        )
+        if (!step.TryGetProperty("value", out var valueElement) || valueElement.ValueKind != JsonValueKind.String)
         {
             throw Invalid($"steps[{index}] setCellValue requires string property 'value'.");
         }
@@ -625,31 +544,19 @@ public static class ScenarioJson
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
         var (column, columnKey) = RequireColumnOrColumnKey(step, index, "selectCell");
-        return new SelectCellOperation(
-            automationId,
-            RequireNonNegativeInt(step, "row", index),
-            column,
-            columnKey
-        );
+        return new SelectCellOperation(automationId, RequireNonNegativeInt(step, "row", index), column, columnKey);
     }
 
     private static SelectRowOperation CompileSelectRow(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
         var columnKey = RequireNonEmptyString(step, "columnKey", index);
-        if (
-            !step.TryGetProperty("value", out var valueElement)
-            || valueElement.ValueKind != JsonValueKind.String
-        )
+        if (!step.TryGetProperty("value", out var valueElement) || valueElement.ValueKind != JsonValueKind.String)
         {
             throw Invalid($"steps[{index}] selectRow requires string property 'value'.");
         }
 
-        return new SelectRowOperation(
-            automationId,
-            columnKey,
-            valueElement.GetString() ?? string.Empty
-        );
+        return new SelectRowOperation(automationId, columnKey, valueElement.GetString() ?? string.Empty);
     }
 
     private static ClickColumnHeaderOperation CompileClickColumnHeader(JsonElement step, int index)
@@ -659,21 +566,15 @@ public static class ScenarioJson
         return new ClickColumnHeaderOperation(automationId, columnKey);
     }
 
-    private static AddRowOperation CompileAddRow(JsonElement step, int index) =>
-        new(RequireNonEmptyString(step, "automationId", index));
+    private static AddRowOperation CompileAddRow(JsonElement step, int index) => new(RequireNonEmptyString(step, "automationId", index));
 
-    private static DeleteSelectedRowsOperation CompileDeleteSelectedRows(
-        JsonElement step,
-        int index
-    ) => new(RequireNonEmptyString(step, "automationId", index));
+    private static DeleteSelectedRowsOperation CompileDeleteSelectedRows(JsonElement step, int index) =>
+        new(RequireNonEmptyString(step, "automationId", index));
 
     private static ExpectCellTextOperation CompileExpectCellText(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
-        if (
-            !step.TryGetProperty("text", out var textElement)
-            || textElement.ValueKind != JsonValueKind.String
-        )
+        if (!step.TryGetProperty("text", out var textElement) || textElement.ValueKind != JsonValueKind.String)
         {
             throw Invalid($"steps[{index}] expectCellText requires string property 'text'.");
         }
@@ -688,20 +589,12 @@ public static class ScenarioJson
         );
     }
 
-    private static (int? Column, string? ColumnKey) RequireColumnOrColumnKey(
-        JsonElement step,
-        int index,
-        string action
-    )
+    private static (int? Column, string? ColumnKey) RequireColumnOrColumnKey(JsonElement step, int index, string action)
     {
         int? column = null;
         if (step.TryGetProperty("column", out var columnElement))
         {
-            if (
-                columnElement.ValueKind != JsonValueKind.Number
-                || !columnElement.TryGetInt32(out var columnValue)
-                || columnValue < 0
-            )
+            if (columnElement.ValueKind != JsonValueKind.Number || !columnElement.TryGetInt32(out var columnValue) || columnValue < 0)
             {
                 throw Invalid($"steps[{index}] {action}.column must be a non-negative integer.");
             }
@@ -724,9 +617,7 @@ public static class ScenarioJson
         var hasKey = !string.IsNullOrWhiteSpace(columnKey);
         if (hasColumn == hasKey)
         {
-            throw Invalid(
-                $"steps[{index}] {action} requires exactly one of 'column' or 'columnKey'."
-            );
+            throw Invalid($"steps[{index}] {action} requires exactly one of 'column' or 'columnKey'.");
         }
 
         return (column, hasKey ? columnKey : null);
@@ -734,11 +625,7 @@ public static class ScenarioJson
 
     private static int RequireNonNegativeInt(JsonElement step, string propertyName, int index)
     {
-        if (
-            !step.TryGetProperty(propertyName, out var element)
-            || element.ValueKind != JsonValueKind.Number
-            || !element.TryGetInt32(out var value)
-        )
+        if (!step.TryGetProperty(propertyName, out var element) || element.ValueKind != JsonValueKind.Number || !element.TryGetInt32(out var value))
         {
             throw Invalid($"steps[{index}] requires integer property '{propertyName}'.");
         }
@@ -787,10 +674,7 @@ public static class ScenarioJson
         var switchTo = true;
         if (step.TryGetProperty("switchTo", out var switchElement))
         {
-            if (
-                switchElement.ValueKind != JsonValueKind.True
-                && switchElement.ValueKind != JsonValueKind.False
-            )
+            if (switchElement.ValueKind != JsonValueKind.True && switchElement.ValueKind != JsonValueKind.False)
             {
                 throw Invalid($"steps[{index}].switchTo must be a boolean.");
             }
@@ -801,10 +685,7 @@ public static class ScenarioJson
         return new WaitForWindowOperation(title, automationId, switchTo);
     }
 
-    private static WaitForWindowClosedOperation CompileWaitForWindowClosed(
-        JsonElement step,
-        int index
-    )
+    private static WaitForWindowClosedOperation CompileWaitForWindowClosed(JsonElement step, int index)
     {
         string? title = null;
         string? automationId = null;
@@ -820,39 +701,27 @@ public static class ScenarioJson
 
         if (title is null && automationId is null)
         {
-            throw Invalid(
-                $"steps[{index}] waitForWindowClosed requires 'title' and/or 'automationId'."
-            );
+            throw Invalid($"steps[{index}] waitForWindowClosed requires 'title' and/or 'automationId'.");
         }
 
         return new WaitForWindowClosedOperation(title, automationId);
     }
 
-    private static ArmOpenFileOperation CompileArmOpenFile(JsonElement step, int index) =>
-        new(RequireNonEmptyString(step, "path", index));
+    private static ArmOpenFileOperation CompileArmOpenFile(JsonElement step, int index) => new(RequireNonEmptyString(step, "path", index));
 
-    private static ArmSaveFileOperation CompileArmSaveFile(JsonElement step, int index) =>
-        new(RequireNonEmptyString(step, "path", index));
+    private static ArmSaveFileOperation CompileArmSaveFile(JsonElement step, int index) => new(RequireNonEmptyString(step, "path", index));
 
-    private static ArmOpenFolderOperation CompileArmOpenFolder(JsonElement step, int index) =>
-        new(RequireNonEmptyString(step, "path", index));
+    private static ArmOpenFolderOperation CompileArmOpenFolder(JsonElement step, int index) => new(RequireNonEmptyString(step, "path", index));
 
-    private static ArmMessageBoxOperation CompileArmMessageBox(JsonElement step, int index) =>
-        new(RequireNonEmptyString(step, "result", index));
+    private static ArmMessageBoxOperation CompileArmMessageBox(JsonElement step, int index) => new(RequireNonEmptyString(step, "result", index));
 
-    private static InvokeOpeningWindowOperation CompileInvokeOpeningWindow(
-        JsonElement step,
-        int index
-    )
+    private static InvokeOpeningWindowOperation CompileInvokeOpeningWindow(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
         var waitForNewWindow = true;
         if (step.TryGetProperty("waitForNewWindow", out var waitElement))
         {
-            if (
-                waitElement.ValueKind != JsonValueKind.True
-                && waitElement.ValueKind != JsonValueKind.False
-            )
+            if (waitElement.ValueKind != JsonValueKind.True && waitElement.ValueKind != JsonValueKind.False)
             {
                 throw Invalid($"steps[{index}].waitForNewWindow must be a boolean.");
             }
@@ -878,11 +747,7 @@ public static class ScenarioJson
 
     private static double RequireNumber(JsonElement step, string propertyName, int index)
     {
-        if (
-            !step.TryGetProperty(propertyName, out var element)
-            || element.ValueKind != JsonValueKind.Number
-            || !element.TryGetDouble(out var value)
-        )
+        if (!step.TryGetProperty(propertyName, out var element) || element.ValueKind != JsonValueKind.Number || !element.TryGetDouble(out var value))
         {
             throw Invalid($"steps[{index}] requires number property '{propertyName}'.");
         }
@@ -892,10 +757,7 @@ public static class ScenarioJson
 
     private static int RequireInt(JsonElement step, string propertyName, int index)
     {
-        if (
-            !step.TryGetProperty(propertyName, out var element)
-            || !element.TryGetInt32(out var value)
-        )
+        if (!step.TryGetProperty(propertyName, out var element) || !element.TryGetInt32(out var value))
         {
             throw Invalid($"steps[{index}] requires integer property '{propertyName}'.");
         }
@@ -905,10 +767,7 @@ public static class ScenarioJson
 
     private static string RequireNonEmptyString(JsonElement step, string propertyName, int index)
     {
-        if (
-            !step.TryGetProperty(propertyName, out var element)
-            || element.ValueKind != JsonValueKind.String
-        )
+        if (!step.TryGetProperty(propertyName, out var element) || element.ValueKind != JsonValueKind.String)
         {
             throw Invalid($"steps[{index}] requires string property '{propertyName}'.");
         }
@@ -922,6 +781,5 @@ public static class ScenarioJson
         return value;
     }
 
-    private static GraftException Invalid(string message) =>
-        new(GraftErrorCodes.ActionFailed, message);
+    private static GraftException Invalid(string message) => new(GraftErrorCodes.ActionFailed, message);
 }

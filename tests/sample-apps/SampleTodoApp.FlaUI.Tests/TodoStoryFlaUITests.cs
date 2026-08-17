@@ -36,14 +36,10 @@ public sealed class TodoStoryFlaUITests
     private static void RunStory()
     {
         var dataDir = NewDataDir();
-        var importFixture = Path.GetFullPath(
-            Path.Combine(AppContext.BaseDirectory, "Fixtures", "filter-todos.json")
-        );
+        var importFixture = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "filter-todos.json"));
 
         // Keep path short: Save dialog uses keyboard entry (ValuePattern often times out).
-        var exportPath = Path.GetFullPath(
-            Path.Combine(Path.GetTempPath(), $"graft-flaui-export-{Guid.NewGuid():N}.json")
-        );
+        var exportPath = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"graft-flaui-export-{Guid.NewGuid():N}.json"));
 
         Assert.True(File.Exists(importFixture), importFixture);
 
@@ -55,11 +51,7 @@ public sealed class TodoStoryFlaUITests
 
             // Click (not Invoke): returns without waiting for ShowDialog / file dialogs.
             ClickButton(main, "AddButton");
-            var detail = FlaUITodoLaunch.WaitForWindowById(
-                automation,
-                "DetailWindow",
-                TimeSpan.FromSeconds(15)
-            );
+            var detail = FlaUITodoLaunch.WaitForWindowById(automation, "DetailWindow", TimeSpan.FromSeconds(15));
             SetText(detail, "DetailTitleBox", "Graft E2E Task");
             SelectComboIndex(detail, "DetailStatusCombo", 1);
             SelectComboIndex(detail, "DetailPriorityCombo", 2);
@@ -71,13 +63,7 @@ public sealed class TodoStoryFlaUITests
             InvokeBlockingWithFileDialog(
                 main,
                 "ImportButton",
-                (auto, owner) =>
-                    Win32FileDialog.CompleteOpen(
-                        auto,
-                        owner,
-                        importFixture,
-                        TimeSpan.FromSeconds(25)
-                    )
+                (auto, owner) => Win32FileDialog.CompleteOpen(auto, owner, importFixture, TimeSpan.FromSeconds(25))
             );
             FlaUITodoLaunch.WaitForStatus(main, "ImportDone", TimeSpan.FromSeconds(20));
             SelectGridRowByTitle(main, "サンプル: ドキュメント更新");
@@ -98,14 +84,7 @@ public sealed class TodoStoryFlaUITests
             FlaUITodoLaunch.WaitForStatus(main, "FiltersCleared", TimeSpan.FromSeconds(10));
 
             ClickButton(main, "SettingsButton");
-            Assert.NotNull(
-                Retry
-                    .WhileNull(
-                        () => main.FindFirstDescendant(c => c.ByAutomationId("SettingsView")),
-                        TimeSpan.FromSeconds(10)
-                    )
-                    .Result
-            );
+            Assert.NotNull(Retry.WhileNull(() => main.FindFirstDescendant(c => c.ByAutomationId("SettingsView")), TimeSpan.FromSeconds(10)).Result);
             ToggleCheckBox(main, "SettingsDarkThemeCheckBox");
             ClickButton(main, "SettingsCloseButton");
             FlaUITodoLaunch.WaitGone(main, "SettingsView", TimeSpan.FromSeconds(10));
@@ -117,11 +96,7 @@ public sealed class TodoStoryFlaUITests
 
             WaitEnabled(main, "EditButton", TimeSpan.FromSeconds(10));
             ClickButton(main, "EditButton");
-            detail = FlaUITodoLaunch.WaitForWindowById(
-                automation,
-                "DetailWindow",
-                TimeSpan.FromSeconds(15)
-            );
+            detail = FlaUITodoLaunch.WaitForWindowById(automation, "DetailWindow", TimeSpan.FromSeconds(15));
             SetText(detail, "DetailTitleBox", "編集済みタスク");
             ClickButton(detail, "DetailSaveButton");
             FlaUITodoLaunch.WaitForStatus(main, "ItemUpdated", TimeSpan.FromSeconds(15));
@@ -133,8 +108,7 @@ public sealed class TodoStoryFlaUITests
             InvokeBlockingWithFileDialog(
                 main,
                 "ExportButton",
-                (auto, owner) =>
-                    Win32FileDialog.CompleteSave(auto, owner, exportPath, TimeSpan.FromSeconds(25))
+                (auto, owner) => Win32FileDialog.CompleteSave(auto, owner, exportPath, TimeSpan.FromSeconds(25))
             );
             FlaUITodoLaunch.WaitForStatus(main, "ExportDone", TimeSpan.FromSeconds(20));
             Assert.True(File.Exists(exportPath), exportPath);
@@ -147,8 +121,7 @@ public sealed class TodoStoryFlaUITests
         }
     }
 
-    private static string NewDataDir() =>
-        Path.Combine(Path.GetTempPath(), "graft-sample-todo-flaui", Guid.NewGuid().ToString("N"));
+    private static string NewDataDir() => Path.Combine(Path.GetTempPath(), "graft-sample-todo-flaui", Guid.NewGuid().ToString("N"));
 
     private static void ClickButton(AutomationElement root, string automationId)
     {
@@ -180,9 +153,7 @@ public sealed class TodoStoryFlaUITests
             {
                 Thread.Sleep(1000);
                 using var dialogAutomation = new global::FlaUI.UIA3.UIA3Automation();
-                var owner =
-                    dialogAutomation.FromHandle(ownerHandle)
-                    ?? throw new InvalidOperationException("Owner window handle lost.");
+                var owner = dialogAutomation.FromHandle(ownerHandle) ?? throw new InvalidOperationException("Owner window handle lost.");
                 completeDialog(dialogAutomation, owner);
             }
             catch (Exception ex)
@@ -199,10 +170,7 @@ public sealed class TodoStoryFlaUITests
         Assert.True(dialogThread.Join(TimeSpan.FromSeconds(60)), "File dialog worker timed out.");
         if (dialogError is not null)
         {
-            throw new AggregateException(
-                $"File dialog failed after {buttonAutomationId}.",
-                dialogError
-            );
+            throw new AggregateException($"File dialog failed after {buttonAutomationId}.", dialogError);
         }
     }
 
@@ -241,11 +209,7 @@ public sealed class TodoStoryFlaUITests
         el.AsCheckBox().Toggle();
     }
 
-    private static AutomationElement WaitElement(
-        AutomationElement root,
-        string automationId,
-        bool requireEnabled
-    )
+    private static AutomationElement WaitElement(AutomationElement root, string automationId, bool requireEnabled)
     {
         var el = Retry
             .WhileNull(
@@ -267,25 +231,18 @@ public sealed class TodoStoryFlaUITests
                 TimeSpan.FromSeconds(15)
             )
             .Result;
-        return el
-            ?? throw new TimeoutException(
-                $"Element AutomationId='{automationId}' not found/enabled."
-            );
+        return el ?? throw new TimeoutException($"Element AutomationId='{automationId}' not found/enabled.");
     }
 
     private static void SelectGridRowByTitle(AutomationElement main, string title)
     {
-        var grid =
-            main.FindFirstDescendant(c => c.ByAutomationId("TodoGrid"))
-            ?? throw new TimeoutException("TodoGrid");
+        var grid = main.FindFirstDescendant(c => c.ByAutomationId("TodoGrid")) ?? throw new TimeoutException("TodoGrid");
 
         var cell = Retry
             .WhileNull(
                 () =>
                 {
-                    foreach (
-                        var text in grid.FindAllDescendants(c => c.ByControlType(ControlType.Text))
-                    )
+                    foreach (var text in grid.FindAllDescendants(c => c.ByControlType(ControlType.Text)))
                     {
                         if (string.Equals(text.Name, title, StringComparison.Ordinal))
                         {
@@ -293,11 +250,7 @@ public sealed class TodoStoryFlaUITests
                         }
                     }
 
-                    foreach (
-                        var dataItem in grid.FindAllDescendants(c =>
-                            c.ByControlType(ControlType.DataItem)
-                        )
-                    )
+                    foreach (var dataItem in grid.FindAllDescendants(c => c.ByControlType(ControlType.DataItem)))
                     {
                         if (
                             dataItem.Name?.Contains(title, StringComparison.Ordinal) == true
