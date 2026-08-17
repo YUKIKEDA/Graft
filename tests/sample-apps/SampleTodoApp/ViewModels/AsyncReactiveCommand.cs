@@ -8,10 +8,7 @@ namespace SampleTodoApp.ViewModels;
 /// </summary>
 internal sealed class AsyncReactiveCommand : ReactiveCommand
 {
-    public AsyncReactiveCommand(
-        Func<Task> execute,
-        AwaitOperation awaitOperation = AwaitOperation.Sequential
-    )
+    public AsyncReactiveCommand(Func<Task> execute, AwaitOperation awaitOperation = AwaitOperation.Sequential)
         : base(
             async (_, _) =>
             {
@@ -27,15 +24,9 @@ internal sealed class AsyncReactiveCommand : ReactiveCommand
         bool initialCanExecute = true,
         AwaitOperation awaitOperation = AwaitOperation.Sequential
     )
-        : base(
-            canExecuteSource ?? throw new ArgumentNullException(nameof(canExecuteSource)),
-            initialCanExecute
-        )
+        : base(canExecuteSource ?? throw new ArgumentNullException(nameof(canExecuteSource)), initialCanExecute)
     {
         ArgumentNullException.ThrowIfNull(execute);
-        _ = this.SubscribeAwait(
-            async (_, _) => await execute().ConfigureAwait(true),
-            awaitOperation
-        );
+        _ = this.SubscribeAwait(async (_, _) => await execute().ConfigureAwait(true), awaitOperation);
     }
 }

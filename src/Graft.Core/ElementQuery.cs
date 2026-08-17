@@ -54,8 +54,7 @@ public sealed class ElementQuery
     /// </summary>
     /// <param name="automationId">Child automation id.</param>
     /// <returns>A new query scoped to the child.</returns>
-    public ElementQuery ChildByAutomationId(string automationId) =>
-        Child(Selector.ByAutomationId(automationId));
+    public ElementQuery ChildByAutomationId(string automationId) => Child(Selector.ByAutomationId(automationId));
 
     /// <summary>
     /// Narrows to a direct child with the given name.
@@ -80,8 +79,7 @@ public sealed class ElementQuery
     /// </summary>
     /// <param name="automationId">Sibling automation id.</param>
     /// <returns>A new query scoped to the sibling.</returns>
-    public ElementQuery SiblingByAutomationId(string automationId) =>
-        Sibling(Selector.ByAutomationId(automationId));
+    public ElementQuery SiblingByAutomationId(string automationId) => Sibling(Selector.ByAutomationId(automationId));
 
     /// <summary>
     /// Picks the zero-based Nth match among the current scope (or best-score ties).
@@ -139,21 +137,12 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .InvokeAsync(node.AutomationId, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.Invoke, node.AutomationId, cancellationToken)
-                .ConfigureAwait(false);
+            await _connection.InvokeAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.Invoke, node.AutomationId, cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.Invoke,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Invoke, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
@@ -180,21 +169,12 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .RightClickAsync(node.AutomationId, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.RightClick, node.AutomationId, cancellationToken)
-                .ConfigureAwait(false);
+            await _connection.RightClickAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.RightClick, node.AutomationId, cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.RightClick,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.RightClick, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
@@ -220,21 +200,12 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .DoubleClickAsync(node.AutomationId, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.DoubleClick, node.AutomationId, cancellationToken)
-                .ConfigureAwait(false);
+            await _connection.DoubleClickAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.DoubleClick, node.AutomationId, cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.DoubleClick,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.DoubleClick, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
@@ -260,21 +231,12 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .HoverAsync(node.AutomationId, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.Hover, node.AutomationId, cancellationToken)
-                .ConfigureAwait(false);
+            await _connection.HoverAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.Hover, node.AutomationId, cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.Hover,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Hover, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
@@ -285,10 +247,7 @@ public sealed class ElementQuery
     /// <param name="toAutomationId">Drop target automation id.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when drag succeeds.</returns>
-    public async Task DragAsync(
-        string toAutomationId,
-        CancellationToken cancellationToken = default
-    )
+    public async Task DragAsync(string toAutomationId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(toAutomationId);
         var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
@@ -305,25 +264,12 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .DragAsync(node.AutomationId, toAutomationId, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(
-                    FailureSteps.Drag,
-                    $"{node.AutomationId}->{toAutomationId}",
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            await _connection.DragAsync(node.AutomationId, toAutomationId, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.Drag, $"{node.AutomationId}->{toAutomationId}", cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.Drag,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Drag, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
@@ -335,11 +281,7 @@ public sealed class ElementQuery
     /// <param name="offsetY">Vertical DIP offset from the clickable point.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when clickAt succeeds.</returns>
-    public async Task ClickAtAsync(
-        double offsetX,
-        double offsetY,
-        CancellationToken cancellationToken = default
-    )
+    public async Task ClickAtAsync(double offsetX, double offsetY, CancellationToken cancellationToken = default)
     {
         var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(node.AutomationId))
@@ -355,25 +297,12 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .ClickAtAsync(node.AutomationId, offsetX, offsetY, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(
-                    FailureSteps.ClickAt,
-                    $"{node.AutomationId}@({offsetX},{offsetY})",
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            await _connection.ClickAtAsync(node.AutomationId, offsetX, offsetY, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.ClickAt, $"{node.AutomationId}@({offsetX},{offsetY})", cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.ClickAt,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.ClickAt, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
@@ -400,25 +329,12 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .WheelAsync(node.AutomationId, delta, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(
-                    FailureSteps.Wheel,
-                    $"{node.AutomationId}:{delta}",
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            await _connection.WheelAsync(node.AutomationId, delta, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.Wheel, $"{node.AutomationId}:{delta}", cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.Wheel,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Wheel, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
@@ -435,9 +351,8 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The newly opened window (already selected as the agent target).</returns>
     /// <exception cref="GraftException">Wait, resolve, invoke, or window wait failed.</exception>
-    public Task<WindowInfo?> InvokeOpeningWindowAsync(
-        CancellationToken cancellationToken = default
-    ) => InvokeOpeningWindowAsync(waitForNewWindow: true, cancellationToken);
+    public Task<WindowInfo?> InvokeOpeningWindowAsync(CancellationToken cancellationToken = default) =>
+        InvokeOpeningWindowAsync(waitForNewWindow: true, cancellationToken);
 
     /// <summary>
     /// Invokes the element via <c>invokeOpeningWindow</c> (BeginInvoke), optionally waiting for a new window.
@@ -452,17 +367,12 @@ public sealed class ElementQuery
     /// <see langword="null"/>.
     /// </returns>
     /// <exception cref="GraftException">Wait, resolve, invoke, or window wait failed.</exception>
-    public async Task<WindowInfo?> InvokeOpeningWindowAsync(
-        bool waitForNewWindow,
-        CancellationToken cancellationToken = default
-    )
+    public async Task<WindowInfo?> InvokeOpeningWindowAsync(bool waitForNewWindow, CancellationToken cancellationToken = default)
     {
         HashSet<int>? knownIds = null;
         if (waitForNewWindow)
         {
-            var before = await _connection
-                .ListWindowsAsync(cancellationToken)
-                .ConfigureAwait(false);
+            var before = await _connection.ListWindowsAsync(cancellationToken).ConfigureAwait(false);
             knownIds = before.Windows.Select(w => w.WindowId).ToHashSet();
         }
 
@@ -480,9 +390,7 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .InvokeOpeningWindowAsync(node.AutomationId, cancellationToken)
-                .ConfigureAwait(false);
+            await _connection.InvokeOpeningWindowAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -498,36 +406,25 @@ public sealed class ElementQuery
 
         if (!waitForNewWindow)
         {
-            await RecordSuccessAsync(
-                    FailureSteps.InvokeOpeningWindow,
-                    $"{node.AutomationId};waitForNewWindow=false",
-                    cancellationToken
-                )
+            await RecordSuccessAsync(FailureSteps.InvokeOpeningWindow, $"{node.AutomationId};waitForNewWindow=false", cancellationToken)
                 .ConfigureAwait(false);
             return null;
         }
 
-        var timeout = PositiveOrDefault(
-            _waitOptions.ExpectTimeout,
-            WaitOptions.DefaultExpectTimeout
-        );
+        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
         var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
         var deadline = DateTime.UtcNow + timeout;
 
         while (DateTime.UtcNow <= deadline)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var listed = await _connection
-                .ListWindowsAsync(cancellationToken)
-                .ConfigureAwait(false);
+            var listed = await _connection.ListWindowsAsync(cancellationToken).ConfigureAwait(false);
             var newborn = listed.Windows.FirstOrDefault(w => !knownIds!.Contains(w.WindowId));
             if (newborn is not null)
             {
                 try
                 {
-                    await _connection
-                        .SwitchWindowAsync(newborn.WindowId, cancellationToken)
-                        .ConfigureAwait(false);
+                    await _connection.SwitchWindowAsync(newborn.WindowId, cancellationToken).ConfigureAwait(false);
                 }
                 catch (GraftException ex) when (ex.Report is null)
                 {
@@ -541,11 +438,7 @@ public sealed class ElementQuery
                         .ConfigureAwait(false);
                 }
 
-                await RecordSuccessAsync(
-                        FailureSteps.InvokeOpeningWindow,
-                        $"{node.AutomationId}->windowId={newborn.WindowId}",
-                        cancellationToken
-                    )
+                await RecordSuccessAsync(FailureSteps.InvokeOpeningWindow, $"{node.AutomationId}->windowId={newborn.WindowId}", cancellationToken)
                     .ConfigureAwait(false);
                 return newborn;
             }
@@ -556,8 +449,7 @@ public sealed class ElementQuery
                 break;
             }
 
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
-                .ConfigureAwait(false);
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
         }
 
         throw await CreateFailureAsync(
@@ -597,15 +489,8 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .SetValueAsync(node.AutomationId, value, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(
-                    FailureSteps.SetValue,
-                    $"{node.AutomationId}={value}",
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            await _connection.SetValueAsync(node.AutomationId, value, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.SetValue, $"{node.AutomationId}={value}", cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -643,21 +528,12 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .ToggleAsync(node.AutomationId, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.Toggle, node.AutomationId, cancellationToken)
-                .ConfigureAwait(false);
+            await _connection.ToggleAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.Toggle, node.AutomationId, cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.Toggle,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Toggle, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
@@ -688,15 +564,8 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .SendKeysAsync(node.AutomationId, text, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(
-                    FailureSteps.SendKeys,
-                    $"{node.AutomationId}={text}",
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            await _connection.SendKeysAsync(node.AutomationId, text, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.SendKeys, $"{node.AutomationId}={text}", cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -747,15 +616,8 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .PressKeysAsync(node.AutomationId, keys, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(
-                    FailureSteps.PressKeys,
-                    $"{node.AutomationId}={keys}",
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            await _connection.PressKeysAsync(node.AutomationId, keys, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.PressKeys, $"{node.AutomationId}={keys}", cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -777,9 +639,8 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Identity of the scrolled element.</returns>
     /// <exception cref="GraftException">Wait, resolve, or scrollIntoView failed.</exception>
-    public Task<ElementIdentity> ScrollIntoViewAsync(
-        CancellationToken cancellationToken = default
-    ) => ScrollIntoViewCoreAsync(index: null, cancellationToken);
+    public Task<ElementIdentity> ScrollIntoViewAsync(CancellationToken cancellationToken = default) =>
+        ScrollIntoViewCoreAsync(index: null, cancellationToken);
 
     /// <summary>
     /// Waits until the list/combo is present, then scrolls the item at
@@ -789,10 +650,8 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Identity of the realized list item.</returns>
     /// <exception cref="GraftException">Wait, resolve, or scrollIntoView failed.</exception>
-    public Task<ElementIdentity> ScrollIntoViewAsync(
-        int index,
-        CancellationToken cancellationToken = default
-    ) => ScrollIntoViewCoreAsync(index, cancellationToken);
+    public Task<ElementIdentity> ScrollIntoViewAsync(int index, CancellationToken cancellationToken = default) =>
+        ScrollIntoViewCoreAsync(index, cancellationToken);
 
     /// <summary>
     /// Waits until the list/combo is actionable, then selects the item at
@@ -818,25 +677,12 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .SelectAsync(node.AutomationId, index, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(
-                    FailureSteps.Select,
-                    $"{node.AutomationId}[{index}]",
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            await _connection.SelectAsync(node.AutomationId, index, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.Select, $"{node.AutomationId}[{index}]", cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.Select,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Select, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
@@ -867,25 +713,12 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .SelectByKeyAsync(node.AutomationId, key, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(
-                    FailureSteps.Select,
-                    $"{node.AutomationId}[key={key}]",
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            await _connection.SelectByKeyAsync(node.AutomationId, key, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.Select, $"{node.AutomationId}[key={key}]", cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.Select,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Select, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
@@ -916,25 +749,12 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .SelectTreeAsync(node.AutomationId, path, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(
-                    FailureSteps.SelectTree,
-                    $"{node.AutomationId}:{path}",
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            await _connection.SelectTreeAsync(node.AutomationId, path, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.SelectTree, $"{node.AutomationId}:{path}", cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.SelectTree,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.SelectTree, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
@@ -947,10 +767,7 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when selectMany succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or selectMany failed.</exception>
-    public async Task SelectManyAsync(
-        IReadOnlyList<int> indexes,
-        CancellationToken cancellationToken = default
-    )
+    public async Task SelectManyAsync(IReadOnlyList<int> indexes, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(indexes);
 
@@ -968,25 +785,13 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .SelectManyAsync(node.AutomationId, indexes, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(
-                    FailureSteps.SelectMany,
-                    $"{node.AutomationId}[{string.Join(',', indexes)}]",
-                    cancellationToken
-                )
+            await _connection.SelectManyAsync(node.AutomationId, indexes, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.SelectMany, $"{node.AutomationId}[{string.Join(',', indexes)}]", cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.SelectMany,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.SelectMany, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
@@ -1016,25 +821,12 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .SelectMenuAsync(node.AutomationId, path, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(
-                    FailureSteps.SelectMenu,
-                    $"{node.AutomationId}:{path}",
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            await _connection.SelectMenuAsync(node.AutomationId, path, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.SelectMenu, $"{node.AutomationId}:{path}", cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.SelectMenu,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.SelectMenu, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
@@ -1047,11 +839,8 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Cell display text.</returns>
     /// <exception cref="GraftException">Wait, resolve, or getCellText failed.</exception>
-    public Task<string> GetCellTextAsync(
-        int row,
-        int column,
-        CancellationToken cancellationToken = default
-    ) => GetCellTextCoreAsync(row, column, columnKey: null, cancellationToken);
+    public Task<string> GetCellTextAsync(int row, int column, CancellationToken cancellationToken = default) =>
+        GetCellTextCoreAsync(row, column, columnKey: null, cancellationToken);
 
     /// <summary>
     /// Waits until the DataGrid is actionable, then returns cell display text by column Header.
@@ -1061,11 +850,7 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Cell display text.</returns>
     /// <exception cref="GraftException">Wait, resolve, or getCellText failed.</exception>
-    public Task<string> GetCellTextAsync(
-        int row,
-        string columnKey,
-        CancellationToken cancellationToken = default
-    )
+    public Task<string> GetCellTextAsync(int row, string columnKey, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
         return GetCellTextCoreAsync(row, column: null, columnKey, cancellationToken);
@@ -1080,12 +865,8 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when setCellValue succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or setCellValue failed.</exception>
-    public Task SetCellValueAsync(
-        int row,
-        int column,
-        string value,
-        CancellationToken cancellationToken = default
-    ) => SetCellValueCoreAsync(row, column, columnKey: null, value, cancellationToken);
+    public Task SetCellValueAsync(int row, int column, string value, CancellationToken cancellationToken = default) =>
+        SetCellValueCoreAsync(row, column, columnKey: null, value, cancellationToken);
 
     /// <summary>
     /// Waits until the DataGrid is actionable, then sets a cell by column Header.
@@ -1096,12 +877,7 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when setCellValue succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or setCellValue failed.</exception>
-    public Task SetCellValueAsync(
-        int row,
-        string columnKey,
-        string value,
-        CancellationToken cancellationToken = default
-    )
+    public Task SetCellValueAsync(int row, string columnKey, string value, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
         return SetCellValueCoreAsync(row, column: null, columnKey, value, cancellationToken);
@@ -1114,11 +890,8 @@ public sealed class ElementQuery
     /// <param name="column">Zero-based column index.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when selectCell succeeds.</returns>
-    public Task SelectCellAsync(
-        int row,
-        int column,
-        CancellationToken cancellationToken = default
-    ) => SelectCellCoreAsync(row, column, columnKey: null, cancellationToken);
+    public Task SelectCellAsync(int row, int column, CancellationToken cancellationToken = default) =>
+        SelectCellCoreAsync(row, column, columnKey: null, cancellationToken);
 
     /// <summary>
     /// Waits until the DataGrid is actionable, then selects a cell by column Header.
@@ -1127,11 +900,7 @@ public sealed class ElementQuery
     /// <param name="columnKey">Column Header string.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when selectCell succeeds.</returns>
-    public Task SelectCellAsync(
-        int row,
-        string columnKey,
-        CancellationToken cancellationToken = default
-    )
+    public Task SelectCellAsync(int row, string columnKey, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
         return SelectCellCoreAsync(row, column: null, columnKey, cancellationToken);
@@ -1145,11 +914,7 @@ public sealed class ElementQuery
     /// <param name="value">Exact cell display text.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when selectRow succeeds.</returns>
-    public async Task SelectRowAsync(
-        string columnKey,
-        string value,
-        CancellationToken cancellationToken = default
-    )
+    public async Task SelectRowAsync(string columnKey, string value, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
         ArgumentNullException.ThrowIfNull(value);
@@ -1168,25 +933,12 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .SelectRowAsync(node.AutomationId, columnKey, value, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(
-                    FailureSteps.SelectRow,
-                    $"{node.AutomationId}[{columnKey}={value}]",
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            await _connection.SelectRowAsync(node.AutomationId, columnKey, value, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.SelectRow, $"{node.AutomationId}[{columnKey}={value}]", cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.SelectRow,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.SelectRow, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
@@ -1197,10 +949,7 @@ public sealed class ElementQuery
     /// <param name="columnKey">Column Header string.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when clickColumnHeader succeeds.</returns>
-    public async Task ClickColumnHeaderAsync(
-        string columnKey,
-        CancellationToken cancellationToken = default
-    )
+    public async Task ClickColumnHeaderAsync(string columnKey, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
 
@@ -1218,15 +967,8 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .ClickColumnHeaderAsync(node.AutomationId, columnKey, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(
-                    FailureSteps.ClickColumnHeader,
-                    $"{node.AutomationId}:{columnKey}",
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            await _connection.ClickColumnHeaderAsync(node.AutomationId, columnKey, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.ClickColumnHeader, $"{node.AutomationId}:{columnKey}", cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -1262,21 +1004,12 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .AddRowAsync(node.AutomationId, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.AddRow, node.AutomationId, cancellationToken)
-                .ConfigureAwait(false);
+            await _connection.AddRowAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.AddRow, node.AutomationId, cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.AddRow,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.AddRow, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
@@ -1302,15 +1035,8 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .DeleteSelectedRowsAsync(node.AutomationId, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(
-                    FailureSteps.DeleteSelectedRows,
-                    node.AutomationId,
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            await _connection.DeleteSelectedRowsAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.DeleteSelectedRows, node.AutomationId, cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -1337,12 +1063,8 @@ public sealed class ElementQuery
     /// <c>expect.failed</c> when the text differs;
     /// <c>action.timeout</c> when the cell never matches in time.
     /// </exception>
-    public Task ExpectCellTextAsync(
-        int row,
-        int column,
-        string expectedText,
-        CancellationToken cancellationToken = default
-    ) => ExpectCellTextCoreAsync(row, column, columnKey: null, expectedText, cancellationToken);
+    public Task ExpectCellTextAsync(int row, int column, string expectedText, CancellationToken cancellationToken = default) =>
+        ExpectCellTextCoreAsync(row, column, columnKey: null, expectedText, cancellationToken);
 
     /// <summary>
     /// Waits until the DataGrid cell text equals <paramref name="expectedText"/> (column Header).
@@ -1356,21 +1078,10 @@ public sealed class ElementQuery
     /// <c>expect.failed</c> when the text differs;
     /// <c>action.timeout</c> when the cell never matches in time.
     /// </exception>
-    public Task ExpectCellTextAsync(
-        int row,
-        string columnKey,
-        string expectedText,
-        CancellationToken cancellationToken = default
-    )
+    public Task ExpectCellTextAsync(int row, string columnKey, string expectedText, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
-        return ExpectCellTextCoreAsync(
-            row,
-            column: null,
-            columnKey,
-            expectedText,
-            cancellationToken
-        );
+        return ExpectCellTextCoreAsync(row, column: null, columnKey, expectedText, cancellationToken);
     }
 
     /// <summary>
@@ -1395,21 +1106,12 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .ExpandAsync(node.AutomationId, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.Expand, node.AutomationId, cancellationToken)
-                .ConfigureAwait(false);
+            await _connection.ExpandAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.Expand, node.AutomationId, cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.Expand,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Expand, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
@@ -1436,21 +1138,12 @@ public sealed class ElementQuery
 
         try
         {
-            await _connection
-                .CollapseAsync(node.AutomationId, cancellationToken)
-                .ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.Collapse, node.AutomationId, cancellationToken)
-                .ConfigureAwait(false);
+            await _connection.CollapseAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.Collapse, node.AutomationId, cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.Collapse,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Collapse, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
@@ -1466,17 +1159,11 @@ public sealed class ElementQuery
     /// <c>action.timeout</c> when the element never qualifies in time.
     /// Includes <see cref="GraftException.Report"/> with diagnostics attachments when available.
     /// </exception>
-    public async Task<TreeNode> ExpectNameAsync(
-        string expectedName,
-        CancellationToken cancellationToken = default
-    )
+    public async Task<TreeNode> ExpectNameAsync(string expectedName, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(expectedName);
 
-        var timeout = PositiveOrDefault(
-            _waitOptions.ExpectTimeout,
-            WaitOptions.DefaultExpectTimeout
-        );
+        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
         var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
         var deadline = DateTime.UtcNow + timeout;
 
@@ -1495,19 +1182,13 @@ public sealed class ElementQuery
                 sawElement = true;
                 if (string.Equals(node.Name, expectedName, StringComparison.Ordinal))
                 {
-                    await RecordSuccessAsync(
-                            FailureSteps.ExpectName,
-                            expectedName,
-                            cancellationToken
-                        )
-                        .ConfigureAwait(false);
+                    await RecordSuccessAsync(FailureSteps.ExpectName, expectedName, cancellationToken).ConfigureAwait(false);
                     return node;
                 }
 
                 lastActual = node.Name;
             }
-            catch (GraftException ex)
-                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
             {
                 // Still waiting for the element to appear / tree to be ready.
             }
@@ -1518,8 +1199,7 @@ public sealed class ElementQuery
                 break;
             }
 
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
-                .ConfigureAwait(false);
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
         }
 
         if (sawElement && lastActual is not null)
@@ -1559,17 +1239,8 @@ public sealed class ElementQuery
     /// <c>expect.failed</c> when the state differs or is not applicable;
     /// <c>action.timeout</c> when the element never qualifies in time.
     /// </exception>
-    public Task<TreeNode> ExpectSelectedAsync(
-        bool expectedSelected,
-        CancellationToken cancellationToken = default
-    ) =>
-        ExpectBoolPropertyAsync(
-            expectedSelected,
-            static node => node.Selected,
-            FailureSteps.ExpectSelected,
-            "selected",
-            cancellationToken
-        );
+    public Task<TreeNode> ExpectSelectedAsync(bool expectedSelected, CancellationToken cancellationToken = default) =>
+        ExpectBoolPropertyAsync(expectedSelected, static node => node.Selected, FailureSteps.ExpectSelected, "selected", cancellationToken);
 
     /// <summary>
     /// Waits until the element's tree <c>expanded</c> equals <paramref name="expectedExpanded"/>.
@@ -1581,17 +1252,8 @@ public sealed class ElementQuery
     /// <c>expect.failed</c> when the state differs or is not applicable;
     /// <c>action.timeout</c> when the element never qualifies in time.
     /// </exception>
-    public Task<TreeNode> ExpectExpandedAsync(
-        bool expectedExpanded,
-        CancellationToken cancellationToken = default
-    ) =>
-        ExpectBoolPropertyAsync(
-            expectedExpanded,
-            static node => node.Expanded,
-            FailureSteps.ExpectExpanded,
-            "expanded",
-            cancellationToken
-        );
+    public Task<TreeNode> ExpectExpandedAsync(bool expectedExpanded, CancellationToken cancellationToken = default) =>
+        ExpectBoolPropertyAsync(expectedExpanded, static node => node.Expanded, FailureSteps.ExpectExpanded, "expanded", cancellationToken);
 
     /// <summary>
     /// Waits until the element's tree <c>checked</c> equals <paramref name="expectedChecked"/>.
@@ -1603,17 +1265,8 @@ public sealed class ElementQuery
     /// <c>expect.failed</c> when the state differs or is not applicable;
     /// <c>action.timeout</c> when the element never qualifies in time.
     /// </exception>
-    public Task<TreeNode> ExpectCheckedAsync(
-        bool expectedChecked,
-        CancellationToken cancellationToken = default
-    ) =>
-        ExpectBoolPropertyAsync(
-            expectedChecked,
-            static node => node.Checked,
-            FailureSteps.ExpectChecked,
-            "checked",
-            cancellationToken
-        );
+    public Task<TreeNode> ExpectCheckedAsync(bool expectedChecked, CancellationToken cancellationToken = default) =>
+        ExpectBoolPropertyAsync(expectedChecked, static node => node.Checked, FailureSteps.ExpectChecked, "checked", cancellationToken);
 
     /// <summary>
     /// Waits until the element's tree <c>enabled</c> equals <paramref name="expectedEnabled"/>.
@@ -1621,17 +1274,8 @@ public sealed class ElementQuery
     /// <param name="expectedEnabled">Expected enabled state.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The matched node when the expectation holds.</returns>
-    public Task<TreeNode> ExpectEnabledAsync(
-        bool expectedEnabled,
-        CancellationToken cancellationToken = default
-    ) =>
-        ExpectBoolPropertyAsync(
-            expectedEnabled,
-            static node => (bool?)node.Enabled,
-            FailureSteps.ExpectEnabled,
-            "enabled",
-            cancellationToken
-        );
+    public Task<TreeNode> ExpectEnabledAsync(bool expectedEnabled, CancellationToken cancellationToken = default) =>
+        ExpectBoolPropertyAsync(expectedEnabled, static node => (bool?)node.Enabled, FailureSteps.ExpectEnabled, "enabled", cancellationToken);
 
     /// <summary>
     /// Waits until the element's tree <c>visible</c> equals <paramref name="expectedVisible"/>.
@@ -1639,17 +1283,8 @@ public sealed class ElementQuery
     /// <param name="expectedVisible">Expected visible state.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The matched node when the expectation holds.</returns>
-    public Task<TreeNode> ExpectVisibleAsync(
-        bool expectedVisible,
-        CancellationToken cancellationToken = default
-    ) =>
-        ExpectBoolPropertyAsync(
-            expectedVisible,
-            static node => (bool?)node.Visible,
-            FailureSteps.ExpectVisible,
-            "visible",
-            cancellationToken
-        );
+    public Task<TreeNode> ExpectVisibleAsync(bool expectedVisible, CancellationToken cancellationToken = default) =>
+        ExpectBoolPropertyAsync(expectedVisible, static node => (bool?)node.Visible, FailureSteps.ExpectVisible, "visible", cancellationToken);
 
     /// <summary>
     /// Waits until the element's tree <c>focused</c> is <c>true</c>.
@@ -1661,13 +1296,7 @@ public sealed class ElementQuery
     /// <c>action.timeout</c> when the element never qualifies in time.
     /// </exception>
     public Task<TreeNode> ExpectFocusedAsync(CancellationToken cancellationToken = default) =>
-        ExpectBoolPropertyAsync(
-            expected: true,
-            static node => node.Focused,
-            FailureSteps.ExpectFocused,
-            "focused",
-            cancellationToken
-        );
+        ExpectBoolPropertyAsync(expected: true, static node => node.Focused, FailureSteps.ExpectFocused, "focused", cancellationToken);
 
     /// <summary>
     /// Waits until the element's <c>name</c> contains <paramref name="substring"/>.
@@ -1675,17 +1304,11 @@ public sealed class ElementQuery
     /// <param name="substring">Expected non-empty ordinal substring.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The matched node when the expectation holds.</returns>
-    public async Task<TreeNode> ExpectNameContainsAsync(
-        string substring,
-        CancellationToken cancellationToken = default
-    )
+    public async Task<TreeNode> ExpectNameContainsAsync(string substring, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(substring);
 
-        var timeout = PositiveOrDefault(
-            _waitOptions.ExpectTimeout,
-            WaitOptions.DefaultExpectTimeout
-        );
+        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
         var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
         var deadline = DateTime.UtcNow + timeout;
 
@@ -1704,19 +1327,13 @@ public sealed class ElementQuery
                 sawElement = true;
                 if (node.Name.Contains(substring, StringComparison.Ordinal))
                 {
-                    await RecordSuccessAsync(
-                            FailureSteps.ExpectNameContains,
-                            substring,
-                            cancellationToken
-                        )
-                        .ConfigureAwait(false);
+                    await RecordSuccessAsync(FailureSteps.ExpectNameContains, substring, cancellationToken).ConfigureAwait(false);
                     return node;
                 }
 
                 lastActual = node.Name;
             }
-            catch (GraftException ex)
-                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
             {
                 // Still waiting for the element to appear / tree to be ready.
             }
@@ -1727,8 +1344,7 @@ public sealed class ElementQuery
                 break;
             }
 
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
-                .ConfigureAwait(false);
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
         }
 
         if (sawElement && lastActual is not null)
@@ -1764,18 +1380,12 @@ public sealed class ElementQuery
     /// <param name="pattern">.NET regular expression pattern.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The matched node when the expectation holds.</returns>
-    public async Task<TreeNode> ExpectNameMatchesAsync(
-        string pattern,
-        CancellationToken cancellationToken = default
-    )
+    public async Task<TreeNode> ExpectNameMatchesAsync(string pattern, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(pattern);
         var regex = new Regex(pattern, RegexOptions.CultureInvariant | RegexOptions.Singleline);
 
-        var timeout = PositiveOrDefault(
-            _waitOptions.ExpectTimeout,
-            WaitOptions.DefaultExpectTimeout
-        );
+        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
         var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
         var deadline = DateTime.UtcNow + timeout;
 
@@ -1794,19 +1404,13 @@ public sealed class ElementQuery
                 sawElement = true;
                 if (regex.IsMatch(node.Name))
                 {
-                    await RecordSuccessAsync(
-                            FailureSteps.ExpectNameMatches,
-                            pattern,
-                            cancellationToken
-                        )
-                        .ConfigureAwait(false);
+                    await RecordSuccessAsync(FailureSteps.ExpectNameMatches, pattern, cancellationToken).ConfigureAwait(false);
                     return node;
                 }
 
                 lastActual = node.Name;
             }
-            catch (GraftException ex)
-                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
             {
                 // Still waiting for the element to appear / tree to be ready.
             }
@@ -1817,8 +1421,7 @@ public sealed class ElementQuery
                 break;
             }
 
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
-                .ConfigureAwait(false);
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
         }
 
         if (sawElement && lastActual is not null)
@@ -1858,17 +1461,11 @@ public sealed class ElementQuery
     /// <c>expect.failed</c> when the value differs or is not applicable;
     /// <c>action.timeout</c> when the element never qualifies in time.
     /// </exception>
-    public async Task<TreeNode> ExpectValueAsync(
-        string expectedValue,
-        CancellationToken cancellationToken = default
-    )
+    public async Task<TreeNode> ExpectValueAsync(string expectedValue, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(expectedValue);
 
-        var timeout = PositiveOrDefault(
-            _waitOptions.ExpectTimeout,
-            WaitOptions.DefaultExpectTimeout
-        );
+        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
         var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
         var deadline = DateTime.UtcNow + timeout;
 
@@ -1885,24 +1482,15 @@ public sealed class ElementQuery
                 lastRoot = tree.Root;
                 var node = ResolveNode(tree.Root);
                 sawElement = true;
-                if (
-                    node.Value is not null
-                    && string.Equals(node.Value, expectedValue, StringComparison.Ordinal)
-                )
+                if (node.Value is not null && string.Equals(node.Value, expectedValue, StringComparison.Ordinal))
                 {
-                    await RecordSuccessAsync(
-                            FailureSteps.ExpectValue,
-                            expectedValue,
-                            cancellationToken
-                        )
-                        .ConfigureAwait(false);
+                    await RecordSuccessAsync(FailureSteps.ExpectValue, expectedValue, cancellationToken).ConfigureAwait(false);
                     return node;
                 }
 
                 lastActual = node.Value ?? "n/a";
             }
-            catch (GraftException ex)
-                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
             {
                 // Still waiting for the element to appear / tree to be ready.
             }
@@ -1913,8 +1501,7 @@ public sealed class ElementQuery
                 break;
             }
 
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
-                .ConfigureAwait(false);
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
         }
 
         if (sawElement && lastActual is not null)
@@ -1954,17 +1541,11 @@ public sealed class ElementQuery
     /// <c>expect.failed</c> when a mismatched ToolTip is observed until timeout, or
     /// <c>action.timeout</c> when the element never qualifies in time.
     /// </exception>
-    public async Task<TreeNode> ExpectToolTipAsync(
-        string expectedToolTip,
-        CancellationToken cancellationToken = default
-    )
+    public async Task<TreeNode> ExpectToolTipAsync(string expectedToolTip, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(expectedToolTip);
 
-        var timeout = PositiveOrDefault(
-            _waitOptions.ExpectTimeout,
-            WaitOptions.DefaultExpectTimeout
-        );
+        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
         var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
         var deadline = DateTime.UtcNow + timeout;
 
@@ -1981,24 +1562,15 @@ public sealed class ElementQuery
                 lastRoot = tree.Root;
                 var node = ResolveNode(tree.Root);
                 sawElement = true;
-                if (
-                    node.ToolTip is not null
-                    && string.Equals(node.ToolTip, expectedToolTip, StringComparison.Ordinal)
-                )
+                if (node.ToolTip is not null && string.Equals(node.ToolTip, expectedToolTip, StringComparison.Ordinal))
                 {
-                    await RecordSuccessAsync(
-                            FailureSteps.ExpectToolTip,
-                            expectedToolTip,
-                            cancellationToken
-                        )
-                        .ConfigureAwait(false);
+                    await RecordSuccessAsync(FailureSteps.ExpectToolTip, expectedToolTip, cancellationToken).ConfigureAwait(false);
                     return node;
                 }
 
                 lastActual = node.ToolTip ?? "n/a";
             }
-            catch (GraftException ex)
-                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
             {
                 // Still waiting for the element to appear / tree to be ready.
             }
@@ -2009,8 +1581,7 @@ public sealed class ElementQuery
                 break;
             }
 
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
-                .ConfigureAwait(false);
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
         }
 
         if (sawElement && lastActual is not null)
@@ -2047,10 +1618,7 @@ public sealed class ElementQuery
     /// <returns>The matched node when found.</returns>
     public async Task<TreeNode> WaitForAsync(CancellationToken cancellationToken = default)
     {
-        var timeout = PositiveOrDefault(
-            _waitOptions.ExpectTimeout,
-            WaitOptions.DefaultExpectTimeout
-        );
+        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
         var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
         var deadline = DateTime.UtcNow + timeout;
         TreeNode? lastRoot = null;
@@ -2063,12 +1631,10 @@ public sealed class ElementQuery
                 var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
                 lastRoot = tree.Root;
                 var node = ResolveNode(tree.Root);
-                await RecordSuccessAsync(FailureSteps.WaitFor, node.AutomationId, cancellationToken)
-                    .ConfigureAwait(false);
+                await RecordSuccessAsync(FailureSteps.WaitFor, node.AutomationId, cancellationToken).ConfigureAwait(false);
                 return node;
             }
-            catch (GraftException ex)
-                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
             {
                 // Keep polling.
             }
@@ -2079,8 +1645,7 @@ public sealed class ElementQuery
                 break;
             }
 
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
-                .ConfigureAwait(false);
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
         }
 
         throw await CreateFailureAsync(
@@ -2108,28 +1673,15 @@ public sealed class ElementQuery
         int? runtimeId = automationId is null ? node.RuntimeId : null;
         try
         {
-            var (meta, pngBytes) = await _connection
-                .ScreenshotAsync(automationId, runtimeId, cancellationToken)
-                .ConfigureAwait(false);
+            var (meta, pngBytes) = await _connection.ScreenshotAsync(automationId, runtimeId, cancellationToken).ConfigureAwait(false);
             var shot = new Screenshot(meta.Format, meta.Width, meta.Height, pngBytes);
-            await RecordSuccessAsync(
-                    FailureSteps.Screenshot,
-                    $"{shot.Width}x{shot.Height}:{shot.PngBytes.Length}",
-                    cancellationToken,
-                    shot.PngBytes
-                )
+            await RecordSuccessAsync(FailureSteps.Screenshot, $"{shot.Width}x{shot.Height}:{shot.PngBytes.Length}", cancellationToken, shot.PngBytes)
                 .ConfigureAwait(false);
             return shot;
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.Screenshot,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Screenshot, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
@@ -2141,10 +1693,7 @@ public sealed class ElementQuery
     /// <returns>A task that completes when the element is gone.</returns>
     public async Task ExpectGoneAsync(CancellationToken cancellationToken = default)
     {
-        var timeout = PositiveOrDefault(
-            _waitOptions.ExpectTimeout,
-            WaitOptions.DefaultExpectTimeout
-        );
+        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
         var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
         var deadline = DateTime.UtcNow + timeout;
         TreeNode? lastRoot = null;
@@ -2160,12 +1709,7 @@ public sealed class ElementQuery
                 var node = ResolveNode(tree.Root);
                 if (!node.Visible)
                 {
-                    await RecordSuccessAsync(
-                            FailureSteps.ExpectGone,
-                            "not-visible",
-                            cancellationToken
-                        )
-                        .ConfigureAwait(false);
+                    await RecordSuccessAsync(FailureSteps.ExpectGone, "not-visible", cancellationToken).ConfigureAwait(false);
                     return;
                 }
 
@@ -2173,8 +1717,7 @@ public sealed class ElementQuery
             }
             catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound)
             {
-                await RecordSuccessAsync(FailureSteps.ExpectGone, "not-found", cancellationToken)
-                    .ConfigureAwait(false);
+                await RecordSuccessAsync(FailureSteps.ExpectGone, "not-found", cancellationToken).ConfigureAwait(false);
                 return;
             }
             catch (GraftException ex) when (ex.Code is GraftErrorCodes.ActionFailed)
@@ -2188,13 +1731,11 @@ public sealed class ElementQuery
                 break;
             }
 
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
-                .ConfigureAwait(false);
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
         }
 
         var goneTimeoutMessage =
-            $"Timed out after {timeout.TotalSeconds:0.###}s waiting for element to be gone"
-            + (lastActual is null ? "." : $" ({lastActual}).");
+            $"Timed out after {timeout.TotalSeconds:0.###}s waiting for element to be gone" + (lastActual is null ? "." : $" ({lastActual}).");
         throw await CreateFailureAsync(
                 GraftErrorCodes.ActionTimeout,
                 goneTimeoutMessage,
@@ -2207,12 +1748,7 @@ public sealed class ElementQuery
             .ConfigureAwait(false);
     }
 
-    private async Task<string> GetCellTextCoreAsync(
-        int row,
-        int? column,
-        string? columnKey,
-        CancellationToken cancellationToken
-    )
+    private async Task<string> GetCellTextCoreAsync(int row, int? column, string? columnKey, CancellationToken cancellationToken)
     {
         var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(node.AutomationId))
@@ -2229,39 +1765,20 @@ public sealed class ElementQuery
         try
         {
             var text = columnKey is null
-                ? await _connection
-                    .GetCellTextAsync(node.AutomationId, row, column!.Value, cancellationToken)
-                    .ConfigureAwait(false)
-                : await _connection
-                    .GetCellTextAsync(node.AutomationId, row, columnKey, cancellationToken)
-                    .ConfigureAwait(false);
-            var detail = columnKey is null
-                ? $"{node.AutomationId}[{row},{column}]"
-                : $"{node.AutomationId}[{row},{columnKey}]";
-            await RecordSuccessAsync(FailureSteps.GetCellText, detail, cancellationToken)
-                .ConfigureAwait(false);
+                ? await _connection.GetCellTextAsync(node.AutomationId, row, column!.Value, cancellationToken).ConfigureAwait(false)
+                : await _connection.GetCellTextAsync(node.AutomationId, row, columnKey, cancellationToken).ConfigureAwait(false);
+            var detail = columnKey is null ? $"{node.AutomationId}[{row},{column}]" : $"{node.AutomationId}[{row},{columnKey}]";
+            await RecordSuccessAsync(FailureSteps.GetCellText, detail, cancellationToken).ConfigureAwait(false);
             return text;
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.GetCellText,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.GetCellText, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
 
-    private async Task SetCellValueCoreAsync(
-        int row,
-        int? column,
-        string? columnKey,
-        string value,
-        CancellationToken cancellationToken
-    )
+    private async Task SetCellValueCoreAsync(int row, int? column, string? columnKey, string value, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -2282,28 +1799,15 @@ public sealed class ElementQuery
         {
             if (columnKey is null)
             {
-                await _connection
-                    .SetCellValueAsync(
-                        node.AutomationId,
-                        row,
-                        column!.Value,
-                        value,
-                        cancellationToken
-                    )
-                    .ConfigureAwait(false);
+                await _connection.SetCellValueAsync(node.AutomationId, row, column!.Value, value, cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                await _connection
-                    .SetCellValueAsync(node.AutomationId, row, columnKey, value, cancellationToken)
-                    .ConfigureAwait(false);
+                await _connection.SetCellValueAsync(node.AutomationId, row, columnKey, value, cancellationToken).ConfigureAwait(false);
             }
 
-            var detail = columnKey is null
-                ? $"{node.AutomationId}[{row},{column}]={value}"
-                : $"{node.AutomationId}[{row},{columnKey}]={value}";
-            await RecordSuccessAsync(FailureSteps.SetCellValue, detail, cancellationToken)
-                .ConfigureAwait(false);
+            var detail = columnKey is null ? $"{node.AutomationId}[{row},{column}]={value}" : $"{node.AutomationId}[{row},{columnKey}]={value}";
+            await RecordSuccessAsync(FailureSteps.SetCellValue, detail, cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
@@ -2319,12 +1823,7 @@ public sealed class ElementQuery
         }
     }
 
-    private async Task SelectCellCoreAsync(
-        int row,
-        int? column,
-        string? columnKey,
-        CancellationToken cancellationToken
-    )
+    private async Task SelectCellCoreAsync(int row, int? column, string? columnKey, CancellationToken cancellationToken)
     {
         var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(node.AutomationId))
@@ -2342,43 +1841,24 @@ public sealed class ElementQuery
         {
             if (columnKey is null)
             {
-                await _connection
-                    .SelectCellAsync(node.AutomationId, row, column!.Value, cancellationToken)
-                    .ConfigureAwait(false);
+                await _connection.SelectCellAsync(node.AutomationId, row, column!.Value, cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                await _connection
-                    .SelectCellAsync(node.AutomationId, row, columnKey, cancellationToken)
-                    .ConfigureAwait(false);
+                await _connection.SelectCellAsync(node.AutomationId, row, columnKey, cancellationToken).ConfigureAwait(false);
             }
 
-            var detail = columnKey is null
-                ? $"{node.AutomationId}[{row},{column}]"
-                : $"{node.AutomationId}[{row},{columnKey}]";
-            await RecordSuccessAsync(FailureSteps.SelectCell, detail, cancellationToken)
-                .ConfigureAwait(false);
+            var detail = columnKey is null ? $"{node.AutomationId}[{row},{column}]" : $"{node.AutomationId}[{row},{columnKey}]";
+            await RecordSuccessAsync(FailureSteps.SelectCell, detail, cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.SelectCell,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.SelectCell, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
 
-    private async Task ExpectCellTextCoreAsync(
-        int row,
-        int? column,
-        string? columnKey,
-        string expectedText,
-        CancellationToken cancellationToken
-    )
+    private async Task ExpectCellTextCoreAsync(int row, int? column, string? columnKey, string expectedText, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(expectedText);
 
@@ -2395,10 +1875,7 @@ public sealed class ElementQuery
                 .ConfigureAwait(false);
         }
 
-        var timeout = PositiveOrDefault(
-            _waitOptions.ExpectTimeout,
-            WaitOptions.DefaultExpectTimeout
-        );
+        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
         var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
         var deadline = DateTime.UtcNow + timeout;
         string? lastActual = null;
@@ -2410,28 +1887,18 @@ public sealed class ElementQuery
             try
             {
                 var actual = columnKey is null
-                    ? await _connection
-                        .GetCellTextAsync(host.AutomationId, row, column!.Value, cancellationToken)
-                        .ConfigureAwait(false)
-                    : await _connection
-                        .GetCellTextAsync(host.AutomationId, row, columnKey, cancellationToken)
-                        .ConfigureAwait(false);
+                    ? await _connection.GetCellTextAsync(host.AutomationId, row, column!.Value, cancellationToken).ConfigureAwait(false)
+                    : await _connection.GetCellTextAsync(host.AutomationId, row, columnKey, cancellationToken).ConfigureAwait(false);
                 sawCell = true;
                 if (string.Equals(actual, expectedText, StringComparison.Ordinal))
                 {
-                    await RecordSuccessAsync(
-                            FailureSteps.ExpectCellText,
-                            expectedText,
-                            cancellationToken
-                        )
-                        .ConfigureAwait(false);
+                    await RecordSuccessAsync(FailureSteps.ExpectCellText, expectedText, cancellationToken).ConfigureAwait(false);
                     return;
                 }
 
                 lastActual = actual;
             }
-            catch (GraftException ex)
-                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
             {
                 // Still waiting for the cell / grid to be ready.
             }
@@ -2442,8 +1909,7 @@ public sealed class ElementQuery
                 break;
             }
 
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
-                .ConfigureAwait(false);
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
         }
 
         if (sawCell && lastActual is not null)
@@ -2479,10 +1945,7 @@ public sealed class ElementQuery
         CancellationToken cancellationToken
     )
     {
-        var timeout = PositiveOrDefault(
-            _waitOptions.ExpectTimeout,
-            WaitOptions.DefaultExpectTimeout
-        );
+        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
         var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
         var deadline = DateTime.UtcNow + timeout;
         var expectedText = expected ? "true" : "false";
@@ -2503,15 +1966,13 @@ public sealed class ElementQuery
                 var actual = getter(node);
                 if (actual is { } value && value == expected)
                 {
-                    await RecordSuccessAsync(step, expectedText, cancellationToken)
-                        .ConfigureAwait(false);
+                    await RecordSuccessAsync(step, expectedText, cancellationToken).ConfigureAwait(false);
                     return node;
                 }
 
                 lastActual = actual is null ? "n/a" : (actual.Value ? "true" : "false");
             }
-            catch (GraftException ex)
-                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
             {
                 // Still waiting for the element to appear / tree to be ready.
             }
@@ -2522,8 +1983,7 @@ public sealed class ElementQuery
                 break;
             }
 
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
-                .ConfigureAwait(false);
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
         }
 
         if (sawElement && lastActual is not null)
@@ -2555,10 +2015,7 @@ public sealed class ElementQuery
 
     private async Task<TreeNode> WaitForActionableAsync(CancellationToken cancellationToken)
     {
-        var timeout = PositiveOrDefault(
-            _waitOptions.ActionTimeout,
-            WaitOptions.DefaultActionTimeout
-        );
+        var timeout = PositiveOrDefault(_waitOptions.ActionTimeout, WaitOptions.DefaultActionTimeout);
         var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
         var deadline = DateTime.UtcNow + timeout;
 
@@ -2582,8 +2039,7 @@ public sealed class ElementQuery
                 lastActual = $"enabled={node.Enabled}, visible={node.Visible}";
                 sawNotActionable = true;
             }
-            catch (GraftException ex)
-                when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
             {
                 // Keep polling.
             }
@@ -2594,8 +2050,7 @@ public sealed class ElementQuery
                 break;
             }
 
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken)
-                .ConfigureAwait(false);
+            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
         }
 
         if (sawNotActionable && lastActual is not null)
@@ -2641,9 +2096,7 @@ public sealed class ElementQuery
         {
             try
             {
-                tree = (
-                    await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false)
-                ).Root;
+                tree = (await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false)).Root;
             }
             catch (Exception)
             {
@@ -2655,9 +2108,7 @@ public sealed class ElementQuery
         string? screenshotPath = null;
         try
         {
-            var (_, pngBytes) = await _connection
-                .ScreenshotAsync(cancellationToken)
-                .ConfigureAwait(false);
+            var (_, pngBytes) = await _connection.ScreenshotAsync(cancellationToken).ConfigureAwait(false);
             var path = Path.Combine(Path.GetTempPath(), $"graft-fail-{Guid.NewGuid():N}.png");
             await File.WriteAllBytesAsync(path, pngBytes, cancellationToken).ConfigureAwait(false);
             screenshotPath = path;
@@ -2697,10 +2148,7 @@ public sealed class ElementQuery
         );
     }
 
-    private async Task<ElementIdentity> ScrollIntoViewCoreAsync(
-        int? index,
-        CancellationToken cancellationToken
-    )
+    private async Task<ElementIdentity> ScrollIntoViewCoreAsync(int? index, CancellationToken cancellationToken)
     {
         var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(node.AutomationId))
@@ -2716,42 +2164,24 @@ public sealed class ElementQuery
 
         try
         {
-            var identity = await _connection
-                .ScrollIntoViewAsync(node.AutomationId, index, cancellationToken)
-                .ConfigureAwait(false);
-            var detail = index is null
-                ? node.AutomationId
-                : $"{node.AutomationId}[{index}]->{identity.AutomationId}";
-            await RecordSuccessAsync(FailureSteps.ScrollIntoView, detail, cancellationToken)
-                .ConfigureAwait(false);
+            var identity = await _connection.ScrollIntoViewAsync(node.AutomationId, index, cancellationToken).ConfigureAwait(false);
+            var detail = index is null ? node.AutomationId : $"{node.AutomationId}[{index}]->{identity.AutomationId}";
+            await RecordSuccessAsync(FailureSteps.ScrollIntoView, detail, cancellationToken).ConfigureAwait(false);
             return identity;
         }
         catch (GraftException ex) when (ex.Report is null)
         {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.ScrollIntoView,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
+            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.ScrollIntoView, cancellationToken: cancellationToken, innerException: ex)
                 .ConfigureAwait(false);
         }
     }
 
-    private async Task RecordSuccessAsync(
-        string action,
-        string? detail,
-        CancellationToken cancellationToken,
-        byte[]? pngBytes = null
-    )
+    private async Task RecordSuccessAsync(string action, string? detail, CancellationToken cancellationToken, byte[]? pngBytes = null)
     {
         _operationLog.Record(action, detail);
         if (_timeline is not null)
         {
-            await _timeline
-                .CaptureAfterAsync(action, detail, cancellationToken, pngBytes)
-                .ConfigureAwait(false);
+            await _timeline.CaptureAfterAsync(action, detail, cancellationToken, pngBytes).ConfigureAwait(false);
         }
     }
 
@@ -2778,10 +2208,7 @@ public sealed class ElementQuery
         for (var i = 0; i < _relativeSteps.Count; )
         {
             var step = _relativeSteps[i];
-            var nth =
-                i + 1 < _relativeSteps.Count && _relativeSteps[i + 1] is NthStep n
-                    ? n.Index
-                    : (int?)null;
+            var nth = i + 1 < _relativeSteps.Count && _relativeSteps[i + 1] is NthStep n ? n.Index : (int?)null;
 
             switch (step)
             {
@@ -2812,14 +2239,7 @@ public sealed class ElementQuery
         var steps = new List<RelativeStep>(_relativeSteps.Count + 1);
         steps.AddRange(_relativeSteps);
         steps.Add(step);
-        return new ElementQuery(
-            _connection,
-            _selector,
-            _waitOptions,
-            _operationLog,
-            steps,
-            _timeline
-        );
+        return new ElementQuery(_connection, _selector, _waitOptions, _operationLog, steps, _timeline);
     }
 
     internal abstract record RelativeStep;
@@ -2856,6 +2276,5 @@ public sealed class ElementQuery
         return string.Join(',', parts);
     }
 
-    private static TimeSpan PositiveOrDefault(TimeSpan value, TimeSpan fallback) =>
-        value <= TimeSpan.Zero ? fallback : value;
+    private static TimeSpan PositiveOrDefault(TimeSpan value, TimeSpan fallback) => value <= TimeSpan.Zero ? fallback : value;
 }

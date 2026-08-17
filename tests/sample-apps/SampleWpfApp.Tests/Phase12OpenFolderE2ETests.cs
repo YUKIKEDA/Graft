@@ -35,8 +35,7 @@ public sealed class Phase12OpenFolderE2ETests
         );
 
         await app.ArmOpenFolderAsync(path);
-        _ = await app.GetByAutomationId("OpenFolderButton")
-            .InvokeOpeningWindowAsync(waitForNewWindow: false);
+        _ = await app.GetByAutomationId("OpenFolderButton").InvokeOpeningWindowAsync(waitForNewWindow: false);
         await app.GetByAutomationId("StatusText").ExpectNameAsync($"OpenFolder {path}");
     }
 
@@ -68,8 +67,7 @@ public sealed class Phase12OpenFolderE2ETests
         );
 
         await app.ArmOpenFolderCancelAsync();
-        _ = await app.GetByAutomationId("OpenFolderButton")
-            .InvokeOpeningWindowAsync(waitForNewWindow: false);
+        _ = await app.GetByAutomationId("OpenFolderButton").InvokeOpeningWindowAsync(waitForNewWindow: false);
         await app.GetByAutomationId("StatusText").ExpectNameAsync("OpenFolderCancel");
     }
 }

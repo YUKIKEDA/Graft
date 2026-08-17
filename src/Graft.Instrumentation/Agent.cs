@@ -43,13 +43,10 @@ public static class Agent
         var pipeName = Environment.GetEnvironmentVariable(GraftEnvironment.PipeName);
         if (string.IsNullOrWhiteSpace(pipeName))
         {
-            throw new InvalidOperationException(
-                $"{GraftEnvironment.PipeName} is required when {GraftEnvironment.Enable}=1."
-            );
+            throw new InvalidOperationException($"{GraftEnvironment.PipeName} is required when {GraftEnvironment.Enable}=1.");
         }
 
-        var token =
-            Environment.GetEnvironmentVariable(GraftEnvironment.ConnectToken) ?? string.Empty;
+        var token = Environment.GetEnvironmentVariable(GraftEnvironment.ConnectToken) ?? string.Empty;
 
         lock (Sync)
         {

@@ -102,9 +102,7 @@ public sealed class Phase22DataGridSelectManyE2ETests
             }
         );
 
-        var ex = await Assert.ThrowsAsync<GraftException>(() =>
-            app.GetByAutomationId("SampleGrid").SelectManyAsync([1])
-        );
+        var ex = await Assert.ThrowsAsync<GraftException>(() => app.GetByAutomationId("SampleGrid").SelectManyAsync([1]));
         Assert.Equal(GraftErrorCodes.ActionFailed, ex.Code);
     }
 }

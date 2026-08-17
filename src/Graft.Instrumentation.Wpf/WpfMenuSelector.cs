@@ -25,19 +25,13 @@ internal sealed class WpfMenuSelector : IMenuSelector
         var segments = SplitPath(path);
         if (segments.Length == 0)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.path must contain at least one AutomationId segment."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.path must contain at least one AutomationId segment.");
         }
 
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "WPF Application.Current is not available; cannot selectMenu."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "WPF Application.Current is not available; cannot selectMenu.");
         }
 
         if (dispatcher.CheckAccess())
@@ -46,17 +40,10 @@ internal sealed class WpfMenuSelector : IMenuSelector
             return;
         }
 
-        dispatcher.Invoke(
-            () => SelectMenuOnUiThread(selector, path, segments),
-            DispatcherPriority.Normal
-        );
+        dispatcher.Invoke(() => SelectMenuOnUiThread(selector, path, segments), DispatcherPriority.Normal);
     }
 
-    private static void SelectMenuOnUiThread(
-        ElementSelector selector,
-        string path,
-        string[] segments
-    )
+    private static void SelectMenuOnUiThread(ElementSelector selector, string path, string[] segments)
     {
         var root = ResolveMenuRoot(selector);
         ItemsControl current = root;
@@ -143,9 +130,7 @@ internal sealed class WpfMenuSelector : IMenuSelector
     {
         foreach (var item in parent.Items)
         {
-            var container =
-                item as FrameworkElement
-                ?? parent.ItemContainerGenerator.ContainerFromItem(item) as FrameworkElement;
+            var container = item as FrameworkElement ?? parent.ItemContainerGenerator.ContainerFromItem(item) as FrameworkElement;
             if (container is not MenuItem menuItem)
             {
                 continue;
@@ -201,10 +186,7 @@ internal sealed class WpfMenuSelector : IMenuSelector
 
     private static string[] SplitPath(string path)
     {
-        var parts = path.Split(
-            '/',
-            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
-        );
+        var parts = path.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         return parts;
     }
 }

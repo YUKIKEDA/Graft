@@ -81,32 +81,15 @@ public sealed class SelectorHealerTests
     [Fact]
     public void TryGetAutoHeal_SingleStableIdentity_Succeeds()
     {
-        var root = Node(
-            "Window",
-            "Sample",
-            "Main",
-            [Node("Button", "Click Me", "SampleButton", [])]
-        );
-        Assert.True(
-            SelectorHealer.TryGetAutoHeal(root, Selector.ByAutomationId("Missing"), out var healed)
-        );
+        var root = Node("Window", "Sample", "Main", [Node("Button", "Click Me", "SampleButton", [])]);
+        Assert.True(SelectorHealer.TryGetAutoHeal(root, Selector.ByAutomationId("Missing"), out var healed));
         Assert.Equal("SampleButton", TreeSelector.Resolve(root, healed).AutomationId);
     }
 
     private static TreeNode SampleTree() =>
-        Node(
-            "Window",
-            "Sample",
-            "Main",
-            [Node("Button", "Click Me", "SampleButton", []), Node("Text", "Idle", "StatusText", [])]
-        );
+        Node("Window", "Sample", "Main", [Node("Button", "Click Me", "SampleButton", []), Node("Text", "Idle", "StatusText", [])]);
 
-    private static TreeNode Node(
-        string controlType,
-        string name,
-        string automationId,
-        TreeNode[] children
-    ) =>
+    private static TreeNode Node(string controlType, string name, string automationId, TreeNode[] children) =>
         new()
         {
             RuntimeId = automationId.GetHashCode(StringComparison.Ordinal),

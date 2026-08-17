@@ -33,9 +33,7 @@ public sealed class KeyChordParserTests
     public void Parse_ValidChords_ReturnsCanonical(string input, string modsCsv, string key)
     {
         var chord = KeyChordParser.Parse(input);
-        var expectedMods = string.IsNullOrEmpty(modsCsv)
-            ? Array.Empty<string>()
-            : modsCsv.Split(',');
+        var expectedMods = string.IsNullOrEmpty(modsCsv) ? Array.Empty<string>() : modsCsv.Split(',');
         Assert.Equal(expectedMods, chord.Modifiers);
         Assert.Equal(key, chord.Key);
     }

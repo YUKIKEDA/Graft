@@ -26,24 +26,15 @@ internal static class MessageBoxPatch
         var harmony = new Harmony("Graft.Instrumentation.Wpf.MessageBox");
         var methods = typeof(MessageBox)
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
-            .Where(m =>
-                m.Name == nameof(MessageBox.Show) && m.ReturnType == typeof(MessageBoxResult)
-            )
+            .Where(m => m.Name == nameof(MessageBox.Show) && m.ReturnType == typeof(MessageBoxResult))
             .ToArray();
         if (methods.Length == 0)
         {
             Interlocked.Exchange(ref _applied, 0);
-            throw new InvalidOperationException(
-                "Could not locate System.Windows.MessageBox.Show overloads for MessageBox seam."
-            );
+            throw new InvalidOperationException("Could not locate System.Windows.MessageBox.Show overloads for MessageBox seam.");
         }
 
-        var prefix = new HarmonyMethod(
-            typeof(MessageBoxPatch).GetMethod(
-                nameof(Prefix),
-                BindingFlags.Static | BindingFlags.NonPublic
-            )!
-        );
+        var prefix = new HarmonyMethod(typeof(MessageBoxPatch).GetMethod(nameof(Prefix), BindingFlags.Static | BindingFlags.NonPublic)!);
         foreach (var method in methods)
         {
             harmony.Patch(method, prefix: prefix);

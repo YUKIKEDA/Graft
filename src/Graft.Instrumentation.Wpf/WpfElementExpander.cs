@@ -28,10 +28,7 @@ internal sealed class WpfElementExpander : IElementExpander
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "WPF Application.Current is not available; cannot expand/collapse."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "WPF Application.Current is not available; cannot expand/collapse.");
         }
 
         if (dispatcher.CheckAccess())
@@ -40,10 +37,7 @@ internal sealed class WpfElementExpander : IElementExpander
             return;
         }
 
-        dispatcher.Invoke(
-            () => SetExpandedOnUiThread(selector, expanded),
-            DispatcherPriority.Normal
-        );
+        dispatcher.Invoke(() => SetExpandedOnUiThread(selector, expanded), DispatcherPriority.Normal);
     }
 
     private static void SetExpandedOnUiThread(ElementSelector selector, bool expanded)
@@ -106,10 +100,7 @@ internal sealed class WpfElementExpander : IElementExpander
             peer = UIElementAutomationPeer.CreatePeerForElement(uiElement);
         }
 
-        if (
-            peer?.GetPattern(PatternInterface.ExpandCollapse)
-            is not IExpandCollapseProvider provider
-        )
+        if (peer?.GetPattern(PatternInterface.ExpandCollapse) is not IExpandCollapseProvider provider)
         {
             return false;
         }

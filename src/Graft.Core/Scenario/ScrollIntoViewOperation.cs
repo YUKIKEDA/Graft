@@ -5,5 +5,4 @@ namespace Graft.Core.Scenario;
 /// </summary>
 /// <param name="AutomationId">Target element or list automation id.</param>
 /// <param name="Index">Optional list item index.</param>
-public sealed record ScrollIntoViewOperation(string AutomationId, int? Index)
-    : ScenarioOperation(ScenarioActions.ScrollIntoView);
+public sealed record ScrollIntoViewOperation(string AutomationId, int? Index) : ScenarioOperation(ScenarioActions.ScrollIntoView);

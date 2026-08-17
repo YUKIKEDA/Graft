@@ -71,10 +71,7 @@ public sealed class FailureReportTests
         Assert.False(root.GetProperty("timedOut").GetBoolean());
         Assert.False(root.TryGetProperty("expected", out _));
         Assert.False(root.TryGetProperty("actual", out _));
-        Assert.Equal(
-            "SampleButton",
-            root.GetProperty("selector").GetProperty("automationId").GetString()
-        );
+        Assert.Equal("SampleButton", root.GetProperty("selector").GetProperty("automationId").GetString());
 
         var fromComposite = FailureReportSelector.FromSelector(
             new Selector

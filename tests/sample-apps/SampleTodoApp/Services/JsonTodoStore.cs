@@ -18,10 +18,7 @@ public sealed class JsonTodoStore : ITodoStore
 
     public JsonTodoStore()
     {
-        var appRoot = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "GraftSampleTodo"
-        );
+        var appRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GraftSampleTodo");
         _settingsPath = Path.Combine(appRoot, "settings.json");
         _dataDirectory = ResolveInitialDataDirectory(appRoot);
     }
@@ -35,8 +32,7 @@ public sealed class JsonTodoStore : ITodoStore
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
         _dataDirectory = Path.GetFullPath(directory);
         Directory.CreateDirectory(_dataDirectory);
-        await SaveSettingsAsync(new AppSettings { DataDirectory = _dataDirectory })
-            .ConfigureAwait(false);
+        await SaveSettingsAsync(new AppSettings { DataDirectory = _dataDirectory }).ConfigureAwait(false);
     }
 
     public async Task<ProjectData> LoadAsync()
@@ -48,9 +44,7 @@ public sealed class JsonTodoStore : ITodoStore
         }
 
         await using var stream = File.OpenRead(DataFilePath);
-        var data = await JsonSerializer
-            .DeserializeAsync<ProjectData>(stream, JsonOptions)
-            .ConfigureAwait(false);
+        var data = await JsonSerializer.DeserializeAsync<ProjectData>(stream, JsonOptions).ConfigureAwait(false);
         return data ?? new ProjectData();
     }
 
@@ -80,9 +74,7 @@ public sealed class JsonTodoStore : ITodoStore
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         await using var stream = File.OpenRead(path);
-        var data = await JsonSerializer
-            .DeserializeAsync<ProjectData>(stream, JsonOptions)
-            .ConfigureAwait(false);
+        var data = await JsonSerializer.DeserializeAsync<ProjectData>(stream, JsonOptions).ConfigureAwait(false);
         return data ?? new ProjectData();
     }
 

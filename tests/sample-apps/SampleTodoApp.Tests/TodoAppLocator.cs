@@ -4,17 +4,7 @@ internal static class TodoAppLocator
 {
     public static string ResolveProjectPath()
     {
-        var sibling = Path.GetFullPath(
-            Path.Combine(
-                AppContext.BaseDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "SampleTodoApp",
-                "SampleTodoApp.csproj"
-            )
-        );
+        var sibling = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "SampleTodoApp", "SampleTodoApp.csproj"));
         if (File.Exists(sibling))
         {
             return sibling;
@@ -23,13 +13,7 @@ internal static class TodoAppLocator
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null)
         {
-            var candidate = Path.Combine(
-                dir.FullName,
-                "tests",
-                "sample-apps",
-                "SampleTodoApp",
-                "SampleTodoApp.csproj"
-            );
+            var candidate = Path.Combine(dir.FullName, "tests", "sample-apps", "SampleTodoApp", "SampleTodoApp.csproj");
             if (File.Exists(candidate))
             {
                 return candidate;

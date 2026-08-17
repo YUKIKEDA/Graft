@@ -39,33 +39,18 @@ public static class GraftRunScenarioTool
         var hasPath = !string.IsNullOrWhiteSpace(scenarioPath);
         if (hasJson == hasPath)
         {
-            return ToolResults.Error(
-                "action.failed",
-                "Provide exactly one of scenarioJson or scenarioPath."
-            );
+            return ToolResults.Error("action.failed", "Provide exactly one of scenarioJson or scenarioPath.");
         }
 
         try
         {
-            var document = hasPath
-                ? ScenarioJson.ParseFile(scenarioPath!)
-                : ScenarioJson.Parse(scenarioJson!);
+            var document = hasPath ? ScenarioJson.ParseFile(scenarioPath!) : ScenarioJson.Parse(scenarioJson!);
 
-            var options = string.IsNullOrWhiteSpace(appPath)
-                ? null
-                : new ScenarioRunOptions { AppPath = appPath };
+            var options = string.IsNullOrWhiteSpace(appPath) ? null : new ScenarioRunOptions { AppPath = appPath };
 
-            await ScenarioRunner
-                .RunAsync(document, options, cancellationToken)
-                .ConfigureAwait(false);
+            await ScenarioRunner.RunAsync(document, options, cancellationToken).ConfigureAwait(false);
 
-            return ToolResults.Ok(
-                new JsonObject
-                {
-                    ["name"] = document.Name,
-                    ["operations"] = document.Operations.Count,
-                }
-            );
+            return ToolResults.Ok(new JsonObject { ["name"] = document.Name, ["operations"] = document.Operations.Count });
         }
         catch (GraftException ex)
         {

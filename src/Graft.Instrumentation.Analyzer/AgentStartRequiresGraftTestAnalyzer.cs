@@ -37,9 +37,7 @@ public sealed class AgentStartRequiresGraftTestAnalyzer : DiagnosticAnalyzer
                 return;
             }
 
-            var agentType = compilationStartContext.Compilation.GetTypeByMetadataName(
-                AgentMetadataName
-            );
+            var agentType = compilationStartContext.Compilation.GetTypeByMetadataName(AgentMetadataName);
             if (agentType is null)
             {
                 return;
@@ -76,38 +74,21 @@ public sealed class AgentStartRequiresGraftTestAnalyzer : DiagnosticAnalyzer
         return false;
     }
 
-    private static void AnalyzeInvocation(
-        SyntaxNodeAnalysisContext context,
-        INamedTypeSymbol agentType
-    )
+    private static void AnalyzeInvocation(SyntaxNodeAnalysisContext context, INamedTypeSymbol agentType)
     {
         var invocation = (InvocationExpressionSyntax)context.Node;
         var symbolInfo = context.SemanticModel.GetSymbolInfo(invocation, context.CancellationToken);
-        if (
-            GetTargetMethod(symbolInfo) is not { } method
-            || method.Name != StartMethodName
-            || method.ContainingType is null
-        )
+        if (GetTargetMethod(symbolInfo) is not { } method || method.Name != StartMethodName || method.ContainingType is null)
         {
             return;
         }
 
-        if (
-            !SymbolEqualityComparer.Default.Equals(
-                method.ContainingType.OriginalDefinition,
-                agentType
-            )
-        )
+        if (!SymbolEqualityComparer.Default.Equals(method.ContainingType.OriginalDefinition, agentType))
         {
             return;
         }
 
-        context.ReportDiagnostic(
-            Diagnostic.Create(
-                GraftDescriptors.Graft001AgentStartRequiresGraftTest,
-                invocation.GetLocation()
-            )
-        );
+        context.ReportDiagnostic(Diagnostic.Create(GraftDescriptors.Graft001AgentStartRequiresGraftTest, invocation.GetLocation()));
     }
 
     private static IMethodSymbol? GetTargetMethod(SymbolInfo symbolInfo)

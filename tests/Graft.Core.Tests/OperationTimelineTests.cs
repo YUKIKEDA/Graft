@@ -89,12 +89,7 @@ public sealed class OperationTimelineTests
                 }
             );
 
-            await timeline.CaptureAfterAsync(
-                "screenshot",
-                "12x8:7",
-                CancellationToken.None,
-                clipPng
-            );
+            await timeline.CaptureAfterAsync("screenshot", "12x8:7", CancellationToken.None, clipPng);
 
             var index = timeline.FinalizeArtifacts();
             Assert.NotNull(index);
@@ -130,11 +125,7 @@ public sealed class OperationTimelineTests
         {
             var png = new byte[] { 0x89, (byte)'P', (byte)'N', (byte)'G' };
             var timeline = new OperationTimeline(
-                new TimelineOptions
-                {
-                    OutputDirectory = dir,
-                    Retention = TimelineRetention.OnFailure,
-                },
+                new TimelineOptions { OutputDirectory = dir, Retention = TimelineRetention.OnFailure },
                 _ => Task.FromResult(png)
             );
 
@@ -170,11 +161,7 @@ public sealed class OperationTimelineTests
         {
             var png = new byte[] { 0x89, (byte)'P', (byte)'N', (byte)'G' };
             var timeline = new OperationTimeline(
-                new TimelineOptions
-                {
-                    OutputDirectory = dir,
-                    Retention = TimelineRetention.OnFailure,
-                },
+                new TimelineOptions { OutputDirectory = dir, Retention = TimelineRetention.OnFailure },
                 _ => Task.FromResult(png)
             );
 
@@ -190,8 +177,7 @@ public sealed class OperationTimelineTests
         }
     }
 
-    private static string NewTempDir() =>
-        Path.Combine(Path.GetTempPath(), "graft-timeline-tests", Guid.NewGuid().ToString("N"));
+    private static string NewTempDir() => Path.Combine(Path.GetTempPath(), "graft-timeline-tests", Guid.NewGuid().ToString("N"));
 
     private static void TryDelete(string dir)
     {

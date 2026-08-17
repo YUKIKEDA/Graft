@@ -33,10 +33,7 @@ internal sealed class WpfElementKeySender : IElementKeySender
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"WPF Application.Current is not available; cannot {operation}."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, $"WPF Application.Current is not available; cannot {operation}.");
         }
 
         if (dispatcher.CheckAccess())

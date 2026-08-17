@@ -23,16 +23,14 @@ public static class JsonMessageCodec
     /// </summary>
     /// <param name="message">Request message.</param>
     /// <returns>UTF-8 JSON payload.</returns>
-    public static byte[] EncodeRequest(RequestMessage message) =>
-        JsonSerializer.SerializeToUtf8Bytes(message, Options);
+    public static byte[] EncodeRequest(RequestMessage message) => JsonSerializer.SerializeToUtf8Bytes(message, Options);
 
     /// <summary>
     /// Serializes a response envelope to UTF-8 JSON bytes.
     /// </summary>
     /// <param name="message">Response message.</param>
     /// <returns>UTF-8 JSON payload.</returns>
-    public static byte[] EncodeResponse(ResponseMessage message) =>
-        JsonSerializer.SerializeToUtf8Bytes(message, Options);
+    public static byte[] EncodeResponse(ResponseMessage message) => JsonSerializer.SerializeToUtf8Bytes(message, Options);
 
     /// <summary>
     /// Deserializes a request envelope from UTF-8 JSON.
@@ -40,8 +38,7 @@ public static class JsonMessageCodec
     /// <param name="utf8Json">UTF-8 JSON bytes.</param>
     /// <returns>The request message.</returns>
     public static RequestMessage DecodeRequest(ReadOnlySpan<byte> utf8Json) =>
-        JsonSerializer.Deserialize<RequestMessage>(utf8Json, Options)
-        ?? throw new InvalidOperationException("Request JSON deserialized to null.");
+        JsonSerializer.Deserialize<RequestMessage>(utf8Json, Options) ?? throw new InvalidOperationException("Request JSON deserialized to null.");
 
     /// <summary>
     /// Deserializes a response envelope from UTF-8 JSON.
@@ -49,8 +46,7 @@ public static class JsonMessageCodec
     /// <param name="utf8Json">UTF-8 JSON bytes.</param>
     /// <returns>The response message.</returns>
     public static ResponseMessage DecodeResponse(ReadOnlySpan<byte> utf8Json) =>
-        JsonSerializer.Deserialize<ResponseMessage>(utf8Json, Options)
-        ?? throw new InvalidOperationException("Response JSON deserialized to null.");
+        JsonSerializer.Deserialize<ResponseMessage>(utf8Json, Options) ?? throw new InvalidOperationException("Response JSON deserialized to null.");
 
     /// <summary>
     /// Encodes and writes a length-prefixed request frame.
@@ -59,16 +55,10 @@ public static class JsonMessageCodec
     /// <param name="message">Request message.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when the frame has been written.</returns>
-    public static async Task WriteRequestAsync(
-        Stream stream,
-        RequestMessage message,
-        CancellationToken cancellationToken = default
-    )
+    public static async Task WriteRequestAsync(Stream stream, RequestMessage message, CancellationToken cancellationToken = default)
     {
         var payload = EncodeRequest(message);
-        await FrameIO
-            .WriteAsync(stream, payload, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        await FrameIO.WriteAsync(stream, payload, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -78,16 +68,10 @@ public static class JsonMessageCodec
     /// <param name="message">Response message.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when the frame has been written.</returns>
-    public static async Task WriteResponseAsync(
-        Stream stream,
-        ResponseMessage message,
-        CancellationToken cancellationToken = default
-    )
+    public static async Task WriteResponseAsync(Stream stream, ResponseMessage message, CancellationToken cancellationToken = default)
     {
         var payload = EncodeResponse(message);
-        await FrameIO
-            .WriteAsync(stream, payload, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        await FrameIO.WriteAsync(stream, payload, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -96,14 +80,9 @@ public static class JsonMessageCodec
     /// <param name="stream">Source stream.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The decoded request message.</returns>
-    public static async Task<RequestMessage> ReadRequestAsync(
-        Stream stream,
-        CancellationToken cancellationToken = default
-    )
+    public static async Task<RequestMessage> ReadRequestAsync(Stream stream, CancellationToken cancellationToken = default)
     {
-        var payload = await FrameIO
-            .ReadAsync(stream, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        var payload = await FrameIO.ReadAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
         return DecodeRequest(payload);
     }
 
@@ -113,14 +92,9 @@ public static class JsonMessageCodec
     /// <param name="stream">Source stream.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The decoded response message.</returns>
-    public static async Task<ResponseMessage> ReadResponseAsync(
-        Stream stream,
-        CancellationToken cancellationToken = default
-    )
+    public static async Task<ResponseMessage> ReadResponseAsync(Stream stream, CancellationToken cancellationToken = default)
     {
-        var payload = await FrameIO
-            .ReadAsync(stream, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        var payload = await FrameIO.ReadAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
         return DecodeResponse(payload);
     }
 }

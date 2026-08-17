@@ -38,10 +38,7 @@ internal static class WpfInputInjection
         ActivateWindow(element);
         var point = ResolveClickScreenPoint(element);
         InputInjector.LeftClick((int)Math.Round(point.X), (int)Math.Round(point.Y));
-        element.Dispatcher.Invoke(
-            static () => { },
-            System.Windows.Threading.DispatcherPriority.ContextIdle
-        );
+        element.Dispatcher.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
     }
 
     public static void RightClickElement(FrameworkElement element)
@@ -77,20 +74,11 @@ internal static class WpfInputInjection
         ActivateWindow(from);
         var fromPoint = ResolveClickScreenPoint(from);
         var toPoint = ResolveClickScreenPoint(to);
-        InputInjector.Drag(
-            (int)Math.Round(fromPoint.X),
-            (int)Math.Round(fromPoint.Y),
-            (int)Math.Round(toPoint.X),
-            (int)Math.Round(toPoint.Y)
-        );
+        InputInjector.Drag((int)Math.Round(fromPoint.X), (int)Math.Round(fromPoint.Y), (int)Math.Round(toPoint.X), (int)Math.Round(toPoint.Y));
         FlushIdle(to);
     }
 
-    public static void ClickAtElement(
-        FrameworkElement element,
-        double offsetXDip,
-        double offsetYDip
-    )
+    public static void ClickAtElement(FrameworkElement element, double offsetXDip, double offsetYDip)
     {
         ActivateWindow(element);
         var point = ResolveClickScreenPoint(element, offsetXDip, offsetYDip);
@@ -111,33 +99,21 @@ internal static class WpfInputInjection
         ActivateWindow(element);
         if (!element.Focusable)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotActionable,
-                "Element is not focusable; cannot send keys."
-            );
+            throw new ElementActionException(GraftErrorCodes.ElementNotActionable, "Element is not focusable; cannot send keys.");
         }
 
         element.Focus();
         Keyboard.Focus(element);
-        element.Dispatcher.Invoke(
-            static () => { },
-            System.Windows.Threading.DispatcherPriority.ContextIdle
-        );
+        element.Dispatcher.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
 
         if (clearFirst)
         {
             InputInjector.SelectAllAndDelete();
-            element.Dispatcher.Invoke(
-                static () => { },
-                System.Windows.Threading.DispatcherPriority.ContextIdle
-            );
+            element.Dispatcher.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
         }
 
         InputInjector.TypeText(text);
-        element.Dispatcher.Invoke(
-            static () => { },
-            System.Windows.Threading.DispatcherPriority.ContextIdle
-        );
+        element.Dispatcher.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
     }
 
     public static void FocusAndPress(FrameworkElement element, string keys)
@@ -145,18 +121,12 @@ internal static class WpfInputInjection
         ActivateWindow(element);
         if (!element.Focusable)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotActionable,
-                "Element is not focusable; cannot press keys."
-            );
+            throw new ElementActionException(GraftErrorCodes.ElementNotActionable, "Element is not focusable; cannot press keys.");
         }
 
         element.Focus();
         Keyboard.Focus(element);
-        element.Dispatcher.Invoke(
-            static () => { },
-            System.Windows.Threading.DispatcherPriority.ContextIdle
-        );
+        element.Dispatcher.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
 
         KeyChord chord;
         try
@@ -169,23 +139,13 @@ internal static class WpfInputInjection
         }
 
         InputInjector.PressChord(chord);
-        element.Dispatcher.Invoke(
-            static () => { },
-            System.Windows.Threading.DispatcherPriority.ContextIdle
-        );
+        element.Dispatcher.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
     }
 
     private static void FlushIdle(FrameworkElement element) =>
-        element.Dispatcher.Invoke(
-            static () => { },
-            System.Windows.Threading.DispatcherPriority.ContextIdle
-        );
+        element.Dispatcher.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
 
-    private static Point ResolveClickScreenPoint(
-        FrameworkElement element,
-        double offsetXDip = 0,
-        double offsetYDip = 0
-    )
+    private static Point ResolveClickScreenPoint(FrameworkElement element, double offsetXDip = 0, double offsetYDip = 0)
     {
         var basePoint = ResolveBaseClickScreenPoint(element);
         if (offsetXDip == 0 && offsetYDip == 0)
@@ -194,10 +154,7 @@ internal static class WpfInputInjection
         }
 
         var dpi = VisualTreeHelper.GetDpi(element);
-        return new Point(
-            basePoint.X + (offsetXDip * dpi.DpiScaleX),
-            basePoint.Y + (offsetYDip * dpi.DpiScaleY)
-        );
+        return new Point(basePoint.X + (offsetXDip * dpi.DpiScaleX), basePoint.Y + (offsetYDip * dpi.DpiScaleY));
     }
 
     private static Point ResolveBaseClickScreenPoint(FrameworkElement element)
@@ -230,10 +187,7 @@ internal static class WpfInputInjection
 
         if (element.ActualWidth <= 0 || element.ActualHeight <= 0)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "Element has empty bounds; cannot compute SendInput click point."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "Element has empty bounds; cannot compute SendInput click point.");
         }
 
         var local = new Point(element.ActualWidth / 2, element.ActualHeight / 2);

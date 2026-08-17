@@ -13,13 +13,7 @@ internal static class SampleLauncher
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null)
         {
-            var candidate = Path.Combine(
-                dir.FullName,
-                "tests",
-                "sample-apps",
-                "SampleWpfApp",
-                "SampleWpfApp.csproj"
-            );
+            var candidate = Path.Combine(dir.FullName, "tests", "sample-apps", "SampleWpfApp", "SampleWpfApp.csproj");
             if (File.Exists(candidate))
             {
                 return candidate;
@@ -29,20 +23,14 @@ internal static class SampleLauncher
             dir = dir.Parent;
         }
 
-        throw new SmokeException(
-            Graft.Protocol.GraftErrorCodes.ActionFailed,
-            "Could not locate SampleWpfApp.csproj. Pass --app <path>."
-        );
+        throw new SmokeException(Graft.Protocol.GraftErrorCodes.ActionFailed, "Could not locate SampleWpfApp.csproj. Pass --app <path>.");
     }
 
     public static Process Start(string appPath, string pipeName, string token)
     {
         if (!File.Exists(appPath))
         {
-            throw new SmokeException(
-                Graft.Protocol.GraftErrorCodes.ActionFailed,
-                $"App path not found: {appPath}"
-            );
+            throw new SmokeException(Graft.Protocol.GraftErrorCodes.ActionFailed, $"App path not found: {appPath}");
         }
 
         var psi = new ProcessStartInfo
@@ -71,12 +59,7 @@ internal static class SampleLauncher
             psi.FileName = appPath;
         }
 
-        var process =
-            Process.Start(psi)
-            ?? throw new SmokeException(
-                Graft.Protocol.GraftErrorCodes.ActionFailed,
-                "Failed to start sample process."
-            );
+        var process = Process.Start(psi) ?? throw new SmokeException(Graft.Protocol.GraftErrorCodes.ActionFailed, "Failed to start sample process.");
 
         // Drain stdout/stderr so the child cannot block on full pipes.
         _ = process.StandardOutput.ReadToEndAsync();

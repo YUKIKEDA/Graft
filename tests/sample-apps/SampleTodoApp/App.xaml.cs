@@ -16,9 +16,7 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
-        WpfProviderInitializer.SetDefaultObservableSystem(ex =>
-            Trace.WriteLine($"R3 UnhandledException:{ex}")
-        );
+        WpfProviderInitializer.SetDefaultObservableSystem(ex => Trace.WriteLine($"R3 UnhandledException:{ex}"));
 
 #if GRAFT_TEST
         Graft.Instrumentation.Wpf.WpfGraft.Use();

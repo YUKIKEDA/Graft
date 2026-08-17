@@ -4,5 +4,4 @@ namespace Graft.Core.Scenario;
 /// Collapse an element by automation id.
 /// </summary>
 /// <param name="AutomationId">Target automation id.</param>
-public sealed record CollapseOperation(string AutomationId)
-    : ScenarioOperation(ScenarioActions.Collapse);
+public sealed record CollapseOperation(string AutomationId) : ScenarioOperation(ScenarioActions.Collapse);

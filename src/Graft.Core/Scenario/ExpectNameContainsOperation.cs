@@ -5,5 +5,4 @@ namespace Graft.Core.Scenario;
 /// </summary>
 /// <param name="AutomationId">Target automation id.</param>
 /// <param name="Substring">Expected ordinal substring.</param>
-public sealed record ExpectNameContainsOperation(string AutomationId, string Substring)
-    : ScenarioOperation(ScenarioActions.ExpectNameContains);
+public sealed record ExpectNameContainsOperation(string AutomationId, string Substring) : ScenarioOperation(ScenarioActions.ExpectNameContains);

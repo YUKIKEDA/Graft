@@ -64,12 +64,7 @@ internal sealed class CliOptions
                 return false;
             }
 
-            static bool ReadValue(
-                string[] a,
-                ref int index,
-                out string value,
-                out string? readError
-            )
+            static bool ReadValue(string[] a, ref int index, out string value, out string? readError)
             {
                 if (index + 1 >= a.Length)
                 {

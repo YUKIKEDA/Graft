@@ -23,10 +23,7 @@ internal sealed class WpfElementChooser : IElementChooser
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "WPF Application.Current is not available; cannot select."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "WPF Application.Current is not available; cannot select.");
         }
 
         if (dispatcher.CheckAccess())
@@ -47,10 +44,7 @@ internal sealed class WpfElementChooser : IElementChooser
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "WPF Application.Current is not available; cannot select."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "WPF Application.Current is not available; cannot select.");
         }
 
         if (dispatcher.CheckAccess())
@@ -71,10 +65,7 @@ internal sealed class WpfElementChooser : IElementChooser
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "WPF Application.Current is not available; cannot selectMany."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "WPF Application.Current is not available; cannot selectMany.");
         }
 
         if (dispatcher.CheckAccess())
@@ -128,10 +119,7 @@ internal sealed class WpfElementChooser : IElementChooser
                 SelectTabByKey(tab, key);
                 break;
             case DataGrid:
-                throw new ElementActionException(
-                    GraftErrorCodes.ActionFailed,
-                    "select by key is not supported for DataGrid."
-                );
+                throw new ElementActionException(GraftErrorCodes.ActionFailed, "select by key is not supported for DataGrid.");
             case Selector sel:
                 SelectSelectorByKey(sel, key);
                 break;
@@ -164,11 +152,7 @@ internal sealed class WpfElementChooser : IElementChooser
         }
     }
 
-    private static void SelectManyListBox(
-        ListBox listBox,
-        ElementSelector selector,
-        IReadOnlyList<int> indexes
-    )
+    private static void SelectManyListBox(ListBox listBox, ElementSelector selector, IReadOnlyList<int> indexes)
     {
         if (listBox.SelectionMode == SelectionMode.Single)
         {
@@ -192,11 +176,7 @@ internal sealed class WpfElementChooser : IElementChooser
         listBox.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
     }
 
-    private static void SelectManyDataGrid(
-        DataGrid dataGrid,
-        ElementSelector selector,
-        IReadOnlyList<int> indexes
-    )
+    private static void SelectManyDataGrid(DataGrid dataGrid, ElementSelector selector, IReadOnlyList<int> indexes)
     {
         if (dataGrid.SelectionUnit != DataGridSelectionUnit.FullRow)
         {
@@ -233,18 +213,12 @@ internal sealed class WpfElementChooser : IElementChooser
         {
             if (index < 0)
             {
-                throw new ElementActionException(
-                    GraftErrorCodes.SelectorInvalid,
-                    "params.indexes entries must be >= 0."
-                );
+                throw new ElementActionException(GraftErrorCodes.SelectorInvalid, "params.indexes entries must be >= 0.");
             }
 
             if (index >= count)
             {
-                throw new ElementActionException(
-                    GraftErrorCodes.ElementNotFound,
-                    $"{label} index {index} is out of range (count={count})."
-                );
+                throw new ElementActionException(GraftErrorCodes.ElementNotFound, $"{label} index {index} is out of range (count={count}).");
             }
         }
     }
@@ -282,18 +256,12 @@ internal sealed class WpfElementChooser : IElementChooser
     {
         if (index < 0)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.index must be >= 0."
-            );
+            throw new ElementActionException(GraftErrorCodes.SelectorInvalid, "params.index must be >= 0.");
         }
 
         if (index >= tab.Items.Count)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotFound,
-                $"Tab index {index} is out of range (count={tab.Items.Count})."
-            );
+            throw new ElementActionException(GraftErrorCodes.ElementNotFound, $"Tab index {index} is out of range (count={tab.Items.Count}).");
         }
 
         tab.SelectedIndex = index;
@@ -306,8 +274,7 @@ internal sealed class WpfElementChooser : IElementChooser
         for (var i = 0; i < tab.Items.Count; i++)
         {
             var item = tab.Items[i];
-            var tabItem =
-                item as TabItem ?? tab.ItemContainerGenerator.ContainerFromIndex(i) as TabItem;
+            var tabItem = item as TabItem ?? tab.ItemContainerGenerator.ContainerFromIndex(i) as TabItem;
             var displayName = ResolveTabItemKey(tabItem, item);
             if (!string.Equals(displayName, key, StringComparison.Ordinal))
             {
@@ -316,10 +283,7 @@ internal sealed class WpfElementChooser : IElementChooser
 
             if (matchIndex is not null)
             {
-                throw new ElementResolveException(
-                    GraftErrorCodes.ElementAmbiguous,
-                    $"Multiple tab items matched key '{key}'."
-                );
+                throw new ElementResolveException(GraftErrorCodes.ElementAmbiguous, $"Multiple tab items matched key '{key}'.");
             }
 
             matchIndex = i;
@@ -327,10 +291,7 @@ internal sealed class WpfElementChooser : IElementChooser
 
         if (matchIndex is null)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.ElementNotFound,
-                $"No tab item matched key '{key}'."
-            );
+            throw new ElementResolveException(GraftErrorCodes.ElementNotFound, $"No tab item matched key '{key}'.");
         }
 
         tab.SelectedIndex = matchIndex.Value;
@@ -343,8 +304,7 @@ internal sealed class WpfElementChooser : IElementChooser
         for (var i = 0; i < selector.Items.Count; i++)
         {
             _ = WpfElementScroller.ScrollListItem(selector, i);
-            var container =
-                selector.ItemContainerGenerator.ContainerFromIndex(i) as FrameworkElement;
+            var container = selector.ItemContainerGenerator.ContainerFromIndex(i) as FrameworkElement;
             var displayName = ResolveItemDisplayName(container, selector.Items[i]);
             if (!string.Equals(displayName, key, StringComparison.Ordinal))
             {
@@ -353,10 +313,7 @@ internal sealed class WpfElementChooser : IElementChooser
 
             if (matchIndex is not null)
             {
-                throw new ElementResolveException(
-                    GraftErrorCodes.ElementAmbiguous,
-                    $"Multiple items matched key '{key}'."
-                );
+                throw new ElementResolveException(GraftErrorCodes.ElementAmbiguous, $"Multiple items matched key '{key}'.");
             }
 
             matchIndex = i;
@@ -364,10 +321,7 @@ internal sealed class WpfElementChooser : IElementChooser
 
         if (matchIndex is null)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.ElementNotFound,
-                $"No item matched key '{key}'."
-            );
+            throw new ElementResolveException(GraftErrorCodes.ElementNotFound, $"No item matched key '{key}'.");
         }
 
         _ = WpfElementScroller.ScrollListItem(selector, matchIndex.Value);

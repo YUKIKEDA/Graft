@@ -41,16 +41,9 @@ public sealed class McpHostSmokeTests
         var tools = await client.ListToolsAsync();
         Assert.Contains(tools, t => t.Name == "graft_ping");
 
-        var result = await client.CallToolAsync(
-            "graft_ping",
-            new Dictionary<string, object?>(),
-            cancellationToken: CancellationToken.None
-        );
+        var result = await client.CallToolAsync("graft_ping", new Dictionary<string, object?>(), cancellationToken: CancellationToken.None);
 
-        var text = string.Join(
-            string.Empty,
-            result.Content.OfType<TextContentBlock>().Select(b => b.Text)
-        );
+        var text = string.Join(string.Empty, result.Content.OfType<TextContentBlock>().Select(b => b.Text));
         Assert.Contains("Graft.McpServer", text, StringComparison.Ordinal);
         Assert.Contains("\"ok\":true", text, StringComparison.Ordinal);
     }

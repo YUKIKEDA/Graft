@@ -148,12 +148,7 @@ public sealed class SendKeysDispatchTests : IDisposable
 
     private static async Task<NamedPipeClientStream> ConnectAsync(string pipeName)
     {
-        var client = new NamedPipeClientStream(
-            ".",
-            pipeName,
-            PipeDirection.InOut,
-            PipeOptions.Asynchronous
-        );
+        var client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
 
         var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
         Exception? last = null;
@@ -164,8 +159,7 @@ public sealed class SendKeysDispatchTests : IDisposable
                 await client.ConnectAsync(200).ConfigureAwait(false);
                 return client;
             }
-            catch (Exception ex)
-                when (ex is TimeoutException or IOException or UnauthorizedAccessException)
+            catch (Exception ex) when (ex is TimeoutException or IOException or UnauthorizedAccessException)
             {
                 last = ex;
                 await Task.Delay(50).ConfigureAwait(false);
@@ -190,11 +184,7 @@ public sealed class SendKeysDispatchTests : IDisposable
         return await JsonMessageCodec.ReadResponseAsync(stream);
     }
 
-    private static async Task<ResponseMessage> SendSendKeysAsync(
-        Stream stream,
-        string automationId,
-        string text
-    )
+    private static async Task<ResponseMessage> SendSendKeysAsync(Stream stream, string automationId, string text)
     {
         var request = new RequestMessage
         {
@@ -207,11 +197,7 @@ public sealed class SendKeysDispatchTests : IDisposable
         return await JsonMessageCodec.ReadResponseAsync(stream);
     }
 
-    private static async Task<ResponseMessage> SendPressKeysAsync(
-        Stream stream,
-        string automationId,
-        string keys
-    )
+    private static async Task<ResponseMessage> SendPressKeysAsync(Stream stream, string automationId, string keys)
     {
         var request = new RequestMessage
         {

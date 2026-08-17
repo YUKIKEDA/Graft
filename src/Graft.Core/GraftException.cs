@@ -23,12 +23,7 @@ public sealed class GraftException : Exception
     /// <param name="message">Human-readable message.</param>
     /// <param name="report">Optional structured failure report (Core Expect / action failures).</param>
     /// <param name="innerException">Optional inner exception.</param>
-    public GraftException(
-        string code,
-        string message,
-        FailureReport? report,
-        Exception? innerException = null
-    )
+    public GraftException(string code, string message, FailureReport? report, Exception? innerException = null)
         : base(message, innerException)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(code);

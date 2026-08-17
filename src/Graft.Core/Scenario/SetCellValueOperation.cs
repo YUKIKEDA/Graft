@@ -8,10 +8,5 @@ namespace Graft.Core.Scenario;
 /// <param name="Column">Zero-based column index, or <see langword="null"/> when using key.</param>
 /// <param name="ColumnKey">Column Header string, or <see langword="null"/> when using index.</param>
 /// <param name="Value">Replacement text.</param>
-public sealed record SetCellValueOperation(
-    string AutomationId,
-    int Row,
-    int? Column,
-    string? ColumnKey,
-    string Value
-) : ScenarioOperation(ScenarioActions.SetCellValue);
+public sealed record SetCellValueOperation(string AutomationId, int Row, int? Column, string? ColumnKey, string Value)
+    : ScenarioOperation(ScenarioActions.SetCellValue);

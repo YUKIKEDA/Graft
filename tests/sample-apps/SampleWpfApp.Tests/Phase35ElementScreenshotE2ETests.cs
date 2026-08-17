@@ -112,8 +112,7 @@ public sealed class Phase35ElementScreenshotE2ETests
         var tipAndHost = await app.GetByControlType("ToolTip").ScreenshotAsync();
         AssertPng(tipAndHost);
         await SaveArtifactAsync(tipAndHost, "phase35-fluent-tooltip-from-node.png");
-        var sectionWithTip = await app.GetByAutomationId("SamplePhase29bTipSection")
-            .ScreenshotAsync();
+        var sectionWithTip = await app.GetByAutomationId("SamplePhase29bTipSection").ScreenshotAsync();
         AssertPng(sectionWithTip);
         Assert.True(
             sectionWithTip.Width > hostAndTip.Width || sectionWithTip.Height > hostAndTip.Height,
@@ -123,8 +122,7 @@ public sealed class Phase35ElementScreenshotE2ETests
         var windowWithTip = await app.ScreenshotAsync();
         AssertPng(windowWithTip);
         Assert.True(
-            windowWithTip.Width > sectionWithTip.Width
-                || windowWithTip.Height > sectionWithTip.Height,
+            windowWithTip.Width > sectionWithTip.Width || windowWithTip.Height > sectionWithTip.Height,
             $"Window screenshot should be larger than the section clip. window={windowWithTip.Width}x{windowWithTip.Height} section={sectionWithTip.Width}x{sectionWithTip.Height}."
         );
         await SaveArtifactAsync(windowWithTip, "phase35-fluent-window-with-tooltip.png");
@@ -149,9 +147,6 @@ public sealed class Phase35ElementScreenshotE2ETests
         Assert.True(shot.Width > 0);
         Assert.True(shot.Height > 0);
         Assert.True(shot.PngBytes.Length >= 8);
-        Assert.True(
-            shot.PngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature),
-            "Expected PNG signature."
-        );
+        Assert.True(shot.PngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature), "Expected PNG signature.");
     }
 }

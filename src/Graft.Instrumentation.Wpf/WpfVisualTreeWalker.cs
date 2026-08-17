@@ -43,8 +43,7 @@ internal static class WpfVisualTreeWalker
     /// <param name="selector">automationId required; runtimeId optional.</param>
     /// <returns>The unique match.</returns>
     /// <exception cref="ElementResolveException">Invalid selector, not found, or ambiguous.</exception>
-    public static ResolvedElement Resolve(Window root, ElementSelector selector) =>
-        ResolveCore(root, selector, requireAutomationId: true);
+    public static ResolvedElement Resolve(Window root, ElementSelector selector) => ResolveCore(root, selector, requireAutomationId: true);
 
     /// <summary>
     /// Resolves a live element for screenshot: <c>automationId</c> and/or <c>runtimeId</c>.
@@ -56,33 +55,21 @@ internal static class WpfVisualTreeWalker
     public static ResolvedElement ResolveForScreenshot(Window root, ElementSelector selector) =>
         ResolveCore(root, selector, requireAutomationId: false);
 
-    private static ResolvedElement ResolveCore(
-        Window root,
-        ElementSelector selector,
-        bool requireAutomationId
-    )
+    private static ResolvedElement ResolveCore(Window root, ElementSelector selector, bool requireAutomationId)
     {
         ArgumentNullException.ThrowIfNull(root);
         ArgumentNullException.ThrowIfNull(selector);
 
-        var automationId = string.IsNullOrWhiteSpace(selector.AutomationId)
-            ? null
-            : selector.AutomationId.Trim();
+        var automationId = string.IsNullOrWhiteSpace(selector.AutomationId) ? null : selector.AutomationId.Trim();
 
         if (requireAutomationId && automationId is null)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.automationId is required."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.automationId is required.");
         }
 
         if (!requireAutomationId && automationId is null && selector.RuntimeId is null)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.automationId or params.runtimeId is required."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.automationId or params.runtimeId is required.");
         }
 
         // runtimeId is assigned by getTree (default depth/maxNodes). An untruncated
@@ -96,24 +83,14 @@ internal static class WpfVisualTreeWalker
 
         if (matches.Count == 0)
         {
-            var detail = automationId is not null
-                ? $"automationId '{automationId}'"
-                : $"runtimeId {selector.RuntimeId}";
-            throw new ElementResolveException(
-                GraftErrorCodes.ElementNotFound,
-                $"No element matched {detail}."
-            );
+            var detail = automationId is not null ? $"automationId '{automationId}'" : $"runtimeId {selector.RuntimeId}";
+            throw new ElementResolveException(GraftErrorCodes.ElementNotFound, $"No element matched {detail}.");
         }
 
         if (matches.Count > 1)
         {
-            var detail = automationId is not null
-                ? $"automationId '{automationId}'"
-                : $"runtimeId {selector.RuntimeId}";
-            throw new ElementResolveException(
-                GraftErrorCodes.ElementAmbiguous,
-                $"Multiple elements matched {detail} ({matches.Count})."
-            );
+            var detail = automationId is not null ? $"automationId '{automationId}'" : $"runtimeId {selector.RuntimeId}";
+            throw new ElementResolveException(GraftErrorCodes.ElementAmbiguous, $"Multiple elements matched {detail} ({matches.Count}).");
         }
 
         var (target, runtimeId, controlType) = matches[0];
@@ -143,12 +120,7 @@ internal static class WpfVisualTreeWalker
             matches.Add((element, runtimeId, element.GetType().Name));
         }
 
-        CollectFrameworkChildren(
-            element,
-            depth + 1,
-            state,
-            child => CollectMatches(child, depth + 1, state, automationId, runtimeIdFilter, matches)
-        );
+        CollectFrameworkChildren(element, depth + 1, state, child => CollectMatches(child, depth + 1, state, automationId, runtimeIdFilter, matches));
 
         CollectHyperlinkMatches(element, state, automationId, runtimeIdFilter, matches);
         CollectOpenToolTipMatches(element, depth, state, automationId, runtimeIdFilter, matches);
@@ -209,37 +181,19 @@ internal static class WpfVisualTreeWalker
         CollectMatches(toolTip, depth + 1, state, automationId, runtimeIdFilter, matches);
     }
 
-    private static bool IsMatch(
-        string elementAutomationId,
-        string? automationId,
-        int runtimeId,
-        int? runtimeIdFilter
-    )
+    private static bool IsMatch(string elementAutomationId, string? automationId, int runtimeId, int? runtimeIdFilter)
     {
-        var idMatches =
-            automationId is null
-            || string.Equals(elementAutomationId, automationId, StringComparison.Ordinal);
+        var idMatches = automationId is null || string.Equals(elementAutomationId, automationId, StringComparison.Ordinal);
         var runtimeMatches = runtimeIdFilter is null || runtimeIdFilter == runtimeId;
         return idMatches && runtimeMatches;
     }
 
-    private static TreeNode BuildNode(
-        FrameworkElement element,
-        Window window,
-        Visual boundsOrigin,
-        int depth,
-        WalkState state
-    )
+    private static TreeNode BuildNode(FrameworkElement element, Window window, Visual boundsOrigin, int depth, WalkState state)
     {
         state.NodeCount++;
         var runtimeId = state.NextRuntimeId++;
         var children = new List<TreeNode>();
-        CollectFrameworkChildren(
-            element,
-            depth + 1,
-            state,
-            child => children.Add(BuildNode(child, window, boundsOrigin, depth + 1, state))
-        );
+        CollectFrameworkChildren(element, depth + 1, state, child => children.Add(BuildNode(child, window, boundsOrigin, depth + 1, state)));
 
         AppendHyperlinkChildren(element, window, boundsOrigin, children, state);
         AppendOpenToolTipChild(element, window, boundsOrigin, children, state, depth);
@@ -400,10 +354,7 @@ internal static class WpfVisualTreeWalker
         {
             RangeBase range => range.Value.ToString("G", CultureInfo.InvariantCulture),
             RichTextBox richTextBox => ReadRichTextPlain(richTextBox),
-            DatePicker { SelectedDate: { } date } => date.ToString(
-                "yyyy-MM-dd",
-                CultureInfo.InvariantCulture
-            ),
+            DatePicker { SelectedDate: { } date } => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
 
             // PasswordBox intentionally omitted (Phase 29a: do not expose Password over the tree).
             _ => null,
@@ -433,19 +384,11 @@ internal static class WpfVisualTreeWalker
 
     private static string ReadRichTextPlain(RichTextBox richTextBox)
     {
-        var text = new TextRange(
-            richTextBox.Document.ContentStart,
-            richTextBox.Document.ContentEnd
-        ).Text;
+        var text = new TextRange(richTextBox.Document.ContentStart, richTextBox.Document.ContentEnd).Text;
         return text.TrimEnd('\r', '\n');
     }
 
-    private static void CollectFrameworkChildren(
-        DependencyObject parent,
-        int childDepth,
-        WalkState state,
-        Action<FrameworkElement> onFrameworkChild
-    )
+    private static void CollectFrameworkChildren(DependencyObject parent, int childDepth, WalkState state, Action<FrameworkElement> onFrameworkChild)
     {
         // Apply before FE / non-FE branching so non-FrameworkElement chains cannot
         // recurse past MaxDepth (they are flattened at the same childDepth).
@@ -486,11 +429,7 @@ internal static class WpfVisualTreeWalker
             // ContextMenu / Menu submenu content still walked via owner paths below.
             if (child is Popup popup)
             {
-                if (
-                    popup.IsOpen
-                    && popup.Child is FrameworkElement popupChild
-                    && state.NodeCount < state.Options.MaxNodes
-                )
+                if (popup.IsOpen && popup.Child is FrameworkElement popupChild && state.NodeCount < state.Options.MaxNodes)
                 {
                     onFrameworkChild(popupChild);
                 }
@@ -510,27 +449,17 @@ internal static class WpfVisualTreeWalker
         }
 
         // Open ContextMenu lives in a Popup (not under the owner's visual children).
-        if (
-            parent is FrameworkElement { ContextMenu: { IsOpen: true } menu }
-            && state.NodeCount < state.Options.MaxNodes
-        )
+        if (parent is FrameworkElement { ContextMenu: { IsOpen: true } menu } && state.NodeCount < state.Options.MaxNodes)
         {
             onFrameworkChild(menu);
         }
-        else if (
-            parent is FrameworkElement { ContextMenu: { IsOpen: true } }
-            && state.NodeCount >= state.Options.MaxNodes
-        )
+        else if (parent is FrameworkElement { ContextMenu: { IsOpen: true } } && state.NodeCount >= state.Options.MaxNodes)
         {
             state.Truncated = true;
         }
     }
 
-    private static void WalkMenuItems(
-        ItemsControl menu,
-        WalkState state,
-        Action<FrameworkElement> onFrameworkChild
-    )
+    private static void WalkMenuItems(ItemsControl menu, WalkState state, Action<FrameworkElement> onFrameworkChild)
     {
         foreach (var item in menu.Items)
         {
@@ -540,9 +469,7 @@ internal static class WpfVisualTreeWalker
                 return;
             }
 
-            var container =
-                item as FrameworkElement
-                ?? menu.ItemContainerGenerator.ContainerFromItem(item) as FrameworkElement;
+            var container = item as FrameworkElement ?? menu.ItemContainerGenerator.ContainerFromItem(item) as FrameworkElement;
             if (container is not null)
             {
                 onFrameworkChild(container);
@@ -572,11 +499,7 @@ internal static class WpfVisualTreeWalker
         };
     }
 
-    private static ElementBounds ResolveBounds(
-        FrameworkElement element,
-        Window window,
-        Visual boundsOrigin
-    )
+    private static ElementBounds ResolveBounds(FrameworkElement element, Window window, Visual boundsOrigin)
     {
         if (ReferenceEquals(element, window))
         {
@@ -597,9 +520,7 @@ internal static class WpfVisualTreeWalker
         try
         {
             var transform = element.TransformToVisual(boundsOrigin);
-            var rect = transform.TransformBounds(
-                new Rect(0, 0, element.ActualWidth, element.ActualHeight)
-            );
+            var rect = transform.TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
             return new ElementBounds
             {
                 X = rect.X,

@@ -39,12 +39,7 @@ public static class InputInjector
     /// <param name="screenX">Screen X in pixels.</param>
     /// <param name="screenY">Screen Y in pixels.</param>
     public static void RightClick(int screenX, int screenY) =>
-        Click(
-            screenX,
-            screenY,
-            NativeMethods.MouseEventFRightDown,
-            NativeMethods.MouseEventFRightUp
-        );
+        Click(screenX, screenY, NativeMethods.MouseEventFRightDown, NativeMethods.MouseEventFRightUp);
 
     /// <summary>
     /// Moves the cursor to screen coordinates and performs a left double-click.
@@ -190,11 +185,7 @@ public static class InputInjector
         var (absX, absY) = ToAbsolute(screenX, screenY);
 
         const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute;
-        var inputs = new NativeMethods.INPUT[]
-        {
-            CreateMouse(absX, absY, moveAbsolute | downFlag),
-            CreateMouse(absX, absY, moveAbsolute | upFlag),
-        };
+        var inputs = new NativeMethods.INPUT[] { CreateMouse(absX, absY, moveAbsolute | downFlag), CreateMouse(absX, absY, moveAbsolute | upFlag) };
 
         Send(inputs);
     }
@@ -210,16 +201,10 @@ public static class InputInjector
 
     private static void Send(NativeMethods.INPUT[] inputs)
     {
-        var sent = NativeMethods.SendInput(
-            (uint)inputs.Length,
-            inputs,
-            Marshal.SizeOf<NativeMethods.INPUT>()
-        );
+        var sent = NativeMethods.SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<NativeMethods.INPUT>());
         if (sent != inputs.Length)
         {
-            throw CreateFailed(
-                $"SendInput injected {sent}/{inputs.Length} events (Win32={Marshal.GetLastWin32Error()})."
-            );
+            throw CreateFailed($"SendInput injected {sent}/{inputs.Length} events (Win32={Marshal.GetLastWin32Error()}).");
         }
     }
 
@@ -249,10 +234,7 @@ public static class InputInjector
                     Dx = absX,
                     Dy = absY,
                     MouseData = unchecked((uint)delta),
-                    DwFlags =
-                        NativeMethods.MouseEventFWheel
-                        | NativeMethods.MouseEventFMove
-                        | NativeMethods.MouseEventFAbsolute,
+                    DwFlags = NativeMethods.MouseEventFWheel | NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute,
                 },
             },
         };
@@ -267,8 +249,7 @@ public static class InputInjector
                 {
                     WVk = 0,
                     WScan = ch,
-                    DwFlags =
-                        NativeMethods.KeyEventFUnicode | (keyUp ? NativeMethods.KeyEventFKeyUp : 0),
+                    DwFlags = NativeMethods.KeyEventFUnicode | (keyUp ? NativeMethods.KeyEventFKeyUp : 0),
                 },
             },
         };
@@ -297,8 +278,7 @@ public static class InputInjector
         };
     }
 
-    private static ElementActionException CreateFailed(string message) =>
-        new(GraftErrorCodes.ActionFailed, message);
+    private static ElementActionException CreateFailed(string message) => new(GraftErrorCodes.ActionFailed, message);
 }
 
 #endif

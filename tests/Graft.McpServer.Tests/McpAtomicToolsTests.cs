@@ -75,21 +75,9 @@ public sealed class McpAtomicToolsTests
             }
         );
 
-        await AssertOkAsync(
-            client,
-            "graft_invoke",
-            new Dictionary<string, object?> { ["automationId"] = "SampleButton" }
-        );
+        await AssertOkAsync(client, "graft_invoke", new Dictionary<string, object?> { ["automationId"] = "SampleButton" });
 
-        await AssertOkAsync(
-            client,
-            "graft_expect_name",
-            new Dictionary<string, object?>
-            {
-                ["automationId"] = "StatusText",
-                ["name"] = "Clicked 1",
-            }
-        );
+        await AssertOkAsync(client, "graft_expect_name", new Dictionary<string, object?> { ["automationId"] = "StatusText", ["name"] = "Clicked 1" });
 
         await AssertOkAsync(client, "graft_dispose", new Dictionary<string, object?>());
     }
@@ -132,22 +120,13 @@ public sealed class McpAtomicToolsTests
         Assert.Contains("No open session", text, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static async Task AssertOkAsync(
-        McpClient client,
-        string toolName,
-        IReadOnlyDictionary<string, object?> args
-    )
+    private static async Task AssertOkAsync(McpClient client, string toolName, IReadOnlyDictionary<string, object?> args)
     {
-        var result = await client.CallToolAsync(
-            toolName,
-            args,
-            cancellationToken: CancellationToken.None
-        );
+        var result = await client.CallToolAsync(toolName, args, cancellationToken: CancellationToken.None);
         Assert.False(result.IsError, GetText(result));
         using var doc = JsonDocument.Parse(GetText(result));
         Assert.True(doc.RootElement.GetProperty("ok").GetBoolean());
     }
 
-    private static string GetText(CallToolResult result) =>
-        string.Join(string.Empty, result.Content.OfType<TextContentBlock>().Select(b => b.Text));
+    private static string GetText(CallToolResult result) => string.Join(string.Empty, result.Content.OfType<TextContentBlock>().Select(b => b.Text));
 }

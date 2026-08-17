@@ -54,9 +54,7 @@ public sealed class Phase28DataGridE2ETests
         await grid.SelectRowAsync("Name", "New");
         await grid.DeleteSelectedRowsAsync();
 
-        var thrown = await Assert.ThrowsAsync<GraftException>(async () =>
-            await grid.SelectRowAsync("Name", "New")
-        );
+        var thrown = await Assert.ThrowsAsync<GraftException>(async () => await grid.SelectRowAsync("Name", "New"));
         Assert.Equal(Graft.Protocol.GraftErrorCodes.ElementNotFound, thrown.Code);
     }
 }

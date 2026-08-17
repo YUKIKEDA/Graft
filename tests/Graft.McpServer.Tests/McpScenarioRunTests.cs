@@ -50,11 +50,7 @@ public sealed class McpScenarioRunTests
     [Trait("Category", "UI")]
     public async Task RunScenario_SampleMainWindow_ViaMcp_Succeeds()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Fixtures",
-            "sample-main-window.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "sample-main-window.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing fixture: {scenarioPath}");
 
         var serverDll = Path.Combine(AppContext.BaseDirectory, "Graft.McpServer.dll");
@@ -73,11 +69,7 @@ public sealed class McpScenarioRunTests
 
         var result = await client.CallToolAsync(
             "graft_run_scenario",
-            new Dictionary<string, object?>
-            {
-                ["scenarioPath"] = scenarioPath,
-                ["appPath"] = SampleAppLocator.ResolveProjectPath(),
-            },
+            new Dictionary<string, object?> { ["scenarioPath"] = scenarioPath, ["appPath"] = SampleAppLocator.ResolveProjectPath() },
             cancellationToken: CancellationToken.None
         );
 
@@ -88,6 +80,5 @@ public sealed class McpScenarioRunTests
         Assert.Equal("sample-main-window", doc.RootElement.GetProperty("name").GetString());
     }
 
-    private static string GetText(CallToolResult result) =>
-        string.Join(string.Empty, result.Content.OfType<TextContentBlock>().Select(b => b.Text));
+    private static string GetText(CallToolResult result) => string.Join(string.Empty, result.Content.OfType<TextContentBlock>().Select(b => b.Text));
 }

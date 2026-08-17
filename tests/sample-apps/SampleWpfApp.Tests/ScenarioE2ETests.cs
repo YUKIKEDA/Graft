@@ -26,18 +26,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task SampleMainWindow_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "sample-main-window.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "sample-main-window.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -58,18 +51,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase5Actions_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase5-actions.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase5-actions.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -89,18 +75,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase6TreeState_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase6-tree-state.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase6-tree-state.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -120,18 +99,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase7Windows_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase7-windows.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase7-windows.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -151,18 +123,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase8DataGrid_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase8-datagrid.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase8-datagrid.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -182,18 +147,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase9CellRw_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase9-cell-rw.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase9-cell-rw.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -213,18 +171,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase10OpenFile_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase10-openfile.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase10-openfile.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -244,18 +195,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase11SaveFile_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase11-savefile.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase11-savefile.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -275,18 +219,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase12OpenFolder_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase12-openfolder.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase12-openfolder.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -306,18 +243,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase13MessageBox_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase13-messagebox.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase13-messagebox.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -337,18 +267,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase17TabControl_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase17-tabcontrol.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase17-tabcontrol.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -368,18 +291,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase18Slider_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase18-slider.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase18-slider.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -399,18 +315,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase19SelectMany_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase19-select-many.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase19-select-many.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -430,18 +339,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase20MenuBar_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase20-menu-bar.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase20-menu-bar.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -461,18 +363,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase21DataGridColumnKey_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase21-datagrid-column-key.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase21-datagrid-column-key.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -492,18 +387,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase22DataGridSelectMany_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase22-datagrid-select-many.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase22-datagrid-select-many.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -523,18 +411,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase24WaitExpect_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase24-wait-expect.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase24-wait-expect.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -554,18 +435,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase25Mouse_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase25-mouse.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase25-mouse.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -585,18 +459,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase26MenuDepth_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase26-menu-depth.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase26-menu-depth.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -616,18 +483,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase27Selectors_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase27-selectors.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase27-selectors.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -647,18 +507,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase28DataGrid_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase28-datagrid.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase28-datagrid.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -678,18 +531,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase29aControls_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase29a-controls.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase29a-controls.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -709,18 +555,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase29bControls_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase29b-controls.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase29b-controls.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -740,18 +579,11 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase16ContextMenu_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase16-context-menu.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase16-context-menu.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 
     /// <summary>
@@ -772,11 +604,7 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase15Screenshot_Scenario_WritesPng()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase15-screenshot.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase15-screenshot.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var outPath = Path.Combine(AppContext.BaseDirectory, "Artifacts", "phase15-screenshot.png");
@@ -790,10 +618,7 @@ public sealed class ScenarioE2ETests
         try
         {
             Directory.SetCurrentDirectory(AppContext.BaseDirectory);
-            await ScenarioRunner.RunAsync(
-                scenario,
-                new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-            );
+            await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
         }
         finally
         {
@@ -827,18 +652,10 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase35ElementScreenshot_Scenario_WritesPng()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase35-element-screenshot.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase35-element-screenshot.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
-        var outPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Artifacts",
-            "phase35-element-screenshot.png"
-        );
+        var outPath = Path.Combine(AppContext.BaseDirectory, "Artifacts", "phase35-element-screenshot.png");
         if (File.Exists(outPath))
         {
             File.Delete(outPath);
@@ -849,10 +666,7 @@ public sealed class ScenarioE2ETests
         try
         {
             Directory.SetCurrentDirectory(AppContext.BaseDirectory);
-            await ScenarioRunner.RunAsync(
-                scenario,
-                new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-            );
+            await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
         }
         finally
         {
@@ -885,17 +699,10 @@ public sealed class ScenarioE2ETests
     [Fact]
     public async Task Phase14PressKeys_Scenario_Passes()
     {
-        var scenarioPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Scenarios",
-            "phase14-press-keys.scenario.json"
-        );
+        var scenarioPath = Path.Combine(AppContext.BaseDirectory, "Scenarios", "phase14-press-keys.scenario.json");
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(
-            scenario,
-            new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() }
-        );
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
     }
 }

@@ -23,19 +23,13 @@ internal sealed class WpfTreeSelector : ITreeSelector
         var segments = SplitPath(path);
         if (segments.Length == 0)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.path must contain at least one AutomationId segment."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.path must contain at least one AutomationId segment.");
         }
 
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "WPF Application.Current is not available; cannot selectTree."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "WPF Application.Current is not available; cannot selectTree.");
         }
 
         if (dispatcher.CheckAccess())
@@ -44,17 +38,10 @@ internal sealed class WpfTreeSelector : ITreeSelector
             return;
         }
 
-        dispatcher.Invoke(
-            () => SelectTreeOnUiThread(selector, path, segments),
-            DispatcherPriority.Normal
-        );
+        dispatcher.Invoke(() => SelectTreeOnUiThread(selector, path, segments), DispatcherPriority.Normal);
     }
 
-    private static void SelectTreeOnUiThread(
-        ElementSelector selector,
-        string path,
-        string[] segments
-    )
+    private static void SelectTreeOnUiThread(ElementSelector selector, string path, string[] segments)
     {
         var root = ResolveTreeRoot(selector);
         ItemsControl current = root;
@@ -114,10 +101,7 @@ internal sealed class WpfTreeSelector : ITreeSelector
 
         if (element is not TreeView treeView)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"selectTree root must be TreeView (got {element.GetType().Name})."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, $"selectTree root must be TreeView (got {element.GetType().Name}).");
         }
 
         if (!treeView.IsEnabled || !treeView.IsVisible)
@@ -135,9 +119,7 @@ internal sealed class WpfTreeSelector : ITreeSelector
     {
         foreach (var item in parent.Items)
         {
-            var container =
-                item as TreeViewItem
-                ?? parent.ItemContainerGenerator.ContainerFromItem(item) as TreeViewItem;
+            var container = item as TreeViewItem ?? parent.ItemContainerGenerator.ContainerFromItem(item) as TreeViewItem;
             if (container is null)
             {
                 continue;
@@ -158,9 +140,6 @@ internal sealed class WpfTreeSelector : ITreeSelector
 
     private static string[] SplitPath(string path)
     {
-        return path.Split(
-            '/',
-            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
-        );
+        return path.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 }

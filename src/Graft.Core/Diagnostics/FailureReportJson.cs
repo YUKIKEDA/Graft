@@ -38,7 +38,6 @@ public static class FailureReportJson
     public static FailureReport Deserialize(string json)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(json);
-        return JsonSerializer.Deserialize<FailureReport>(json, Options)
-            ?? throw new JsonException("FailureReport JSON deserialized to null.");
+        return JsonSerializer.Deserialize<FailureReport>(json, Options) ?? throw new JsonException("FailureReport JSON deserialized to null.");
     }
 }

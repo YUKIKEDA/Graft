@@ -16,13 +16,8 @@ public sealed class ItemDetailViewModel : IDisposable
         Priority = new BindableReactiveProperty<string>(item.Priority).AddTo(ref _disposables);
         DialogResult = new BindableReactiveProperty<bool?>().AddTo(ref _disposables);
 
-        SaveCommand = Title
-            .Select(static t => !string.IsNullOrWhiteSpace(t))
-            .ToReactiveCommand(_ => Save())
-            .AddTo(ref _disposables);
-        CancelCommand = new ReactiveCommand(_ => DialogResult.Value = false).AddTo(
-            ref _disposables
-        );
+        SaveCommand = Title.Select(static t => !string.IsNullOrWhiteSpace(t)).ToReactiveCommand(_ => Save()).AddTo(ref _disposables);
+        CancelCommand = new ReactiveCommand(_ => DialogResult.Value = false).AddTo(ref _disposables);
     }
 
     public TodoItem Item { get; }

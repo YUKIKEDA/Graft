@@ -29,34 +29,22 @@ public static class TreeSelector
             && string.IsNullOrWhiteSpace(selector.NearAutomationId)
         )
         {
-            throw new GraftException(
-                GraftErrorCodes.SelectorInvalid,
-                "Selector must specify at least one criterion."
-            );
+            throw new GraftException(GraftErrorCodes.SelectorInvalid, "Selector must specify at least one criterion.");
         }
 
         if (selector.Nth is < 0)
         {
-            throw new GraftException(
-                GraftErrorCodes.SelectorInvalid,
-                "Selector.Nth must be >= 0 when specified."
-            );
+            throw new GraftException(GraftErrorCodes.SelectorInvalid, "Selector.Nth must be >= 0 when specified.");
         }
 
         var candidates = new List<(TreeNode Node, int Score)>();
         Walk(root, ancestors: [], selector, candidates);
 
-        var qualifying = candidates
-            .Where(c => c.Score >= SelectorWeights.Threshold)
-            .OrderByDescending(c => c.Score)
-            .ToList();
+        var qualifying = candidates.Where(c => c.Score >= SelectorWeights.Threshold).OrderByDescending(c => c.Score).ToList();
 
         if (qualifying.Count == 0)
         {
-            throw new GraftException(
-                GraftErrorCodes.ElementNotFound,
-                "No element scored at or above the selector threshold."
-            );
+            throw new GraftException(GraftErrorCodes.ElementNotFound, "No element scored at or above the selector threshold.");
         }
 
         var bestScore = qualifying[0].Score;
@@ -67,10 +55,7 @@ public static class TreeSelector
             // Tree order among best-score ties (DFS discovery order preserved in Walk).
             if (nth >= tied.Count)
             {
-                throw new GraftException(
-                    GraftErrorCodes.ElementNotFound,
-                    $"Selector.Nth {nth} is out of range (count={tied.Count})."
-                );
+                throw new GraftException(GraftErrorCodes.ElementNotFound, $"Selector.Nth {nth} is out of range (count={tied.Count}).");
             }
 
             return tied[nth].Node;
@@ -78,10 +63,7 @@ public static class TreeSelector
 
         if (tied.Count > 1)
         {
-            throw new GraftException(
-                GraftErrorCodes.ElementAmbiguous,
-                $"Multiple elements tied for best selector score ({bestScore})."
-            );
+            throw new GraftException(GraftErrorCodes.ElementAmbiguous, $"Multiple elements tied for best selector score ({bestScore}).");
         }
 
         return tied[0].Node;
@@ -109,12 +91,7 @@ public static class TreeSelector
     /// <param name="selector">Sibling criteria.</param>
     /// <param name="nth">Optional zero-based index among matches.</param>
     /// <returns>Matched sibling.</returns>
-    public static TreeNode ResolveSibling(
-        TreeNode root,
-        TreeNode node,
-        Selector selector,
-        int? nth = null
-    )
+    public static TreeNode ResolveSibling(TreeNode root, TreeNode node, Selector selector, int? nth = null)
     {
         ArgumentNullException.ThrowIfNull(root);
         ArgumentNullException.ThrowIfNull(node);
@@ -122,15 +99,10 @@ public static class TreeSelector
 
         if (!TryFindParent(root, node, out var parent) || parent is null)
         {
-            throw new GraftException(
-                GraftErrorCodes.ElementNotFound,
-                "Current element has no parent; cannot resolve sibling."
-            );
+            throw new GraftException(GraftErrorCodes.ElementNotFound, "Current element has no parent; cannot resolve sibling.");
         }
 
-        var siblings = parent
-            .Children.Where(c => !ReferenceEquals(c, node) && c.RuntimeId != node.RuntimeId)
-            .ToList();
+        var siblings = parent.Children.Where(c => !ReferenceEquals(c, node) && c.RuntimeId != node.RuntimeId).ToList();
         return ResolveAmong(siblings, selector, nth, "sibling");
     }
 
@@ -141,11 +113,7 @@ public static class TreeSelector
     /// <param name="selector">Selector.</param>
     /// <param name="ancestorAutomationIds">Automation ids of ancestors (root → parent).</param>
     /// <returns>Score contribution for this node.</returns>
-    public static int Score(
-        TreeNode node,
-        Selector selector,
-        IReadOnlyList<string>? ancestorAutomationIds = null
-    )
+    public static int Score(TreeNode node, Selector selector, IReadOnlyList<string>? ancestorAutomationIds = null)
     {
         ArgumentNullException.ThrowIfNull(node);
         ArgumentNullException.ThrowIfNull(selector);
@@ -194,9 +162,7 @@ public static class TreeSelector
         if (
             !string.IsNullOrWhiteSpace(selector.NearAutomationId)
             && ancestorAutomationIds is not null
-            && ancestorAutomationIds.Any(id =>
-                string.Equals(id, selector.NearAutomationId, StringComparison.Ordinal)
-            )
+            && ancestorAutomationIds.Any(id => string.Equals(id, selector.NearAutomationId, StringComparison.Ordinal))
         )
         {
             score += SelectorWeights.NearPath;
@@ -205,35 +171,22 @@ public static class TreeSelector
         return score;
     }
 
-    private static TreeNode ResolveAmong(
-        IReadOnlyList<TreeNode> nodes,
-        Selector selector,
-        int? nth,
-        string label
-    )
+    private static TreeNode ResolveAmong(IReadOnlyList<TreeNode> nodes, Selector selector, int? nth, string label)
     {
         var index = nth ?? selector.Nth;
         var filtered = HasMatchCriterion(selector);
         if (!filtered && index is null)
         {
-            throw new GraftException(
-                GraftErrorCodes.SelectorInvalid,
-                "Selector must specify at least one criterion."
-            );
+            throw new GraftException(GraftErrorCodes.SelectorInvalid, "Selector must specify at least one criterion.");
         }
 
-        var matches = filtered
-            ? nodes.Where(node => Score(node, selector) > 0).ToList()
-            : nodes.ToList();
+        var matches = filtered ? nodes.Where(node => Score(node, selector) > 0).ToList() : nodes.ToList();
 
         if (index is { } i)
         {
             if (i < 0 || i >= matches.Count)
             {
-                throw new GraftException(
-                    GraftErrorCodes.ElementNotFound,
-                    $"No {label} at Nth {i} (count={matches.Count})."
-                );
+                throw new GraftException(GraftErrorCodes.ElementNotFound, $"No {label} at Nth {i} (count={matches.Count}).");
             }
 
             return matches[i];
@@ -241,18 +194,12 @@ public static class TreeSelector
 
         if (matches.Count == 0)
         {
-            throw new GraftException(
-                GraftErrorCodes.ElementNotFound,
-                $"No matching {label} element."
-            );
+            throw new GraftException(GraftErrorCodes.ElementNotFound, $"No matching {label} element.");
         }
 
         if (matches.Count > 1)
         {
-            throw new GraftException(
-                GraftErrorCodes.ElementAmbiguous,
-                $"Multiple matching {label} elements ({matches.Count})."
-            );
+            throw new GraftException(GraftErrorCodes.ElementAmbiguous, $"Multiple matching {label} elements ({matches.Count}).");
         }
 
         return matches[0];
@@ -286,18 +233,9 @@ public static class TreeSelector
 
     private static bool SameNode(TreeNode a, TreeNode b) =>
         ReferenceEquals(a, b)
-        || (
-            a.RuntimeId != 0
-            && a.RuntimeId == b.RuntimeId
-            && string.Equals(a.AutomationId, b.AutomationId, StringComparison.Ordinal)
-        );
+        || (a.RuntimeId != 0 && a.RuntimeId == b.RuntimeId && string.Equals(a.AutomationId, b.AutomationId, StringComparison.Ordinal));
 
-    private static void Walk(
-        TreeNode node,
-        List<string> ancestors,
-        Selector selector,
-        List<(TreeNode Node, int Score)> candidates
-    )
+    private static void Walk(TreeNode node, List<string> ancestors, Selector selector, List<(TreeNode Node, int Score)> candidates)
     {
         var score = Score(node, selector, ancestors);
         if (score > 0)

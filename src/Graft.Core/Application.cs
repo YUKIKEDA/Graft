@@ -17,10 +17,7 @@ public static class Application
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A session that owns the child process and pipe connection.</returns>
     /// <exception cref="GraftException">Launch, connection, handshake, or timeout failed.</exception>
-    public static async Task<GraftSession> LaunchAsync(
-        LaunchOptions options,
-        CancellationToken cancellationToken = default
-    )
+    public static async Task<GraftSession> LaunchAsync(LaunchOptions options, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentException.ThrowIfNullOrWhiteSpace(options.AppPath);
@@ -29,30 +26,15 @@ public static class Application
             ArgumentException.ThrowIfNullOrWhiteSpace(options.Timeline.OutputDirectory);
         }
 
-        var timeout =
-            options.Timeout <= TimeSpan.Zero ? LaunchOptions.DefaultTimeout : options.Timeout;
-        var pipeName = string.IsNullOrWhiteSpace(options.PipeName)
-            ? "graft-" + Guid.NewGuid().ToString("N")
-            : options.PipeName!;
-        var token = string.IsNullOrWhiteSpace(options.Token)
-            ? Guid.NewGuid().ToString("N")
-            : options.Token!;
-        var configuration = string.IsNullOrWhiteSpace(options.Configuration)
-            ? "GraftTest"
-            : options.Configuration;
+        var timeout = options.Timeout <= TimeSpan.Zero ? LaunchOptions.DefaultTimeout : options.Timeout;
+        var pipeName = string.IsNullOrWhiteSpace(options.PipeName) ? "graft-" + Guid.NewGuid().ToString("N") : options.PipeName!;
+        var token = string.IsNullOrWhiteSpace(options.Token) ? Guid.NewGuid().ToString("N") : options.Token!;
+        var configuration = string.IsNullOrWhiteSpace(options.Configuration) ? "GraftTest" : options.Configuration;
 
-        var process = AppProcessLauncher.Start(
-            options.AppPath,
-            pipeName,
-            token,
-            configuration,
-            options.Environment
-        );
+        var process = AppProcessLauncher.Start(options.AppPath, pipeName, token, configuration, options.Environment);
         try
         {
-            var connection = await AgentConnection
-                .ConnectAsync(pipeName, token, timeout, cancellationToken)
-                .ConfigureAwait(false);
+            var connection = await AgentConnection.ConnectAsync(pipeName, token, timeout, cancellationToken).ConfigureAwait(false);
             return new GraftSession(process, connection, options.Timeline);
         }
         catch

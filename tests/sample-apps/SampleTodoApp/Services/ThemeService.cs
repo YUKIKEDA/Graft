@@ -18,10 +18,7 @@ public sealed class ThemeService
             return;
         }
 
-        var theme = new ResourceDictionary
-        {
-            Source = new Uri(isDark ? "Themes/Dark.xaml" : "Themes/Light.xaml", UriKind.Relative),
-        };
+        var theme = new ResourceDictionary { Source = new Uri(isDark ? "Themes/Dark.xaml" : "Themes/Light.xaml", UriKind.Relative) };
 
         // Replace in place — Clear() briefly drops styles and causes half-light flashes.
         var merged = app.Resources.MergedDictionaries;
@@ -62,12 +59,7 @@ public sealed class ThemeService
             var value = isDark ? 1 : 0;
             if (DwmSetWindowAttribute(hwnd, DwmwaUseImmersiveDarkMode, ref value, sizeof(int)) != 0)
             {
-                DwmSetWindowAttribute(
-                    hwnd,
-                    DwmwaUseImmersiveDarkModeBefore20H1,
-                    ref value,
-                    sizeof(int)
-                );
+                DwmSetWindowAttribute(hwnd, DwmwaUseImmersiveDarkModeBefore20H1, ref value, sizeof(int));
             }
         }
 
@@ -81,10 +73,5 @@ public sealed class ThemeService
     }
 
     [DllImport("dwmapi.dll")]
-    private static extern int DwmSetWindowAttribute(
-        IntPtr hwnd,
-        int attribute,
-        ref int attributeValue,
-        int attributeSize
-    );
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int attributeValue, int attributeSize);
 }

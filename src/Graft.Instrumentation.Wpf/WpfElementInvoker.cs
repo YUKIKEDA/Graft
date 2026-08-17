@@ -25,10 +25,7 @@ internal sealed class WpfElementInvoker : IElementInvoker
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "WPF Application.Current is not available; cannot invoke."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "WPF Application.Current is not available; cannot invoke.");
         }
 
         if (dispatcher.CheckAccess())
@@ -48,10 +45,7 @@ internal sealed class WpfElementInvoker : IElementInvoker
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "WPF Application.Current is not available; cannot invoke."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "WPF Application.Current is not available; cannot invoke.");
         }
 
         // Do not wait: ShowDialog inside the callback would hang a sync Invoke forever.
@@ -66,10 +60,7 @@ internal sealed class WpfElementInvoker : IElementInvoker
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "WPF Application.Current is not available; cannot rightClick."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "WPF Application.Current is not available; cannot rightClick.");
         }
 
         if (dispatcher.CheckAccess())
@@ -83,19 +74,11 @@ internal sealed class WpfElementInvoker : IElementInvoker
 
     /// <inheritdoc />
     public void DoubleClick(ElementSelector selector) =>
-        RunOnUiThread(
-            selector,
-            static s => WpfInputInjection.DoubleClickElement(ResolveActionableFrameworkElement(s)),
-            "doubleClick"
-        );
+        RunOnUiThread(selector, static s => WpfInputInjection.DoubleClickElement(ResolveActionableFrameworkElement(s)), "doubleClick");
 
     /// <inheritdoc />
     public void Hover(ElementSelector selector) =>
-        RunOnUiThread(
-            selector,
-            static s => WpfInputInjection.HoverElement(ResolveActionableFrameworkElement(s)),
-            "hover"
-        );
+        RunOnUiThread(selector, static s => WpfInputInjection.HoverElement(ResolveActionableFrameworkElement(s)), "hover");
 
     /// <inheritdoc />
     public void Drag(ElementSelector from, ElementSelector to)
@@ -106,10 +89,7 @@ internal sealed class WpfElementInvoker : IElementInvoker
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "WPF Application.Current is not available; cannot drag."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "WPF Application.Current is not available; cannot drag.");
         }
 
         void Action()
@@ -130,40 +110,20 @@ internal sealed class WpfElementInvoker : IElementInvoker
 
     /// <inheritdoc />
     public void ClickAt(ElementSelector selector, double offsetX, double offsetY) =>
-        RunOnUiThread(
-            selector,
-            s =>
-                WpfInputInjection.ClickAtElement(
-                    ResolveActionableFrameworkElement(s),
-                    offsetX,
-                    offsetY
-                ),
-            "clickAt"
-        );
+        RunOnUiThread(selector, s => WpfInputInjection.ClickAtElement(ResolveActionableFrameworkElement(s), offsetX, offsetY), "clickAt");
 
     /// <inheritdoc />
     public void Wheel(ElementSelector selector, int delta) =>
-        RunOnUiThread(
-            selector,
-            s => WpfInputInjection.WheelElement(ResolveActionableFrameworkElement(s), delta),
-            "wheel"
-        );
+        RunOnUiThread(selector, s => WpfInputInjection.WheelElement(ResolveActionableFrameworkElement(s), delta), "wheel");
 
-    private static void RunOnUiThread(
-        ElementSelector selector,
-        Action<ElementSelector> action,
-        string operationName
-    )
+    private static void RunOnUiThread(ElementSelector selector, Action<ElementSelector> action, string operationName)
     {
         ArgumentNullException.ThrowIfNull(selector);
 
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"WPF Application.Current is not available; cannot {operationName}."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, $"WPF Application.Current is not available; cannot {operationName}.");
         }
 
         if (dispatcher.CheckAccess())

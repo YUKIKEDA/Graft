@@ -28,9 +28,7 @@ public sealed class M2AcceptanceTests
     public async Task Launch_InvokeSampleButton_ExpectStatusClicked1()
     {
         var appPath = SampleAppPaths.ResolveSampleWpfAppProject();
-        await using var session = await Application.LaunchAsync(
-            new LaunchOptions { AppPath = appPath, Timeout = TimeSpan.FromSeconds(60) }
-        );
+        await using var session = await Application.LaunchAsync(new LaunchOptions { AppPath = appPath, Timeout = TimeSpan.FromSeconds(60) });
 
         await session.GetByAutomationId("SampleButton").InvokeAsync();
         var status = await session.GetByAutomationId("StatusText").ExpectNameAsync("Clicked 1");

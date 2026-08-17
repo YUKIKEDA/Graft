@@ -18,10 +18,7 @@ public sealed class GraftSessionHub : IAsyncDisposable
     /// <param name="action">Work that may read or replace the current session.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The action result.</returns>
-    public async Task<T> RunAsync<T>(
-        Func<GraftSession?, Task<T>> action,
-        CancellationToken cancellationToken = default
-    )
+    public async Task<T> RunAsync<T>(Func<GraftSession?, Task<T>> action, CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);

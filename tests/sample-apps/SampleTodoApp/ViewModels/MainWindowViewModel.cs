@@ -42,30 +42,17 @@ public sealed class MainWindowViewModel : IDisposable
         var hasSelection = SelectionCount.Select(static c => c > 0);
         var hasSingleSelection = SelectionCount.Select(static c => c == 1);
 
-        AddCommand = new AsyncReactiveCommand(() => OpenDetailAsync(isNew: true)).AddTo(
-            ref _disposables
-        );
-        EditCommand = hasSingleSelection
-            .ToAsyncReactiveCommand(() => OpenDetailAsync(isNew: false))
-            .AddTo(ref _disposables);
-        EditRowCommand = new ReactiveCommand<TodoItem>(item =>
-            _ = OpenDetailAsync(isNew: false, target: item)
-        ).AddTo(ref _disposables);
-        DeleteCommand = hasSelection
-            .ToAsyncReactiveCommand(DeleteSelectedAsync)
-            .AddTo(ref _disposables);
+        AddCommand = new AsyncReactiveCommand(() => OpenDetailAsync(isNew: true)).AddTo(ref _disposables);
+        EditCommand = hasSingleSelection.ToAsyncReactiveCommand(() => OpenDetailAsync(isNew: false)).AddTo(ref _disposables);
+        EditRowCommand = new ReactiveCommand<TodoItem>(item => _ = OpenDetailAsync(isNew: false, target: item)).AddTo(ref _disposables);
+        DeleteCommand = hasSelection.ToAsyncReactiveCommand(DeleteSelectedAsync).AddTo(ref _disposables);
         ExportCommand = new AsyncReactiveCommand(ExportAsync).AddTo(ref _disposables);
         ImportCommand = new AsyncReactiveCommand(ImportAsync).AddTo(ref _disposables);
         OpenSettingsCommand = new ReactiveCommand(_ => OpenSettings()).AddTo(ref _disposables);
         ClearFiltersCommand = new ReactiveCommand(_ => ClearFilters()).AddTo(ref _disposables);
 
         Observable
-            .CombineLatest(
-                SearchText,
-                StatusFilter,
-                PriorityFilter,
-                static (_, _, _) => Unit.Default
-            )
+            .CombineLatest(SearchText, StatusFilter, PriorityFilter, static (_, _, _) => Unit.Default)
             .Subscribe(_ => RefreshVisible())
             .AddTo(ref _disposables);
     }
@@ -112,8 +99,7 @@ public sealed class MainWindowViewModel : IDisposable
 
     public ReactiveCommand ClearFiltersCommand { get; }
 
-    public async Task InitializeAsync() =>
-        ApplyLoaded(await _store.LoadAsync().ConfigureAwait(true));
+    public async Task InitializeAsync() => ApplyLoaded(await _store.LoadAsync().ConfigureAwait(true));
 
     public int GetVisibleCheckedCount() => _visible.Count(static i => i.IsChecked);
 
@@ -123,8 +109,7 @@ public sealed class MainWindowViewModel : IDisposable
         SetItemChecked(item, !item.IsChecked);
     }
 
-    public void ToggleSelectAllVisible() =>
-        SetAllVisibleChecked(GetVisibleCheckedCount() < _visible.Count);
+    public void ToggleSelectAllVisible() => SetAllVisibleChecked(GetVisibleCheckedCount() < _visible.Count);
 
     public void SetItemChecked(TodoItem item, bool isChecked)
     {
@@ -233,11 +218,7 @@ public sealed class MainWindowViewModel : IDisposable
         }
 
         using var vm = new ItemDetailViewModel(draft, isNew);
-        var window = new ItemDetailWindow
-        {
-            DataContext = vm,
-            Owner = Application.Current.MainWindow,
-        };
+        var window = new ItemDetailWindow { DataContext = vm, Owner = Application.Current.MainWindow };
         _theme.ApplyDarkTitleBar(window, IsDarkTheme.Value);
         if (window.ShowDialog() != true)
         {
@@ -291,13 +272,7 @@ public sealed class MainWindowViewModel : IDisposable
             return;
         }
 
-        var vm = new SettingsViewModel(
-            _store.DataDirectory,
-            IsDarkTheme.Value,
-            ApplyDataDirectoryAsync,
-            ApplyThemeAsync,
-            CloseSettings
-        );
+        var vm = new SettingsViewModel(_store.DataDirectory, IsDarkTheme.Value, ApplyDataDirectoryAsync, ApplyThemeAsync, CloseSettings);
         Settings.Value = vm;
         IsSettingsOpen.Value = true;
     }
@@ -332,11 +307,7 @@ public sealed class MainWindowViewModel : IDisposable
 
     private async Task ExportAsync()
     {
-        var dialog = new SaveFileDialog
-        {
-            Filter = "JSON (*.json)|*.json",
-            FileName = "todos-export.json",
-        };
+        var dialog = new SaveFileDialog { Filter = "JSON (*.json)|*.json", FileName = "todos-export.json" };
 
         // Owner: Win32 dialog hosts as a descendant of Main (needed for UIA discovery).
         if (dialog.ShowDialog(Application.Current?.MainWindow) != true)
@@ -384,8 +355,7 @@ public sealed class MainWindowViewModel : IDisposable
 
     private async Task PersistAsync() => await _store.SaveAsync(Snapshot()).ConfigureAwait(true);
 
-    private ProjectData Snapshot() =>
-        new() { IsDarkTheme = IsDarkTheme.Value, Items = _master.Select(Clone).ToList() };
+    private ProjectData Snapshot() => new() { IsDarkTheme = IsDarkTheme.Value, Items = _master.Select(Clone).ToList() };
 
     private void RefreshVisible()
     {

@@ -106,10 +106,7 @@ internal sealed class AgentPipeServer : IDisposable
             PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly
         );
 
-    private async Task HandleConnectionAsync(
-        NamedPipeServerStream server,
-        CancellationToken cancellationToken
-    )
+    private async Task HandleConnectionAsync(NamedPipeServerStream server, CancellationToken cancellationToken)
     {
         var handshaken = false;
 
@@ -118,9 +115,7 @@ internal sealed class AgentPipeServer : IDisposable
             RequestMessage request;
             try
             {
-                request = await JsonMessageCodec
-                    .ReadRequestAsync(server, cancellationToken)
-                    .ConfigureAwait(false);
+                request = await JsonMessageCodec.ReadRequestAsync(server, cancellationToken).ConfigureAwait(false);
             }
             catch (EndOfStreamException)
             {
@@ -139,15 +134,11 @@ internal sealed class AgentPipeServer : IDisposable
 
             try
             {
-                await JsonMessageCodec
-                    .WriteResponseAsync(server, response, cancellationToken)
-                    .ConfigureAwait(false);
+                await JsonMessageCodec.WriteResponseAsync(server, response, cancellationToken).ConfigureAwait(false);
 
                 if (binaryFollowUp is { Length: > 0 })
                 {
-                    await FrameIO
-                        .WriteAsync(server, binaryFollowUp, cancellationToken: cancellationToken)
-                        .ConfigureAwait(false);
+                    await FrameIO.WriteAsync(server, binaryFollowUp, cancellationToken: cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (IOException)
@@ -162,19 +153,12 @@ internal sealed class AgentPipeServer : IDisposable
         }
     }
 
-    private (ResponseMessage Response, bool CloseAfterWrite, byte[]? BinaryFollowUp) Dispatch(
-        RequestMessage request,
-        bool handshaken
-    )
+    private (ResponseMessage Response, bool CloseAfterWrite, byte[]? BinaryFollowUp) Dispatch(RequestMessage request, bool handshaken)
     {
         if (request.V != ProtocolVersion.Current)
         {
             return (
-                Error(
-                    request.Id,
-                    GraftErrorCodes.ProtocolVersionMismatch,
-                    $"Protocol version mismatch. Agent expects v={ProtocolVersion.Current}."
-                ),
+                Error(request.Id, GraftErrorCodes.ProtocolVersionMismatch, $"Protocol version mismatch. Agent expects v={ProtocolVersion.Current}."),
                 CloseAfterWrite: true,
                 BinaryFollowUp: null
             );
@@ -185,11 +169,7 @@ internal sealed class AgentPipeServer : IDisposable
             if (request.Method != ProtocolMethods.Handshake)
             {
                 return (
-                    Error(
-                        request.Id,
-                        GraftErrorCodes.HandshakeRejected,
-                        "Handshake is required before other methods."
-                    ),
+                    Error(request.Id, GraftErrorCodes.HandshakeRejected, "Handshake is required before other methods."),
                     CloseAfterWrite: true,
                     BinaryFollowUp: null
                 );
@@ -198,11 +178,7 @@ internal sealed class AgentPipeServer : IDisposable
             var token = ReadToken(request.Params);
             if (!string.Equals(token, _connectToken, StringComparison.Ordinal))
             {
-                return (
-                    Error(request.Id, GraftErrorCodes.HandshakeRejected, "Connect token rejected."),
-                    CloseAfterWrite: true,
-                    BinaryFollowUp: null
-                );
+                return (Error(request.Id, GraftErrorCodes.HandshakeRejected, "Connect token rejected."), CloseAfterWrite: true, BinaryFollowUp: null);
             }
 
             return (Ok(request.Id), CloseAfterWrite: false, BinaryFollowUp: null);
@@ -213,11 +189,7 @@ internal sealed class AgentPipeServer : IDisposable
             var token = ReadToken(request.Params);
             if (!string.Equals(token, _connectToken, StringComparison.Ordinal))
             {
-                return (
-                    Error(request.Id, GraftErrorCodes.HandshakeRejected, "Connect token rejected."),
-                    CloseAfterWrite: true,
-                    BinaryFollowUp: null
-                );
+                return (Error(request.Id, GraftErrorCodes.HandshakeRejected, "Connect token rejected."), CloseAfterWrite: true, BinaryFollowUp: null);
             }
 
             return (Ok(request.Id), CloseAfterWrite: false, BinaryFollowUp: null);
@@ -345,11 +317,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         if (request.Method == ProtocolMethods.DeleteSelectedRows)
         {
-            return (
-                HandleDeleteSelectedRows(request),
-                CloseAfterWrite: false,
-                BinaryFollowUp: null
-            );
+            return (HandleDeleteSelectedRows(request), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
         if (request.Method == ProtocolMethods.ArmOpenFile)
@@ -379,11 +347,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         if (request.Method == ProtocolMethods.ArmOpenFolderCancel)
         {
-            return (
-                HandleArmOpenFolderCancel(request),
-                CloseAfterWrite: false,
-                BinaryFollowUp: null
-            );
+            return (HandleArmOpenFolderCancel(request), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
         if (request.Method == ProtocolMethods.ArmMessageBox)
@@ -393,20 +357,12 @@ internal sealed class AgentPipeServer : IDisposable
 
         if (request.Method == ProtocolMethods.Expand)
         {
-            return (
-                HandleExpand(request, expand: true),
-                CloseAfterWrite: false,
-                BinaryFollowUp: null
-            );
+            return (HandleExpand(request, expand: true), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
         if (request.Method == ProtocolMethods.Collapse)
         {
-            return (
-                HandleExpand(request, expand: false),
-                CloseAfterWrite: false,
-                BinaryFollowUp: null
-            );
+            return (HandleExpand(request, expand: false), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
         if (request.Method == ProtocolMethods.ListWindows)
@@ -421,19 +377,11 @@ internal sealed class AgentPipeServer : IDisposable
 
         if (request.Method == ProtocolMethods.InvokeOpeningWindow)
         {
-            return (
-                HandleInvokeOpeningWindow(request),
-                CloseAfterWrite: false,
-                BinaryFollowUp: null
-            );
+            return (HandleInvokeOpeningWindow(request), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
         return (
-            Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                $"Method '{request.Method}' is not implemented."
-            ),
+            Error(request.Id, GraftErrorCodes.ActionFailed, $"Method '{request.Method}' is not implemented."),
             CloseAfterWrite: false,
             BinaryFollowUp: null
         );
@@ -444,11 +392,7 @@ internal sealed class AgentPipeServer : IDisposable
         var provider = AgentServices.TreeProvider;
         if (provider is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No UI tree provider is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No UI tree provider is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -464,21 +408,13 @@ internal sealed class AgentPipeServer : IDisposable
         }
     }
 
-    private static (
-        ResponseMessage Response,
-        bool CloseAfterWrite,
-        byte[]? BinaryFollowUp
-    ) HandleScreenshot(RequestMessage request)
+    private static (ResponseMessage Response, bool CloseAfterWrite, byte[]? BinaryFollowUp) HandleScreenshot(RequestMessage request)
     {
         var provider = AgentServices.ScreenshotProvider;
         if (provider is null)
         {
             return (
-                Error(
-                    request.Id,
-                    GraftErrorCodes.ActionFailed,
-                    "No screenshot provider is registered. Call WpfGraft.Use() before Agent.Start()."
-                ),
+                Error(request.Id, GraftErrorCodes.ActionFailed, "No screenshot provider is registered. Call WpfGraft.Use() before Agent.Start()."),
                 CloseAfterWrite: false,
                 BinaryFollowUp: null
             );
@@ -488,44 +424,24 @@ internal sealed class AgentPipeServer : IDisposable
         {
             var options = ReadScreenshotOptions(request.Params);
             var capture = provider.Capture(options);
-            var resultJson = JsonSerializer.SerializeToElement(
-                capture.Meta,
-                JsonMessageCodec.Options
-            );
+            var resultJson = JsonSerializer.SerializeToElement(capture.Meta, JsonMessageCodec.Options);
             return (Ok(request.Id, resultJson), CloseAfterWrite: false, capture.PngBytes);
         }
         catch (ElementResolveException ex)
         {
-            return (
-                Error(request.Id, ex.Code, ex.Message),
-                CloseAfterWrite: false,
-                BinaryFollowUp: null
-            );
+            return (Error(request.Id, ex.Code, ex.Message), CloseAfterWrite: false, BinaryFollowUp: null);
         }
         catch (ElementActionException ex)
         {
-            return (
-                Error(request.Id, ex.Code, ex.Message),
-                CloseAfterWrite: false,
-                BinaryFollowUp: null
-            );
+            return (Error(request.Id, ex.Code, ex.Message), CloseAfterWrite: false, BinaryFollowUp: null);
         }
-        catch (InvalidOperationException ex)
-            when (ex.Message.Contains("Main window", StringComparison.OrdinalIgnoreCase))
+        catch (InvalidOperationException ex) when (ex.Message.Contains("Main window", StringComparison.OrdinalIgnoreCase))
         {
-            return (
-                Error(request.Id, GraftErrorCodes.WindowNotFound, ex.Message),
-                CloseAfterWrite: false,
-                BinaryFollowUp: null
-            );
+            return (Error(request.Id, GraftErrorCodes.WindowNotFound, ex.Message), CloseAfterWrite: false, BinaryFollowUp: null);
         }
         catch (Exception ex)
         {
-            return (
-                Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message),
-                CloseAfterWrite: false,
-                BinaryFollowUp: null
-            );
+            return (Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message), CloseAfterWrite: false, BinaryFollowUp: null);
         }
     }
 
@@ -534,11 +450,7 @@ internal sealed class AgentPipeServer : IDisposable
         var invoker = AgentServices.ElementInvoker;
         if (invoker is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No element invoker is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No element invoker is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -566,11 +478,7 @@ internal sealed class AgentPipeServer : IDisposable
         var invoker = AgentServices.ElementInvoker;
         if (invoker is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No element invoker is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No element invoker is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -604,11 +512,7 @@ internal sealed class AgentPipeServer : IDisposable
         var invoker = AgentServices.ElementInvoker;
         if (invoker is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No element invoker is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No element invoker is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -638,11 +542,7 @@ internal sealed class AgentPipeServer : IDisposable
         var invoker = AgentServices.ElementInvoker;
         if (invoker is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No element invoker is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No element invoker is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -672,11 +572,7 @@ internal sealed class AgentPipeServer : IDisposable
         var invoker = AgentServices.ElementInvoker;
         if (invoker is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No element invoker is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No element invoker is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -700,19 +596,12 @@ internal sealed class AgentPipeServer : IDisposable
         }
     }
 
-    private static ResponseMessage HandleInvokerAction(
-        RequestMessage request,
-        Action<IElementInvoker, ElementSelector> action
-    )
+    private static ResponseMessage HandleInvokerAction(RequestMessage request, Action<IElementInvoker, ElementSelector> action)
     {
         var invoker = AgentServices.ElementInvoker;
         if (invoker is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No element invoker is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No element invoker is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -772,11 +661,7 @@ internal sealed class AgentPipeServer : IDisposable
         var toggler = AgentServices.ElementToggler;
         if (toggler is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No element toggler is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No element toggler is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -804,11 +689,7 @@ internal sealed class AgentPipeServer : IDisposable
         var keySender = AgentServices.ElementKeySender;
         if (keySender is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No element key sender is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No element key sender is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -836,11 +717,7 @@ internal sealed class AgentPipeServer : IDisposable
         var keySender = AgentServices.ElementKeySender;
         if (keySender is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No element key sender is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No element key sender is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -868,11 +745,7 @@ internal sealed class AgentPipeServer : IDisposable
         var scroller = AgentServices.ElementScroller;
         if (scroller is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No element scroller is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No element scroller is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -901,11 +774,7 @@ internal sealed class AgentPipeServer : IDisposable
         var chooser = AgentServices.ElementChooser;
         if (chooser is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No element chooser is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No element chooser is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -941,11 +810,7 @@ internal sealed class AgentPipeServer : IDisposable
         var chooser = AgentServices.ElementChooser;
         if (chooser is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No element chooser is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No element chooser is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -973,11 +838,7 @@ internal sealed class AgentPipeServer : IDisposable
         var menuSelector = AgentServices.MenuSelector;
         if (menuSelector is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No menu selector is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No menu selector is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -1006,11 +867,7 @@ internal sealed class AgentPipeServer : IDisposable
         var treeSelector = AgentServices.TreeSelector;
         if (treeSelector is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No tree selector is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No tree selector is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -1050,10 +907,7 @@ internal sealed class AgentPipeServer : IDisposable
         {
             var (selector, row, column, columnKey) = ReadCellColumnParams(request.Params);
             var text = accessor.GetCellText(selector, row, column, columnKey);
-            var resultJson = JsonSerializer.SerializeToElement(
-                new CellTextResult { Text = text },
-                JsonMessageCodec.Options
-            );
+            var resultJson = JsonSerializer.SerializeToElement(new CellTextResult { Text = text }, JsonMessageCodec.Options);
             return Ok(request.Id, resultJson);
         }
         catch (ElementResolveException ex)
@@ -1107,11 +961,7 @@ internal sealed class AgentPipeServer : IDisposable
         var op = AgentServices.DataGridOperator;
         if (op is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No DataGrid operator is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No DataGrid operator is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -1139,11 +989,7 @@ internal sealed class AgentPipeServer : IDisposable
         var op = AgentServices.DataGridOperator;
         if (op is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No DataGrid operator is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No DataGrid operator is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -1173,11 +1019,7 @@ internal sealed class AgentPipeServer : IDisposable
         var op = AgentServices.DataGridOperator;
         if (op is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No DataGrid operator is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No DataGrid operator is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -1206,11 +1048,7 @@ internal sealed class AgentPipeServer : IDisposable
         var op = AgentServices.DataGridOperator;
         if (op is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No DataGrid operator is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No DataGrid operator is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -1238,11 +1076,7 @@ internal sealed class AgentPipeServer : IDisposable
         var op = AgentServices.DataGridOperator;
         if (op is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No DataGrid operator is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No DataGrid operator is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -1385,11 +1219,7 @@ internal sealed class AgentPipeServer : IDisposable
         var expander = AgentServices.ElementExpander;
         if (expander is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No element expander is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No element expander is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -1425,11 +1255,7 @@ internal sealed class AgentPipeServer : IDisposable
         var catalog = AgentServices.WindowCatalog;
         if (catalog is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No window catalog is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No window catalog is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -1449,11 +1275,7 @@ internal sealed class AgentPipeServer : IDisposable
         var catalog = AgentServices.WindowCatalog;
         if (catalog is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No window catalog is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No window catalog is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -1477,11 +1299,7 @@ internal sealed class AgentPipeServer : IDisposable
         var invoker = AgentServices.ElementInvoker;
         if (invoker is null)
         {
-            return Error(
-                request.Id,
-                GraftErrorCodes.ActionFailed,
-                "No element invoker is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No element invoker is registered. Call WpfGraft.Use() before Agent.Start().");
         }
 
         try
@@ -1508,21 +1326,12 @@ internal sealed class AgentPipeServer : IDisposable
     {
         if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.windowId is required."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.windowId is required.");
         }
 
-        if (
-            !element.TryGetProperty("windowId", out var windowIdProperty)
-            || !windowIdProperty.TryGetInt32(out var windowId)
-        )
+        if (!element.TryGetProperty("windowId", out var windowIdProperty) || !windowIdProperty.TryGetInt32(out var windowId))
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.windowId must be an integer."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.windowId must be an integer.");
         }
 
         return windowId;
@@ -1535,18 +1344,12 @@ internal sealed class AgentPipeServer : IDisposable
 
         if (paramsElement is { } element && element.ValueKind == JsonValueKind.Object)
         {
-            if (
-                element.TryGetProperty("automationId", out var automationIdProperty)
-                && automationIdProperty.ValueKind == JsonValueKind.String
-            )
+            if (element.TryGetProperty("automationId", out var automationIdProperty) && automationIdProperty.ValueKind == JsonValueKind.String)
             {
                 automationId = automationIdProperty.GetString();
             }
 
-            if (
-                element.TryGetProperty("runtimeId", out var runtimeIdProperty)
-                && runtimeIdProperty.TryGetInt32(out var id)
-            )
+            if (element.TryGetProperty("runtimeId", out var runtimeIdProperty) && runtimeIdProperty.TryGetInt32(out var id))
             {
                 runtimeId = id;
             }
@@ -1566,50 +1369,33 @@ internal sealed class AgentPipeServer : IDisposable
         return new ScreenshotOptions { Selector = selector };
     }
 
-    private static (ElementSelector Selector, string Value) ReadSetValueParams(
-        JsonElement? paramsElement
-    )
+    private static (ElementSelector Selector, string Value) ReadSetValueParams(JsonElement? paramsElement)
     {
         var selector = ReadElementSelector(paramsElement);
         if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.value is required."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.value is required.");
         }
 
         if (!element.TryGetProperty("value", out var valueProperty))
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.value is required."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.value is required.");
         }
 
         var value = valueProperty.ValueKind switch
         {
             JsonValueKind.String => valueProperty.GetString() ?? string.Empty,
             JsonValueKind.Null => string.Empty,
-            _ => throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.value must be a string."
-            ),
+            _ => throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.value must be a string."),
         };
 
         return (selector, value);
     }
 
-    private static (ElementSelector Selector, int? Index) ReadScrollIntoViewParams(
-        JsonElement? paramsElement
-    ) => ReadIndexParams(paramsElement, requireIndex: false);
+    private static (ElementSelector Selector, int? Index) ReadScrollIntoViewParams(JsonElement? paramsElement) =>
+        ReadIndexParams(paramsElement, requireIndex: false);
 
-    private static (
-        ElementSelector Selector,
-        int Row,
-        int? Column,
-        string? ColumnKey
-    ) ReadCellColumnParams(JsonElement? paramsElement)
+    private static (ElementSelector Selector, int Row, int? Column, string? ColumnKey) ReadCellColumnParams(JsonElement? paramsElement)
     {
         var selector = ReadElementSelector(paramsElement);
         if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
@@ -1620,15 +1406,9 @@ internal sealed class AgentPipeServer : IDisposable
             );
         }
 
-        if (
-            !element.TryGetProperty("row", out var rowProperty)
-            || !rowProperty.TryGetInt32(out var row)
-        )
+        if (!element.TryGetProperty("row", out var rowProperty) || !rowProperty.TryGetInt32(out var row))
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.row must be an integer."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.row must be an integer.");
         }
 
         int? column = null;
@@ -1636,10 +1416,7 @@ internal sealed class AgentPipeServer : IDisposable
         {
             if (!columnProperty.TryGetInt32(out var columnValue))
             {
-                throw new ElementResolveException(
-                    GraftErrorCodes.SelectorInvalid,
-                    "params.column must be an integer."
-                );
+                throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.column must be an integer.");
             }
 
             column = columnValue;
@@ -1652,10 +1429,7 @@ internal sealed class AgentPipeServer : IDisposable
             {
                 JsonValueKind.String => columnKeyProperty.GetString(),
                 JsonValueKind.Null => null,
-                _ => throw new ElementResolveException(
-                    GraftErrorCodes.SelectorInvalid,
-                    "params.columnKey must be a string."
-                ),
+                _ => throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.columnKey must be a string."),
             };
         }
 
@@ -1663,67 +1437,45 @@ internal sealed class AgentPipeServer : IDisposable
         var hasKey = !string.IsNullOrWhiteSpace(columnKey);
         if (hasColumn == hasKey)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "Exactly one of params.column or params.columnKey is required."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "Exactly one of params.column or params.columnKey is required.");
         }
 
         return (selector, row, column, hasKey ? columnKey : null);
     }
 
-    private static (
-        ElementSelector Selector,
-        int Row,
-        int? Column,
-        string? ColumnKey,
-        string Value
-    ) ReadSetCellValueParams(JsonElement? paramsElement)
+    private static (ElementSelector Selector, int Row, int? Column, string? ColumnKey, string Value) ReadSetCellValueParams(
+        JsonElement? paramsElement
+    )
     {
         var (selector, row, column, columnKey) = ReadCellColumnParams(paramsElement);
         if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.value is required."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.value is required.");
         }
 
         if (!element.TryGetProperty("value", out var valueProperty))
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.value is required."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.value is required.");
         }
 
         var value = valueProperty.ValueKind switch
         {
             JsonValueKind.String => valueProperty.GetString() ?? string.Empty,
             JsonValueKind.Null => string.Empty,
-            _ => throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.value must be a string."
-            ),
+            _ => throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.value must be a string."),
         };
 
         return (selector, row, column, columnKey, value);
     }
 
-    private static (ElementSelector Selector, int? Index) ReadIndexParams(
-        JsonElement? paramsElement,
-        bool requireIndex
-    )
+    private static (ElementSelector Selector, int? Index) ReadIndexParams(JsonElement? paramsElement, bool requireIndex)
     {
         var selector = ReadElementSelector(paramsElement);
         if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
         {
             if (requireIndex)
             {
-                throw new ElementResolveException(
-                    GraftErrorCodes.SelectorInvalid,
-                    "params.index is required."
-                );
+                throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.index is required.");
             }
 
             return (selector, null);
@@ -1733,10 +1485,7 @@ internal sealed class AgentPipeServer : IDisposable
         {
             if (requireIndex)
             {
-                throw new ElementResolveException(
-                    GraftErrorCodes.SelectorInvalid,
-                    "params.index is required."
-                );
+                throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.index is required.");
             }
 
             return (selector, null);
@@ -1744,46 +1493,32 @@ internal sealed class AgentPipeServer : IDisposable
 
         if (!indexProperty.TryGetInt32(out var index))
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.index must be an integer."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.index must be an integer.");
         }
 
         return (selector, index);
     }
 
-    private static (ElementSelector Selector, int? Index, string? Key) ReadSelectParams(
-        JsonElement? paramsElement
-    )
+    private static (ElementSelector Selector, int? Index, string? Key) ReadSelectParams(JsonElement? paramsElement)
     {
         var selector = ReadElementSelector(paramsElement);
         if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params must have exactly one of index or key."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params must have exactly one of index or key.");
         }
 
         var hasIndex = element.TryGetProperty("index", out var indexProperty);
         var hasKey = element.TryGetProperty("key", out var keyProperty);
         if (hasIndex == hasKey)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params must have exactly one of index or key."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params must have exactly one of index or key.");
         }
 
         if (hasIndex)
         {
             if (!indexProperty.TryGetInt32(out var index))
             {
-                throw new ElementResolveException(
-                    GraftErrorCodes.SelectorInvalid,
-                    "params.index must be an integer."
-                );
+                throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.index must be an integer.");
             }
 
             return (selector, index, null);
@@ -1791,51 +1526,34 @@ internal sealed class AgentPipeServer : IDisposable
 
         if (keyProperty.ValueKind != JsonValueKind.String)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.key must be a string."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.key must be a string.");
         }
 
         var key = keyProperty.GetString();
         if (string.IsNullOrWhiteSpace(key))
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.key must be a non-empty string."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.key must be a non-empty string.");
         }
 
         return (selector, null, key);
     }
 
-    private static (ElementSelector Selector, IReadOnlyList<int> Indexes) ReadSelectManyParams(
-        JsonElement? paramsElement
-    )
+    private static (ElementSelector Selector, IReadOnlyList<int> Indexes) ReadSelectManyParams(JsonElement? paramsElement)
     {
         var selector = ReadElementSelector(paramsElement);
         if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.indexes is required."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.indexes is required.");
         }
 
         if (!element.TryGetProperty("indexes", out var indexesProperty))
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.indexes is required."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.indexes is required.");
         }
 
         if (indexesProperty.ValueKind != JsonValueKind.Array)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.indexes must be an array of integers."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.indexes must be an array of integers.");
         }
 
         var indexes = new List<int>(indexesProperty.GetArrayLength());
@@ -1843,10 +1561,7 @@ internal sealed class AgentPipeServer : IDisposable
         {
             if (!entry.TryGetInt32(out var index))
             {
-                throw new ElementResolveException(
-                    GraftErrorCodes.SelectorInvalid,
-                    "params.indexes must be an array of integers."
-                );
+                throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.indexes must be an array of integers.");
             }
 
             indexes.Add(index);
@@ -1855,76 +1570,51 @@ internal sealed class AgentPipeServer : IDisposable
         return (selector, indexes);
     }
 
-    private static (ElementSelector Selector, string Text) ReadSendKeysParams(
-        JsonElement? paramsElement
-    )
+    private static (ElementSelector Selector, string Text) ReadSendKeysParams(JsonElement? paramsElement)
     {
         var selector = ReadElementSelector(paramsElement);
         if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.text is required."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.text is required.");
         }
 
         if (!element.TryGetProperty("text", out var textProperty))
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.text is required."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.text is required.");
         }
 
         var text = textProperty.ValueKind switch
         {
             JsonValueKind.String => textProperty.GetString() ?? string.Empty,
             JsonValueKind.Null => string.Empty,
-            _ => throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.text must be a string."
-            ),
+            _ => throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.text must be a string."),
         };
 
         return (selector, text);
     }
 
-    private static (ElementSelector Selector, string Keys) ReadPressKeysParams(
-        JsonElement? paramsElement
-    )
+    private static (ElementSelector Selector, string Keys) ReadPressKeysParams(JsonElement? paramsElement)
     {
         var selector = ReadElementSelector(paramsElement);
         if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.keys is required."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.keys is required.");
         }
 
         if (!element.TryGetProperty("keys", out var keysProperty))
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.keys is required."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.keys is required.");
         }
 
         if (keysProperty.ValueKind != JsonValueKind.String)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.keys must be a string."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.keys must be a string.");
         }
 
         var keys = keysProperty.GetString();
         if (string.IsNullOrWhiteSpace(keys))
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.keys must be a non-empty chord string."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.keys must be a non-empty chord string.");
         }
 
         return (selector, keys);
@@ -1937,20 +1627,12 @@ internal sealed class AgentPipeServer : IDisposable
 
         if (paramsElement is { } element && element.ValueKind == JsonValueKind.Object)
         {
-            if (
-                element.TryGetProperty("depth", out var depthProperty)
-                && depthProperty.TryGetInt32(out var depth)
-                && depth >= 0
-            )
+            if (element.TryGetProperty("depth", out var depthProperty) && depthProperty.TryGetInt32(out var depth) && depth >= 0)
             {
                 maxDepth = depth;
             }
 
-            if (
-                element.TryGetProperty("maxNodes", out var maxNodesProperty)
-                && maxNodesProperty.TryGetInt32(out var nodes)
-                && nodes > 0
-            )
+            if (element.TryGetProperty("maxNodes", out var maxNodesProperty) && maxNodesProperty.TryGetInt32(out var nodes) && nodes > 0)
             {
                 maxNodes = nodes;
             }
@@ -1983,35 +1665,23 @@ internal sealed class AgentPipeServer : IDisposable
     {
         if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                $"params.{propertyName} is required."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} is required.");
         }
 
         if (!element.TryGetProperty(propertyName, out var property))
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                $"params.{propertyName} is required."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} is required.");
         }
 
         if (property.ValueKind != JsonValueKind.String)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                $"params.{propertyName} must be a string."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} must be a string.");
         }
 
         var value = property.GetString();
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                $"params.{propertyName} must be a non-empty string."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} must be a non-empty string.");
         }
 
         return value;
@@ -2021,10 +1691,7 @@ internal sealed class AgentPipeServer : IDisposable
     {
         if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                $"params.{propertyName} is required."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} is required.");
         }
 
         if (
@@ -2033,10 +1700,7 @@ internal sealed class AgentPipeServer : IDisposable
             || !property.TryGetDouble(out var value)
         )
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                $"params.{propertyName} must be a number."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} must be a number.");
         }
 
         return value;
@@ -2046,21 +1710,12 @@ internal sealed class AgentPipeServer : IDisposable
     {
         if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                $"params.{propertyName} is required."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} is required.");
         }
 
-        if (
-            !element.TryGetProperty(propertyName, out var property)
-            || !property.TryGetInt32(out var value)
-        )
+        if (!element.TryGetProperty(propertyName, out var property) || !property.TryGetInt32(out var value))
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                $"params.{propertyName} must be an integer."
-            );
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} must be an integer.");
         }
 
         return value;

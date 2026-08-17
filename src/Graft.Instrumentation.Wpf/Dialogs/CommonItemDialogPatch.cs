@@ -33,19 +33,12 @@ internal static class CommonItemDialogPatch
         if (runDialog is null)
         {
             Interlocked.Exchange(ref _applied, 0);
-            throw new InvalidOperationException(
-                "Could not locate CommonItemDialog/FileDialog.RunDialog(IntPtr) for file dialog seam."
-            );
+            throw new InvalidOperationException("Could not locate CommonItemDialog/FileDialog.RunDialog(IntPtr) for file dialog seam.");
         }
 
         harmony.Patch(
             runDialog,
-            prefix: new HarmonyMethod(
-                typeof(CommonItemDialogPatch).GetMethod(
-                    nameof(Prefix),
-                    BindingFlags.Static | BindingFlags.NonPublic
-                )!
-            )
+            prefix: new HarmonyMethod(typeof(CommonItemDialogPatch).GetMethod(nameof(Prefix), BindingFlags.Static | BindingFlags.NonPublic)!)
         );
     }
 
@@ -98,11 +91,7 @@ internal static class CommonItemDialogPatch
         return true;
     }
 
-    private static bool TryApplyFileArm(
-        FileDialog dialog,
-        TryConsumeArm tryConsume,
-        ref bool result
-    )
+    private static bool TryApplyFileArm(FileDialog dialog, TryConsumeArm tryConsume, ref bool result)
     {
         if (!tryConsume(out var path, out var canceled))
         {

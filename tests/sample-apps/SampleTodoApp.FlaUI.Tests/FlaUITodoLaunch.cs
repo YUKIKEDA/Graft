@@ -8,11 +8,7 @@ namespace SampleTodoApp.FlaUI.Tests;
 
 internal static class FlaUITodoLaunch
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    };
+    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     public static FlaUITodoSession Launch(string dataDir)
     {
@@ -36,10 +32,7 @@ internal static class FlaUITodoLaunch
                             return null;
                         }
 
-                        if (
-                            !window.Properties.AutomationId.TryGetValue(out var id)
-                            || !string.Equals(id, "Main", StringComparison.Ordinal)
-                        )
+                        if (!window.Properties.AutomationId.TryGetValue(out var id) || !string.Equals(id, "Main", StringComparison.Ordinal))
                         {
                             return null;
                         }
@@ -80,10 +73,7 @@ internal static class FlaUITodoLaunch
 
     public static void ResetPersistedAppState()
     {
-        var appRoot = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "GraftSampleTodo"
-        );
+        var appRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GraftSampleTodo");
         try
         {
             if (Directory.Exists(appRoot))
@@ -99,24 +89,14 @@ internal static class FlaUITodoLaunch
 
     public static void WriteSettings(string dataDir)
     {
-        var appRoot = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "GraftSampleTodo"
-        );
+        var appRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GraftSampleTodo");
         Directory.CreateDirectory(appRoot);
         var settingsPath = Path.Combine(appRoot, "settings.json");
-        var json = JsonSerializer.Serialize(
-            new { dataDirectory = Path.GetFullPath(dataDir) },
-            JsonOptions
-        );
+        var json = JsonSerializer.Serialize(new { dataDirectory = Path.GetFullPath(dataDir) }, JsonOptions);
         File.WriteAllText(settingsPath, json);
     }
 
-    public static Window WaitForWindowById(
-        UIA3Automation automation,
-        string automationId,
-        TimeSpan timeout
-    )
+    public static Window WaitForWindowById(UIA3Automation automation, string automationId, TimeSpan timeout)
     {
         var window = Retry
             .WhileNull(
@@ -129,8 +109,7 @@ internal static class FlaUITodoLaunch
                 timeout
             )
             .Result;
-        return window
-            ?? throw new TimeoutException($"Window AutomationId='{automationId}' not found.");
+        return window ?? throw new TimeoutException($"Window AutomationId='{automationId}' not found.");
     }
 
     public static void WaitForStatus(Window main, string expected, TimeSpan timeout)
@@ -149,9 +128,7 @@ internal static class FlaUITodoLaunch
         if (!ok)
         {
             var status = main.FindFirstDescendant(cf => cf.ByAutomationId("StatusText"));
-            throw new TimeoutException(
-                $"StatusText expected '{expected}' but was '{status?.Name}'."
-            );
+            throw new TimeoutException($"StatusText expected '{expected}' but was '{status?.Name}'.");
         }
     }
 
@@ -171,20 +148,13 @@ internal static class FlaUITodoLaunch
         if (!ok)
         {
             var status = main.FindFirstDescendant(cf => cf.ByAutomationId("StatusText"));
-            throw new TimeoutException(
-                $"StatusText expected to contain '{fragment}' but was '{status?.Name}'."
-            );
+            throw new TimeoutException($"StatusText expected to contain '{fragment}' but was '{status?.Name}'.");
         }
     }
 
     public static void WaitGone(Window window, string automationId, TimeSpan timeout)
     {
-        var gone = Retry
-            .WhileFalse(
-                () => window.FindFirstDescendant(cf => cf.ByAutomationId(automationId)) is null,
-                timeout
-            )
-            .Result;
+        var gone = Retry.WhileFalse(() => window.FindFirstDescendant(cf => cf.ByAutomationId(automationId)) is null, timeout).Result;
         if (!gone)
         {
             throw new TimeoutException($"Element AutomationId='{automationId}' did not disappear.");

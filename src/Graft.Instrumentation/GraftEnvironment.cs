@@ -24,6 +24,5 @@ public static class GraftEnvironment
     /// Returns <see langword="true"/> when <see cref="Enable"/> equals <c>1</c>.
     /// </summary>
     /// <returns><see langword="true"/> if the enable flag is set.</returns>
-    public static bool IsEnableFlagSet() =>
-        string.Equals(Environment.GetEnvironmentVariable(Enable), "1", StringComparison.Ordinal);
+    public static bool IsEnableFlagSet() => string.Equals(Environment.GetEnvironmentVariable(Enable), "1", StringComparison.Ordinal);
 }

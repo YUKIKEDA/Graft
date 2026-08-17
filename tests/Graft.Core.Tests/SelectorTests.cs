@@ -87,10 +87,7 @@ public sealed class SelectorTests
     public void Resolve_NamePlusNearPath_ReturnsMatch()
     {
         var root = SampleTree();
-        var node = TreeSelector.Resolve(
-            root,
-            new Selector { Name = "Click Me", NearAutomationId = "Main" }
-        );
+        var node = TreeSelector.Resolve(root, new Selector { Name = "Click Me", NearAutomationId = "Main" });
         Assert.Equal("SampleButton", node.AutomationId);
     }
 
@@ -110,16 +107,9 @@ public sealed class SelectorTests
     [Fact]
     public void Resolve_TiedBestScore_ThrowsElementAmbiguous()
     {
-        var root = Node(
-            "Window",
-            "Root",
-            "Root",
-            [Node("Button", "A", "Dup", []), Node("Button", "B", "Dup", [])]
-        );
+        var root = Node("Window", "Root", "Root", [Node("Button", "A", "Dup", []), Node("Button", "B", "Dup", [])]);
 
-        var ex = Assert.Throws<GraftException>(() =>
-            TreeSelector.Resolve(root, Selector.ByAutomationId("Dup"))
-        );
+        var ex = Assert.Throws<GraftException>(() => TreeSelector.Resolve(root, Selector.ByAutomationId("Dup")));
         Assert.Equal(GraftErrorCodes.ElementAmbiguous, ex.Code);
     }
 
@@ -139,9 +129,7 @@ public sealed class SelectorTests
     [Fact]
     public void Resolve_MissingAutomationId_ThrowsElementNotFound()
     {
-        var ex = Assert.Throws<GraftException>(() =>
-            TreeSelector.Resolve(SampleTree(), Selector.ByAutomationId("MissingId"))
-        );
+        var ex = Assert.Throws<GraftException>(() => TreeSelector.Resolve(SampleTree(), Selector.ByAutomationId("MissingId")));
         Assert.Equal(GraftErrorCodes.ElementNotFound, ex.Code);
     }
 
@@ -191,9 +179,7 @@ public sealed class SelectorTests
     [Fact]
     public void Resolve_EmptySelector_ThrowsSelectorInvalid()
     {
-        var ex = Assert.Throws<GraftException>(() =>
-            TreeSelector.Resolve(SampleTree(), new Selector())
-        );
+        var ex = Assert.Throws<GraftException>(() => TreeSelector.Resolve(SampleTree(), new Selector()));
         Assert.Equal(GraftErrorCodes.SelectorInvalid, ex.Code);
     }
 
@@ -225,29 +211,13 @@ public sealed class SelectorTests
             },
             ancestorAutomationIds: ["Main"]
         );
-        Assert.Equal(
-            SelectorWeights.AutomationId
-                + SelectorWeights.Name
-                + SelectorWeights.ControlType
-                + SelectorWeights.NearPath,
-            score
-        );
+        Assert.Equal(SelectorWeights.AutomationId + SelectorWeights.Name + SelectorWeights.ControlType + SelectorWeights.NearPath, score);
     }
 
     private static TreeNode SampleTree() =>
-        Node(
-            "Window",
-            "Sample",
-            "Main",
-            [Node("Button", "Click Me", "SampleButton", []), Node("Text", "Idle", "StatusText", [])]
-        );
+        Node("Window", "Sample", "Main", [Node("Button", "Click Me", "SampleButton", []), Node("Text", "Idle", "StatusText", [])]);
 
-    private static TreeNode Node(
-        string controlType,
-        string name,
-        string automationId,
-        TreeNode[] children
-    ) =>
+    private static TreeNode Node(string controlType, string name, string automationId, TreeNode[] children) =>
         new()
         {
             RuntimeId = automationId.GetHashCode(StringComparison.Ordinal),

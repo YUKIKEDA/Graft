@@ -38,9 +38,7 @@ static async Task<int> RunAsync(CliOptions options)
     if (options.Mode == SmokeMode.Launch)
     {
         var appPath = options.AppPath ?? SampleLauncher.ResolveDefaultAppPath();
-        var pipeName = string.IsNullOrWhiteSpace(options.PipeName)
-            ? "graft-smoke-" + Guid.NewGuid().ToString("N")
-            : options.PipeName!;
+        var pipeName = string.IsNullOrWhiteSpace(options.PipeName) ? "graft-smoke-" + Guid.NewGuid().ToString("N") : options.PipeName!;
         var token = options.Token;
 
         Console.WriteLine($"Launching {appPath}");
@@ -52,8 +50,7 @@ static async Task<int> RunAsync(CliOptions options)
             await using var client = await AgentClient
                 .ConnectAsync(pipeName, TimeSpan.FromSeconds(options.TimeoutSec), cancellationToken)
                 .ConfigureAwait(false);
-            await RunM1ScenarioAsync(client, options, token, cancellationToken)
-                .ConfigureAwait(false);
+            await RunM1ScenarioAsync(client, options, token, cancellationToken).ConfigureAwait(false);
             return 0;
         }
         finally
@@ -63,28 +60,18 @@ static async Task<int> RunAsync(CliOptions options)
     }
 
     // Connect mode
-    var connectPipe =
-        options.PipeName
-        ?? throw new SmokeException(GraftErrorCodes.ActionFailed, "connect requires --pipe-name.");
+    var connectPipe = options.PipeName ?? throw new SmokeException(GraftErrorCodes.ActionFailed, "connect requires --pipe-name.");
 
     await using (
-        var client = await AgentClient
-            .ConnectAsync(connectPipe, TimeSpan.FromSeconds(options.TimeoutSec), cancellationToken)
-            .ConfigureAwait(false)
+        var client = await AgentClient.ConnectAsync(connectPipe, TimeSpan.FromSeconds(options.TimeoutSec), cancellationToken).ConfigureAwait(false)
     )
     {
-        await RunM1ScenarioAsync(client, options, options.Token, cancellationToken)
-            .ConfigureAwait(false);
+        await RunM1ScenarioAsync(client, options, options.Token, cancellationToken).ConfigureAwait(false);
         return 0;
     }
 }
 
-static async Task RunM1ScenarioAsync(
-    AgentClient client,
-    CliOptions options,
-    string token,
-    CancellationToken cancellationToken
-)
+static async Task RunM1ScenarioAsync(AgentClient client, CliOptions options, string token, CancellationToken cancellationToken)
 {
     await client.HandshakeAsync(token, cancellationToken).ConfigureAwait(false);
 
@@ -93,19 +80,13 @@ static async Task RunM1ScenarioAsync(
 
     var (meta, pngBytes) = await client.ScreenshotAsync(cancellationToken).ConfigureAwait(false);
     var screenshotPath = ResolveScreenshotPath(options.ScreenshotOut);
-    await File.WriteAllBytesAsync(screenshotPath, pngBytes, cancellationToken)
-        .ConfigureAwait(false);
-    Console.WriteLine(
-        $"Screenshot format={meta.Format} size={meta.Width}x{meta.Height} bytes={meta.ByteLength} path={screenshotPath}"
-    );
+    await File.WriteAllBytesAsync(screenshotPath, pngBytes, cancellationToken).ConfigureAwait(false);
+    Console.WriteLine($"Screenshot format={meta.Format} size={meta.Width}x{meta.Height} bytes={meta.ByteLength} path={screenshotPath}");
 
-    await client
-        .InvokeAsync(TreeSearch.SampleButtonAutomationId, cancellationToken)
-        .ConfigureAwait(false);
+    await client.InvokeAsync(TreeSearch.SampleButtonAutomationId, cancellationToken).ConfigureAwait(false);
     Console.WriteLine($"Invoked {TreeSearch.SampleButtonAutomationId}");
 
-    var status = await WaitForStatusTextAsync(client, "Clicked 1", cancellationToken)
-        .ConfigureAwait(false);
+    var status = await WaitForStatusTextAsync(client, "Clicked 1", cancellationToken).ConfigureAwait(false);
     Console.WriteLine($"StatusText name={status.Name}");
 }
 
@@ -126,10 +107,7 @@ static string ResolveScreenshotPath(string? screenshotOut)
     return Path.Combine(Path.GetTempPath(), $"graft-smoke-{Guid.NewGuid():N}.png");
 }
 
-static async Task<TreeNode> WaitForSampleButtonAsync(
-    AgentClient client,
-    CancellationToken cancellationToken
-)
+static async Task<TreeNode> WaitForSampleButtonAsync(AgentClient client, CancellationToken cancellationToken)
 {
     SmokeException? last = null;
     for (var attempt = 0; attempt < 50; attempt++)
@@ -138,22 +116,15 @@ static async Task<TreeNode> WaitForSampleButtonAsync(
         try
         {
             var tree = await client.GetTreeAsync(cancellationToken).ConfigureAwait(false);
-            var button = TreeSearch.FindByAutomationId(
-                tree.Root,
-                TreeSearch.SampleButtonAutomationId
-            );
+            var button = TreeSearch.FindByAutomationId(tree.Root, TreeSearch.SampleButtonAutomationId);
             if (button is not null)
             {
                 return button;
             }
 
-            last = new SmokeException(
-                GraftErrorCodes.ElementNotFound,
-                $"Element '{TreeSearch.SampleButtonAutomationId}' was not in the tree yet."
-            );
+            last = new SmokeException(GraftErrorCodes.ElementNotFound, $"Element '{TreeSearch.SampleButtonAutomationId}' was not in the tree yet.");
         }
-        catch (SmokeException ex)
-            when (ex.Code is GraftErrorCodes.ActionFailed or GraftErrorCodes.ElementNotFound)
+        catch (SmokeException ex) when (ex.Code is GraftErrorCodes.ActionFailed or GraftErrorCodes.ElementNotFound)
         {
             // MainWindow may not be ready immediately after process start.
             last = ex;
@@ -162,18 +133,10 @@ static async Task<TreeNode> WaitForSampleButtonAsync(
         await Task.Delay(100, cancellationToken).ConfigureAwait(false);
     }
 
-    throw last
-        ?? new SmokeException(
-            GraftErrorCodes.ElementNotFound,
-            $"Element '{TreeSearch.SampleButtonAutomationId}' not found."
-        );
+    throw last ?? new SmokeException(GraftErrorCodes.ElementNotFound, $"Element '{TreeSearch.SampleButtonAutomationId}' not found.");
 }
 
-static async Task<TreeNode> WaitForStatusTextAsync(
-    AgentClient client,
-    string expectedName,
-    CancellationToken cancellationToken
-)
+static async Task<TreeNode> WaitForStatusTextAsync(AgentClient client, string expectedName, CancellationToken cancellationToken)
 {
     SmokeException? last = null;
     for (var attempt = 0; attempt < 50; attempt++)
@@ -182,31 +145,19 @@ static async Task<TreeNode> WaitForStatusTextAsync(
         try
         {
             var tree = await client.GetTreeAsync(cancellationToken).ConfigureAwait(false);
-            var status = TreeSearch.FindByAutomationId(
-                tree.Root,
-                TreeSearch.StatusTextAutomationId
-            );
-            if (
-                status is not null
-                && string.Equals(status.Name, expectedName, StringComparison.Ordinal)
-            )
+            var status = TreeSearch.FindByAutomationId(tree.Root, TreeSearch.StatusTextAutomationId);
+            if (status is not null && string.Equals(status.Name, expectedName, StringComparison.Ordinal))
             {
                 return status;
             }
 
             if (status is null)
             {
-                last = new SmokeException(
-                    GraftErrorCodes.ElementNotFound,
-                    $"Element '{TreeSearch.StatusTextAutomationId}' was not in the tree yet."
-                );
+                last = new SmokeException(GraftErrorCodes.ElementNotFound, $"Element '{TreeSearch.StatusTextAutomationId}' was not in the tree yet.");
             }
             else
             {
-                last = new SmokeException(
-                    GraftErrorCodes.ExpectFailed,
-                    $"StatusText name was '{status.Name}', expected '{expectedName}'."
-                );
+                last = new SmokeException(GraftErrorCodes.ExpectFailed, $"StatusText name was '{status.Name}', expected '{expectedName}'.");
             }
         }
         catch (SmokeException ex) when (IsRetryableStatusError(ex.Code))
@@ -217,18 +168,11 @@ static async Task<TreeNode> WaitForStatusTextAsync(
         await Task.Delay(100, cancellationToken).ConfigureAwait(false);
     }
 
-    throw last
-        ?? new SmokeException(
-            GraftErrorCodes.ExpectFailed,
-            $"StatusText did not become '{expectedName}'."
-        );
+    throw last ?? new SmokeException(GraftErrorCodes.ExpectFailed, $"StatusText did not become '{expectedName}'.");
 }
 
 static bool IsRetryableStatusError(string code) =>
-    code
-        is GraftErrorCodes.ActionFailed
-            or GraftErrorCodes.ElementNotFound
-            or GraftErrorCodes.ExpectFailed;
+    code is GraftErrorCodes.ActionFailed or GraftErrorCodes.ElementNotFound or GraftErrorCodes.ExpectFailed;
 
 static void PrintSampleButton(TreeNode button)
 {

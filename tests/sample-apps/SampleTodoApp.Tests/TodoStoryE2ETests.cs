@@ -55,30 +55,25 @@ public sealed class TodoStoryE2ETests
 
                 // --- Import (replaces items with fixture) ---
                 await app.ArmOpenFileAsync(importFixture);
-                _ = await app.GetByAutomationId("ImportButton")
-                    .InvokeOpeningWindowAsync(waitForNewWindow: false);
+                _ = await app.GetByAutomationId("ImportButton").InvokeOpeningWindowAsync(waitForNewWindow: false);
                 await app.GetByAutomationId("StatusText").ExpectNameAsync("ImportDone");
-                await app.GetByAutomationId("TodoGrid")
-                    .SelectRowAsync("Title", "サンプル: ドキュメント更新");
+                await app.GetByAutomationId("TodoGrid").SelectRowAsync("Title", "サンプル: ドキュメント更新");
 
                 // --- Search filter ---
                 await app.GetByAutomationId("SearchBox").SetValueAsync("ドキュメント");
-                await app.GetByAutomationId("TodoGrid")
-                    .SelectRowAsync("Title", "サンプル: ドキュメント更新");
+                await app.GetByAutomationId("TodoGrid").SelectRowAsync("Title", "サンプル: ドキュメント更新");
                 await app.GetByAutomationId("ClearFiltersButton").InvokeAsync();
                 await app.GetByAutomationId("StatusText").ExpectNameAsync("FiltersCleared");
 
                 // --- Priority filter ---
                 await app.GetByAutomationId("PriorityFilter").SelectAsync(3); // 高
-                await app.GetByAutomationId("TodoGrid")
-                    .SelectRowAsync("Title", "サンプル: 設計レビュー");
+                await app.GetByAutomationId("TodoGrid").SelectRowAsync("Title", "サンプル: 設計レビュー");
                 await app.GetByAutomationId("ClearFiltersButton").InvokeAsync();
                 await app.GetByAutomationId("StatusText").ExpectNameAsync("FiltersCleared");
 
                 // --- Status filter ---
                 await app.GetByAutomationId("StatusFilter").SelectAsync(3); // 完了
-                await app.GetByAutomationId("TodoGrid")
-                    .SelectRowAsync("Title", "サンプル: 完了済みタスク");
+                await app.GetByAutomationId("TodoGrid").SelectRowAsync("Title", "サンプル: 完了済みタスク");
                 await app.GetByAutomationId("ClearFiltersButton").InvokeAsync();
                 await app.GetByAutomationId("StatusText").ExpectNameAsync("FiltersCleared");
 
@@ -111,8 +106,7 @@ public sealed class TodoStoryE2ETests
 
                 // --- Export remaining rows ---
                 await app.ArmSaveFileAsync(exportPath);
-                _ = await app.GetByAutomationId("ExportButton")
-                    .InvokeOpeningWindowAsync(waitForNewWindow: false);
+                _ = await app.GetByAutomationId("ExportButton").InvokeOpeningWindowAsync(waitForNewWindow: false);
                 await app.GetByAutomationId("StatusText").ExpectNameAsync("ExportDone");
                 Assert.True(File.Exists(exportPath), exportPath);
             }
@@ -126,8 +120,7 @@ public sealed class TodoStoryE2ETests
         }
     }
 
-    private static string NewDataDir() =>
-        Path.Combine(Path.GetTempPath(), "graft-sample-todo", Guid.NewGuid().ToString("N"));
+    private static string NewDataDir() => Path.Combine(Path.GetTempPath(), "graft-sample-todo", Guid.NewGuid().ToString("N"));
 
     private static void AssertTimelineWritten(string timelineDir)
     {

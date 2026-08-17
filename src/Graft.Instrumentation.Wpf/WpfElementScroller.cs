@@ -23,10 +23,7 @@ internal sealed class WpfElementScroller : IElementScroller
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "WPF Application.Current is not available; cannot scrollIntoView."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "WPF Application.Current is not available; cannot scrollIntoView.");
         }
 
         if (dispatcher.CheckAccess())
@@ -34,10 +31,7 @@ internal sealed class WpfElementScroller : IElementScroller
             return ScrollOnUiThread(selector, index);
         }
 
-        return dispatcher.Invoke(
-            () => ScrollOnUiThread(selector, index),
-            DispatcherPriority.Normal
-        );
+        return dispatcher.Invoke(() => ScrollOnUiThread(selector, index), DispatcherPriority.Normal);
     }
 
     /// <summary>
@@ -47,10 +41,7 @@ internal sealed class WpfElementScroller : IElementScroller
     {
         if (index < 0)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.index must be >= 0."
-            );
+            throw new ElementActionException(GraftErrorCodes.SelectorInvalid, "params.index must be >= 0.");
         }
 
         // ListView derives from ListBox — one arm covers both.
@@ -119,14 +110,10 @@ internal sealed class WpfElementScroller : IElementScroller
         listBox.UpdateLayout();
         listBox.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
 
-        var container =
-            listBox.ItemContainerGenerator.ContainerFromIndex(index) as FrameworkElement;
+        var container = listBox.ItemContainerGenerator.ContainerFromIndex(index) as FrameworkElement;
         if (container is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"Failed to realize list item at index {index}."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, $"Failed to realize list item at index {index}.");
         }
 
         container.BringIntoView();
@@ -142,14 +129,10 @@ internal sealed class WpfElementScroller : IElementScroller
         dataGrid.UpdateLayout();
         dataGrid.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
 
-        var container =
-            dataGrid.ItemContainerGenerator.ContainerFromIndex(index) as FrameworkElement;
+        var container = dataGrid.ItemContainerGenerator.ContainerFromIndex(index) as FrameworkElement;
         if (container is null)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"Failed to realize DataGrid row at index {index}."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, $"Failed to realize DataGrid row at index {index}.");
         }
 
         container.BringIntoView();
@@ -167,14 +150,10 @@ internal sealed class WpfElementScroller : IElementScroller
 
         try
         {
-            var container =
-                comboBox.ItemContainerGenerator.ContainerFromIndex(index) as FrameworkElement;
+            var container = comboBox.ItemContainerGenerator.ContainerFromIndex(index) as FrameworkElement;
             if (container is null)
             {
-                throw new ElementActionException(
-                    GraftErrorCodes.ActionFailed,
-                    $"Failed to realize ComboBox item at index {index}."
-                );
+                throw new ElementActionException(GraftErrorCodes.ActionFailed, $"Failed to realize ComboBox item at index {index}.");
             }
 
             container.BringIntoView();
@@ -190,10 +169,7 @@ internal sealed class WpfElementScroller : IElementScroller
     private static ElementIdentity ScrollGenericItemsControl(ItemsControl itemsControl, int index)
     {
         EnsureIndexInRange(itemsControl, index);
-        if (
-            itemsControl.ItemContainerGenerator.ContainerFromIndex(index)
-            is FrameworkElement existing
-        )
+        if (itemsControl.ItemContainerGenerator.ContainerFromIndex(index) is FrameworkElement existing)
         {
             existing.BringIntoView();
             existing.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
@@ -221,17 +197,11 @@ internal sealed class WpfElementScroller : IElementScroller
     {
         if (index >= dataGrid.Items.Count)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotFound,
-                $"Item index {index} is out of range (count={dataGrid.Items.Count})."
-            );
+            throw new ElementActionException(GraftErrorCodes.ElementNotFound, $"Item index {index} is out of range (count={dataGrid.Items.Count}).");
         }
     }
 
-    private static ElementIdentity ToIdentity(
-        FrameworkElement element,
-        string? fallbackAutomationId
-    )
+    private static ElementIdentity ToIdentity(FrameworkElement element, string? fallbackAutomationId)
     {
         var automationId = AutomationProperties.GetAutomationId(element);
         if (string.IsNullOrWhiteSpace(automationId))
@@ -241,16 +211,9 @@ internal sealed class WpfElementScroller : IElementScroller
 
         if (string.IsNullOrWhiteSpace(automationId))
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "Scrolled element has no automationId; cannot return identity."
-            );
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "Scrolled element has no automationId; cannot return identity.");
         }
 
-        return new ElementIdentity
-        {
-            AutomationId = automationId,
-            RuntimeId = element.GetHashCode(),
-        };
+        return new ElementIdentity { AutomationId = automationId, RuntimeId = element.GetHashCode() };
     }
 }

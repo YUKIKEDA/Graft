@@ -37,9 +37,7 @@ internal sealed class WpfScreenshotProvider : IScreenshotProvider
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
-            throw new InvalidOperationException(
-                "WPF Application.Current is not available; cannot capture a screenshot."
-            );
+            throw new InvalidOperationException("WPF Application.Current is not available; cannot capture a screenshot.");
         }
 
         if (dispatcher.CheckAccess())
@@ -107,10 +105,7 @@ internal sealed class WpfScreenshotProvider : IScreenshotProvider
             return Encode(windowBitmap);
         }
 
-        var layers = new List<(FrameworkElement Element, BitmapSource Bitmap)>
-        {
-            (window, windowBitmap),
-        };
+        var layers = new List<(FrameworkElement Element, BitmapSource Bitmap)> { (window, windowBitmap) };
         foreach (var overlay in overlays)
         {
             if (TryCaptureVisual(window, overlay, "overlay", out var bitmap))
@@ -122,12 +117,7 @@ internal sealed class WpfScreenshotProvider : IScreenshotProvider
         return layers.Count == 1 ? Encode(windowBitmap) : Composite(layers);
     }
 
-    private static bool TryCaptureVisual(
-        Window window,
-        FrameworkElement visual,
-        string describe,
-        out BitmapSource bitmap
-    )
+    private static bool TryCaptureVisual(Window window, FrameworkElement visual, string describe, out BitmapSource bitmap)
     {
         try
         {
@@ -154,11 +144,7 @@ internal sealed class WpfScreenshotProvider : IScreenshotProvider
         }
     }
 
-    private static void CollectOpenOverlays(
-        DependencyObject current,
-        HashSet<DependencyObject> visited,
-        List<FrameworkElement> overlays
-    )
+    private static void CollectOpenOverlays(DependencyObject current, HashSet<DependencyObject> visited, List<FrameworkElement> overlays)
     {
         if (!visited.Add(current))
         {
@@ -206,10 +192,7 @@ internal sealed class WpfScreenshotProvider : IScreenshotProvider
         }
     }
 
-    private static List<FrameworkElement> CollectRelatedVisuals(
-        Window window,
-        FrameworkElement element
-    )
+    private static List<FrameworkElement> CollectRelatedVisuals(Window window, FrameworkElement element)
     {
         var related = new List<FrameworkElement>();
         AddUnique(related, element);
@@ -258,12 +241,7 @@ internal sealed class WpfScreenshotProvider : IScreenshotProvider
             var visualCount = VisualTreeHelper.GetChildrenCount(current);
             for (var i = 0; i < visualCount; i++)
             {
-                CollectPopupsTargeting(
-                    VisualTreeHelper.GetChild(current, i),
-                    target,
-                    visited,
-                    related
-                );
+                CollectPopupsTargeting(VisualTreeHelper.GetChild(current, i), target, visited, related);
             }
         }
 
@@ -378,49 +356,29 @@ internal sealed class WpfScreenshotProvider : IScreenshotProvider
     private static RenderTargetBitmap RenderVisual(Visual visual)
     {
         var dpi = VisualTreeHelper.GetDpi(visual);
-        var dipWidth = visual is FrameworkElement framework
-            ? framework.ActualWidth
-            : (visual as UIElement)?.RenderSize.Width ?? 0;
-        var dipHeight = visual is FrameworkElement frameworkHeight
-            ? frameworkHeight.ActualHeight
-            : (visual as UIElement)?.RenderSize.Height ?? 0;
+        var dipWidth = visual is FrameworkElement framework ? framework.ActualWidth : (visual as UIElement)?.RenderSize.Width ?? 0;
+        var dipHeight = visual is FrameworkElement frameworkHeight ? frameworkHeight.ActualHeight : (visual as UIElement)?.RenderSize.Height ?? 0;
 
         var width = Math.Max(1, (int)Math.Ceiling(Math.Max(dipWidth, 0) * dpi.DpiScaleX));
         var height = Math.Max(1, (int)Math.Ceiling(Math.Max(dipHeight, 0) * dpi.DpiScaleY));
 
-        var bitmap = new RenderTargetBitmap(
-            width,
-            height,
-            dpi.PixelsPerInchX,
-            dpi.PixelsPerInchY,
-            PixelFormats.Pbgra32
-        );
+        var bitmap = new RenderTargetBitmap(width, height, dpi.PixelsPerInchX, dpi.PixelsPerInchY, PixelFormats.Pbgra32);
         bitmap.Render(visual);
         return bitmap;
     }
 
-    private static BitmapSource CropToBitmap(
-        RenderTargetBitmap source,
-        Visual captureRoot,
-        FrameworkElement element,
-        string describe
-    )
+    private static BitmapSource CropToBitmap(RenderTargetBitmap source, Visual captureRoot, FrameworkElement element, string describe)
     {
         if (element.ActualWidth <= 0 && element.ActualHeight <= 0)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotActionable,
-                $"Element '{describe}' has empty bounds; cannot screenshot."
-            );
+            throw new ElementActionException(GraftErrorCodes.ElementNotActionable, $"Element '{describe}' has empty bounds; cannot screenshot.");
         }
 
         Rect dipBounds;
         try
         {
             var transform = element.TransformToVisual(captureRoot);
-            dipBounds = transform.TransformBounds(
-                new Rect(0, 0, element.ActualWidth, element.ActualHeight)
-            );
+            dipBounds = transform.TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
         }
         catch (InvalidOperationException)
         {
@@ -490,9 +448,7 @@ internal sealed class WpfScreenshotProvider : IScreenshotProvider
         return cropped;
     }
 
-    private static ScreenshotCapture Composite(
-        IReadOnlyList<(FrameworkElement Element, BitmapSource Bitmap)> layers
-    )
+    private static ScreenshotCapture Composite(IReadOnlyList<(FrameworkElement Element, BitmapSource Bitmap)> layers)
     {
         var union = Rect.Empty;
         var placements = new List<(BitmapSource Bitmap, Point Screen)>(layers.Count);
@@ -515,10 +471,7 @@ internal sealed class WpfScreenshotProvider : IScreenshotProvider
 
         if (placements.Count == 0)
         {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotActionable,
-                "Element overlay screenshot has no screen-visible layers."
-            );
+            throw new ElementActionException(GraftErrorCodes.ElementNotActionable, "Element overlay screenshot has no screen-visible layers.");
         }
 
         if (placements.Count == 1)
@@ -545,11 +498,7 @@ internal sealed class WpfScreenshotProvider : IScreenshotProvider
         return Encode(dest, destW, destH);
     }
 
-    private static ScreenshotCapture Encode(
-        BitmapSource bitmap,
-        int? width = null,
-        int? height = null
-    )
+    private static ScreenshotCapture Encode(BitmapSource bitmap, int? width = null, int? height = null)
     {
         var encoder = new PngBitmapEncoder();
         encoder.Frames.Add(BitmapFrame.Create(bitmap));
@@ -574,7 +523,5 @@ internal sealed class WpfScreenshotProvider : IScreenshotProvider
     }
 
     private static string Describe(ResolvedElement resolved) =>
-        string.IsNullOrWhiteSpace(resolved.AutomationId)
-            ? $"runtimeId={resolved.RuntimeId}"
-            : resolved.AutomationId;
+        string.IsNullOrWhiteSpace(resolved.AutomationId) ? $"runtimeId={resolved.RuntimeId}" : resolved.AutomationId;
 }

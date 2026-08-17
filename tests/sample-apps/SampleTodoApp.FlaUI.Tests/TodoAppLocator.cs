@@ -6,17 +6,7 @@ internal static class TodoAppLocator
 {
     public static string ResolveProjectPath()
     {
-        var sibling = Path.GetFullPath(
-            Path.Combine(
-                AppContext.BaseDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "SampleTodoApp",
-                "SampleTodoApp.csproj"
-            )
-        );
+        var sibling = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "SampleTodoApp", "SampleTodoApp.csproj"));
         if (File.Exists(sibling))
         {
             return sibling;
@@ -25,13 +15,7 @@ internal static class TodoAppLocator
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null)
         {
-            var candidate = Path.Combine(
-                dir.FullName,
-                "tests",
-                "sample-apps",
-                "SampleTodoApp",
-                "SampleTodoApp.csproj"
-            );
+            var candidate = Path.Combine(dir.FullName, "tests", "sample-apps", "SampleTodoApp", "SampleTodoApp.csproj");
             if (File.Exists(candidate))
             {
                 return candidate;
@@ -75,17 +59,13 @@ internal static class TodoAppLocator
             RedirectStandardError = true,
             CreateNoWindow = true,
         };
-        using var process =
-            Process.Start(psi)
-            ?? throw new InvalidOperationException("dotnet build failed to start.");
+        using var process = Process.Start(psi) ?? throw new InvalidOperationException("dotnet build failed to start.");
         process.WaitForExit();
         if (process.ExitCode != 0)
         {
             var stdout = process.StandardOutput.ReadToEnd();
             var stderr = process.StandardError.ReadToEnd();
-            throw new InvalidOperationException(
-                $"dotnet build SampleTodoApp failed (exit {process.ExitCode}).\n{stdout}\n{stderr}"
-            );
+            throw new InvalidOperationException($"dotnet build SampleTodoApp failed (exit {process.ExitCode}).\n{stdout}\n{stderr}");
         }
     }
 }

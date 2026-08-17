@@ -27,10 +27,7 @@ internal static class AppProcessLauncher
 
         if (!File.Exists(appPath))
         {
-            throw new GraftException(
-                GraftErrorCodes.ActionFailed,
-                $"App path not found: {appPath}"
-            );
+            throw new GraftException(GraftErrorCodes.ActionFailed, $"App path not found: {appPath}");
         }
 
         var psi = new ProcessStartInfo
@@ -72,12 +69,7 @@ internal static class AppProcessLauncher
             psi.FileName = appPath;
         }
 
-        var process =
-            Process.Start(psi)
-            ?? throw new GraftException(
-                GraftErrorCodes.ActionFailed,
-                "Failed to start application process."
-            );
+        var process = Process.Start(psi) ?? throw new GraftException(GraftErrorCodes.ActionFailed, "Failed to start application process.");
 
         // Drain stdout/stderr so the child cannot block on full pipes.
         _ = process.StandardOutput.ReadToEndAsync();
