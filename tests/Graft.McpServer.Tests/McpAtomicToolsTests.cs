@@ -5,7 +5,6 @@ using ModelContextProtocol.Protocol;
 namespace Graft.McpServer.Tests;
 
 [Collection(McpUiCollection.Name)]
-[Trait("Category", "UI")]
 public sealed class McpAtomicToolsTests
 {
     /// <summary>
@@ -23,6 +22,7 @@ public sealed class McpAtomicToolsTests
     /// - Each CallToolResult IsError is false and ok=true
     /// </remarks>
     [Fact]
+    [Trait("Category", "UI")]
     public async Task Launch_Invoke_Expect_Dispose_Succeeds()
     {
         var serverDll = Path.Combine(AppContext.BaseDirectory, "Graft.McpServer.dll");

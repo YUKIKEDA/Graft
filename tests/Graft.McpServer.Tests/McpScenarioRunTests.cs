@@ -6,7 +6,6 @@ using ModelContextProtocol.Protocol;
 namespace Graft.McpServer.Tests;
 
 [Collection(McpUiCollection.Name)]
-[Trait("Category", "UI")]
 public sealed class McpScenarioRunTests
 {
     /// <summary>
@@ -48,6 +47,7 @@ public sealed class McpScenarioRunTests
     /// - IsError false; JSON ok=true and name sample-main-window
     /// </remarks>
     [Fact]
+    [Trait("Category", "UI")]
     public async Task RunScenario_SampleMainWindow_ViaMcp_Succeeds()
     {
         var scenarioPath = Path.Combine(

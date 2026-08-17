@@ -69,5 +69,5 @@ jobs:
       - name: Test Core (exclude launched-app UI)
         run: dotnet test tests/Graft.Core.Tests/Graft.Core.Tests.csproj --no-build --no-restore -c Debug --filter "Category!=UI" --logger "trx;LogFileName=core.trx"
 
-      - name: Test McpServer (stdio smoke only)
+      - name: Test McpServer (stdio, no launched app)
         run: dotnet test tests/Graft.McpServer.Tests/Graft.McpServer.Tests.csproj --no-build --no-restore -c Debug --filter "Category!=UI" --logger "trx;LogFileName=mcp.trx"
