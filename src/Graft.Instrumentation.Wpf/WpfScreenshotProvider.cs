@@ -172,6 +172,11 @@ internal sealed class WpfScreenshotProvider : IScreenshotProvider
                 AddUnique(overlays, ownedTip);
             }
 
+            if (element.ContextMenu is { IsOpen: true } ownedMenu)
+            {
+                AddUnique(overlays, ownedMenu);
+            }
+
             if (current is Popup { IsOpen: true, Child: FrameworkElement popupChild })
             {
                 AddUnique(overlays, popupChild);
@@ -227,7 +232,7 @@ internal sealed class WpfScreenshotProvider : IScreenshotProvider
         var overlays = new List<FrameworkElement>();
         foreach (var visual in related)
         {
-            if (visual is ToolTip || FindHostingPopup(visual) is not null)
+            if (visual is ToolTip or ContextMenu || FindHostingPopup(visual) is not null)
             {
                 overlays.Add(visual);
             }

@@ -31,7 +31,7 @@ public sealed class WpfUiCaptureTests
     ///
     /// Steps:
     /// - Call GetTree / screenshot / resolve as before
-    /// - Capture SampleButton clip, collapsed empty clip, open Popup clip, open ToolTip node clip, ancestor clip with ToolTip, window with open ToolTip
+    /// - Capture SampleButton clip, collapsed empty clip, open Popup clip, open ToolTip node clip, ancestor clip with ToolTip, window with open ToolTip, window with open ContextMenu
     /// - Invoke SampleButton then GetTree StatusText
     /// - setValue SampleTextBox then GetTree name
     /// - Toggle SampleCheckBox then expect name On
@@ -40,7 +40,7 @@ public sealed class WpfUiCaptureTests
     ///
     /// Expected:
     /// - SampleButton name/bounds and PNG signature as before
-    /// - Element clip smaller than window; collapsed → notActionable; Popup/ToolTip clips have PNG signature (host+overlay)
+    /// - Element clip smaller than window; collapsed → notActionable; Popup/ToolTip/ContextMenu overlays have PNG signature
     /// - After invoke, StatusText name is "Clicked 1"
     /// - After setValue, SampleTextBox name matches the set text
     /// - After toggle, SampleCheckBox name is On
@@ -221,6 +221,53 @@ public sealed class WpfUiCaptureTests
                 windowWithTip.PngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature),
                 "Expected PNG signature on window screenshot with tooltip."
             );
+
+            var menuHost = new Button
+            {
+                Content = "MenuHost",
+                Width = 96,
+                Height = 32,
+            };
+            AutomationProperties.SetAutomationId(menuHost, "ContextMenuShotHost");
+            var contextMenu = new ContextMenu();
+            contextMenu.Items.Add(new MenuItem { Header = "ShotPing" });
+            menuHost.ContextMenu = contextMenu;
+            ((StackPanel)window.Content).Children.Add(menuHost);
+            window.UpdateLayout();
+            var hostOnly = screenshotProvider.Capture(
+                new ScreenshotOptions
+                {
+                    Selector = new ElementSelector { AutomationId = "ContextMenuShotHost" },
+                }
+            );
+            contextMenu.IsOpen = true;
+            window.UpdateLayout();
+            window.Dispatcher.Invoke(() => { }, DispatcherPriority.Background);
+            var hostWithMenu = screenshotProvider.Capture(
+                new ScreenshotOptions
+                {
+                    Selector = new ElementSelector { AutomationId = "ContextMenuShotHost" },
+                }
+            );
+            Assert.True(hostWithMenu.Meta.Width > 0);
+            Assert.True(hostWithMenu.Meta.Height > 0);
+            Assert.True(
+                hostWithMenu.PngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature),
+                "Expected PNG signature on host clip with context menu."
+            );
+            Assert.True(
+                hostWithMenu.Meta.Width > hostOnly.Meta.Width
+                    || hostWithMenu.Meta.Height > hostOnly.Meta.Height,
+                "Open ContextMenu should be composited with its host, not host-only."
+            );
+            var windowWithMenu = screenshotProvider.Capture(ScreenshotOptions.Default);
+            Assert.True(windowWithMenu.Meta.Width > 0);
+            Assert.True(windowWithMenu.Meta.Height > 0);
+            Assert.True(
+                windowWithMenu.PngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature),
+                "Expected PNG signature on window screenshot with context menu."
+            );
+            contextMenu.IsOpen = false;
 
             var resolver =
                 AgentServices.ElementResolver
