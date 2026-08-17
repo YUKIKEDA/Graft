@@ -114,6 +114,6 @@ dotnet test tests/sample-apps/SampleTodoApp.FlaUI.Tests
 - invoke / setValue はネイティブ → Peer → SendInput フォールバック（クリック / クリア+タイプ）
 - 全解テスト並列（Phase 31 / X04）: 正本は `dotnet test Graft.slnx -m:1`（アセンブリ内は `SampleUiCollection` / `McpUiCollection`）。プロセス mutex だけでは SendInput 前景不足が残るため未採用。X04 は運用 Done（[task_phase31.md](./task_phase31.md)）
 - Frame 遷移（Phase 32 / H02）: Sample `SampleFrame` + Page ナビ。専用 DSL なし（既存 WaitFor / Expect）。Done（[task_phase32.md](./task_phase32.md)）
-- 操作タイムライン（Phase 33 / D06）: `LaunchOptions.Timeline`（`OutputDirectory` 必須、`Always`/`OnFailure`）。操作完了後 PNG + `index.html`（速度・字幕）。`SaveTimeline()` / Dispose で確定。Done（[task_phase33.md](./task_phase33.md)）
+- 操作タイムライン（Phase 33 / D06）: `LaunchOptions.Timeline`（`OutputDirectory` 必須、`Always`/`OnFailure`）。操作完了後 PNG + `index.html`（速度・字幕）。`ScreenshotAsync`（窓・要素クリップ）は撮った PNG をフレームにする（窓を撮り直さない）。`SaveTimeline()` / Dispose で確定。Done（[task_phase33.md](./task_phase33.md)）
 - SampleTodoApp（Phase 34）: 利用ガイド正本。R3 + ObservableCollections + MS.DI、実 JSON（設定 UserControl オーバーレイで保存先/`OpenFolderDialog`・テーマ。LocalAppData `settings.json`）、詳細 Window、Export/Import シーム。E2E 隔離は Settings オーバーレイ + `ArmOpenFolder`。ストーリー E2E 1 本（フィルタ／テーマ／チェック編集削除含む）+ `Timeline` Always（`%TEMP%\graft-sample-todo-timeline\{leaf}\index.html`）。`LaunchOptions.Environment` は Core 汎用（任意）。Done（[task_phase34.md](./task_phase34.md)）
 - 未実装（後続）: **Avalonia**（Phase 35 後）。正本は [competitive-gap.md](./competitive-gap.md)。typeHuman / Inspector / 画像 diff（P03）等は任意または非目標

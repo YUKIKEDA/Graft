@@ -2115,7 +2115,8 @@ public sealed class ElementQuery
             await RecordSuccessAsync(
                     FailureSteps.Screenshot,
                     $"{shot.Width}x{shot.Height}:{shot.PngBytes.Length}",
-                    cancellationToken
+                    cancellationToken,
+                    shot.PngBytes
                 )
                 .ConfigureAwait(false);
             return shot;
@@ -2741,14 +2742,15 @@ public sealed class ElementQuery
     private async Task RecordSuccessAsync(
         string action,
         string? detail,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        byte[]? pngBytes = null
     )
     {
         _operationLog.Record(action, detail);
         if (_timeline is not null)
         {
             await _timeline
-                .CaptureAfterAsync(action, detail, cancellationToken)
+                .CaptureAfterAsync(action, detail, cancellationToken, pngBytes)
                 .ConfigureAwait(false);
         }
     }
