@@ -78,7 +78,7 @@ internal sealed class WpfScreenshotProvider : IScreenshotProvider
             );
         }
 
-        var related = OrderForComposite(CollectRelatedVisuals(element));
+        var related = OrderForComposite(CollectRelatedVisuals(window, element));
         var layers = new List<(FrameworkElement Element, BitmapSource Bitmap)>(related.Count);
         foreach (var visual in related)
         {
@@ -206,11 +206,15 @@ internal sealed class WpfScreenshotProvider : IScreenshotProvider
         }
     }
 
-    private static List<FrameworkElement> CollectRelatedVisuals(FrameworkElement element)
+    private static List<FrameworkElement> CollectRelatedVisuals(
+        Window window,
+        FrameworkElement element
+    )
     {
         var related = new List<FrameworkElement>();
         AddUnique(related, element);
         CollectOpenOverlays(element, [], related);
+        CollectPopupsTargeting(window, element, [], related);
 
         if (element is ToolTip { PlacementTarget: FrameworkElement tipHost })
         {
@@ -224,6 +228,68 @@ internal sealed class WpfScreenshotProvider : IScreenshotProvider
         }
 
         return related;
+    }
+
+    private static void CollectPopupsTargeting(
+        DependencyObject current,
+        FrameworkElement target,
+        HashSet<DependencyObject> visited,
+        List<FrameworkElement> related
+    )
+    {
+        if (!visited.Add(current))
+        {
+            return;
+        }
+
+        if (
+            current is Popup popup
+            && popup.IsOpen
+            && popup.PlacementTarget is FrameworkElement host
+            && popup.Child is FrameworkElement child
+            && IsSelfOrAncestor(target, host)
+        )
+        {
+            AddUnique(related, child);
+        }
+
+        if (current is Visual)
+        {
+            var visualCount = VisualTreeHelper.GetChildrenCount(current);
+            for (var i = 0; i < visualCount; i++)
+            {
+                CollectPopupsTargeting(
+                    VisualTreeHelper.GetChild(current, i),
+                    target,
+                    visited,
+                    related
+                );
+            }
+        }
+
+        foreach (var logical in LogicalTreeHelper.GetChildren(current))
+        {
+            if (logical is DependencyObject dependency)
+            {
+                CollectPopupsTargeting(dependency, target, visited, related);
+            }
+        }
+    }
+
+    private static bool IsSelfOrAncestor(FrameworkElement ancestor, DependencyObject node)
+    {
+        DependencyObject? current = node;
+        while (current is not null)
+        {
+            if (ReferenceEquals(current, ancestor))
+            {
+                return true;
+            }
+
+            current = LogicalTreeHelper.GetParent(current) ?? VisualTreeHelper.GetParent(current);
+        }
+
+        return false;
     }
 
     private static List<FrameworkElement> OrderForComposite(List<FrameworkElement> related)

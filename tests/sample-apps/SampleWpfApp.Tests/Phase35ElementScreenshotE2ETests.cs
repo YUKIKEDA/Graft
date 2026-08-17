@@ -44,7 +44,7 @@ public sealed class Phase35ElementScreenshotE2ETests
     }
 
     /// <summary>
-    /// Open Popup child is captured with its PlacementTarget host.
+    /// Open Popup is composited with its PlacementTarget opener.
     /// </summary>
     /// <remarks>
     /// Preconditions:
@@ -52,11 +52,11 @@ public sealed class Phase35ElementScreenshotE2ETests
     ///
     /// Steps:
     /// - Launch sample
-    /// - Invoke SamplePhase29bOpenPopup
-    /// - ScreenshotAsync on SamplePhase29bPopupButton
+    /// - Screenshot OpenPopup closed, Invoke, screenshot OpenPopup and PopupButton
     /// - SaveAsync to Artifacts
     ///
     /// Expected:
+    /// - Open opener clip is larger than the closed opener clip
     /// - PNG signature and width/height &gt; 0
     /// - Artifacts/phase35-fluent-popup-button.png exists (host + popup)
     /// </remarks>
@@ -65,7 +65,16 @@ public sealed class Phase35ElementScreenshotE2ETests
     {
         await using var app = await LaunchAsync();
         await app.GetByAutomationId("SamplePhase29bOpenPopup").ScrollIntoViewAsync();
+        var closed = await app.GetByAutomationId("SamplePhase29bOpenPopup").ScreenshotAsync();
+        AssertPng(closed);
         await app.GetByAutomationId("SamplePhase29bOpenPopup").InvokeAsync();
+        var opener = await app.GetByAutomationId("SamplePhase29bOpenPopup").ScreenshotAsync();
+        AssertPng(opener);
+        Assert.True(
+            opener.Width > closed.Width || opener.Height > closed.Height,
+            $"Open Popup should be composited with the opener. closed={closed.Width}x{closed.Height} open={opener.Width}x{opener.Height}."
+        );
+        await SaveArtifactAsync(opener, "phase35-fluent-popup-opener.png");
         var clip = await app.GetByAutomationId("SamplePhase29bPopupButton").ScreenshotAsync();
         AssertPng(clip);
         await SaveArtifactAsync(clip, "phase35-fluent-popup-button.png");
