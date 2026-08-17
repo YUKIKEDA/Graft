@@ -4,6 +4,7 @@ using Graft.Protocol.Messages;
 namespace Graft.Core.Tests;
 
 [Collection(SampleUiCollection.Name)]
+[Trait("Category", "UI")]
 public sealed class LaunchTests
 {
     /// <summary>

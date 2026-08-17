@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  verify:
+    name: Format, build, unit tests
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/*.props', '.config/dotnet-tools.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restore local tools
+        run: dotnet tool restore
+
+      - name: Check CSharpier
+        run: dotnet csharpier check .
+
+      - name: Restore
+        run: dotnet restore Graft.slnx
+
+      - name: Build
+        run: dotnet build Graft.slnx --no-restore -c Debug
+
+      - name: Test Protocol
+        run: dotnet test tests/Graft.Protocol.Tests/Graft.Protocol.Tests.csproj --no-build --no-restore -c Debug --logger "trx;LogFileName=protocol.trx"
+
+      - name: Test Instrumentation
+        run: dotnet test tests/Graft.Instrumentation.Tests/Graft.Instrumentation.Tests.csproj --no-build --no-restore -c Debug --logger "trx;LogFileName=instrumentation.trx"
+
+      - name: Test Analyzer
+        run: dotnet test tests/Graft.Instrumentation.Analyzer.Tests/Graft.Instrumentation.Analyzer.Tests.csproj --no-build --no-restore -c Debug --logger "trx;LogFileName=analyzer.trx"
+
+      - name: Test Instrumentation.Wpf (in-process)
+        run: dotnet test tests/Graft.Instrumentation.Wpf.Tests/Graft.Instrumentation.Wpf.Tests.csproj --no-build --no-restore -c Debug --logger "trx;LogFileName=wpf.trx"
+
+      - name: Test Core (exclude launched-app UI)
+        run: dotnet test tests/Graft.Core.Tests/Graft.Core.Tests.csproj --no-build --no-restore -c Debug --filter "Category!=UI" --logger "trx;LogFileName=core.trx"
+
+      - name: Test McpServer (stdio smoke only)
+        run: dotnet test tests/Graft.McpServer.Tests/Graft.McpServer.Tests.csproj --no-build --no-restore -c Debug --filter "Category!=UI" --logger "trx;LogFileName=mcp.trx"

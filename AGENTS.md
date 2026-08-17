@@ -12,6 +12,7 @@ In-process UI testing for WPF & AvaloniaUI. Design source of truth: `.dev/projec
 | Pull requests | GitHub template + rules | `.github/pull_request_template.md`, `.cursor/rules/pull-requests.mdc` |
 | Shell | PowerShell (Windows) | `.cursor/rules/powershell-shell.mdc` (`alwaysApply`); skill: `.cursor/skills/powershell-git/` |
 | Formatter | CSharpier | `.config/dotnet-tools.json`, `.csharpierrc.json`, format on save via `.vscode/` |
+| CI | GitHub Actions | `.github/workflows/ci.yml` (hosted: format/build/unit). Full UI: `.github/workflows/ui.yml` self-hosted interactive, opt-in via `GRAFT_ENABLE_UI_CI`. See `CONTRIBUTING.md` |
 | Linter | StyleCop.Analyzers | `Directory.Build.props`, `stylecop.json`, `.editorconfig` (warnings for now) |
 | XML docs | Required on `src/**` public API | Warning via StyleCop; `GenerateDocumentationFile` in `src/Directory.Build.props` |
 | Test docs | Required on Fact/Theory methods | `.cursor/rules/testing.mdc` — `summary` + `remarks` (Preconditions/Steps/Expected); no Analyzer yet |
@@ -26,6 +27,7 @@ dotnet test tests/sample-apps/SampleWpfApp.Tests
 # Full solution: SendInput UI tests flake under cross-assembly parallel launches.
 # Required: -m:1 (or run UI projects sequentially). See .dev/project.md §9 / task_phase31.md.
 dotnet test Graft.slnx -m:1
+# Hosted CI equivalent (no launched-app E2E): see .github/workflows/ci.yml / CONTRIBUTING.md
 ```
 
 ## Commit style (summary)

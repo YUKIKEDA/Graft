@@ -1,10 +1,13 @@
 # Graft — In-process UI testing for WPF & AvaloniaUI
 
+[![CI](https://github.com/YUKIKEDA/Graft/actions/workflows/ci.yml/badge.svg)](https://github.com/YUKIKEDA/Graft/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 WPF / AvaloniaUI 向けの **in-process GUI E2E テスト** ツールです。
 
 対象アプリにエージェントを事前組み込み、Visual Tree へ直接アクセスします。FlaUI などが使う UI Automation（UIA）の COM 越し走査ではなく、自社アプリ限定で TestComplete の Open Applications に近い精度を狙います。
 
-> **現状:** WPF（.NET 8+）は利用できます。Avalonia アダプタは未実装です。
+> **現状:** WPF（.NET 8+）は利用できます。Avalonia アダプタは未実装です。NuGet パッケージはまだ出していません。API は公開直後のため変わることがあります。
 
 ## なぜ in-process か
 
@@ -238,3 +241,14 @@ dotnet test Graft.slnx -m:1
 - コミット: Conventional Commits（`type(scope): 件名`。件名は日本語可）
 - `src/` の公開 API は XML ドキュメント必須
 - テストの Fact / Theory は `summary` + `remarks`（Preconditions / Steps / Expected）
+- 貢献手順: [CONTRIBUTING.md](CONTRIBUTING.md)
+
+### CI
+
+GitHub Actions の **CI**（`windows-latest`）はフォーマット、ビルド、アプリ起動なしのテストです。SendInput を使う全解 E2E はインタラクティブな Windows セッションが必要なため、セルフホスト runner を用意したときだけ **UI** workflow が `main` で走ります（fork の PR では動きません）。Graft は仮想ディスプレイを提供しません。詳細は [CONTRIBUTING.md](CONTRIBUTING.md#ci) です。
+
+## ライセンス
+
+[MIT](LICENSE)
+
+脆弱性の報告は [SECURITY.md](SECURITY.md) へお願いします。

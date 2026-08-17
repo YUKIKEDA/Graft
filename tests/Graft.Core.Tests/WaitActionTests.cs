@@ -4,6 +4,7 @@ using Graft.Protocol;
 namespace Graft.Core.Tests;
 
 [Collection(SampleUiCollection.Name)]
+[Trait("Category", "UI")]
 public sealed class WaitActionTests
 {
     /// <summary>

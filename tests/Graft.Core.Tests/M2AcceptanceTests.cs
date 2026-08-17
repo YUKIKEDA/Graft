@@ -4,6 +4,7 @@ namespace Graft.Core.Tests;
 /// M2 milestone acceptance: Core Launch path without SmokeClient.
 /// </summary>
 [Collection(SampleUiCollection.Name)]
+[Trait("Category", "UI")]
 public sealed class M2AcceptanceTests
 {
     /// <summary>

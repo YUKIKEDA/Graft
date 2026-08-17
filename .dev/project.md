@@ -323,9 +323,12 @@ Graft 自身は Headless バックエンドを提供・統合しない。Headles
 ### CI / 実行環境
 
 インタラクティブな Windows セッションを基本前提とする。
-Graft は仮想ディスプレイを提供しない。GitHub Actions 等向けには
-「推奨セルフホスト構成」（インタラクティブログオン、画面ロックしない等）を文書化する。
-純 Session 0 / オフスクリーン専用モードは初期対象外。
+Graft は仮想ディスプレイを提供しない。純 Session 0 / オフスクリーン専用モードは初期対象外。
+
+GitHub Actions:
+
+- ホスト（必須ゲート）: `.github/workflows/ci.yml`（`windows-latest`）。CSharpier・ビルド・アプリ起動なしのテスト。
+- 全解 E2E: `.github/workflows/ui.yml`。セルフホスト（インタラクティブログオン、画面ロックしない、ラベル `windows` + `interactive`）。リポジトリ変数 `GRAFT_ENABLE_UI_CI=true` で `main` push / 手動実行。公開リポジトリのため fork PR では動かない。手順は `CONTRIBUTING.md`。
 
 ### 実装フェーズと優先順位
 
@@ -416,7 +419,7 @@ Graft は仮想ディスプレイを提供しない。GitHub Actions 等向け�
 | Q24 | Phase 1 エージェントは原子的操作まで。Wait/Expect は Core                                         |
 | Q25 | Phase 1 必須ツリー項目は B セット。パターン/値/セレクタ候補は完了条件外                           |
 | Q26 | タイムアウト既定: アクション 5s / Expect 10s / 起動+Handshake 30s                                 |
-| Q27 | CI はインタラクティブセッション前提。推奨セルフホスト構成を文書化。Graft は仮想ディスプレイ非提供 |
+| Q27 | CI はインタラクティブセッション前提。ホスト Actions は format/build/unit（`ci.yml`）。全解 E2E はセルフホスト `ui.yml`（`GRAFT_ENABLE_UI_CI`）。Graft は仮想ディスプレイ非提供 |
 | Q28 | Avalonia Headless とは相補。Graft は実プロセス E2E。Headless 対応は需要後                         |
 | Q29 | 環境変数: `GRAFT_ENABLE` / `GRAFT_PIPE_NAME` / `GRAFT_CONNECT_TOKEN`                              |
 | Q30 | 主経路は Launch。`Connect` は低レベル API                                                         |

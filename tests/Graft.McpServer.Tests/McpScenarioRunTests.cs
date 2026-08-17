@@ -6,6 +6,7 @@ using ModelContextProtocol.Protocol;
 namespace Graft.McpServer.Tests;
 
 [Collection(McpUiCollection.Name)]
+[Trait("Category", "UI")]
 public sealed class McpScenarioRunTests
 {
     /// <summary>
