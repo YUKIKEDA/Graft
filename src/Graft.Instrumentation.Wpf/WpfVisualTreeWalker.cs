@@ -199,6 +199,13 @@ internal static class WpfVisualTreeWalker
             return;
         }
 
+        // Same MaxNodes gate as AppendOpenToolTipChild so runtimeId matches getTree.
+        if (state.NodeCount >= state.Options.MaxNodes)
+        {
+            state.Truncated = true;
+            return;
+        }
+
         CollectMatches(toolTip, depth + 1, state, automationId, runtimeIdFilter, matches);
     }
 

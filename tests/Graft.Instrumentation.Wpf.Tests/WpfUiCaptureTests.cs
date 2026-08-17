@@ -31,7 +31,7 @@ public sealed class WpfUiCaptureTests
     ///
     /// Steps:
     /// - Call GetTree / screenshot / resolve as before
-    /// - Capture SampleButton clip, collapsed empty clip, open Popup opener+child clips, open ToolTip node clip, ancestor clip with ToolTip, window with open ToolTip, window with open ContextMenu
+    /// - Capture SampleButton clip, collapsed empty clip, open Popup opener+child clips, open ToolTip node clip, ancestor clip with ToolTip, window with open ToolTip, runtimeId after open ToolTip, window with open ContextMenu
     /// - Invoke SampleButton then GetTree StatusText
     /// - setValue SampleTextBox then GetTree name
     /// - Toggle SampleCheckBox then expect name On
@@ -245,6 +245,28 @@ public sealed class WpfUiCaptureTests
                 windowWithTip.PngBytes.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature),
                 "Expected PNG signature on window screenshot with tooltip."
             );
+
+            var afterTip = new Button { Content = "AfterTip" };
+            AutomationProperties.SetAutomationId(afterTip, "AfterOpenTip");
+            ((StackPanel)window.Content).Children.Add(afterTip);
+            window.UpdateLayout();
+            var treeAfterTip = treeProvider.GetTree(new GetTreeOptions());
+            var afterTipNode = FindByAutomationId(treeAfterTip.Root, "AfterOpenTip");
+            Assert.NotNull(afterTipNode);
+            var afterById = screenshotProvider.Capture(
+                new ScreenshotOptions
+                {
+                    Selector = new ElementSelector { AutomationId = "AfterOpenTip" },
+                }
+            );
+            var afterByRuntime = screenshotProvider.Capture(
+                new ScreenshotOptions
+                {
+                    Selector = new ElementSelector { RuntimeId = afterTipNode.RuntimeId },
+                }
+            );
+            Assert.Equal(afterById.Meta.Width, afterByRuntime.Meta.Width);
+            Assert.Equal(afterById.Meta.Height, afterByRuntime.Meta.Height);
 
             var menuHost = new Button
             {
