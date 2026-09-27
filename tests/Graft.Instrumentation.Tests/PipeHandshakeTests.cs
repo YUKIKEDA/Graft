@@ -1,5 +1,4 @@
 using System.IO.Pipes;
-using System.Text.Json;
 using Graft.Instrumentation;
 using Graft.Protocol;
 using Graft.Protocol.Framing;
@@ -13,14 +12,14 @@ public sealed class PipeHandshakeTests : IDisposable
 
     public PipeHandshakeTests()
     {
-        ClearGraftEnvironment();
+        PipeTestClient.ClearEnvironment();
         Agent.Stop();
     }
 
     public void Dispose()
     {
         Agent.Stop();
-        ClearGraftEnvironment();
+        PipeTestClient.ClearEnvironment();
     }
 
     /// <summary>
@@ -40,10 +39,10 @@ public sealed class PipeHandshakeTests : IDisposable
     [Fact]
     public async Task Handshake_WithMatchingVersionAndToken_Succeeds()
     {
-        StartAgent(token: "secret");
+        PipeTestClient.Start(_pipeName);
 
-        await using var client = await ConnectAsync(_pipeName);
-        var response = await SendHandshakeAsync(client, v: ProtocolVersion.Current, token: "secret");
+        await using var client = await PipeTestClient.ConnectAsync(_pipeName);
+        var response = await PipeTestClient.HandshakeAsync(client, token: "secret");
 
         Assert.True(response.Ok);
         Assert.Equal("1", response.Id);
@@ -66,10 +65,10 @@ public sealed class PipeHandshakeTests : IDisposable
     [Fact]
     public async Task Handshake_WithWrongToken_ReturnsHandshakeRejected()
     {
-        StartAgent(token: "secret");
+        PipeTestClient.Start(_pipeName);
 
-        await using var client = await ConnectAsync(_pipeName);
-        var response = await SendHandshakeAsync(client, v: ProtocolVersion.Current, token: "wrong");
+        await using var client = await PipeTestClient.ConnectAsync(_pipeName);
+        var response = await PipeTestClient.HandshakeAsync(client, token: "wrong");
 
         Assert.False(response.Ok);
         Assert.Equal(GraftErrorCodes.HandshakeRejected, response.Error?.Code);
@@ -91,10 +90,10 @@ public sealed class PipeHandshakeTests : IDisposable
     [Fact]
     public async Task Handshake_WithEmptyToken_ReturnsHandshakeRejected()
     {
-        StartAgent(token: "secret");
+        PipeTestClient.Start(_pipeName);
 
-        await using var client = await ConnectAsync(_pipeName);
-        var response = await SendHandshakeAsync(client, v: ProtocolVersion.Current, token: "");
+        await using var client = await PipeTestClient.ConnectAsync(_pipeName);
+        var response = await PipeTestClient.HandshakeAsync(client, token: "");
 
         Assert.False(response.Ok);
         Assert.Equal(GraftErrorCodes.HandshakeRejected, response.Error?.Code);
@@ -117,10 +116,10 @@ public sealed class PipeHandshakeTests : IDisposable
     [Fact]
     public async Task Handshake_WithVersionMismatch_ReturnsProtocolVersionMismatch()
     {
-        StartAgent(token: "secret");
+        PipeTestClient.Start(_pipeName);
 
-        await using var client = await ConnectAsync(_pipeName);
-        var response = await SendHandshakeAsync(client, v: 999, token: "secret");
+        await using var client = await PipeTestClient.ConnectAsync(_pipeName);
+        var response = await PipeTestClient.HandshakeAsync(client, token: "secret", version: 999);
 
         Assert.False(response.Ok);
         Assert.Equal(GraftErrorCodes.ProtocolVersionMismatch, response.Error?.Code);
@@ -145,11 +144,11 @@ public sealed class PipeHandshakeTests : IDisposable
     [Fact]
     public async Task Handshake_AfterDisconnect_AllowsReconnect()
     {
-        StartAgent(token: "secret");
+        PipeTestClient.Start(_pipeName);
 
-        await using (var first = await ConnectAsync(_pipeName))
+        await using (var first = await PipeTestClient.ConnectAsync(_pipeName))
         {
-            var firstResponse = await SendHandshakeAsync(first, v: ProtocolVersion.Current, token: "secret");
+            var firstResponse = await PipeTestClient.HandshakeAsync(first, token: "secret");
             Assert.True(firstResponse.Ok);
         }
 
@@ -178,9 +177,9 @@ public sealed class PipeHandshakeTests : IDisposable
     [Fact]
     public async Task MalformedJsonFrame_DoesNotStopAcceptLoop()
     {
-        StartAgent(token: "secret");
+        PipeTestClient.Start(_pipeName);
 
-        await using (var bad = await ConnectAsync(_pipeName))
+        await using (var bad = await PipeTestClient.ConnectAsync(_pipeName))
         {
             await FrameIO.WriteAsync(bad, "{not json"u8.ToArray());
             await Assert.ThrowsAsync<EndOfStreamException>(() => FrameIO.ReadAsync(bad));
@@ -209,15 +208,15 @@ public sealed class PipeHandshakeTests : IDisposable
     [Fact]
     public async Task NullEnvelopeAndOversizedFrame_DoNotStopAcceptLoop()
     {
-        StartAgent(token: "secret");
+        PipeTestClient.Start(_pipeName);
 
-        await using (var nullEnvelope = await ConnectAsync(_pipeName))
+        await using (var nullEnvelope = await PipeTestClient.ConnectAsync(_pipeName))
         {
             await FrameIO.WriteAsync(nullEnvelope, "null"u8.ToArray());
             await Assert.ThrowsAsync<EndOfStreamException>(() => FrameIO.ReadAsync(nullEnvelope));
         }
 
-        await using (var oversized = await ConnectAsync(_pipeName))
+        await using (var oversized = await PipeTestClient.ConnectAsync(_pipeName))
         {
             var prefix = new byte[FrameIO.LengthPrefixSize];
             System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(prefix, FrameIO.DefaultMaxPayloadBytes + 1);
@@ -229,39 +228,6 @@ public sealed class PipeHandshakeTests : IDisposable
         var (good, response) = await ReconnectAndHandshakeAsync(_pipeName, token: "secret");
         await using var _ = good;
         Assert.True(response.Ok);
-    }
-
-    private void StartAgent(string token)
-    {
-        Environment.SetEnvironmentVariable(GraftEnvironment.Enable, "1");
-        Environment.SetEnvironmentVariable(GraftEnvironment.PipeName, _pipeName);
-        Environment.SetEnvironmentVariable(GraftEnvironment.ConnectToken, token);
-        Agent.Start();
-        Assert.True(Agent.IsRunning);
-    }
-
-    private static async Task<NamedPipeClientStream> ConnectAsync(string pipeName)
-    {
-        var client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
-
-        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
-        Exception? last = null;
-        while (DateTime.UtcNow < deadline)
-        {
-            try
-            {
-                await client.ConnectAsync(200).ConfigureAwait(false);
-                return client;
-            }
-            catch (Exception ex) when (ex is TimeoutException or IOException or UnauthorizedAccessException)
-            {
-                last = ex;
-                await Task.Delay(50).ConfigureAwait(false);
-            }
-        }
-
-        await client.DisposeAsync().ConfigureAwait(false);
-        throw new TimeoutException($"Could not connect to pipe '{pipeName}'.", last);
     }
 
     /// <summary>
@@ -281,10 +247,10 @@ public sealed class PipeHandshakeTests : IDisposable
         var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
         while (true)
         {
-            var client = await ConnectAsync(pipeName).ConfigureAwait(false);
+            var client = await PipeTestClient.ConnectAsync(pipeName).ConfigureAwait(false);
             try
             {
-                var response = await SendHandshakeAsync(client, v: ProtocolVersion.Current, token: token, id: id).ConfigureAwait(false);
+                var response = await PipeTestClient.HandshakeAsync(client, token, id: id).ConfigureAwait(false);
                 return (client, response);
             }
             catch (Exception ex) when (ex is IOException && DateTime.UtcNow < deadline)
@@ -293,27 +259,5 @@ public sealed class PipeHandshakeTests : IDisposable
                 await Task.Delay(50).ConfigureAwait(false);
             }
         }
-    }
-
-    private static async Task<ResponseMessage> SendHandshakeAsync(Stream stream, int v, string token, string id = "1")
-    {
-        using var paramsDoc = JsonDocument.Parse($"{{\"token\":{JsonSerializer.Serialize(token)}}}");
-        var request = new RequestMessage
-        {
-            V = v,
-            Id = id,
-            Method = ProtocolMethods.Handshake,
-            Params = paramsDoc.RootElement.Clone(),
-        };
-
-        await JsonMessageCodec.WriteRequestAsync(stream, request).ConfigureAwait(false);
-        return await JsonMessageCodec.ReadResponseAsync(stream).ConfigureAwait(false);
-    }
-
-    private static void ClearGraftEnvironment()
-    {
-        Environment.SetEnvironmentVariable(GraftEnvironment.Enable, null);
-        Environment.SetEnvironmentVariable(GraftEnvironment.PipeName, null);
-        Environment.SetEnvironmentVariable(GraftEnvironment.ConnectToken, null);
     }
 }

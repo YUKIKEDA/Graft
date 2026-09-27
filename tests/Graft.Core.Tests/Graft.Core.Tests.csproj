@@ -19,6 +19,11 @@
     <Using Include="Xunit" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Graft.Instrumentation.Tests\Support\FakeTreeProvider.cs" Link="Support\FakeTreeProvider.cs" />
+    <Compile Include="..\Graft.Instrumentation.Tests\Support\FakeElementInvoker.cs" Link="Support\FakeElementInvoker.cs" />
+    <Compile Include="..\Graft.Instrumentation.Tests\Support\FakeElementValueSetter.cs" Link="Support\FakeElementValueSetter.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Graft.Core\Graft.Core.csproj" />
     <!-- Integration tests host the in-process agent against Core's pipe client. -->
     <ProjectReference Include="..\..\src\Graft.Instrumentation\Graft.Instrumentation.csproj" AdditionalProperties="Configuration=GraftTest" />

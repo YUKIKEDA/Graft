@@ -4,6 +4,7 @@ using Graft.Instrumentation.Elements;
 using Graft.Instrumentation.Tree;
 using Graft.Protocol;
 using Graft.Protocol.Messages;
+using Graft.TestSupport;
 
 namespace Graft.Core.Tests;
 
@@ -176,54 +177,6 @@ public sealed class ConnectTests : IDisposable
         Environment.SetEnvironmentVariable(GraftEnvironment.ConnectToken, null);
     }
 
-    private sealed class FakeTreeProvider : IUiTreeProvider
-    {
-        public GetTreeResult GetTree(GetTreeOptions options) =>
-            new()
-            {
-                Truncated = false,
-                Root = new TreeNode
-                {
-                    RuntimeId = 1,
-                    ControlType = "Button",
-                    Name = "Click Me",
-                    AutomationId = "SampleButton",
-                    Bounds = new ElementBounds
-                    {
-                        X = 10,
-                        Y = 20,
-                        Width = 80,
-                        Height = 24,
-                    },
-                    Enabled = true,
-                    Visible = true,
-                    Focused = false,
-                    Children = Array.Empty<TreeNode>(),
-                },
-            };
-    }
-
-    private sealed class FakeElementInvoker : IElementInvoker
-    {
-        public string? LastAutomationId { get; private set; }
-
-        public void Invoke(ElementSelector selector) => LastAutomationId = selector.AutomationId;
-
-        public void BeginInvoke(ElementSelector selector) => Invoke(selector);
-
-        public void RightClick(ElementSelector selector) => Invoke(selector);
-
-        public void DoubleClick(ElementSelector selector) => Invoke(selector);
-
-        public void Hover(ElementSelector selector) => Invoke(selector);
-
-        public void Drag(ElementSelector from, ElementSelector to) => Invoke(from);
-
-        public void ClickAt(ElementSelector selector, double offsetX, double offsetY) => Invoke(selector);
-
-        public void Wheel(ElementSelector selector, int delta) => Invoke(selector);
-    }
-
     private sealed class RecordingElementInvoker : IElementInvoker
     {
         private readonly System.Collections.Concurrent.ConcurrentBag<string> _seen = new();
@@ -245,18 +198,5 @@ public sealed class ConnectTests : IDisposable
         public void ClickAt(ElementSelector selector, double offsetX, double offsetY) => Invoke(selector);
 
         public void Wheel(ElementSelector selector, int delta) => Invoke(selector);
-    }
-
-    private sealed class FakeElementValueSetter : IElementValueSetter
-    {
-        public string? LastAutomationId { get; private set; }
-
-        public string? LastValue { get; private set; }
-
-        public void SetValue(ElementSelector selector, string value)
-        {
-            LastAutomationId = selector.AutomationId;
-            LastValue = value;
-        }
     }
 }
