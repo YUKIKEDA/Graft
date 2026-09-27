@@ -17,7 +17,7 @@ public sealed class OpenFileDialogSeamTests
     /// - STA thread; WpfGraft.Use installed the RunDialog patch
     ///
     /// Steps:
-    /// - OpenFileArm.ArmPath
+    /// - DialogArm.OpenFile.ArmPath
     /// - OpenFileDialog.ShowDialog
     ///
     /// Expected:
@@ -27,11 +27,11 @@ public sealed class OpenFileDialogSeamTests
     public void ArmPath_ShowDialog_ReturnsArmedFileName()
     {
         WpfGraft.ResetForTests();
-        OpenFileArm.Reset();
+        DialogArm.OpenFile.Reset();
         WpfGraft.Use();
 
         const string path = @"C:\graft-seam-ok.txt";
-        OpenFileArm.ArmPath(path);
+        DialogArm.OpenFile.ArmPath(path);
 
         var dialog = new OpenFileDialog();
         var result = dialog.ShowDialog();
@@ -48,7 +48,7 @@ public sealed class OpenFileDialogSeamTests
     /// - STA thread; WpfGraft.Use installed the RunDialog patch
     ///
     /// Steps:
-    /// - OpenFileArm.ArmCancel
+    /// - DialogArm.OpenFile.ArmCancel
     /// - OpenFileDialog.ShowDialog
     ///
     /// Expected:
@@ -58,10 +58,10 @@ public sealed class OpenFileDialogSeamTests
     public void ArmCancel_ShowDialog_ReturnsFalse()
     {
         WpfGraft.ResetForTests();
-        OpenFileArm.Reset();
+        DialogArm.OpenFile.Reset();
         WpfGraft.Use();
 
-        OpenFileArm.ArmCancel();
+        DialogArm.OpenFile.ArmCancel();
 
         var dialog = new OpenFileDialog();
         var result = dialog.ShowDialog();

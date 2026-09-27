@@ -382,7 +382,7 @@ internal sealed partial class AgentPipeServer
                     request,
                     () =>
                     {
-                        OpenFileArm.ArmPath(RequestParamsReader.ReadDialogPath(request.Params));
+                        DialogArm.OpenFile.ArmPath(RequestParamsReader.ReadDialogPath(request.Params));
                         return Ok(request.Id);
                     },
                     MapResolveOnly
@@ -392,7 +392,7 @@ internal sealed partial class AgentPipeServer
                     request,
                     () =>
                     {
-                        OpenFileArm.ArmCancel();
+                        DialogArm.OpenFile.ArmCancel();
                         return Ok(request.Id);
                     },
                     MapAllFailed
@@ -402,7 +402,7 @@ internal sealed partial class AgentPipeServer
                     request,
                     () =>
                     {
-                        SaveFileArm.ArmPath(RequestParamsReader.ReadDialogPath(request.Params));
+                        DialogArm.SaveFile.ArmPath(RequestParamsReader.ReadDialogPath(request.Params));
                         return Ok(request.Id);
                     },
                     MapResolveOnly
@@ -412,7 +412,7 @@ internal sealed partial class AgentPipeServer
                     request,
                     () =>
                     {
-                        SaveFileArm.ArmCancel();
+                        DialogArm.SaveFile.ArmCancel();
                         return Ok(request.Id);
                     },
                     MapAllFailed
@@ -422,7 +422,7 @@ internal sealed partial class AgentPipeServer
                     request,
                     () =>
                     {
-                        OpenFolderArm.ArmPath(RequestParamsReader.ReadDialogPath(request.Params));
+                        DialogArm.OpenFolder.ArmPath(RequestParamsReader.ReadDialogPath(request.Params));
                         return Ok(request.Id);
                     },
                     MapResolveOnly
@@ -432,7 +432,7 @@ internal sealed partial class AgentPipeServer
                     request,
                     () =>
                     {
-                        OpenFolderArm.ArmCancel();
+                        DialogArm.OpenFolder.ArmCancel();
                         return Ok(request.Id);
                     },
                     MapAllFailed
