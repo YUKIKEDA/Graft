@@ -29,7 +29,7 @@ Use one of: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `build`
 
 ## Subject
 
-- Japanese is allowed (and preferred when it communicates intent better).
+- English. See `.cursor/rules/language.mdc`.
 - Type and scope stay in English.
 - Imperative / concise; no trailing period required.
 - Focus on why when helpful; avoid dumping file lists.
@@ -45,10 +45,10 @@ BREAKING CHANGE: description
 ## Examples
 
 ```text
-feat(protocol): 長さプレフィックス付きフレーミングを追加
-fix(instrumentation): GRAFT_ENABLE 未設定時にパイプを立てない
-chore(deps): StyleCop.Analyzers を導入
-docs: M0 タスク分解を更新
+feat(protocol): add length-prefixed framing
+fix(instrumentation): do not open the pipe when GRAFT_ENABLE is unset
+chore(deps): add StyleCop.Analyzers
+docs: update the M0 task split
 ```
 
 ## Agent behavior

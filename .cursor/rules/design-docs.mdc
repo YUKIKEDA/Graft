@@ -1,0 +1,44 @@
+---
+description: Design doc location and change process to prevent drift
+alwaysApply: true
+---
+
+# Design docs
+
+## Locations during Issue #122
+
+Until the document PR of Issue #122 merges:
+
+- Canonical design: `.dev/project.md`
+- Do not add `docs/design.md`, including an empty placeholder
+- `.dev/task_*.md` are archived phase notes. They are not the design source
+- Gap matrix: `.dev/competitive-gap.md`
+- Consumer notes: `.dev/graft-core.md`
+
+That PR moves the lasting documents to `docs/` and then this rule points at:
+
+- Canonical design: `docs/design.md` (Japanese pair `docs/design.ja.md`)
+- Roadmap: `docs/roadmap.md`
+- Conventions: `docs/conventions.md`
+- Language: `docs/language.md`
+
+`.dev/` then keeps only the archived `task_*.md` notes. Do not leave new lasting decisions only there.
+
+## Changing the design
+
+- **Contract / public API / semantics:** open a Design Issue and update the canonical design doc first; merge before implementation issues
+- **Docs-only clarifications** (typos, wording, examples): may ship in the same PR as code
+- Do not implement first and update the design later
+
+When implementing, follow the canonical design doc. If code and design conflict, stop and fix the design via the process above.
+
+## Judge the current optimum
+
+The design doc records a decision made at that time. It is not proof that the decision is still the best one.
+
+When proposing or defending a design:
+
+- Recommend the best solution for the problem as it stands now
+- Do not cite an existing sentence as the reason to keep that shape
+- Do not add public API only so an older shape can stay
+- If the written decision is no longer the best one, say so and change the design doc through the process above

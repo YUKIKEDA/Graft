@@ -1,0 +1,37 @@
+---
+description: Mandatory grill-if-needed → Issue → branch → work → PR → human merge workflow
+alwaysApply: true
+---
+
+# Workflow
+
+Human source of truth: `CONTRIBUTING.md`.
+
+## Required order
+
+1. **Grill if needed (before the first Issue):** when the work has branching design or API decisions. Skill: [`.agents/skills/grilling/SKILL.md`](../../.agents/skills/grilling/SKILL.md). Skip when the Issue already has acceptance criteria and matches the design source (`.dev/project.md` until the document PR of Issue #122, then `docs/design.md`)
+2. Create a GitHub Issue from a template (blank issues are disabled)
+3. **Grill again if needed** and fold answers into the Issue body, or checklists
+4. Create branch `type/<issue-number>-<slug>`
+5. Implement. On Windows, run `./build.ps1` before opening a PR. Launched-app and SendInput tests stay outside that script: `dotnet test Graft.slnx -m:1`
+6. Open a PR using `.github/pull_request_template.md`
+   - **Must** include `Closes #N` on its **own line** in `## Related`
+   - Verify the Issue shows as linked
+7. Wait for human review and **squash** merge
+8. Repeat
+
+```text
+(grill if design decisions remain) → create Issue → (grill again if not implementable) → create branch → work → PR → human review → squash merge
+```
+
+## Forbidden
+
+- Starting implementation without an Issue number and branch
+- Treating `.dev/task_*.md`, or a roadmap that only lists titles, as permission to code
+- Opening a PR without a related Issue / without closing keywords
+- Merging design-affecting PRs without a human
+- Walk-in PRs with no Issue (external or agent)
+
+## Exceptions
+
+- A batch of more than one PR is allowed only when the Issue says the batch is intentional. Issue #122 is that batch: workflow first, document move second

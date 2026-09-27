@@ -1,15 +1,16 @@
 ## Summary
 
-<!-- What changed and why (Japanese OK). Keep it short. -->
+<!-- What changed and why. Keep it short. -->
 
 -
 
 ## Related
 
-<!-- Issue / M0 Batch / docs. Use N/A if none. -->
+<!-- Closing keyword on its own line. Use N/A only when the workflow exception applies. -->
 
-- Batch / task: <!-- e.g. M0 Batch 1 in `.dev/task_m0.md` -->
-- Issue: <!-- e.g. #123 or N/A -->
+Closes #N
+
+- Batch / task: <!-- e.g. N/A -->
 - Docs: <!-- e.g. `.dev/project.md` / N/A -->
 
 ## Test plan
@@ -27,7 +28,7 @@
 ## Checklist
 
 - [ ] PR title follows Conventional Commits (`type(scope): subject`)
-- [ ] `dotnet build Graft.slnx` succeeds
+- [ ] `./build.ps1` succeeds when the change can affect the build or tests
 - [ ] CSharpier applied to touched C# (format on save or `dotnet csharpier format`)
 - [ ] No unintentional new StyleCop warnings in touched files
 - [ ] New/changed tests include `summary` + `remarks` (Preconditions/Steps/Expected) — or N/A

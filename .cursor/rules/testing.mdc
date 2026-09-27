@@ -11,7 +11,7 @@ Analyzer enforcement is deferred; follow by convention and review.
 
 ## Template
 
-Headings in **English**; body text may be Japanese.
+Headings and body text are **English**. See `.cursor/rules/language.mdc`.
 
 ```csharp
 /// <summary>
@@ -38,7 +38,7 @@ public void MethodName_Scenario_Expected()
 - Required on **all** Fact/Theory methods (no “too simple to document” exception).
 - `[Theory]`: document once on the method; list cases / `InlineData` intent under Preconditions or Steps (do not duplicate per row unless a case is special).
 - Do **not** invent custom XML tags (`<preconditions>`, `<expected>`, etc.).
-- Keep remarks short; link to `project.md` / Batch notes when the why is non-obvious.
+- Keep remarks short; link to `.dev/project.md` when the why is non-obvious. After the document PR of Issue #122, link to `docs/design.md`.
 - Method names stay descriptive (`Method_Scenario_Expected`); comments do not replace good names.
 
 ## Example
