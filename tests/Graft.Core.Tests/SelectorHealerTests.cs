@@ -66,24 +66,49 @@ public sealed class SelectorHealerTests
     }
 
     /// <summary>
-    /// A single stable-identity candidate allows auto-heal for AutomationId-only miss.
+    /// A single unrelated stable-identity candidate must not auto-heal an AutomationId-only miss (#81).
     /// </summary>
     /// <remarks>
     /// Preconditions:
     /// - Tree with only one named actionable child under Main
     ///
     /// Steps:
-    /// - TryGetAutoHeal ByAutomationId("Missing")
+    /// - ProposeCandidates / TryGetAutoHeal for ByAutomationId("Missing")
     ///
     /// Expected:
-    /// - true; resolves to the only button
+    /// - The button is still listed as a report candidate
+    /// - TryGetAutoHeal returns false (no silent redirect to an unrelated element)
     /// </remarks>
     [Fact]
-    public void TryGetAutoHeal_SingleStableIdentity_Succeeds()
+    public void TryGetAutoHeal_SingleStableIdentity_DoesNotRedirect()
     {
         var root = Node("Window", "Sample", "Main", [Node("Button", "Click Me", "SampleButton", [])]);
-        Assert.True(SelectorHealer.TryGetAutoHeal(root, Selector.ByAutomationId("Missing"), out var healed));
-        Assert.Equal("SampleButton", TreeSelector.Resolve(root, healed).AutomationId);
+        var failed = Selector.ByAutomationId("Missing");
+
+        Assert.Contains(SelectorHealer.ProposeCandidates(root, failed), c => c.Reason == SelectorHealer.ReasonStableIdentity);
+        Assert.False(SelectorHealer.TryGetAutoHeal(root, failed, out _));
+    }
+
+    /// <summary>
+    /// A composite selector whose remaining criteria match nothing does not fall back to stable identities.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Tree with a single uniquely identifiable button
+    ///
+    /// Steps:
+    /// - TryGetAutoHeal for AutomationId "Missing" + Name "Save" (neither exists)
+    ///
+    /// Expected:
+    /// - false
+    /// </remarks>
+    [Fact]
+    public void TryGetAutoHeal_NoRelaxedMatch_DoesNotFallBackToStableIdentity()
+    {
+        var root = Node("Window", "Sample", "Main", [Node("Button", "Click Me", "SampleButton", [])]);
+        var failed = new Selector { AutomationId = "Missing", Name = "Save" };
+
+        Assert.False(SelectorHealer.TryGetAutoHeal(root, failed, out _));
     }
 
     private static TreeNode SampleTree() =>

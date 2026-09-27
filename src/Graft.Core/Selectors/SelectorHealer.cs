@@ -55,26 +55,28 @@ public static class SelectorHealer
     /// <param name="failedSelector">Selector that failed to resolve.</param>
     /// <param name="healed">Healed selector when the method returns <c>true</c>.</param>
     /// <returns>
-    /// <c>true</c> when exactly one best-scoring candidate uniquely resolves a node
-    /// that has a non-empty automation id and score ≥ threshold.
+    /// <c>true</c> when exactly one best-scoring <em>relaxed</em> candidate (a strict subset of the
+    /// original criteria) uniquely resolves a node that has a non-empty automation id and score ≥ threshold.
     /// </returns>
+    /// <remarks>
+    /// Stable-identity candidates (Name + ControlType + Near of arbitrary tree nodes) are never
+    /// auto-applied: they share nothing with the failed selector, so for a single-criterion
+    /// selector such as <c>ByAutomationId</c> they could silently redirect the action to an
+    /// unrelated element. They are still listed in <see cref="ProposeCandidates"/> for the report.
+    /// </remarks>
     public static bool TryGetAutoHeal(TreeNode root, Selector failedSelector, out Selector healed)
     {
         ArgumentNullException.ThrowIfNull(root);
         ArgumentNullException.ThrowIfNull(failedSelector);
 
         healed = null!;
-        var successful = CollectSuccessful(root, failedSelector);
-        if (successful.Count == 0)
+        // Only relaxed (criterion-subset) candidates are related to the failed selector by
+        // construction; stable-identity suggestions are report-only.
+        var pool = CollectSuccessful(root, failedSelector).Where(c => c.Reason == ReasonRelaxed).ToList();
+        if (pool.Count == 0)
         {
             return false;
         }
-
-        // Prefer relaxed (criterion-subset) candidates for auto-apply so a composite
-        // selector with a stale AutomationId can heal uniquely even when the tree
-        // has many stable-identity suggestions for the report.
-        var relaxed = successful.Where(c => c.Reason == ReasonRelaxed).ToList();
-        var pool = relaxed.Count > 0 ? relaxed : successful;
 
         var bestScore = pool.Max(c => c.Score);
         if (bestScore < SelectorWeights.Threshold)
