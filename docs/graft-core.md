@@ -68,7 +68,7 @@ await app.GetByAutomationId("TodoGrid").SelectRowAsync("Title", "Graft E2E Task"
 ```
 
 The real file is [`TodoStoryE2ETests.cs`](../tests/sample-apps/SampleTodoApp.Tests/TodoStoryE2ETests.cs).
-A feature-matrix example is [`MainWindowE2ETests.cs`](../tests/sample-apps/SampleWpfApp.Tests/MainWindowE2ETests.cs).
+A feature-matrix example is [`MainWindowE2ETests.cs`](../tests/sample-apps/SampleWpfApp.Tests/Windows/MainWindowE2ETests.cs).
 
 ## Run
 
