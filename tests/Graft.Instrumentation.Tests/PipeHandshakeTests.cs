@@ -153,8 +153,8 @@ public sealed class PipeHandshakeTests : IDisposable
             Assert.True(firstResponse.Ok);
         }
 
-        await using var second = await ConnectAsync(_pipeName);
-        var secondResponse = await SendHandshakeAsync(second, v: ProtocolVersion.Current, token: "secret", id: "2");
+        var (second, secondResponse) = await ReconnectAndHandshakeAsync(_pipeName, token: "secret", id: "2");
+        await using var _ = second;
 
         Assert.True(secondResponse.Ok);
         Assert.Equal("2", secondResponse.Id);
@@ -186,8 +186,8 @@ public sealed class PipeHandshakeTests : IDisposable
             await Assert.ThrowsAsync<EndOfStreamException>(() => FrameIO.ReadAsync(bad));
         }
 
-        await using var good = await ConnectAsync(_pipeName);
-        var response = await SendHandshakeAsync(good, v: ProtocolVersion.Current, token: "secret");
+        var (good, response) = await ReconnectAndHandshakeAsync(_pipeName, token: "secret");
+        await using var _ = good;
         Assert.True(response.Ok);
     }
 
@@ -226,8 +226,8 @@ public sealed class PipeHandshakeTests : IDisposable
             await Assert.ThrowsAsync<EndOfStreamException>(() => FrameIO.ReadAsync(oversized));
         }
 
-        await using var good = await ConnectAsync(_pipeName);
-        var response = await SendHandshakeAsync(good, v: ProtocolVersion.Current, token: "secret");
+        var (good, response) = await ReconnectAndHandshakeAsync(_pipeName, token: "secret");
+        await using var _ = good;
         Assert.True(response.Ok);
     }
 
@@ -262,6 +262,37 @@ public sealed class PipeHandshakeTests : IDisposable
 
         await client.DisposeAsync().ConfigureAwait(false);
         throw new TimeoutException($"Could not connect to pipe '{pipeName}'.", last);
+    }
+
+    /// <summary>
+    /// Connects and handshakes after a previous connection was dropped.
+    /// </summary>
+    /// <remarks>
+    /// On Unix, .NET emulates named pipes with a listening socket that is closed and re-created when the
+    /// agent recycles its single server instance, so a client that connects in that gap is reset. Windows
+    /// named pipes queue the client instead. Retry so the reconnect tests are stable on both.
+    /// </remarks>
+    private static async Task<(NamedPipeClientStream Client, ResponseMessage Response)> ReconnectAndHandshakeAsync(
+        string pipeName,
+        string token,
+        string id = "1"
+    )
+    {
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
+        while (true)
+        {
+            var client = await ConnectAsync(pipeName).ConfigureAwait(false);
+            try
+            {
+                var response = await SendHandshakeAsync(client, v: ProtocolVersion.Current, token: token, id: id).ConfigureAwait(false);
+                return (client, response);
+            }
+            catch (Exception ex) when (ex is IOException && DateTime.UtcNow < deadline)
+            {
+                await client.DisposeAsync().ConfigureAwait(false);
+                await Task.Delay(50).ConfigureAwait(false);
+            }
+        }
     }
 
     private static async Task<ResponseMessage> SendHandshakeAsync(Stream stream, int v, string token, string id = "1")
