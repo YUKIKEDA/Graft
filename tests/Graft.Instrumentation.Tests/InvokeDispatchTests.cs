@@ -15,13 +15,13 @@ public sealed class InvokeDispatchTests : IDisposable
     {
         PipeTestClient.ClearEnvironment();
         Agent.Stop();
-        AgentServices.Reset();
+        Agent.Reset();
     }
 
     public void Dispose()
     {
         Agent.Stop();
-        AgentServices.Reset();
+        Agent.Reset();
         PipeTestClient.ClearEnvironment();
     }
 
@@ -68,7 +68,7 @@ public sealed class InvokeDispatchTests : IDisposable
     public async Task Invoke_WithFakeInvoker_CallsInvoke()
     {
         var fake = new FakeElementInvoker();
-        AgentServices.RegisterElementInvoker(fake);
+        Agent.Use(new AgentBackend { ElementInvoker = fake });
         PipeTestClient.Start(_pipeName);
 
         await using var client = await PipeTestClient.ConnectAsync(_pipeName);
@@ -96,7 +96,7 @@ public sealed class InvokeDispatchTests : IDisposable
     public async Task RightClick_WithFakeInvoker_CallsRightClick()
     {
         var fake = new FakeElementInvoker();
-        AgentServices.RegisterElementInvoker(fake);
+        Agent.Use(new AgentBackend { ElementInvoker = fake });
         PipeTestClient.Start(_pipeName);
 
         await using var client = await PipeTestClient.ConnectAsync(_pipeName);
@@ -123,7 +123,7 @@ public sealed class InvokeDispatchTests : IDisposable
     [Fact]
     public async Task Invoke_WhenResolverFails_ReturnsElementNotFound()
     {
-        AgentServices.RegisterElementInvoker(new FakeElementInvoker(throwCode: GraftErrorCodes.ElementNotFound));
+        Agent.Use(new AgentBackend { ElementInvoker = new FakeElementInvoker(throwCode: GraftErrorCodes.ElementNotFound) });
         PipeTestClient.Start(_pipeName);
 
         await using var client = await PipeTestClient.ConnectAsync(_pipeName);

@@ -18,13 +18,13 @@ public sealed class ScreenshotDispatchTests : IDisposable
     {
         PipeTestClient.ClearEnvironment();
         Agent.Stop();
-        AgentServices.Reset();
+        Agent.Reset();
     }
 
     public void Dispose()
     {
         Agent.Stop();
-        AgentServices.Reset();
+        Agent.Reset();
         PipeTestClient.ClearEnvironment();
     }
 
@@ -33,7 +33,7 @@ public sealed class ScreenshotDispatchTests : IDisposable
     /// </summary>
     /// <remarks>
     /// Preconditions:
-    /// - Agent started; AgentServices.ScreenshotProvider is null
+    /// - Agent started; no screenshot provider is registered
     ///
     /// Steps:
     /// - Handshake then screenshot
@@ -74,7 +74,7 @@ public sealed class ScreenshotDispatchTests : IDisposable
     public async Task Screenshot_WithFakeProvider_ReturnsMetaAndPngFrame()
     {
         var png = BuildMinimalPngBytes();
-        AgentServices.RegisterScreenshotProvider(new FakeScreenshotProvider(png));
+        Agent.Use(new AgentBackend { ScreenshotProvider = new FakeScreenshotProvider(png) });
         PipeTestClient.Start(_pipeName);
 
         await using var client = await PipeTestClient.ConnectAsync(_pipeName);

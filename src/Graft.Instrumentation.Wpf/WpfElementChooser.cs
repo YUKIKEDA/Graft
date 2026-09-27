@@ -14,6 +14,18 @@ namespace Graft.Instrumentation.Wpf;
 /// </summary>
 internal sealed class WpfElementChooser : IElementChooser
 {
+    private readonly IElementResolver _resolver;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WpfElementChooser"/> class.
+    /// </summary>
+    /// <param name="resolver">Element resolver from the agent backend.</param>
+    public WpfElementChooser(IElementResolver resolver)
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+        _resolver = resolver;
+    }
+
     /// <inheritdoc />
     public void Select(ElementSelector selector, int index)
     {
@@ -76,7 +88,7 @@ internal sealed class WpfElementChooser : IElementChooser
         dispatcher.InvokeWithTimeout(() => SelectManyOnUiThread(selector, indexes));
     }
 
-    private static void SelectOnUiThread(ElementSelector selector, int index)
+    private void SelectOnUiThread(ElementSelector selector, int index)
     {
         var element = ResolveActionable(selector);
 
@@ -108,7 +120,7 @@ internal sealed class WpfElementChooser : IElementChooser
         element.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
     }
 
-    private static void SelectByKeyOnUiThread(ElementSelector selector, string key)
+    private void SelectByKeyOnUiThread(ElementSelector selector, string key)
     {
         var element = ResolveActionable(selector);
 
@@ -132,7 +144,7 @@ internal sealed class WpfElementChooser : IElementChooser
         element.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
     }
 
-    private static void SelectManyOnUiThread(ElementSelector selector, IReadOnlyList<int> indexes)
+    private void SelectManyOnUiThread(ElementSelector selector, IReadOnlyList<int> indexes)
     {
         var element = ResolveActionable(selector);
         switch (element)
@@ -222,7 +234,7 @@ internal sealed class WpfElementChooser : IElementChooser
         }
     }
 
-    private static FrameworkElement ResolveActionable(ElementSelector selector) => WpfElementResolve.ResolveActionable(selector).Element;
+    private FrameworkElement ResolveActionable(ElementSelector selector) => WpfElementResolve.ResolveActionable(_resolver, selector).Element;
 
     private static void SelectTab(TabControl tab, int index)
     {

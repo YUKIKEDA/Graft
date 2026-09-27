@@ -96,7 +96,7 @@ public sealed class WireParamsDispatchTests : IDisposable
     {
         PipeTestClient.ClearEnvironment();
         Agent.Stop();
-        AgentServices.Reset();
+        Agent.Reset();
         RecordingServices.RegisterAll();
         PipeTestClient.Start(_pipeName);
     }
@@ -104,7 +104,7 @@ public sealed class WireParamsDispatchTests : IDisposable
     public void Dispose()
     {
         Agent.Stop();
-        AgentServices.Reset();
+        Agent.Reset();
         PipeTestClient.ClearEnvironment();
     }
 

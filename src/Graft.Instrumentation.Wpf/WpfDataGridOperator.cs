@@ -15,6 +15,18 @@ namespace Graft.Instrumentation.Wpf;
 /// </summary>
 internal sealed class WpfDataGridOperator : IDataGridOperator
 {
+    private readonly IElementResolver _resolver;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WpfDataGridOperator"/> class.
+    /// </summary>
+    /// <param name="resolver">Element resolver from the agent backend.</param>
+    public WpfDataGridOperator(IElementResolver resolver)
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+        _resolver = resolver;
+    }
+
     /// <inheritdoc />
     public void SelectCell(ElementSelector selector, int row, int? column, string? columnKey)
     {
@@ -73,7 +85,7 @@ internal sealed class WpfDataGridOperator : IDataGridOperator
         });
     }
 
-    private static void SelectCellOnUiThread(ElementSelector selector, int row, int? column, string? columnKey)
+    private void SelectCellOnUiThread(ElementSelector selector, int row, int? column, string? columnKey)
     {
         var dataGrid = ResolveActionableDataGrid(selector);
         if (dataGrid.SelectionUnit is not (DataGridSelectionUnit.Cell or DataGridSelectionUnit.CellOrRowHeader))
@@ -100,7 +112,7 @@ internal sealed class WpfDataGridOperator : IDataGridOperator
         WpfDispatch.Idle(dataGrid);
     }
 
-    private static void SelectRowOnUiThread(ElementSelector selector, string columnKey, string value)
+    private void SelectRowOnUiThread(ElementSelector selector, string columnKey, string value)
     {
         var dataGrid = ResolveActionableDataGrid(selector);
         var columnIndex = WpfDataGridCells.ResolveColumnIndex(dataGrid, column: null, columnKey);
@@ -155,7 +167,7 @@ internal sealed class WpfDataGridOperator : IDataGridOperator
         WpfDispatch.Idle(dataGrid);
     }
 
-    private static void ClickColumnHeaderOnUiThread(ElementSelector selector, string columnKey)
+    private void ClickColumnHeaderOnUiThread(ElementSelector selector, string columnKey)
     {
         var dataGrid = ResolveActionableDataGrid(selector);
         var columnIndex = WpfDataGridCells.ResolveColumnIndex(dataGrid, column: null, columnKey);
@@ -215,7 +227,7 @@ internal sealed class WpfDataGridOperator : IDataGridOperator
         WpfDispatch.Idle(dataGrid);
     }
 
-    private static void AddRowOnUiThread(ElementSelector selector)
+    private void AddRowOnUiThread(ElementSelector selector)
     {
         var dataGrid = ResolveActionableDataGrid(selector);
         if (dataGrid.ItemsSource is IEditableCollectionView editable)
@@ -267,7 +279,7 @@ internal sealed class WpfDataGridOperator : IDataGridOperator
         throw new ElementActionException(GraftErrorCodes.ActionFailed, "addRow requires IEditableCollectionView or mutable IList ItemsSource.");
     }
 
-    private static void DeleteSelectedRowsOnUiThread(ElementSelector selector)
+    private void DeleteSelectedRowsOnUiThread(ElementSelector selector)
     {
         var dataGrid = ResolveActionableDataGrid(selector);
         var selected = dataGrid.SelectedItems.Cast<object>().ToList();
@@ -312,9 +324,9 @@ internal sealed class WpfDataGridOperator : IDataGridOperator
         }
     }
 
-    private static DataGrid ResolveActionableDataGrid(ElementSelector selector)
+    private DataGrid ResolveActionableDataGrid(ElementSelector selector)
     {
-        var (dataGrid, _) = WpfElementResolve.Resolve<DataGrid>(selector, "DataGrid operation requires a DataGrid");
+        var (dataGrid, _) = WpfElementResolve.Resolve<DataGrid>(_resolver, selector, "DataGrid operation requires a DataGrid");
         WpfElementResolve.RequireActionable(dataGrid, selector.AutomationId ?? string.Empty, "DataGrid");
         return dataGrid;
     }

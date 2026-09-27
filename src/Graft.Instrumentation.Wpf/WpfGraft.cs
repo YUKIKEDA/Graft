@@ -1,4 +1,4 @@
-using Graft.Instrumentation.Tree;
+using Graft.Instrumentation;
 using Graft.Instrumentation.Wpf.Dialogs;
 
 namespace Graft.Instrumentation.Wpf;
@@ -31,21 +31,27 @@ public static class WpfGraft
         }
 
         var windows = new WpfWindowHost();
-        AgentServices.RegisterWindowCatalog(windows);
-        AgentServices.RegisterTreeProvider(new WpfUiTreeProvider(windows));
-        AgentServices.RegisterScreenshotProvider(new WpfScreenshotProvider(windows));
-        AgentServices.RegisterElementResolver(new WpfElementResolver(windows));
-        AgentServices.RegisterElementInvoker(new WpfElementInvoker());
-        AgentServices.RegisterElementValueSetter(new WpfElementValueSetter());
-        AgentServices.RegisterElementToggler(new WpfElementToggler());
-        AgentServices.RegisterElementKeySender(new WpfElementKeySender());
-        AgentServices.RegisterElementScroller(new WpfElementScroller());
-        AgentServices.RegisterElementChooser(new WpfElementChooser());
-        AgentServices.RegisterMenuSelector(new WpfMenuSelector());
-        AgentServices.RegisterTreeSelector(new WpfTreeSelector());
-        AgentServices.RegisterElementExpander(new WpfElementExpander());
-        AgentServices.RegisterElementCellAccessor(new WpfDataGridCellAccessor());
-        AgentServices.RegisterDataGridOperator(new WpfDataGridOperator());
+        var resolver = new WpfElementResolver(windows);
+        Agent.Use(
+            new AgentBackend
+            {
+                WindowCatalog = windows,
+                TreeProvider = new WpfUiTreeProvider(windows),
+                ScreenshotProvider = new WpfScreenshotProvider(windows),
+                ElementResolver = resolver,
+                ElementInvoker = new WpfElementInvoker(resolver),
+                ElementValueSetter = new WpfElementValueSetter(resolver),
+                ElementToggler = new WpfElementToggler(resolver),
+                ElementKeySender = new WpfElementKeySender(resolver),
+                ElementScroller = new WpfElementScroller(resolver),
+                ElementChooser = new WpfElementChooser(resolver),
+                MenuSelector = new WpfMenuSelector(resolver),
+                TreeSelector = new WpfTreeSelector(resolver),
+                ElementExpander = new WpfElementExpander(resolver),
+                ElementCellAccessor = new WpfDataGridCellAccessor(resolver),
+                DataGridOperator = new WpfDataGridOperator(resolver),
+            }
+        );
     }
 
     /// <summary>
@@ -54,7 +60,7 @@ public static class WpfGraft
     public static void ResetForTests()
     {
         _registered = 0;
-        AgentServices.Reset();
+        Agent.Reset();
         WpfControlActions.Clear();
     }
 }

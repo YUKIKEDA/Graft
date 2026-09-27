@@ -13,6 +13,18 @@ namespace Graft.Instrumentation.Wpf;
 /// </summary>
 internal sealed class WpfTreeSelector : ITreeSelector
 {
+    private readonly IElementResolver _resolver;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WpfTreeSelector"/> class.
+    /// </summary>
+    /// <param name="resolver">Element resolver from the agent backend.</param>
+    public WpfTreeSelector(IElementResolver resolver)
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+        _resolver = resolver;
+    }
+
     /// <inheritdoc />
     public void SelectTree(ElementSelector selector, string path)
     {
@@ -40,7 +52,7 @@ internal sealed class WpfTreeSelector : ITreeSelector
         dispatcher.InvokeWithTimeout(() => SelectTreeOnUiThread(selector, path, segments));
     }
 
-    private static void SelectTreeOnUiThread(ElementSelector selector, string path, string[] segments)
+    private void SelectTreeOnUiThread(ElementSelector selector, string path, string[] segments)
     {
         var root = ResolveTreeRoot(selector);
         ItemsControl current = root;
@@ -80,9 +92,9 @@ internal sealed class WpfTreeSelector : ITreeSelector
         }
     }
 
-    private static TreeView ResolveTreeRoot(ElementSelector selector)
+    private TreeView ResolveTreeRoot(ElementSelector selector)
     {
-        var (element, automationId) = WpfElementResolve.Resolve(selector);
+        var (element, automationId) = WpfElementResolve.Resolve(_resolver, selector);
         if (element is not TreeView treeView)
         {
             throw new ElementActionException(GraftErrorCodes.ActionFailed, $"selectTree root must be TreeView (got {element.GetType().Name}).");

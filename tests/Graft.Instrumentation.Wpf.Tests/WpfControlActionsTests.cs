@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using Graft.Instrumentation;
 using Graft.Instrumentation.Elements;
 using Graft.Instrumentation.Tree;
 
@@ -76,9 +77,9 @@ public sealed class WpfControlActionsTests
             return true;
         });
 
-        var invoker = AgentServices.ElementInvoker ?? throw new InvalidOperationException("Element invoker was not registered.");
-        var setter = AgentServices.ElementValueSetter ?? throw new InvalidOperationException("Element value setter was not registered.");
-        var toggler = AgentServices.ElementToggler ?? throw new InvalidOperationException("Element toggler was not registered.");
+        var invoker = Agent.Backend?.ElementInvoker ?? throw new InvalidOperationException("Element invoker was not registered.");
+        var setter = Agent.Backend?.ElementValueSetter ?? throw new InvalidOperationException("Element value setter was not registered.");
+        var toggler = Agent.Backend?.ElementToggler ?? throw new InvalidOperationException("Element toggler was not registered.");
         var selector = new ElementSelector { AutomationId = "VendorGrid" };
         invoker.Invoke(selector);
         setter.SetValue(selector, "42");

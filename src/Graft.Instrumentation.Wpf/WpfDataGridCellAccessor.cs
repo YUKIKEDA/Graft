@@ -15,6 +15,18 @@ namespace Graft.Instrumentation.Wpf;
 /// </summary>
 internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
 {
+    private readonly IElementResolver _resolver;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WpfDataGridCellAccessor"/> class.
+    /// </summary>
+    /// <param name="resolver">Element resolver from the agent backend.</param>
+    public WpfDataGridCellAccessor(IElementResolver resolver)
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+        _resolver = resolver;
+    }
+
     /// <inheritdoc />
     public string GetCellText(ElementSelector selector, int row, int? column, string? columnKey)
     {
@@ -34,7 +46,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         });
     }
 
-    private static string GetCellTextOnUiThread(ElementSelector selector, int row, int? column, string? columnKey)
+    private string GetCellTextOnUiThread(ElementSelector selector, int row, int? column, string? columnKey)
     {
         var host = ResolveCellHost(selector);
         if (host is ListView listView)
@@ -147,7 +159,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         return Convert.ToString(current, CultureInfo.InvariantCulture) ?? string.Empty;
     }
 
-    private static void SetCellValueOnUiThread(ElementSelector selector, int row, int? column, string? columnKey, string value)
+    private void SetCellValueOnUiThread(ElementSelector selector, int row, int? column, string? columnKey, string value)
     {
         var host = ResolveCellHost(selector);
         if (host is ListView)
@@ -294,9 +306,9 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         );
     }
 
-    private static FrameworkElement ResolveCellHost(ElementSelector selector)
+    private FrameworkElement ResolveCellHost(ElementSelector selector)
     {
-        var resolved = WpfElementResolve.Lookup(selector);
+        var resolved = WpfElementResolve.Lookup(_resolver, selector);
         return resolved.Target switch
         {
             DataGrid dataGrid => dataGrid,

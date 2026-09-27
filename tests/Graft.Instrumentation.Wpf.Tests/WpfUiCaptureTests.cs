@@ -3,6 +3,7 @@ using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Threading;
+using Graft.Instrumentation;
 using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Elements;
 using Graft.Instrumentation.Screenshot;
@@ -66,7 +67,7 @@ public sealed class WpfUiCaptureTests
             WpfGraft.ResetForTests();
             WpfGraft.Use();
 
-            var treeProvider = AgentServices.TreeProvider ?? throw new InvalidOperationException("Tree provider was not registered.");
+            var treeProvider = Agent.Backend?.TreeProvider ?? throw new InvalidOperationException("Tree provider was not registered.");
             var tree = treeProvider.GetTree(new GetTreeOptions());
             Assert.False(tree.Truncated);
             var buttonNode = FindByAutomationId(tree.Root, "SampleButton");
@@ -77,7 +78,7 @@ public sealed class WpfUiCaptureTests
             Assert.True(buttonNode.Bounds.Height > 0, "Expected positive height.");
 
             var screenshotProvider =
-                AgentServices.ScreenshotProvider ?? throw new InvalidOperationException("Screenshot provider was not registered.");
+                Agent.Backend?.ScreenshotProvider ?? throw new InvalidOperationException("Screenshot provider was not registered.");
             var capture = screenshotProvider.Capture(ScreenshotOptions.Default);
             Assert.Equal("png", capture.Meta.Format);
             Assert.True(capture.Meta.Width > 0);
@@ -257,7 +258,7 @@ public sealed class WpfUiCaptureTests
             );
             contextMenu.IsOpen = false;
 
-            var resolver = AgentServices.ElementResolver ?? throw new InvalidOperationException("Element resolver was not registered.");
+            var resolver = Agent.Backend?.ElementResolver ?? throw new InvalidOperationException("Element resolver was not registered.");
             var resolved = resolver.Resolve(new ElementSelector { AutomationId = "SampleButton" });
             Assert.Equal("SampleButton", resolved.AutomationId);
             Assert.Equal("Button", resolved.ControlType);
@@ -270,7 +271,7 @@ public sealed class WpfUiCaptureTests
             var invalid = Assert.Throws<ElementResolveException>(() => resolver.Resolve(new ElementSelector { AutomationId = "  " }));
             Assert.Equal(GraftErrorCodes.SelectorInvalid, invalid.Code);
 
-            var invoker = AgentServices.ElementInvoker ?? throw new InvalidOperationException("Element invoker was not registered.");
+            var invoker = Agent.Backend?.ElementInvoker ?? throw new InvalidOperationException("Element invoker was not registered.");
             invoker.Invoke(new ElementSelector { AutomationId = "SampleButton" });
 
             var afterInvoke = treeProvider.GetTree(new GetTreeOptions());
@@ -278,7 +279,7 @@ public sealed class WpfUiCaptureTests
             Assert.NotNull(status);
             Assert.Equal("Clicked 1", status.Name);
 
-            var valueSetter = AgentServices.ElementValueSetter ?? throw new InvalidOperationException("Element value setter was not registered.");
+            var valueSetter = Agent.Backend?.ElementValueSetter ?? throw new InvalidOperationException("Element value setter was not registered.");
             const string typed = "hello-graft";
             valueSetter.SetValue(new ElementSelector { AutomationId = "SampleTextBox" }, typed);
 
@@ -287,7 +288,7 @@ public sealed class WpfUiCaptureTests
             Assert.NotNull(textBoxNode);
             Assert.Equal(typed, textBoxNode.Name);
 
-            var toggler = AgentServices.ElementToggler ?? throw new InvalidOperationException("Element toggler was not registered.");
+            var toggler = Agent.Backend?.ElementToggler ?? throw new InvalidOperationException("Element toggler was not registered.");
             toggler.Toggle(new ElementSelector { AutomationId = "SampleCheckBox" });
             var afterToggle = treeProvider.GetTree(new GetTreeOptions());
             var checkBoxNode = FindByAutomationId(afterToggle.Root, "SampleCheckBox");
@@ -319,7 +320,7 @@ public sealed class WpfUiCaptureTests
             ((StackPanel)window.Content).Children.Add(grid);
             window.UpdateLayout();
 
-            var cellAccessor = AgentServices.ElementCellAccessor ?? throw new InvalidOperationException("Cell accessor was not registered.");
+            var cellAccessor = Agent.Backend?.ElementCellAccessor ?? throw new InvalidOperationException("Cell accessor was not registered.");
             var disabledGrid = new ElementSelector { AutomationId = "DisabledGrid" };
             var disabledWrite = Assert.Throws<ElementActionException>(() => cellAccessor.SetCellValue(disabledGrid, 0, 0, null, "Bob"));
             Assert.Equal(GraftErrorCodes.ElementNotActionable, disabledWrite.Code);

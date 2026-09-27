@@ -16,13 +16,13 @@ public sealed class GetTreeDispatchTests : IDisposable
     {
         PipeTestClient.ClearEnvironment();
         Agent.Stop();
-        AgentServices.Reset();
+        Agent.Reset();
     }
 
     public void Dispose()
     {
         Agent.Stop();
-        AgentServices.Reset();
+        Agent.Reset();
         PipeTestClient.ClearEnvironment();
     }
 
@@ -31,7 +31,7 @@ public sealed class GetTreeDispatchTests : IDisposable
     /// </summary>
     /// <remarks>
     /// Preconditions:
-    /// - Agent started; AgentServices.TreeProvider is null
+    /// - Agent started; no tree provider is registered
     ///
     /// Steps:
     /// - Handshake then getTree
@@ -68,7 +68,7 @@ public sealed class GetTreeDispatchTests : IDisposable
     [Fact]
     public async Task GetTree_WithFakeProvider_ReturnsRoot()
     {
-        AgentServices.RegisterTreeProvider(new FakeTreeProvider());
+        Agent.Use(new AgentBackend { TreeProvider = new FakeTreeProvider() });
         PipeTestClient.Start(_pipeName);
 
         await using var client = await PipeTestClient.ConnectAsync(_pipeName);

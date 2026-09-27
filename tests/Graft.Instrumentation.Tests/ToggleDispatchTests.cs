@@ -16,13 +16,13 @@ public sealed class ToggleDispatchTests : IDisposable
     {
         PipeTestClient.ClearEnvironment();
         Agent.Stop();
-        AgentServices.Reset();
+        Agent.Reset();
     }
 
     public void Dispose()
     {
         Agent.Stop();
-        AgentServices.Reset();
+        Agent.Reset();
         PipeTestClient.ClearEnvironment();
     }
 
@@ -69,7 +69,7 @@ public sealed class ToggleDispatchTests : IDisposable
     public async Task Toggle_WithFakeToggler_CallsToggle()
     {
         var fake = new FakeElementToggler();
-        AgentServices.RegisterElementToggler(fake);
+        Agent.Use(new AgentBackend { ElementToggler = fake });
         PipeTestClient.Start(_pipeName);
 
         await using var client = await PipeTestClient.ConnectAsync(_pipeName);

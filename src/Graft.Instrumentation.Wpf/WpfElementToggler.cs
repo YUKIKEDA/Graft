@@ -15,6 +15,18 @@ namespace Graft.Instrumentation.Wpf;
 /// </summary>
 internal sealed class WpfElementToggler : IElementToggler
 {
+    private readonly IElementResolver _resolver;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WpfElementToggler"/> class.
+    /// </summary>
+    /// <param name="resolver">Element resolver from the agent backend.</param>
+    public WpfElementToggler(IElementResolver resolver)
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+        _resolver = resolver;
+    }
+
     /// <inheritdoc />
     public void Toggle(ElementSelector selector)
     {
@@ -35,9 +47,9 @@ internal sealed class WpfElementToggler : IElementToggler
         dispatcher.InvokeWithTimeout(() => ToggleOnUiThread(selector));
     }
 
-    private static void ToggleOnUiThread(ElementSelector selector)
+    private void ToggleOnUiThread(ElementSelector selector)
     {
-        var (element, _) = WpfElementResolve.ResolveActionable(selector);
+        var (element, _) = WpfElementResolve.ResolveActionable(_resolver, selector);
 
         if (WpfControlActions.TryToggle(element))
         {
