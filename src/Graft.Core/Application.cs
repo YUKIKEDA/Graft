@@ -34,7 +34,7 @@ public static class Application
         var token = string.IsNullOrWhiteSpace(options.Token)
             ? System.Security.Cryptography.RandomNumberGenerator.GetHexString(32, lowercase: true)
             : options.Token!;
-        var configuration = string.IsNullOrWhiteSpace(options.Configuration) ? "GraftTest" : options.Configuration;
+        var configuration = LaunchOptions.NormalizeConfiguration(options.Configuration);
 
         var process = AppProcessLauncher.Start(options.AppPath, pipeName, token, configuration, options.Environment, out var outputTail);
         try
@@ -125,7 +125,7 @@ public static class Application
             .Append(") before the Graft agent accepted a connection: ")
             .AppendLine(appPath)
             .AppendLine("Common causes:")
-            .AppendLine("- The app was not built with the GraftTest configuration, so Agent.Start() is compiled out.")
+            .AppendLine($"- The app was not built with the {LaunchOptions.DefaultConfiguration} configuration, so Agent.Start() is compiled out.")
             .AppendLine("- Agent.Start() is not called at startup (e.g. missing from App.OnStartup / #if GRAFT_TEST).")
             .AppendLine("- The app crashed during startup (missing dependency, unhandled exception, build failure for .csproj).");
 

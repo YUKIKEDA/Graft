@@ -1,3 +1,5 @@
+using Graft.Protocol;
+
 namespace Graft.Core;
 
 /// <summary>
@@ -5,6 +7,11 @@ namespace Graft.Core;
 /// </summary>
 public sealed class LaunchOptions
 {
+    /// <summary>
+    /// MSBuild configuration used when <see cref="Configuration"/> is omitted.
+    /// </summary>
+    public const string DefaultConfiguration = GraftEnvironmentNames.TestConfiguration;
+
     /// <summary>
     /// Gets the default launch + handshake timeout (30 seconds).
     /// </summary>
@@ -37,7 +44,7 @@ public sealed class LaunchOptions
     /// <summary>
     /// Gets the MSBuild configuration used when <see cref="AppPath"/> is a csproj.
     /// </summary>
-    public string Configuration { get; init; } = "GraftTest";
+    public string Configuration { get; init; } = DefaultConfiguration;
 
     /// <summary>
     /// Gets optional operation timeline recording (PNG sequence + HTML viewer).
@@ -58,4 +65,12 @@ public sealed class LaunchOptions
     /// Null or empty keys are ignored. Values overwrite any inherited variable of the same name.
     /// </remarks>
     public IReadOnlyDictionary<string, string>? Environment { get; init; }
+
+    /// <summary>
+    /// Returns <paramref name="configuration"/> when it has a value, and <see cref="DefaultConfiguration"/> when it is empty.
+    /// </summary>
+    /// <param name="configuration">Caller-supplied configuration, or <see langword="null"/>.</param>
+    /// <returns>A non-empty configuration name.</returns>
+    public static string NormalizeConfiguration(string? configuration) =>
+        string.IsNullOrWhiteSpace(configuration) ? DefaultConfiguration : configuration;
 }

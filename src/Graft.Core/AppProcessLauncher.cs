@@ -8,10 +8,6 @@ namespace Graft.Core;
 /// </summary>
 internal static class AppProcessLauncher
 {
-    private const string EnableEnv = "GRAFT_ENABLE";
-    private const string PipeNameEnv = "GRAFT_PIPE_NAME";
-    private const string ConnectTokenEnv = "GRAFT_CONNECT_TOKEN";
-
     /// <summary>
     /// Maximum number of stdout/stderr lines kept for launch diagnostics.
     /// </summary>
@@ -52,9 +48,9 @@ internal static class AppProcessLauncher
             CreateNoWindow = false,
         };
 
-        psi.Environment[EnableEnv] = "1";
-        psi.Environment[PipeNameEnv] = pipeName;
-        psi.Environment[ConnectTokenEnv] = token;
+        psi.Environment[GraftEnvironmentNames.Enable] = "1";
+        psi.Environment[GraftEnvironmentNames.PipeName] = pipeName;
+        psi.Environment[GraftEnvironmentNames.ConnectToken] = token;
 
         if (extraEnvironment is not null)
         {

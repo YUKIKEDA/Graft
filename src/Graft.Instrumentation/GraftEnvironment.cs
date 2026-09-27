@@ -1,3 +1,5 @@
+using Graft.Protocol;
+
 namespace Graft.Instrumentation;
 
 /// <summary>
@@ -8,17 +10,17 @@ public static class GraftEnvironment
     /// <summary>
     /// When set to <c>1</c>, <c>Agent.Start</c> may activate the agent.
     /// </summary>
-    public const string Enable = "GRAFT_ENABLE";
+    public const string Enable = GraftEnvironmentNames.Enable;
 
     /// <summary>
     /// Named pipe name the agent listens on.
     /// </summary>
-    public const string PipeName = "GRAFT_PIPE_NAME";
+    public const string PipeName = GraftEnvironmentNames.PipeName;
 
     /// <summary>
     /// Shared secret presented during handshake.
     /// </summary>
-    public const string ConnectToken = "GRAFT_CONNECT_TOKEN";
+    public const string ConnectToken = GraftEnvironmentNames.ConnectToken;
 
     /// <summary>
     /// Returns <see langword="true"/> when <see cref="Enable"/> equals <c>1</c>.
