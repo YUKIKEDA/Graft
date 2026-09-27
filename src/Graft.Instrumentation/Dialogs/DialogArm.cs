@@ -3,22 +3,43 @@ namespace Graft.Instrumentation.Dialogs;
 #if GRAFT_TEST
 
 /// <summary>
-/// One-shot OpenFile dialog arm state for the in-process agent (test seam).
+/// One-shot file or folder dialog arm for the in-process agent (test seam).
 /// </summary>
-public static class OpenFileArm
+/// <remarks>
+/// <see cref="OpenFile"/>, <see cref="SaveFile"/>, and <see cref="OpenFolder"/> do not share state.
+/// The wire methods stay separate.
+/// </remarks>
+public sealed class DialogArm
 {
-    private static readonly object Gate = new();
-    private static ArmKind _kind = ArmKind.None;
-    private static string? _path;
+    private readonly object _gate = new();
+    private ArmKind _kind = ArmKind.None;
+    private string? _path;
+
+    private DialogArm() { }
 
     /// <summary>
-    /// Arms the next <see cref="OpenFileArm"/> consumption to return <paramref name="path"/> (OK).
+    /// Gets the open-file arm.
     /// </summary>
-    /// <param name="path">File path to return.</param>
-    public static void ArmPath(string path)
+    public static DialogArm OpenFile { get; } = new();
+
+    /// <summary>
+    /// Gets the save-file arm.
+    /// </summary>
+    public static DialogArm SaveFile { get; } = new();
+
+    /// <summary>
+    /// Gets the open-folder arm.
+    /// </summary>
+    public static DialogArm OpenFolder { get; } = new();
+
+    /// <summary>
+    /// Arms the next consumption to return <paramref name="path"/> (OK).
+    /// </summary>
+    /// <param name="path">Path to return.</param>
+    public void ArmPath(string path)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
-        lock (Gate)
+        lock (_gate)
         {
             _kind = ArmKind.Ok;
             _path = path;
@@ -28,9 +49,9 @@ public static class OpenFileArm
     /// <summary>
     /// Arms the next consumption to return cancel (<see langword="null"/> path).
     /// </summary>
-    public static void ArmCancel()
+    public void ArmCancel()
     {
-        lock (Gate)
+        lock (_gate)
         {
             _kind = ArmKind.Cancel;
             _path = null;
@@ -40,9 +61,9 @@ public static class OpenFileArm
     /// <summary>
     /// Clears any pending arm without consuming (tests).
     /// </summary>
-    public static void Reset()
+    public void Reset()
     {
-        lock (Gate)
+        lock (_gate)
         {
             _kind = ArmKind.None;
             _path = null;
@@ -55,9 +76,9 @@ public static class OpenFileArm
     /// <param name="path">OK path when armed with a path; otherwise <see langword="null"/>.</param>
     /// <param name="canceled">True when armed for cancel.</param>
     /// <returns>True when an arm was consumed.</returns>
-    public static bool TryConsume(out string? path, out bool canceled)
+    public bool TryConsume(out string? path, out bool canceled)
     {
-        lock (Gate)
+        lock (_gate)
         {
             switch (_kind)
             {

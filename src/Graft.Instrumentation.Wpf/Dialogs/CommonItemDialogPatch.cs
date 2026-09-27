@@ -75,12 +75,12 @@ internal static class CommonItemDialogPatch
     {
         if (__instance is OpenFileDialog open)
         {
-            return TryApplyFileArm(open, OpenFileArm.TryConsume, ref __result);
+            return TryApplyFileArm(open, DialogArm.OpenFile.TryConsume, ref __result);
         }
 
         if (__instance is SaveFileDialog save)
         {
-            return TryApplyFileArm(save, SaveFileArm.TryConsume, ref __result);
+            return TryApplyFileArm(save, DialogArm.SaveFile.TryConsume, ref __result);
         }
 
         if (__instance is OpenFolderDialog folder)
@@ -111,7 +111,7 @@ internal static class CommonItemDialogPatch
 
     private static bool TryApplyFolderArm(OpenFolderDialog dialog, ref bool result)
     {
-        if (!OpenFolderArm.TryConsume(out var path, out var canceled))
+        if (!DialogArm.OpenFolder.TryConsume(out var path, out var canceled))
         {
             return true;
         }

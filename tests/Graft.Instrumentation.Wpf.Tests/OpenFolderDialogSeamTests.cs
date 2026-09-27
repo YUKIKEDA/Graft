@@ -17,7 +17,7 @@ public sealed class OpenFolderDialogSeamTests
     /// - STA thread; WpfGraft.Use installed the RunDialog patch
     ///
     /// Steps:
-    /// - OpenFolderArm.ArmPath
+    /// - DialogArm.OpenFolder.ArmPath
     /// - OpenFolderDialog.ShowDialog
     ///
     /// Expected:
@@ -27,11 +27,11 @@ public sealed class OpenFolderDialogSeamTests
     public void ArmPath_ShowDialog_ReturnsArmedFolderName()
     {
         WpfGraft.ResetForTests();
-        OpenFolderArm.Reset();
+        DialogArm.OpenFolder.Reset();
         WpfGraft.Use();
 
         const string path = @"C:\graft-seam-folder-ok";
-        OpenFolderArm.ArmPath(path);
+        DialogArm.OpenFolder.ArmPath(path);
 
         var dialog = new OpenFolderDialog();
         var result = dialog.ShowDialog();
@@ -48,7 +48,7 @@ public sealed class OpenFolderDialogSeamTests
     /// - STA thread; WpfGraft.Use installed the RunDialog patch
     ///
     /// Steps:
-    /// - OpenFolderArm.ArmCancel
+    /// - DialogArm.OpenFolder.ArmCancel
     /// - OpenFolderDialog.ShowDialog
     ///
     /// Expected:
@@ -58,10 +58,10 @@ public sealed class OpenFolderDialogSeamTests
     public void ArmCancel_ShowDialog_ReturnsFalse()
     {
         WpfGraft.ResetForTests();
-        OpenFolderArm.Reset();
+        DialogArm.OpenFolder.Reset();
         WpfGraft.Use();
 
-        OpenFolderArm.ArmCancel();
+        DialogArm.OpenFolder.ArmCancel();
 
         var dialog = new OpenFolderDialog();
         var result = dialog.ShowDialog();

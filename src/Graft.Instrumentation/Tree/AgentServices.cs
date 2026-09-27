@@ -274,9 +274,9 @@ public static class AgentServices
         _elementCellAccessor = null;
         _dataGridOperator = null;
         _windowCatalog = null;
-        OpenFileArm.Reset();
-        SaveFileArm.Reset();
-        OpenFolderArm.Reset();
+        DialogArm.OpenFile.Reset();
+        DialogArm.SaveFile.Reset();
+        DialogArm.OpenFolder.Reset();
         MessageBoxArm.Reset();
     }
 }
