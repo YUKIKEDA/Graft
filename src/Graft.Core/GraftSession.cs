@@ -154,7 +154,7 @@ public sealed class GraftSession : IAsyncDisposable
         var poll = PositiveOrDefault(WaitOptions.PollInterval, WaitOptions.DefaultPollInterval);
         var deadline = DateTime.UtcNow + timeout;
 
-        while (DateTime.UtcNow <= deadline)
+        while (DateTime.UtcNow < deadline)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var listed = await _connection.ListWindowsAsync(cancellationToken).ConfigureAwait(false);
@@ -219,7 +219,7 @@ public sealed class GraftSession : IAsyncDisposable
         var poll = PositiveOrDefault(WaitOptions.PollInterval, WaitOptions.DefaultPollInterval);
         var deadline = DateTime.UtcNow + timeout;
 
-        while (DateTime.UtcNow <= deadline)
+        while (DateTime.UtcNow < deadline)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var listed = await _connection.ListWindowsAsync(cancellationToken).ConfigureAwait(false);

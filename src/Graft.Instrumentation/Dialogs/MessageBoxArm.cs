@@ -1,5 +1,7 @@
 namespace Graft.Instrumentation.Dialogs;
 
+#if GRAFT_TEST
+
 /// <summary>
 /// One-shot WPF MessageBox arm state for the in-process agent (test seam).
 /// </summary>
@@ -64,3 +66,5 @@ public static class MessageBoxArm
         }
     }
 }
+
+#endif
