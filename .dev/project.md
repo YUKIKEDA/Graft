@@ -134,7 +134,10 @@ TestComplete相当の精度を狙う、という位置づけ。
 
 - Visual Tree を共通 JSON スキーマへ正規化（`IElementAdapter`）
 - 公開セレクタは **スコアリング方式の複合キー**（閾値以上の最高点。同点は `element.ambiguous`）。
-  初期仮重み: automationId=100, name=40, controlType=15, 近傍パス=20, 閾値=60（チューニング前提）。
+  現行重み（`SelectorWeights`）: automationId=100, name=60, controlType=60, 近傍パス=20, 閾値=60。
+  automationId / name / controlType は指定時に**ハードゲート**（不一致なら 0 点）で、加点は一致時のみ。
+  このため `GetByName` / `GetByControlType` 単体でも閾値に届く（Phase 27 F02 で初期仮重み name=40 / controlType=15 から変更）。
+  単体使用時の曖昧さは「閾値以上が複数 → `element.ambiguous`」で検出する
   ショートハンド API として automationId→name 相当も用意
 - セッション内 `runtimeId` は内部ハンドル。テスト記述の正本にはしない
 - Phase 1 必須ノード: `runtimeId`, `controlType`, `name`, `automationId`, `bounds`,
@@ -442,7 +445,7 @@ GitHub Actions:
 | Q46  | `error` は `{code,message,details?}`。安定コードを文書化                                                                                                                                     |
 | Q47  | `v` は整数。Handshake 完全一致。版交渉は後回し                                                                                                                                               |
 | Q48  | Q35〜 を本文・section 9/10 へ即反映                                                                                                                                                          |
-| Q49  | セレクタ仮重み: automationId=100, name=40, controlType=15, 近傍パス=20, 閾値=60                                                                                                              |
+| Q49  | セレクタ重み: automationId=100, name=60, controlType=60, 近傍パス=20, 閾値=60（初期 name=40 / controlType=15 から Phase 27 F02 で変更。name / controlType はハードゲート） |
 | Q50  | 安定エラーコード初期セット（handshake/protocol/element/action/window/pipe/agent/expect/selector）                                                                                            |
 | Q51  | setValue はネイティブ置換優先、失敗時クリア+SendInput。append/typeHuman は後付け                                                                                                             |
 | Q52  | SendInput クリックは Peer 点→中心。オフセットオプション可                                                                                                                                    |
