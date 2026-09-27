@@ -42,7 +42,7 @@ dotnet test Graft.slnx -m:1
 - Format with CSharpier only; do not hand-warp layout against it
 - StyleCop is warning-level overall
 - **Public API in `src/`** must have XML docs (`summary` / `param` / `returns` as needed) — warning for now, escalate later
-- **Tests (`tests/**`):** every Fact/Theory needs `summary`+`remarks`with`Preconditions`/`Steps`/`Expected`in English. Theory: one remarks block per method. See`.cursor/rules/testing.mdc`
+- **Tests (`tests/**`):** every Fact/Theory needs `summary` + `remarks` with `Preconditions` / `Steps` / `Expected` in English. Theory: one remarks block per method. See `.cursor/rules/testing.mdc`
 - `tools/`, sample-apps: XML docs not required
 - Escalate StyleCop / docs to errors later after the codebase settles
 
