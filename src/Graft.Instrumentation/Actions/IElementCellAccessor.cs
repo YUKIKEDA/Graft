@@ -7,6 +7,10 @@ namespace Graft.Instrumentation.Actions;
 /// <summary>
 /// Framework-specific DataGrid cell text read/write by row and column index or Header key.
 /// </summary>
+/// <remarks>
+/// Stays separate from <see cref="IDataGridOperator"/>. This slot also reads ListView/GridView cells.
+/// Selection, header sort, and row add/delete stay on <see cref="IDataGridOperator"/>.
+/// </remarks>
 public interface IElementCellAccessor
 {
     /// <summary>

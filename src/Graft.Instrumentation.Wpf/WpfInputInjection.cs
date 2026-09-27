@@ -152,11 +152,10 @@ internal static class WpfInputInjection
         }
 
         InputInjector.PressChord(chord);
-        element.Dispatcher.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
+        FlushIdle(element);
     }
 
-    private static void FlushIdle(FrameworkElement element) =>
-        element.Dispatcher.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
+    private static void FlushIdle(FrameworkElement element) => WpfDispatch.Idle(element);
 
     private static Point ResolveClickScreenPoint(FrameworkElement element, double offsetXDip = 0, double offsetYDip = 0)
     {

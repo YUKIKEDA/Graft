@@ -1,3 +1,4 @@
+using System.Windows;
 using System.Windows.Threading;
 using Graft.Instrumentation.Actions;
 using Graft.Protocol;
@@ -64,5 +65,35 @@ internal static class WpfDispatch
 
         // Rethrows the callback's exception unwrapped, like a synchronous Dispatcher.Invoke.
         return operation.Task.GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    /// Pumps the dispatcher to <see cref="DispatcherPriority.ContextIdle"/> so a layout pass can finish.
+    /// </summary>
+    /// <param name="element">Element whose dispatcher is pumped.</param>
+    internal static void Idle(DispatcherObject element) => element.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
+
+    /// <summary>
+    /// Runs <paramref name="action"/> on the WPF application dispatcher.
+    /// </summary>
+    /// <typeparam name="T">Result type.</typeparam>
+    /// <param name="action">Work to run.</param>
+    /// <param name="unavailableMessage">Message when <c>Application.Current</c> has no dispatcher.</param>
+    /// <returns>The value returned by <paramref name="action"/>.</returns>
+    /// <exception cref="ElementActionException">No dispatcher is available, or the UI thread did not finish in time.</exception>
+    internal static T InvokeOnUi<T>(Func<T> action, string unavailableMessage)
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null)
+        {
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, unavailableMessage);
+        }
+
+        if (dispatcher.CheckAccess())
+        {
+            return action();
+        }
+
+        return dispatcher.InvokeWithTimeout(action);
     }
 }
