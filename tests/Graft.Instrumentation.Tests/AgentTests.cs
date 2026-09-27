@@ -6,14 +6,14 @@ public sealed class AgentTests : IDisposable
 {
     public AgentTests()
     {
-        ClearGraftEnvironment();
+        PipeTestClient.ClearEnvironment();
         Agent.Stop();
     }
 
     public void Dispose()
     {
         Agent.Stop();
-        ClearGraftEnvironment();
+        PipeTestClient.ClearEnvironment();
     }
 
     /// <summary>
@@ -147,12 +147,5 @@ public sealed class AgentTests : IDisposable
 
         Assert.False(Agent.IsRunning);
         Assert.Null(Agent.Current);
-    }
-
-    private static void ClearGraftEnvironment()
-    {
-        Environment.SetEnvironmentVariable(GraftEnvironment.Enable, null);
-        Environment.SetEnvironmentVariable(GraftEnvironment.PipeName, null);
-        Environment.SetEnvironmentVariable(GraftEnvironment.ConnectToken, null);
     }
 }

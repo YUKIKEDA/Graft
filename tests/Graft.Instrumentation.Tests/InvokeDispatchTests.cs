@@ -1,12 +1,9 @@
-using System.IO.Pipes;
 using System.Text.Json;
 using Graft.Instrumentation;
-using Graft.Instrumentation.Actions;
-using Graft.Instrumentation.Elements;
 using Graft.Instrumentation.Tree;
 using Graft.Protocol;
-using Graft.Protocol.Framing;
 using Graft.Protocol.Messages;
+using Graft.TestSupport;
 
 namespace Graft.Instrumentation.Tests;
 
@@ -16,7 +13,7 @@ public sealed class InvokeDispatchTests : IDisposable
 
     public InvokeDispatchTests()
     {
-        ClearGraftEnvironment();
+        PipeTestClient.ClearEnvironment();
         Agent.Stop();
         AgentServices.Reset();
     }
@@ -25,7 +22,7 @@ public sealed class InvokeDispatchTests : IDisposable
     {
         Agent.Stop();
         AgentServices.Reset();
-        ClearGraftEnvironment();
+        PipeTestClient.ClearEnvironment();
     }
 
     /// <summary>
@@ -44,12 +41,12 @@ public sealed class InvokeDispatchTests : IDisposable
     [Fact]
     public async Task Invoke_WithoutInvoker_ReturnsActionFailed()
     {
-        StartAgent();
+        PipeTestClient.Start(_pipeName);
 
-        await using var client = await ConnectAsync(_pipeName);
-        Assert.True((await SendHandshakeAsync(client)).Ok);
+        await using var client = await PipeTestClient.ConnectAsync(_pipeName);
+        Assert.True((await PipeTestClient.HandshakeAsync(client)).Ok);
 
-        var response = await SendInvokeAsync(client, "SampleButton");
+        var response = await PipeTestClient.SendAsync(client, TargetRequest(ProtocolMethods.Invoke, "SampleButton", "2"));
         Assert.False(response.Ok);
         Assert.Equal(GraftErrorCodes.ActionFailed, response.Error?.Code);
     }
@@ -72,12 +69,12 @@ public sealed class InvokeDispatchTests : IDisposable
     {
         var fake = new FakeElementInvoker();
         AgentServices.RegisterElementInvoker(fake);
-        StartAgent();
+        PipeTestClient.Start(_pipeName);
 
-        await using var client = await ConnectAsync(_pipeName);
-        Assert.True((await SendHandshakeAsync(client)).Ok);
+        await using var client = await PipeTestClient.ConnectAsync(_pipeName);
+        Assert.True((await PipeTestClient.HandshakeAsync(client)).Ok);
 
-        var response = await SendInvokeAsync(client, "SampleButton");
+        var response = await PipeTestClient.SendAsync(client, TargetRequest(ProtocolMethods.Invoke, "SampleButton", "2"));
         Assert.True(response.Ok, response.Error?.Message);
         Assert.Equal("SampleButton", fake.LastAutomationId);
     }
@@ -100,12 +97,12 @@ public sealed class InvokeDispatchTests : IDisposable
     {
         var fake = new FakeElementInvoker();
         AgentServices.RegisterElementInvoker(fake);
-        StartAgent();
+        PipeTestClient.Start(_pipeName);
 
-        await using var client = await ConnectAsync(_pipeName);
-        Assert.True((await SendHandshakeAsync(client)).Ok);
+        await using var client = await PipeTestClient.ConnectAsync(_pipeName);
+        Assert.True((await PipeTestClient.HandshakeAsync(client)).Ok);
 
-        var response = await SendRightClickAsync(client, "ContextMenuTarget");
+        var response = await PipeTestClient.SendAsync(client, TargetRequest(ProtocolMethods.RightClick, "ContextMenuTarget", "3"));
         Assert.True(response.Ok, response.Error?.Message);
         Assert.Equal("ContextMenuTarget", fake.LastAutomationId);
     }
@@ -127,127 +124,22 @@ public sealed class InvokeDispatchTests : IDisposable
     public async Task Invoke_WhenResolverFails_ReturnsElementNotFound()
     {
         AgentServices.RegisterElementInvoker(new FakeElementInvoker(throwCode: GraftErrorCodes.ElementNotFound));
-        StartAgent();
+        PipeTestClient.Start(_pipeName);
 
-        await using var client = await ConnectAsync(_pipeName);
-        Assert.True((await SendHandshakeAsync(client)).Ok);
+        await using var client = await PipeTestClient.ConnectAsync(_pipeName);
+        Assert.True((await PipeTestClient.HandshakeAsync(client)).Ok);
 
-        var response = await SendInvokeAsync(client, "Missing");
+        var response = await PipeTestClient.SendAsync(client, TargetRequest(ProtocolMethods.Invoke, "Missing", "2"));
         Assert.False(response.Ok);
         Assert.Equal(GraftErrorCodes.ElementNotFound, response.Error?.Code);
     }
 
-    private void StartAgent()
-    {
-        Environment.SetEnvironmentVariable(GraftEnvironment.Enable, "1");
-        Environment.SetEnvironmentVariable(GraftEnvironment.PipeName, _pipeName);
-        Environment.SetEnvironmentVariable(GraftEnvironment.ConnectToken, "secret");
-        Agent.Start();
-    }
-
-    private static async Task<NamedPipeClientStream> ConnectAsync(string pipeName)
-    {
-        var client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
-
-        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
-        Exception? last = null;
-        while (DateTime.UtcNow < deadline)
-        {
-            try
-            {
-                await client.ConnectAsync(200).ConfigureAwait(false);
-                return client;
-            }
-            catch (Exception ex) when (ex is TimeoutException or IOException or UnauthorizedAccessException)
-            {
-                last = ex;
-                await Task.Delay(50).ConfigureAwait(false);
-            }
-        }
-
-        await client.DisposeAsync().ConfigureAwait(false);
-        throw new TimeoutException($"Could not connect to pipe '{pipeName}'.", last);
-    }
-
-    private static async Task<ResponseMessage> SendHandshakeAsync(Stream stream)
-    {
-        using var paramsDoc = JsonDocument.Parse("""{"token":"secret"}""");
-        var request = new RequestMessage
+    private static RequestMessage TargetRequest(string method, string automationId, string id) =>
+        new()
         {
             V = ProtocolVersion.Current,
-            Id = "1",
-            Method = ProtocolMethods.Handshake,
-            Params = paramsDoc.RootElement.Clone(),
-        };
-
-        await JsonMessageCodec.WriteRequestAsync(stream, request).ConfigureAwait(false);
-        return await JsonMessageCodec.ReadResponseAsync(stream).ConfigureAwait(false);
-    }
-
-    private static async Task<ResponseMessage> SendInvokeAsync(Stream stream, string automationId)
-    {
-        var request = new RequestMessage
-        {
-            V = ProtocolVersion.Current,
-            Id = "2",
-            Method = ProtocolMethods.Invoke,
+            Id = id,
+            Method = method,
             Params = JsonSerializer.SerializeToElement(new { automationId }),
         };
-
-        await JsonMessageCodec.WriteRequestAsync(stream, request).ConfigureAwait(false);
-        return await JsonMessageCodec.ReadResponseAsync(stream).ConfigureAwait(false);
-    }
-
-    private static async Task<ResponseMessage> SendRightClickAsync(Stream stream, string automationId)
-    {
-        var request = new RequestMessage
-        {
-            V = ProtocolVersion.Current,
-            Id = "3",
-            Method = ProtocolMethods.RightClick,
-            Params = JsonSerializer.SerializeToElement(new { automationId }),
-        };
-
-        await JsonMessageCodec.WriteRequestAsync(stream, request).ConfigureAwait(false);
-        return await JsonMessageCodec.ReadResponseAsync(stream).ConfigureAwait(false);
-    }
-
-    private static void ClearGraftEnvironment()
-    {
-        Environment.SetEnvironmentVariable(GraftEnvironment.Enable, null);
-        Environment.SetEnvironmentVariable(GraftEnvironment.PipeName, null);
-        Environment.SetEnvironmentVariable(GraftEnvironment.ConnectToken, null);
-    }
-
-    private sealed class FakeElementInvoker : IElementInvoker
-    {
-        private readonly string? _throwCode;
-
-        public FakeElementInvoker(string? throwCode = null) => _throwCode = throwCode;
-
-        public string? LastAutomationId { get; private set; }
-
-        public void Invoke(ElementSelector selector)
-        {
-            LastAutomationId = selector.AutomationId;
-            if (_throwCode is not null)
-            {
-                throw new ElementResolveException(_throwCode, "fake failure");
-            }
-        }
-
-        public void BeginInvoke(ElementSelector selector) => Invoke(selector);
-
-        public void RightClick(ElementSelector selector) => Invoke(selector);
-
-        public void DoubleClick(ElementSelector selector) => Invoke(selector);
-
-        public void Hover(ElementSelector selector) => Invoke(selector);
-
-        public void Drag(ElementSelector from, ElementSelector to) => Invoke(from);
-
-        public void ClickAt(ElementSelector selector, double offsetX, double offsetY) => Invoke(selector);
-
-        public void Wheel(ElementSelector selector, int delta) => Invoke(selector);
-    }
 }

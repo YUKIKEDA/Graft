@@ -1,11 +1,9 @@
-using System.IO.Pipes;
 using System.Text.Json;
 using Graft.Instrumentation;
 using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Elements;
 using Graft.Instrumentation.Tree;
 using Graft.Protocol;
-using Graft.Protocol.Framing;
 using Graft.Protocol.Messages;
 
 namespace Graft.Instrumentation.Tests;
@@ -16,7 +14,7 @@ public sealed class SendKeysDispatchTests : IDisposable
 
     public SendKeysDispatchTests()
     {
-        ClearGraftEnvironment();
+        PipeTestClient.ClearEnvironment();
         Agent.Stop();
         AgentServices.Reset();
     }
@@ -25,7 +23,7 @@ public sealed class SendKeysDispatchTests : IDisposable
     {
         Agent.Stop();
         AgentServices.Reset();
-        ClearGraftEnvironment();
+        PipeTestClient.ClearEnvironment();
     }
 
     /// <summary>
@@ -44,12 +42,12 @@ public sealed class SendKeysDispatchTests : IDisposable
     [Fact]
     public async Task SendKeys_WithoutSender_ReturnsActionFailed()
     {
-        StartAgent();
+        PipeTestClient.Start(_pipeName);
 
-        await using var client = await ConnectAsync(_pipeName);
-        Assert.True((await SendHandshakeAsync(client)).Ok);
+        await using var client = await PipeTestClient.ConnectAsync(_pipeName);
+        Assert.True((await PipeTestClient.HandshakeAsync(client)).Ok);
 
-        var response = await SendSendKeysAsync(client, "SampleTextBox", "abc");
+        var response = await PipeTestClient.SendAsync(client, SendKeysRequest("SampleTextBox", "abc"));
         Assert.False(response.Ok);
         Assert.Equal(GraftErrorCodes.ActionFailed, response.Error?.Code);
     }
@@ -72,12 +70,12 @@ public sealed class SendKeysDispatchTests : IDisposable
     {
         var fake = new FakeElementKeySender();
         AgentServices.RegisterElementKeySender(fake);
-        StartAgent();
+        PipeTestClient.Start(_pipeName);
 
-        await using var client = await ConnectAsync(_pipeName);
-        Assert.True((await SendHandshakeAsync(client)).Ok);
+        await using var client = await PipeTestClient.ConnectAsync(_pipeName);
+        Assert.True((await PipeTestClient.HandshakeAsync(client)).Ok);
 
-        var response = await SendSendKeysAsync(client, "SampleTextBox", "typed");
+        var response = await PipeTestClient.SendAsync(client, SendKeysRequest("SampleTextBox", "typed"));
         Assert.True(response.Ok, response.Error?.Message);
         Assert.Equal("SampleTextBox", fake.LastAutomationId);
         Assert.Equal("typed", fake.LastText);
@@ -99,12 +97,12 @@ public sealed class SendKeysDispatchTests : IDisposable
     [Fact]
     public async Task TypeHuman_WithoutSender_ReturnsActionFailed()
     {
-        StartAgent();
+        PipeTestClient.Start(_pipeName);
 
-        await using var client = await ConnectAsync(_pipeName);
-        Assert.True((await SendHandshakeAsync(client)).Ok);
+        await using var client = await PipeTestClient.ConnectAsync(_pipeName);
+        Assert.True((await PipeTestClient.HandshakeAsync(client)).Ok);
 
-        var response = await SendTypeHumanAsync(client, "SampleTextBox", "ab", 40);
+        var response = await PipeTestClient.SendAsync(client, TypeHumanRequest("SampleTextBox", "ab", 40));
         Assert.False(response.Ok);
         Assert.Equal(GraftErrorCodes.ActionFailed, response.Error?.Code);
     }
@@ -129,18 +127,18 @@ public sealed class SendKeysDispatchTests : IDisposable
     {
         var fake = new FakeElementKeySender();
         AgentServices.RegisterElementKeySender(fake);
-        StartAgent();
+        PipeTestClient.Start(_pipeName);
 
-        await using var client = await ConnectAsync(_pipeName);
-        Assert.True((await SendHandshakeAsync(client)).Ok);
+        await using var client = await PipeTestClient.ConnectAsync(_pipeName);
+        Assert.True((await PipeTestClient.HandshakeAsync(client)).Ok);
 
-        var response = await SendTypeHumanAsync(client, "SampleTextBox", "ab", 40);
+        var response = await PipeTestClient.SendAsync(client, TypeHumanRequest("SampleTextBox", "ab", 40));
         Assert.True(response.Ok, response.Error?.Message);
         Assert.Equal("SampleTextBox", fake.LastTypeAutomationId);
         Assert.Equal("ab", fake.LastTypeText);
         Assert.Equal(TimeSpan.FromMilliseconds(40), fake.LastDelay);
 
-        var rejected = await SendTypeHumanAsync(client, "SampleTextBox", "nope", -1);
+        var rejected = await PipeTestClient.SendAsync(client, TypeHumanRequest("SampleTextBox", "nope", -1));
         Assert.False(rejected.Ok);
         Assert.Equal(GraftErrorCodes.SelectorInvalid, rejected.Error?.Code);
         Assert.Equal("ab", fake.LastTypeText);
@@ -162,12 +160,12 @@ public sealed class SendKeysDispatchTests : IDisposable
     [Fact]
     public async Task PressKeys_WithoutSender_ReturnsActionFailed()
     {
-        StartAgent();
+        PipeTestClient.Start(_pipeName);
 
-        await using var client = await ConnectAsync(_pipeName);
-        Assert.True((await SendHandshakeAsync(client)).Ok);
+        await using var client = await PipeTestClient.ConnectAsync(_pipeName);
+        Assert.True((await PipeTestClient.HandshakeAsync(client)).Ok);
 
-        var response = await SendPressKeysAsync(client, "SampleTextBox", "Control+A");
+        var response = await PipeTestClient.SendAsync(client, PressKeysRequest("SampleTextBox", "Control+A"));
         Assert.False(response.Ok);
         Assert.Equal(GraftErrorCodes.ActionFailed, response.Error?.Code);
     }
@@ -190,79 +188,28 @@ public sealed class SendKeysDispatchTests : IDisposable
     {
         var fake = new FakeElementKeySender();
         AgentServices.RegisterElementKeySender(fake);
-        StartAgent();
+        PipeTestClient.Start(_pipeName);
 
-        await using var client = await ConnectAsync(_pipeName);
-        Assert.True((await SendHandshakeAsync(client)).Ok);
+        await using var client = await PipeTestClient.ConnectAsync(_pipeName);
+        Assert.True((await PipeTestClient.HandshakeAsync(client)).Ok);
 
-        var response = await SendPressKeysAsync(client, "SampleTextBox", "Control+A");
+        var response = await PipeTestClient.SendAsync(client, PressKeysRequest("SampleTextBox", "Control+A"));
         Assert.True(response.Ok, response.Error?.Message);
         Assert.Equal("SampleTextBox", fake.LastPressAutomationId);
         Assert.Equal("Control+A", fake.LastKeys);
     }
 
-    private void StartAgent()
-    {
-        Environment.SetEnvironmentVariable(GraftEnvironment.Enable, "1");
-        Environment.SetEnvironmentVariable(GraftEnvironment.PipeName, _pipeName);
-        Environment.SetEnvironmentVariable(GraftEnvironment.ConnectToken, "secret");
-        Agent.Start();
-    }
-
-    private static async Task<NamedPipeClientStream> ConnectAsync(string pipeName)
-    {
-        var client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
-
-        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
-        Exception? last = null;
-        while (DateTime.UtcNow < deadline)
-        {
-            try
-            {
-                await client.ConnectAsync(200).ConfigureAwait(false);
-                return client;
-            }
-            catch (Exception ex) when (ex is TimeoutException or IOException or UnauthorizedAccessException)
-            {
-                last = ex;
-                await Task.Delay(50).ConfigureAwait(false);
-            }
-        }
-
-        await client.DisposeAsync().ConfigureAwait(false);
-        throw new TimeoutException($"Could not connect to pipe '{pipeName}'.", last);
-    }
-
-    private static async Task<ResponseMessage> SendHandshakeAsync(Stream stream)
-    {
-        using var paramsDoc = JsonDocument.Parse("""{"token":"secret"}""");
-        var request = new RequestMessage
-        {
-            V = ProtocolVersion.Current,
-            Id = "1",
-            Method = ProtocolMethods.Handshake,
-            Params = paramsDoc.RootElement.Clone(),
-        };
-        await JsonMessageCodec.WriteRequestAsync(stream, request);
-        return await JsonMessageCodec.ReadResponseAsync(stream);
-    }
-
-    private static async Task<ResponseMessage> SendSendKeysAsync(Stream stream, string automationId, string text)
-    {
-        var request = new RequestMessage
+    private static RequestMessage SendKeysRequest(string automationId, string text) =>
+        new()
         {
             V = ProtocolVersion.Current,
             Id = "2",
             Method = ProtocolMethods.SendKeys,
             Params = JsonSerializer.SerializeToElement(new { automationId, text }),
         };
-        await JsonMessageCodec.WriteRequestAsync(stream, request);
-        return await JsonMessageCodec.ReadResponseAsync(stream);
-    }
 
-    private static async Task<ResponseMessage> SendTypeHumanAsync(Stream stream, string automationId, string text, int delayMs)
-    {
-        var request = new RequestMessage
+    private static RequestMessage TypeHumanRequest(string automationId, string text, int delayMs) =>
+        new()
         {
             V = ProtocolVersion.Current,
             Id = "4",
@@ -276,29 +223,15 @@ public sealed class SendKeysDispatchTests : IDisposable
                 }
             ),
         };
-        await JsonMessageCodec.WriteRequestAsync(stream, request);
-        return await JsonMessageCodec.ReadResponseAsync(stream);
-    }
 
-    private static async Task<ResponseMessage> SendPressKeysAsync(Stream stream, string automationId, string keys)
-    {
-        var request = new RequestMessage
+    private static RequestMessage PressKeysRequest(string automationId, string keys) =>
+        new()
         {
             V = ProtocolVersion.Current,
             Id = "3",
             Method = ProtocolMethods.PressKeys,
             Params = JsonSerializer.SerializeToElement(new { automationId, keys }),
         };
-        await JsonMessageCodec.WriteRequestAsync(stream, request);
-        return await JsonMessageCodec.ReadResponseAsync(stream);
-    }
-
-    private static void ClearGraftEnvironment()
-    {
-        Environment.SetEnvironmentVariable(GraftEnvironment.Enable, null);
-        Environment.SetEnvironmentVariable(GraftEnvironment.PipeName, null);
-        Environment.SetEnvironmentVariable(GraftEnvironment.ConnectToken, null);
-    }
 
     private sealed class FakeElementKeySender : IElementKeySender
     {
