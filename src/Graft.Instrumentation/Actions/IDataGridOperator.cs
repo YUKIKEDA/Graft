@@ -7,6 +7,9 @@ namespace Graft.Instrumentation.Actions;
 /// <summary>
 /// Framework-specific DataGrid selection / sort / row CRUD (Phase 28).
 /// </summary>
+/// <remarks>
+/// Stays separate from <see cref="IElementCellAccessor"/>. Cell text, including ListView reads, stays on that slot.
+/// </remarks>
 public interface IDataGridOperator
 {
     /// <summary>
