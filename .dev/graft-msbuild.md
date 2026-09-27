@@ -12,6 +12,8 @@ NuGet 参照時は `buildTransitive/Graft.Instrumentation.Wpf.{props,targets}` �
 
 Debug 構成への自動紐づけはしない。記号は `GRAFT_TEST`。
 
+`Graft.Instrumentation` と `Graft.Instrumentation.Wpf` 自体も、`GraftTest=true` または `Configuration=GraftTest` のときだけ Agent・パイプサーバー・WPF パッチを含む。Debug / Release の出力にはそれらを入れない。リポジトリ内のテストが Agent を使うときは、参照に `AdditionalProperties="Configuration=GraftTest"` を付ける（ソリューションの Debug 出力と混ぜないため）。
+
 ## ProjectReference（リポジトリ内）
 
 NuGet の自動 import は効かないため、アプリ csproj で明示 Import する:

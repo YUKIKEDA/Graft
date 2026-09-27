@@ -1,13 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\src\Graft.Instrumentation.Wpf\build\Graft.props" />
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <!-- Exercises the in-process agent, so the reference must be the GraftTest build. -->
-    <GraftTest>true</GraftTest>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <!-- Must stay unset: this project references the stripped (non-GraftTest) assemblies. -->
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="10.0.1" />
@@ -19,7 +18,7 @@
     <Using Include="Xunit" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Graft.Instrumentation\Graft.Instrumentation.csproj" AdditionalProperties="Configuration=GraftTest" />
+    <ProjectReference Include="..\..\src\Graft.Instrumentation\Graft.Instrumentation.csproj" />
+    <ProjectReference Include="..\..\src\Graft.Instrumentation.Wpf\Graft.Instrumentation.Wpf.csproj" />
   </ItemGroup>
-  <Import Project="..\..\src\Graft.Instrumentation.Wpf\build\Graft.targets" />
 </Project>

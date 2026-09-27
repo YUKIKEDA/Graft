@@ -7,4 +7,18 @@
   <PropertyGroup Condition="'$(GraftTest)' == 'true'">
     <DefineConstants>$(DefineConstants);GRAFT_TEST</DefineConstants>
   </PropertyGroup>
+  <!--
+    GraftTest set in the consumer csproj is not a global property, so it does not
+    reach ProjectReferences on its own. Pass it through when this project opts in.
+  -->
+  <Target Name="PassGraftTestToInstrumentation" BeforeTargets="AssignProjectConfiguration" Condition="'$(GraftTest)' == 'true'">
+    <ItemGroup>
+      <ProjectReference Condition="'%(Filename)' == 'Graft.Instrumentation'">
+        <AdditionalProperties>Configuration=GraftTest</AdditionalProperties>
+      </ProjectReference>
+      <ProjectReference Condition="'%(Filename)' == 'Graft.Instrumentation.Wpf'">
+        <AdditionalProperties>Configuration=GraftTest</AdditionalProperties>
+      </ProjectReference>
+    </ItemGroup>
+  </Target>
 </Project>

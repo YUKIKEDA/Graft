@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\src\Graft.Instrumentation.Wpf\build\Graft.props" />
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <!-- GRAFT001 tests need a metadata reference where Agent.Start exists. -->
+    <GraftTest>true</GraftTest>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -19,6 +22,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Graft.Instrumentation.Analyzer\Graft.Instrumentation.Analyzer.csproj" />
-    <ProjectReference Include="..\..\src\Graft.Instrumentation\Graft.Instrumentation.csproj" />
+    <ProjectReference Include="..\..\src\Graft.Instrumentation\Graft.Instrumentation.csproj" AdditionalProperties="Configuration=GraftTest" />
   </ItemGroup>
+  <Import Project="..\..\src\Graft.Instrumentation.Wpf\build\Graft.targets" />
 </Project>

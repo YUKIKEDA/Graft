@@ -1,13 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\Graft.Instrumentation\build\GraftAgent.props" />
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <RootNamespace>Graft.Instrumentation.Wpf</RootNamespace>
     <AssemblyName>Graft.Instrumentation.Wpf</AssemblyName>
-    <DefineConstants>$(DefineConstants);GRAFT_TEST</DefineConstants>
   </PropertyGroup>
+  <ItemGroup Condition="'$(GraftTest)' != 'true'">
+    <!-- Default globs include every agent file. Keep only the marker in non-test builds. -->
+    <Compile Remove="**\*.cs" />
+    <Compile Include="WpfInstrumentationAssembly.cs" />
+  </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Graft.Instrumentation\Graft.Instrumentation.csproj" />
+    <!--
+      Solution builds map this project to Debug. A GraftTest build must not
+      inherit that mapping for the agent, or the agent lands in bin/Debug.
+    -->
+    <ProjectReference Include="..\Graft.Instrumentation\Graft.Instrumentation.csproj">
+      <AdditionalProperties Condition="'$(GraftTest)' == 'true' OR '$(Configuration)' == 'GraftTest'">Configuration=GraftTest</AdditionalProperties>
+    </ProjectReference>
     <!-- Consumers of the WPF package get GRAFT001 automatically (project.md Q33). -->
     <ProjectReference
       Include="..\Graft.Instrumentation.Analyzer\Graft.Instrumentation.Analyzer.csproj"
@@ -21,6 +32,10 @@
     <None Include="build\Graft.targets" Pack="true" PackagePath="buildTransitive\Graft.Instrumentation.Wpf.targets" />
   </ItemGroup>
   <ItemGroup>
+    <!--
+      Always restored so Debug and GraftTest share one assets file.
+      Non-test builds compile out the patch sources, so the assembly does not use Harmony.
+    -->
     <PackageReference Include="Lib.Harmony" Version="2.4.2" />
   </ItemGroup>
 </Project>

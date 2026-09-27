@@ -1,15 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="build\GraftAgent.props" />
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Graft.Instrumentation</RootNamespace>
     <AssemblyName>Graft.Instrumentation</AssemblyName>
     <Description>In-process Graft agent shared core.</Description>
-    <!--
-      Test-agent API (Start/Stop) is compiled into this package.
-      Consumer call sites must still use #if GRAFT_TEST (Analyzer enforces in Batch 4).
-      A future non-test package flavor can build without GRAFT_TEST to strip the API.
-    -->
-    <DefineConstants>$(DefineConstants);GRAFT_TEST</DefineConstants>
     <!-- LibraryImport source generator for Win32 P/Invoke (NativeMethods). -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>

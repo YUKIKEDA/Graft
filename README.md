@@ -115,7 +115,7 @@ dotnet build -p:GraftTest=true
 dotnet build -c GraftTest
 ```
 
-`GraftTest=true` が記号 `GRAFT_TEST` を定義します。Debug 構成への自動紐づけはありません。`GRAFT_TEST` が無いコンパイルで `Agent.Start` を参照すると Analyzer **GRAFT001** がエラーになります。
+`GraftTest=true`（または `-c GraftTest`）のときだけ、対象アプリと `Graft.Instrumentation` / `Graft.Instrumentation.Wpf` に記号 `GRAFT_TEST` が付きます。Debug / Release の参照には `Agent.Start`、パイプサーバー、WPF の Harmony パッチは入りません。`GRAFT_TEST` が無いコンパイルで `Agent.Start` を参照すると Analyzer **GRAFT001** がエラーになります。Debug 構成への自動紐づけはありません。
 
 実行時はさらに `GRAFT_ENABLE=1` が無い限りパイプを立てません。`Application.LaunchAsync` がこの環境変数（パイプ名・トークン含む）を付与します。
 
@@ -204,8 +204,6 @@ Dispose 後に `index.html` と `frames/*.png` が出力されます。
 1. **コンパイル時:** `GRAFT_TEST` 外では `Agent.Start` API 自体が存在しない
 2. **Analyzer:** `GRAFT_TEST` 未定義での参照は GRAFT001（Error）
 3. **実行時:** `GRAFT_ENABLE=1` が無い限りパイプを立てない
-
-> **注意（現状）:** `Graft.Instrumentation` / `Graft.Instrumentation.Wpf` 自体は常に `GRAFT_TEST` 付きでビルドされるため、1 段目は「消費側の呼び出しを `#if GRAFT_TEST` で囲む」運用と Analyzer に依存しています（パッケージ分割による完全な除去は検討中）。
 
 ### 既知の制限
 

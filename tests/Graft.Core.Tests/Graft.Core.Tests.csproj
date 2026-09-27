@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\src\Graft.Instrumentation.Wpf\build\Graft.props" />
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <!-- Hosts Agent.Start in-process; the referenced agent must be the GraftTest build. -->
+    <GraftTest>true</GraftTest>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -18,11 +21,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Graft.Core\Graft.Core.csproj" />
     <!-- Integration tests host the in-process agent against Core's pipe client. -->
-    <ProjectReference Include="..\..\src\Graft.Instrumentation\Graft.Instrumentation.csproj" />
+    <ProjectReference Include="..\..\src\Graft.Instrumentation\Graft.Instrumentation.csproj" AdditionalProperties="Configuration=GraftTest" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Fixtures\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <Import Project="..\..\src\Graft.Instrumentation.Wpf\build\Graft.targets" />
 </Project>

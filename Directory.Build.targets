@@ -1,0 +1,21 @@
+<Project>
+  <!--
+    Consumers that reference Graft.Instrumentation or Graft.Instrumentation.Wpf get GRAFT001.
+    Direct references do not import the WPF package targets, so the analyzer is attached here.
+    Item metadata is only legal inside a target (MSB4190 at evaluation time).
+  -->
+  <Target Name="AddGraft001Analyzer" BeforeTargets="AssignProjectConfiguration">
+    <ItemGroup>
+      <_GraftHost Include="@(ProjectReference)" Condition="'%(Filename)' == 'Graft.Instrumentation'" />
+      <_GraftHost Include="@(ProjectReference)" Condition="'%(Filename)' == 'Graft.Instrumentation.Wpf'" />
+      <_GraftAnalyzer Include="@(ProjectReference)" Condition="'%(Filename)' == 'Graft.Instrumentation.Analyzer'" />
+    </ItemGroup>
+    <ItemGroup Condition="'@(_GraftHost)' != '' AND '@(_GraftAnalyzer)' == ''">
+      <ProjectReference Include="$(MSBuildThisFileDirectory)src\Graft.Instrumentation.Analyzer\Graft.Instrumentation.Analyzer.csproj">
+        <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+        <OutputItemType>Analyzer</OutputItemType>
+        <PrivateAssets>all</PrivateAssets>
+      </ProjectReference>
+    </ItemGroup>
+  </Target>
+</Project>

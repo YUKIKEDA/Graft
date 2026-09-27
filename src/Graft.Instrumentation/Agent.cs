@@ -4,7 +4,7 @@ namespace Graft.Instrumentation;
 /// In-process agent entry point hosted inside the application under test.
 /// </summary>
 /// <remarks>
-/// <see cref="Start"/> / <see cref="Stop"/> exist only when this assembly is compiled with
+/// <c>Start</c> / <c>Stop</c> exist only when this assembly is compiled with
 /// <c>GRAFT_TEST</c>. Call sites in consumer apps must also be gated with <c>#if GRAFT_TEST</c>.
 /// </remarks>
 public static class Agent

@@ -10,6 +10,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/Graft.Core.Tests/Graft.Core.Tests.csproj" />
     <Project Path="tests/Graft.Instrumentation.Analyzer.Tests/Graft.Instrumentation.Analyzer.Tests.csproj" />
+    <Project Path="tests/Graft.Instrumentation.Surface.Tests/Graft.Instrumentation.Surface.Tests.csproj" />
     <Project Path="tests/Graft.Instrumentation.Tests/Graft.Instrumentation.Tests.csproj" />
     <Project Path="tests/Graft.Instrumentation.Wpf.Tests/Graft.Instrumentation.Wpf.Tests.csproj" />
     <Project Path="tests/Graft.McpServer.Tests/Graft.McpServer.Tests.csproj" />
