@@ -157,6 +157,7 @@ TestComplete相当の精度を狙う、という位置づけ。
   失敗レポートの `treeDiff` は診断向け（`added` / `removed` / `changed`。`changed.fields` は変わった属性名、`before` / `after` は子を含まないスナップショット）。
   基準は直前の成功操作で使った getTree。基準が無い、または `GraftSession.IncludeTreeDiff == false` のときは付けない。対象窓を切り替えたら基準は捨てる。
   要素の同一性はツリー内で一意な `automationId`。無い・重複のときは親からのパス（無名は `#ControlType@兄弟index`）。`runtimeId` は差分に使わない。bounds は 0.01 DIP 以内の差を同じとみなす。JSON Patch は後回し
+- ソフトアサート: `GraftSession.SoftAssert()` の `Check` が `GraftException` を貯め、`DisposeAsync` で `expect.failed` を 1 回投げる。集約レポートの `failures` に個別の `FailureReport` が入る。`Check` の外の Expect は従来どおり即失敗。Scenario / MCP にソフト用のステップは無い
 
 ### 入力・待機・スレッド（決定済み）
 

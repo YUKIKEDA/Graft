@@ -72,4 +72,14 @@ public sealed class FailureReport
     /// </summary>
     [JsonPropertyName("treeDiff")]
     public TreeDiff? TreeDiff { get; init; }
+
+    /// <summary>
+    /// Gets the individual reports collected by a soft-assert scope.
+    /// </summary>
+    /// <remarks>
+    /// Set only on the aggregate report thrown from <c>SoftAssertScope</c>.
+    /// Each entry is the report from one failed check. Absent on a normal single failure.
+    /// </remarks>
+    [JsonPropertyName("failures")]
+    public IReadOnlyList<FailureReport>? Failures { get; init; }
 }
