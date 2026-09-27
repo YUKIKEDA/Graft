@@ -12,7 +12,7 @@ description: >-
 
 Read this before writing. When a review corrects wording, add the general rule here in the same change. Do not leave it in chat. Do not repeat a finding that is already written here.
 
-The language policy is [`.cursor/rules/language.mdc`](../../rules/language.mdc). After Issue #122's document PR, it also lives in `docs/language.md`.
+The language policy is [`docs/language.md`](../../../docs/language.md) and [`.cursor/rules/language.mdc`](../../rules/language.mdc).
 
 ## Sentence shape
 

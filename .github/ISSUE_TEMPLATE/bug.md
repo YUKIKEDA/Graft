@@ -22,7 +22,7 @@ labels: ["bug"]
 
 ## Related
 
-- Design section (`.dev/project.md` until the document PR of #122, then `docs/design.md`):
+- Design section (`docs/design.md`):
 
 ## Grill
 

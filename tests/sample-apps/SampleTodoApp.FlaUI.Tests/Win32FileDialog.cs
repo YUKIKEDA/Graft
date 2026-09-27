@@ -68,6 +68,7 @@ internal static class Win32FileDialog
         dialog.Focus();
         Thread.Sleep(200);
 
+        // Accessible names are the Japanese OS dialog labels.
         var edit =
             SafeFind(dialog, cf => cf.ByControlType(ControlType.Edit).And(cf.ByName("ファイル名(N):")))
             ?? SafeFind(dialog, cf => cf.ByControlType(ControlType.Edit).And(cf.ByName("File name:")))

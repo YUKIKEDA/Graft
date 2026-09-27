@@ -11,7 +11,7 @@
 Closes #N
 
 - Batch / task: <!-- e.g. N/A -->
-- Docs: <!-- e.g. `.dev/project.md` / N/A -->
+- Docs: <!-- e.g. `docs/design.md` / N/A -->
 
 ## Test plan
 
@@ -34,4 +34,4 @@ Closes #N
 - [ ] New/changed tests include `summary` + `remarks` (Preconditions/Steps/Expected) — or N/A
 - [ ] If M0 work: linked the relevant Batch in **Related** / `task_m0.md` updated if needed
 - [ ] Hosted CI (`.github/workflows/ci.yml`) is green
-- [ ] Docs updated when behavior or workflow changed (`AGENTS.md`, `.dev/*`, rules) — or N/A
+- [ ] Docs updated when behavior or workflow changed (`AGENTS.md`, `docs/`, rules) — or N/A

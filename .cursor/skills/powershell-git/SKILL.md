@@ -69,7 +69,7 @@ Closes #N
 - [ ] Hosted CI (`.github/workflows/ci.yml`) is green
 - [ ] No unintentional new StyleCop warnings in touched files
 - [ ] If M0 work: linked the relevant Batch in **Related** / `task_m0.md` updated if needed
-- [ ] Docs updated when behavior or workflow changed (`AGENTS.md`, `.dev/*`, rules) — or N/A
+- [ ] Docs updated when behavior or workflow changed (`AGENTS.md`, `docs/`, rules) — or N/A
 '@
 gh pr create --title "type(scope): subject" --body $body
 ```

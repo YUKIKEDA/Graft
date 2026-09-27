@@ -1,18 +1,18 @@
 # Security Policy
 
-Graft のエージェントは対象アプリ内で名前付きパイプを開きます。本番ビルドへの誤混入はセキュリティホールになるため、有効化は次の 3 段です。
+Graft's agent opens a named pipe inside the app under test. Leaving that pipe in a production build is a security hole, so enablement has three gates:
 
-1. コンパイル時: `GRAFT_TEST` 外では `Agent.Start` API 自体が存在しない
-2. Analyzer: `GRAFT_TEST` 未定義での参照は **GRAFT001**（Error）
-3. 実行時: `GRAFT_ENABLE=1` が無い限りパイプを立てない
+1. Compile time: the `Agent.Start` API does not exist outside `GRAFT_TEST`
+2. Analyzer: a reference without `GRAFT_TEST` is **GRAFT001** (error)
+3. Run time: the pipe stays down unless `GRAFT_ENABLE=1`
 
-`Application.LaunchAsync` がパイプ名・トークンを含む環境変数を付与します。テスト以外で `GRAFT_ENABLE` を立てないでください。
+`Application.LaunchAsync` sets the environment variables, including the pipe name and token. Do not set `GRAFT_ENABLE` outside a test.
 
-## 報告
+## Reporting
 
-脆弱性は **GitHub Security Advisories**（[Report a vulnerability](https://github.com/YUKIKEDA/Graft/security/advisories/new)）へお願いします。公開 Issue には、パイプ認証回避や本番混入の再現手順を書かないでください。
+Report vulnerabilities through **GitHub Security Advisories** ([Report a vulnerability](https://github.com/YUKIKEDA/Graft/security/advisories/new)). Do not put steps that bypass pipe authentication, or that mix the agent into production, in a public Issue.
 
-対応目安（ベストエフォート）:
+Response targets (best effort):
 
-- 受領確認: 数日以内
-- 修正方針: 重大度に応じて
+- Acknowledge: within a few days
+- Fix direction: depends on severity

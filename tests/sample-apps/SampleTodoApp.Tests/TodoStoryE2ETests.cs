@@ -46,8 +46,8 @@ public sealed class TodoStoryE2ETests
                 Assert.NotNull(detail);
                 Assert.Equal("DetailWindow", detail.AutomationId);
                 await app.GetByAutomationId("DetailTitleBox").SetValueAsync("Graft E2E Task");
-                await app.GetByAutomationId("DetailStatusCombo").SelectAsync(1); // 進行中
-                await app.GetByAutomationId("DetailPriorityCombo").SelectAsync(2); // 高
+                await app.GetByAutomationId("DetailStatusCombo").SelectAsync(1); // In progress
+                await app.GetByAutomationId("DetailPriorityCombo").SelectAsync(2); // High
                 await app.GetByAutomationId("DetailSaveButton").InvokeAsync();
                 await app.WaitForWindowAsync(automationId: "Main");
                 await app.GetByAutomationId("StatusText").ExpectNameAsync("ItemAdded");
@@ -57,6 +57,8 @@ public sealed class TodoStoryE2ETests
                 await app.ArmOpenFileAsync(importFixture);
                 _ = await app.GetByAutomationId("ImportButton").InvokeOpeningWindowAsync(waitForNewWindow: false);
                 await app.GetByAutomationId("StatusText").ExpectNameAsync("ImportDone");
+
+                // Titles below are the sample app's Japanese UI text.
                 await app.GetByAutomationId("TodoGrid").SelectRowAsync("Title", "サンプル: ドキュメント更新");
 
                 // --- Search filter ---
@@ -66,13 +68,13 @@ public sealed class TodoStoryE2ETests
                 await app.GetByAutomationId("StatusText").ExpectNameAsync("FiltersCleared");
 
                 // --- Priority filter ---
-                await app.GetByAutomationId("PriorityFilter").SelectAsync(3); // 高
+                await app.GetByAutomationId("PriorityFilter").SelectAsync(3); // High
                 await app.GetByAutomationId("TodoGrid").SelectRowAsync("Title", "サンプル: 設計レビュー");
                 await app.GetByAutomationId("ClearFiltersButton").InvokeAsync();
                 await app.GetByAutomationId("StatusText").ExpectNameAsync("FiltersCleared");
 
                 // --- Status filter ---
-                await app.GetByAutomationId("StatusFilter").SelectAsync(3); // 完了
+                await app.GetByAutomationId("StatusFilter").SelectAsync(3); // Done
                 await app.GetByAutomationId("TodoGrid").SelectRowAsync("Title", "サンプル: 完了済みタスク");
                 await app.GetByAutomationId("ClearFiltersButton").InvokeAsync();
                 await app.GetByAutomationId("StatusText").ExpectNameAsync("FiltersCleared");

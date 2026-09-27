@@ -1,87 +1,89 @@
+English | [日本語](README.ja.md)
+
 # Graft — In-process UI testing for WPF & AvaloniaUI
 
 [![CI](https://github.com/YUKIKEDA/Graft/actions/workflows/ci.yml/badge.svg)](https://github.com/YUKIKEDA/Graft/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-WPF / AvaloniaUI 向けの **in-process GUI E2E テスト** ツールです。
+In-process GUI end-to-end tests for WPF and AvaloniaUI.
 
-対象アプリにエージェントを事前組み込み、Visual Tree へ直接アクセスします。FlaUI などが使う UI Automation（UIA）の COM 越し走査ではなく、自社アプリ限定で TestComplete の Open Applications に近い精度を狙います。
+Graft embeds an agent in the app under test and reads the visual tree directly. It does not walk UI Automation (UIA) over COM the way FlaUI does. The goal is TestComplete-style Open Applications accuracy, limited to apps you own.
 
-> **現状:** WPF（.NET 8+）は利用できます。Avalonia アダプタは未実装です。パッケージ版は **0.1.0**（1.0 未満。公開 API は壊れることがあります）。NuGet.org への公開はタグ `v*` で行います。最初のタグを push するまでは、このリポジトリの `ProjectReference` でも使えます。
+> **Status:** WPF on .NET 8+ works. The Avalonia adapter is not implemented. Packages are **0.1.0** (pre-1.0; the public API may break). Publish to NuGet.org happens on a `v*` tag. Until the first tag is pushed, a `ProjectReference` in this repository works too.
 
-## なぜ in-process か
+## Why in-process
 
-| ツール                                                    | アクセス方式                                     | 対象                              |
-| --------------------------------------------------------- | ------------------------------------------------ | --------------------------------- |
-| FlaUI / WinAppDriver / TestStack.White / Appium (Windows) | UIA (COM) ラップ                                 | 汎用 Windows                      |
-| TestComplete                                              | フレームワーク別の in-process アクセス（非公開） | 商用・多フレームワーク            |
-| **Graft**                                                 | 対象アプリへの事前組み込み                       | **自社 WPF / Avalonia、OSS 想定** |
+| Tool                                                      | Access                                   | Target                                     |
+| --------------------------------------------------------- | ---------------------------------------- | ------------------------------------------ |
+| FlaUI / WinAppDriver / TestStack.White / Appium (Windows) | UIA (COM) wrapper                        | General Windows                            |
+| TestComplete                                              | Per-framework in-process access (closed) | Commercial, many frameworks                |
+| **Graft**                                                 | Embedded in the app under test           | **Your WPF / Avalonia apps, aimed at OSS** |
 
-サードパーティ製 exe のブラックボックステストは対象外です。Playwright が「自分たちの Web アプリ」を対象にするのと同じ立ち位置です。
+Black-box tests of a third-party exe are out of scope. The stance is the same as Playwright testing your own web app.
 
-プロセス注入（`CreateRemoteThread` + `LoadLibrary`）は使いません。アプリ自身がテスト用パッケージを参照し、起動時に名前付きパイプを立てます。
+Graft does not inject a process (`CreateRemoteThread` + `LoadLibrary`). The app references the test package and opens a named pipe at startup.
 
-## 必要なもの
+## Requirements
 
-- Windows（インタラクティブなデスクトップセッション）
+- Windows (an interactive desktop session)
 - [.NET 8 SDK](https://dotnet.microsoft.com/download)
-- UI テストは画面ロックしないこと（Session 0 / オフスクリーン専用モードは非対応）
+- Do not lock the screen during UI tests (Session 0 and an off-screen-only mode are not supported)
 
-## このリポジトリで試す
+## Try it in this repository
 
 ```powershell
 dotnet tool restore
 dotnet build Graft.slnx
 
-# 利用例の正本（ストーリー E2E）
+# Canonical usage example (story E2E)
 dotnet test tests/sample-apps/SampleTodoApp.Tests
 
-# コントロール網羅・Phase 回帰
+# Control coverage and phase regression
 dotnet test tests/sample-apps/SampleWpfApp.Tests
 
-# ソリューション全体。SendInput 系は並列起動でフレークするため -m:1 必須
+# Full solution. SendInput flakes when apps launch in parallel, so -m:1 is required
 dotnet test Graft.slnx -m:1
 ```
 
-サンプル:
+Samples:
 
-| プロジェクト                            | 役割                                                        |
-| --------------------------------------- | ----------------------------------------------------------- |
-| `tests/sample-apps/SampleTodoApp`       | MVVM/DI/テーマ付き実アプリ（組み込み側の正本）              |
-| `tests/sample-apps/SampleTodoApp.Tests` | Fluent API によるストーリー E2E（**テストの書き方の正本**） |
-| `tests/sample-apps/SampleWpfApp.Tests`  | 機能マトリクス                                              |
+| Project                                 | Role                                                              |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| `tests/sample-apps/SampleTodoApp`       | Real MVVM/DI/themed app (canonical embed side)                    |
+| `tests/sample-apps/SampleTodoApp.Tests` | Story E2E with the fluent API (**canonical way to write a test**) |
+| `tests/sample-apps/SampleWpfApp.Tests`  | Feature matrix                                                    |
 
-詳細な API 一覧は [`.dev/graft-core.md`](.dev/graft-core.md) を見てください。
+The API notes are in [`docs/graft-core.md`](docs/graft-core.md).
 
-## 自分のアプリに組み込む
+## Embed Graft in your app
 
-役割は次の 2 つに分かれます。
+Two sides:
 
-| 側               | 参照                        | やること                         |
-| ---------------- | --------------------------- | -------------------------------- |
-| 対象アプリ       | `Graft.Instrumentation.Wpf` | `GRAFT_TEST` 時だけ Agent を起動 |
-| E2E プロジェクト | `Graft.Core` のみ           | `Application.LaunchAsync` で操作 |
+| Side           | Reference                   | What it does                                       |
+| -------------- | --------------------------- | -------------------------------------------------- |
+| App under test | `Graft.Instrumentation.Wpf` | Starts the agent only when `GRAFT_TEST` is defined |
+| E2E project    | `Graft.Core` only           | Drives the app with `Application.LaunchAsync`      |
 
-公開パッケージはすべて**同じバージョン**です（`Graft.Core` 0.1.0 と `Graft.Instrumentation.Wpf` 0.1.0 を揃える）。ワイヤの互換は NuGet 版とは別の整数 `ProtocolVersion.Current` で、完全一致しないと `protocol.versionMismatch` になります。メッセージには双方のパッケージ版とプロトコル版が出ます。
+Published packages share **one version** (pair `Graft.Core` 0.1.0 with `Graft.Instrumentation.Wpf` 0.1.0). Wire compatibility is the integer `ProtocolVersion.Current`, separate from the NuGet version. A mismatch throws `protocol.versionMismatch`. The message includes both package versions and both protocol versions.
 
-| パッケージ | 誰が参照するか |
-| --- | --- |
-| `Graft.Instrumentation.Wpf` | 対象アプリ。`Graft.Instrumentation` と `Graft.Protocol` が依存として付く。GRAFT001 の DLL は `analyzers/dotnet/cs` に同梱 |
-| `Graft.Instrumentation` | WPF パッケージの依存。直接参照しても GRAFT001 は同梱される |
-| `Graft.Instrumentation.Analyzer` | 単体でも pack する。アプリは上のパッケージ経由で足りる |
-| `Graft.Core` | テスト。`Graft.Protocol` は依存として付く |
-| `Graft.TestUtilities` | テスト（任意）。xUnit の共有フィクスチャ |
+| Package                          | Who references it                                                                                                               |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `Graft.Instrumentation.Wpf`      | The app under test. Brings `Graft.Instrumentation` and `Graft.Protocol`. The GRAFT001 DLL is packed under `analyzers/dotnet/cs` |
+| `Graft.Instrumentation`          | A dependency of the WPF package. A direct reference still includes GRAFT001                                                     |
+| `Graft.Instrumentation.Analyzer` | Packed on its own. Apps get it through the packages above                                                                       |
+| `Graft.Core`                     | Tests. `Graft.Protocol` comes as a dependency                                                                                   |
+| `Graft.TestUtilities`            | Tests (optional). Shared xUnit fixture                                                                                          |
 
 ```powershell
 dotnet add package Graft.Instrumentation.Wpf --version 0.1.0
 dotnet add package Graft.Core --version 0.1.0
 ```
 
-NuGet の `Graft.Instrumentation` / `Graft.Instrumentation.Wpf` は `GraftTest` 構成で pack してあり、DLL に Agent と WPF パッチが入っています。呼び出し側の `#if GRAFT_TEST` と GRAFT001 は、これまでどおり利用プロジェクト側の記号で決まります。このリポジトリを `ProjectReference` するときは、Debug / Release の出力には Agent は入らないので、エージェントが要る参照は `Configuration=GraftTest` にしてください。
+NuGet `Graft.Instrumentation` and `Graft.Instrumentation.Wpf` are packed in the `GraftTest` configuration, so the DLL contains the agent and the WPF patches. The caller's `#if GRAFT_TEST` and GRAFT001 still follow the consuming project's symbol. A `ProjectReference` in this repository does not put the agent in Debug or Release output. References that need the agent use `Configuration=GraftTest`.
 
-### 1. 対象アプリ（WPF）
+### 1. App under test (WPF)
 
-NuGet 参照では `PackageReference` だけで props / targets が入ります。このリポジトリを直接参照する場合の csproj:
+A NuGet `PackageReference` imports props and targets. A direct reference in this repository looks like this:
 
 ```xml
 <Import Project="path\to\src\Graft.Instrumentation.Wpf\build\Graft.props" />
@@ -98,7 +100,7 @@ NuGet 参照では `PackageReference` だけで props / targets が入ります�
 <Import Project="path\to\src\Graft.Instrumentation.Wpf\build\Graft.targets" />
 ```
 
-起動（`App.xaml.cs` など）:
+Startup (`App.xaml.cs` or the same place):
 
 ```csharp
 protected override void OnStartup(StartupEventArgs e)
@@ -120,7 +122,7 @@ protected override void OnExit(ExitEventArgs e)
 }
 ```
 
-商用コントロールなど、組み込みの対応表に無い型は `WpfControlActions` で操作を足します。ハンドラが `true` を返すとその操作は終わり、`false` なら従来のネイティブ → Peer → SendInput に進みます。より具体的な型の登録が優先されます。Telerik / DevExpress / Syncfusion の実装は同梱しません。
+For a type the built-in map does not know, such as a commercial control, register an action with `WpfControlActions`. A handler that returns `true` finishes the action. `false` continues with native, then Peer, then SendInput. The most specific registered type wins. Graft does not ship Telerik, DevExpress, or Syncfusion implementations.
 
 ```csharp
 #if GRAFT_TEST
@@ -132,21 +134,21 @@ Graft.Instrumentation.Wpf.WpfControlActions.RegisterInvoke<MyVendorGrid>(grid =>
 #endif
 ```
 
-有効化:
+Enable it:
 
 ```powershell
 dotnet build -p:GraftTest=true
-# またはサンプルと同じ便利構成名
+# or the sample convenience configuration
 dotnet build -c GraftTest
 ```
 
-`GraftTest=true`（または `-c GraftTest`）のときだけ、対象アプリと `Graft.Instrumentation` / `Graft.Instrumentation.Wpf` に記号 `GRAFT_TEST` が付きます。Debug / Release の参照には `Agent.Start`、パイプサーバー、WPF の Harmony パッチは入りません。`GRAFT_TEST` が無いコンパイルで `Agent.Start` を参照すると Analyzer **GRAFT001** がエラーになります。Debug 構成への自動紐づけはありません。
+`GRAFT_TEST` is defined on the app and on `Graft.Instrumentation` / `Graft.Instrumentation.Wpf` only when `GraftTest=true` (or `-c GraftTest`). Debug and Release references do not include `Agent.Start`, the pipe server, or the WPF Harmony patches. Referencing `Agent.Start` in a compile that lacks `GRAFT_TEST` is analyzer error **GRAFT001**. There is no automatic tie to the Debug configuration.
 
-実行時はさらに `GRAFT_ENABLE=1` が無い限りパイプを立てません。`Application.LaunchAsync` がこの環境変数（パイプ名・トークン含む）を付与します。
+At run time the pipe stays down unless `GRAFT_ENABLE=1`. `Application.LaunchAsync` sets that variable, including the pipe name and token.
 
-### 2. テスト側
+### 2. Test side
 
-テストプロジェクトは `Graft.Core` だけを参照します。
+The test project references only `Graft.Core`.
 
 ```csharp
 using Graft.Core;
@@ -164,42 +166,42 @@ await app.GetByAutomationId("SampleButton").InvokeAsync();
 await app.GetByAutomationId("StatusText").ExpectNameAsync("Clicked 1");
 ```
 
-`AppPath` に `.csproj` を渡すと `dotnet run -c GraftTest` 相当で起動します。exe パスも渡せます。
+A `.csproj` in `AppPath` launches the equivalent of `dotnet run -c GraftTest`. An exe path works too.
 
-## よく使う操作
+## Common actions
 
 ```csharp
-// 探索
+// Find
 app.GetByAutomationId("SaveButton");
 app.GetByName("OK");
 app.GetByControlType("Button");
 
-// 操作
+// Act
 await app.GetByAutomationId("NameBox").SetValueAsync("hello");
 await app.GetByAutomationId("AgreeCheck").ToggleAsync();
 await app.GetByAutomationId("ItemList").SelectAsync(0);
 await app.GetByAutomationId("ItemList").SelectAsync("表示名");
 await app.GetByAutomationId("FileMenu").SelectMenuAsync("id1/id2/leaf");
 
-// モーダル（素の InvokeAsync で ShowDialog を開くとハングしうる）
+// A modal. A plain InvokeAsync that calls ShowDialog can hang
 var detail = await app.GetByAutomationId("AddButton").InvokeOpeningWindowAsync();
 
-// OS ダイアログはアプリ側の素の API のまま。テスト側で Arm
+// OS dialogs stay the app's normal API. The test arms them
 await app.ArmOpenFileAsync(@"C:\data\import.json");
 _ = await app.GetByAutomationId("ImportButton")
     .InvokeOpeningWindowAsync(waitForNewWindow: false);
 
-// 期待
+// Expect
 await app.GetByAutomationId("StatusText").ExpectNameAsync("Saved");
 await app.GetByAutomationId("Row").WaitForAsync();
 await app.WaitForWindowAsync(automationId: "Main");
 ```
 
-既定タイムアウトはアクション前待ち 5 秒 / Expect 10 秒 / 起動+Handshake 30 秒（`LaunchOptions` / `WaitOptions` で上書き可）。
+Default timeouts are 5 seconds before an action, 10 seconds for Expect, and 30 seconds for launch plus handshake (`LaunchOptions` / `WaitOptions` override them).
 
-失敗時は `GraftException.Report` にステップ・期待値・セレクタ・直近操作・ツリー・スクリーンショット参照が付きます。直前に成功した操作があるときは `treeDiff`（追加・削除・属性変更）も付きます。`GraftSession.IncludeTreeDiff = false` で外せます。セレクタ解決に失敗すると、信頼できる代替がある場合だけ一度自己修復します。
+On failure, `GraftException.Report` carries the step, expected value, selector, recent actions, tree, and a screenshot reference. When a previous action succeeded, it also carries `treeDiff` (added, removed, and changed). Set `GraftSession.IncludeTreeDiff = false` to omit it. If selector resolution fails, Graft retries once only when a trusted alternative exists.
 
-複数の Expect を 1 回の実行でまとめて見るときは `SoftAssert` を使います。`Check` は `GraftException` だけを貯め、スコープの破棄時に `expect.failed` を 1 回投げます。集約レポートの `failures` に個別の `FailureReport` が入ります。`Check` の外は従来どおり最初の失敗で止まります。
+Use `SoftAssert` to collect several Expect results in one run. `Check` stores only `GraftException`. Disposing the scope throws `expect.failed` once. The aggregate report's `failures` holds each `FailureReport`. Outside `Check`, the first failure still stops the test.
 
 ```csharp
 await using (var soft = app.SoftAssert())
@@ -209,49 +211,49 @@ await using (var soft = app.SoftAssert())
 }
 ```
 
-`SetValueAsync` と `SendKeysAsync` は待ちません。入力の途中でデバウンスを動かしたいときは `TypeHumanAsync` を使います。1文字ずつ送り、文字の間だけ待ちます。その待ちは UI スレッドの外なので、`TextChanged` のタイマーが文字の間に動きます。既存の文字は消しません。
+`SetValueAsync` and `SendKeysAsync` do not wait between characters. Use `TypeHumanAsync` when a debounce must run during typing. It sends one Unicode scalar at a time and waits only between scalars. The wait is off the UI thread, so a `TextChanged` timer can run between characters. It does not clear existing text.
 
 ```csharp
 await app.GetByAutomationId("SearchBox").TypeHumanAsync("tokyo", TimeSpan.FromMilliseconds(40));
 ```
 
-### 操作タイムライン（任意）
+### Action timeline (optional)
 
 ```csharp
 Timeline = new TimelineOptions
 {
     OutputDirectory = timelineDir,
-    Retention = TimelineRetention.Always, // または OnFailure
+    Retention = TimelineRetention.Always, // or OnFailure
 }
 ```
 
-Dispose 後に `index.html` と `frames/*.png` が出力されます。
+After dispose, Graft writes `index.html` and `frames/*.png`.
 
-## アーキテクチャ
+## Architecture
 
 ```
 [Graft.Core / Graft.McpServer]
-   │  名前付きパイプ（同一ユーザー ACL）
-   │  4 byte 長さプレフィックス + JSON
+   │  named pipe (same-user ACL)
+   │  4-byte length prefix + JSON
    ▼
-[対象アプリ内: Graft.Instrumentation.Wpf]
-   ├─ Visual Tree Walker
-   ├─ ネイティブ API → Peer → SendInput
-   └─ パイプサーバー（GRAFT_ENABLE=1 のときだけ）
+[inside the app: Graft.Instrumentation.Wpf]
+   ├─ visual tree walker
+   ├─ native API → Peer → SendInput
+   └─ pipe server (only when GRAFT_ENABLE=1)
 ```
 
-本番誤混入防止は 3 段です。
+Three gates keep the agent out of production:
 
-1. **コンパイル時:** `GRAFT_TEST` 外では `Agent.Start` API 自体が存在しない
-2. **Analyzer:** `GRAFT_TEST` 未定義での参照は GRAFT001（Error）
-3. **実行時:** `GRAFT_ENABLE=1` が無い限りパイプを立てない
+1. **Compile time:** the `Agent.Start` API does not exist outside `GRAFT_TEST`
+2. **Analyzer:** a reference without `GRAFT_TEST` is GRAFT001 (error)
+3. **Run time:** the pipe stays down unless `GRAFT_ENABLE=1`
 
-### 既知の制限
+### Known limits
 
-- **WebView2 / `HwndHost` 配下:** Visual Tree Walker は WPF のビジュアルツリーを歩くため、`WebView2` などの `HwndHost` 派生コントロールはホスト要素までしか見えません。内部の DOM やネイティブ子ウィンドウの要素は `getTree` に現れず、`GetByAutomationId` などで操作できません。
-- **SendInput 系の操作:** 実デスクトップへの入力注入のため、対話セッションが必要で、複数アプリを並列起動するとフレークします。テストプロジェクトをまたぐ実行は `-m:1` が必要です。1 つのテストプロジェクト内は `Graft.TestUtilities` のコレクションで直列化できます（下記）。
+- **Under WebView2 / `HwndHost`:** the walker follows the WPF visual tree, so an `HwndHost` such as `WebView2` is visible only as the host element. DOM and native child windows do not appear in `getTree` and cannot be driven with `GetByAutomationId`.
+- **SendInput actions:** they inject input into a real desktop, so they need an interactive session and flake when several apps launch in parallel. A run that crosses test projects needs `-m:1`. Inside one test project, a `Graft.TestUtilities` collection can serialize the tests (below).
 
-テストプロジェクト（`Graft.Core` と `Graft.TestUtilities` を参照）での雛形です。`CollectionDefinition` はテストアセンブリに置きます。
+Shape for a test project that references `Graft.Core` and `Graft.TestUtilities`. Put the `CollectionDefinition` in the test assembly.
 
 ```csharp
 public sealed class TodoAppFixture : Graft.TestUtilities.GraftAppFixture
@@ -278,35 +280,35 @@ public sealed class TodoTests
 }
 ```
 
-## その他の入口
+## Other entry points
 
-Fluent API と同じ内部操作モデルに、次も載ります。
+The same internal action model also backs:
 
-| 入口          | 場所                                                 | 用途                                                                            |
-| ------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Scenario JSON | `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync` | 宣言的シナリオ。契約は [`.dev/scenario.schema.json`](.dev/scenario.schema.json) |
-| MCP           | `src/Graft.McpServer`（stdio）                       | LLM / エージェント向け。`graft_launch` など原子ツール                           |
+| Entry         | Where                                                | Use                                                                                      |
+| ------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Scenario JSON | `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync` | Declarative scenario. Contract: [`docs/scenario.schema.json`](docs/scenario.schema.json) |
+| MCP           | `src/Graft.McpServer` (stdio)                        | For an LLM or agent. Atomic tools such as `graft_launch`                                 |
 
-MCP サーバーは呼び出し元（LLM）を半信頼として扱い、受け取ったファイルパス（起動する `appPath`、読み込む Scenario、スクリーンショットの保存先、ダイアログ Arm のパス）を**許可ルート配下**に制限します。既定の許可ルートはサーバーの作業ディレクトリです。追加する場合は `GRAFT_MCP_ALLOWED_ROOTS`（`Path.PathSeparator` 区切り）、制限を外す場合は `GRAFT_MCP_ALLOW_ANY_PATH=1` をサーバーの環境変数に設定してください。
+The MCP server treats the caller (the LLM) as half-trusted. File paths it receives (the `appPath` to launch, a scenario to read, a screenshot destination, a dialog arm path) must stay **under an allowed root**. The default root is the server's working directory. Add roots with `GRAFT_MCP_ALLOWED_ROOTS` (separated by `Path.PathSeparator`). Set `GRAFT_MCP_ALLOW_ANY_PATH=1` on the server to turn the limit off.
 
-## リポジトリ構成
+## Repository layout
 
 ```
 src/
-  Graft.Instrumentation/         共有エージェント（パイプ、入力、契約）
-  Graft.Instrumentation.Wpf/     WPF アダプタ + Graft.props/targets
+  Graft.Instrumentation/         shared agent (pipe, input, contracts)
+  Graft.Instrumentation.Wpf/     WPF adapter + Graft.props/targets
   Graft.Instrumentation.Analyzer GRAFT001
-  Graft.Protocol/                ワイヤ／ツリーの共有スキーマ
-  Graft.Core/                    Launch、セレクタ、Wait/Expect、Scenario
-  Graft.TestUtilities/           xUnit の共有アプリフィクスチャ
-  Graft.McpServer/               MCP ホスト（stdio）
+  Graft.Protocol/                shared wire and tree schema
+  Graft.Core/                    launch, selectors, Wait/Expect, scenario
+  Graft.TestUtilities/           shared xUnit app fixture
+  Graft.McpServer/               MCP host (stdio)
 tests/sample-apps/               SampleTodoApp / SampleWpfApp
-tools/Graft.SmokeClient/         Handshake + GetTree の手動検証
+tools/Graft.SmokeClient/         manual Handshake + GetTree check
 ```
 
-設計の正本は [`.dev/project.md`](.dev/project.md) です。WPF 機能ギャップ表は [`.dev/competitive-gap.md`](.dev/competitive-gap.md) です。
+The design source is [`docs/design.md`](docs/design.md). The WPF gap matrix is [`docs/competitive-gap.md`](docs/competitive-gap.md).
 
-## 開発
+## Development
 
 ```powershell
 dotnet tool restore
@@ -315,18 +317,18 @@ dotnet build Graft.slnx
 dotnet test Graft.slnx -m:1
 ```
 
-- フォーマッタ: CSharpier
-- コミット: Conventional Commits（`type(scope): 件名`。件名は日本語可）
-- `src/` の公開 API は XML ドキュメント必須
-- テストの Fact / Theory は `summary` + `remarks`（Preconditions / Steps / Expected）
-- 貢献手順: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Formatter: CSharpier
+- Commits: Conventional Commits (`type(scope): subject`, subject in English)
+- Public API under `src/` needs XML docs
+- Test Fact / Theory methods need `summary` + `remarks` (Preconditions / Steps / Expected)
+- How to contribute: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ### CI
 
-GitHub Actions の **CI**（`windows-latest`）はフォーマット、ビルド、アプリ起動なしのテストです。SendInput を使う全解 E2E はインタラクティブな Windows セッションが必要なため、セルフホスト runner を用意したときだけ **UI** workflow が `main` で走ります（fork の PR では動きません）。Graft は仮想ディスプレイを提供しません。詳細は [CONTRIBUTING.md](CONTRIBUTING.md#ci) です。
+The **CI** workflow (`windows-latest`) checks format, builds, and runs tests that do not launch an app. Full-solution E2E that uses SendInput needs an interactive Windows session, so the **UI** workflow runs on `main` only when a self-hosted runner is available (it does not run on a fork PR). Graft does not provide a virtual display. Details are in [CONTRIBUTING.md](CONTRIBUTING.md#ci).
 
-## ライセンス
+## License
 
 [MIT](LICENSE)
 
-脆弱性の報告は [SECURITY.md](SECURITY.md) へお願いします。
+Report vulnerabilities through [SECURITY.md](SECURITY.md).
