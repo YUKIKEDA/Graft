@@ -6,7 +6,7 @@ labels: ["documentation"]
 
 ## Sections to change
 
-- `.dev/project.md` (moves to `docs/design.md` in the document PR of #122):
+- `docs/design.md`:
 
 ## Why
 
@@ -14,7 +14,8 @@ labels: ["documentation"]
 
 ## Acceptance
 
-- [ ] The sections of the canonical design doc are updated
+- [ ] The sections of `docs/design.md` are updated
+- [ ] `docs/design.ja.md` is updated to match (or a follow-up Issue is linked)
 - [ ] No implementation code in this Issue's PR
 
 ## Out of scope

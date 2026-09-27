@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Language
 
-`docs/language.md` does not exist yet. It is added in the next PR of Issue #122. Until that PR merges, this file is the source of truth for language.
+Human source of truth: [`docs/language.md`](../../docs/language.md).
 
 ## English everywhere
 
@@ -20,7 +20,7 @@ Chat with the user may be in any language. Before writing comments or docs, read
 
 ## Bilingual documents
 
-These will have a Japanese translation next to them after the document PR of Issue #122. **English is the source of truth.**
+These have a Japanese translation next to them. **English is the source of truth.**
 
 | English               | Japanese                 |
 | --------------------- | ------------------------ |
@@ -31,17 +31,15 @@ These will have a Japanese translation next to them after the document PR of Iss
 | `docs/conventions.md` | `docs/conventions.ja.md` |
 | `docs/language.md`    | `docs/language.ja.md`    |
 
-Until that PR, `README.md`, `CONTRIBUTING.md`, and `SECURITY.md` are still Japanese. Do not translate them in the workflow PR. The document PR translates them and adds the pairs.
-
 - When you change one file of a pair, change the other in the **same PR**, with the same headings in the same order
 - If you cannot update the Japanese side, say so in `## Summary` and open a follow-up Issue `docs: sync <file>.ja.md`, linked in `## Related`
 - A Japanese-only change must not change the meaning. Change the English file first
 - Keep the language switch line at the top of both files
-- Do not add a new bilingual document without adding it to the table above and, once it exists, to `docs/language.md` and `docs/language.ja.md`
+- Do not add a new bilingual document without adding it to the table above and to `docs/language.md` and `docs/language.ja.md`
 
 ## Where Japanese is allowed
 
-- The `*.ja.md` files in the table above, once they exist
+- The `*.ja.md` files in the table above
 - `.agents/skills/natural-japanese/` (vendored; do not edit)
 - The Japanese terminology table in `.cursor/skills/english-writing/SKILL.md`
 - The language switch line
@@ -50,6 +48,6 @@ Until that PR, `README.md`, `CONTRIBUTING.md`, and `SECURITY.md` are still Japan
 - `.dev/task_*.md`, which stay Japanese as archived phase notes
 - Test data that is non-ASCII on purpose. Write the reason in a comment next to it
 
-## Design source during this batch
+## Design source
 
-Until the document PR of Issue #122 merges, the design source is [`.dev/project.md`](../../.dev/project.md). Do not add an empty `docs/design.md`.
+The design source is [`docs/design.md`](../../docs/design.md). `.dev/task_*.md` are archived phase notes.

@@ -1,68 +1,65 @@
+English | [日本語](CONTRIBUTING.ja.md)
+
 # Contributing
 
-Graft への貢献ありがとうございます。設計の正本は [`.dev/project.md`](.dev/project.md) です。エージェント向けの作業メモは [`AGENTS.md`](AGENTS.md) です。
+Thanks for contributing to Graft. The design source is [`docs/design.md`](docs/design.md). Agent notes are in [`AGENTS.md`](AGENTS.md).
 
-## 必要なもの
+## Requirements
 
-- Windows（インタラクティブなデスクトップセッション）
+- Windows (an interactive desktop session)
 - [.NET 8 SDK](https://dotnet.microsoft.com/download)
-- UI / SendInput テストは画面ロックしないこと
+- Do not lock the screen for UI / SendInput tests
 
-## ビルドとテスト
+## Build and test
 
 ```powershell
 dotnet tool restore
 dotnet csharpier format .
 dotnet build Graft.slnx
 
-# ホスト CI 相当（アプリ起動なし）
-dotnet test tests/Graft.Protocol.Tests
-dotnet test tests/Graft.TestUtilities.Tests
-dotnet test tests/Graft.Instrumentation.Tests
-dotnet test tests/Graft.Instrumentation.Analyzer.Tests
-dotnet test tests/Graft.Instrumentation.Wpf.Tests
-dotnet test tests/Graft.Core.Tests --filter "Category!=UI"
-dotnet test tests/Graft.McpServer.Tests --filter "Category!=UI"
+# Hosted CI equivalent (no launched app, no pack)
+./build.ps1
 
-# 全解。SendInput 系は並列起動でフレークするため -m:1 必須
+# Full solution. SendInput flakes when apps launch in parallel, so -m:1 is required
 dotnet test Graft.slnx -m:1
 ```
 
-## プルリクエスト
+## Pull requests
 
-1. Conventional Commits のタイトル（`type(scope): 件名`。件名は日本語可）
-2. 本文は [`.github/pull_request_template.md`](.github/pull_request_template.md) の見出しを守る
-3. CSharpier をかけた状態にする（`dotnet csharpier format .`）
-4. `src/` の公開 API には XML ドキュメント
-5. 新しい Fact / Theory には `summary` + `remarks`（Preconditions / Steps / Expected）
-6. GitHub-hosted の **CI** workflow が緑であること
+1. Conventional Commits title (`type(scope): subject`, subject in English)
+2. Keep the headings in [`.github/pull_request_template.md`](.github/pull_request_template.md)
+3. Leave the tree formatted (`dotnet csharpier format .`)
+4. XML docs on public API under `src/`
+5. New Fact / Theory methods have `summary` + `remarks` (Preconditions / Steps / Expected)
+6. The GitHub-hosted **CI** workflow is green
+7. In `## Related`, put `Closes #N` on its own line. Open an Issue before the branch (`type/<issue-number>-<slug>`)
 
-Avalonia アダプタは WPF の残 Must 完了後です。詳細は [`.dev/competitive-gap.md`](.dev/competitive-gap.md) を見てください。
+The Avalonia adapter waits until the remaining WPF Must work is done. See [`docs/competitive-gap.md`](docs/competitive-gap.md).
 
 ## CI
 
-| Workflow | Runner | 内容 |
-| -------- | ------ | ---- |
-| [`ci.yml`](.github/workflows/ci.yml) | `windows-latest` | フォーマット、ビルド、pack、アプリ起動なしのテスト（PR 含む） |
-| [`pack.yml`](.github/workflows/pack.yml) | `windows-latest` | タグ `v*` で `GraftTest` 構成を pack し、secret `NUGET_API_KEY` があれば NuGet.org へ push |
-| [`ui.yml`](.github/workflows/ui.yml) | セルフホスト（任意） | `dotnet test Graft.slnx -m:1`。`main` への push または手動。**fork PR では動かない**（公開リポジトリのセルフホスト安全策） |
+| Workflow                                 | Runner                 | What it does                                                                                                                       |
+| ---------------------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| [`ci.yml`](.github/workflows/ci.yml)     | `windows-latest`       | Format, build, pack, and tests that do not launch an app (including PRs)                                                           |
+| [`pack.yml`](.github/workflows/pack.yml) | `windows-latest`       | On a `v*` tag, pack the `GraftTest` configuration and push to NuGet.org when the `NUGET_API_KEY` secret is set                     |
+| [`ui.yml`](.github/workflows/ui.yml)     | self-hosted (optional) | `dotnet test Graft.slnx -m:1`. Push to `main` or manual. **Does not run on a fork PR** (self-hosted safety on a public repository) |
 
-Graft は仮想ディスプレイを提供しません。GitHub-hosted の Windows runner では SendInput / 前景ウィンドウ前提の E2E を必須ゲートにしません（[`.dev/project.md`](.dev/project.md) Q27）。
+Graft does not provide a virtual display. Hosted Windows runners do not gate E2E that needs SendInput or a foreground window ([`docs/design.md`](docs/design.md) Q27).
 
-### セルフホスト UI ジョブを有効にする
+### Turn on the self-hosted UI job
 
-1. インタラクティブにログオンした Windows ユーザーで [self-hosted runner](https://docs.github.com/en/actions/hosting-your-own-runners) を **サービスではなくユーザープロセス** として起動する（Session 0 は不可）
-2. ラベル `windows` と `interactive` を付ける（`self-hosted` は自動）
-3. 画面ロック・スクリーンセーバーを切る
-4. リポジトリの Actions variable `GRAFT_ENABLE_UI_CI` を `true` にする
+1. On a Windows user who is logged on interactively, start a [self-hosted runner](https://docs.github.com/en/actions/hosting-your-own-runners) as a **user process, not a service** (Session 0 cannot do this)
+2. Add the labels `windows` and `interactive` (`self-hosted` is automatic)
+3. Turn off the screen lock and the screensaver
+4. Set the repository Actions variable `GRAFT_ENABLE_UI_CI` to `true`
 
-variable が無いときは `ui.yml` はスキップされます。`workflow_dispatch` でも同じ runner が必要です。
+When the variable is absent, `ui.yml` skips. `workflow_dispatch` needs the same runner.
 
 ## NuGet
 
-公開パッケージの版は `src/Directory.Build.props` の `Version`（現在 0.1.0）で揃えます。タグ `v0.1.0` のように `v` + その版を push すると [pack.yml](.github/workflows/pack.yml) が `Configuration=GraftTest` で pack し、リポジトリ secret `NUGET_API_KEY`（nuget.org の API キー）があれば push します。secret が無いタグ push は pack までで止まります。
+Published packages share the `Version` in `src/Directory.Build.props` (currently 0.1.0). Pushing a tag such as `v0.1.0` (`v` plus that version) makes [pack.yml](.github/workflows/pack.yml) pack with `Configuration=GraftTest` and push when the repository secret `NUGET_API_KEY` (a nuget.org API key) is set. A tag push without the secret stops after pack.
 
-ローカル確認:
+Local check:
 
 ```powershell
 dotnet pack src/Graft.Core/Graft.Core.csproj -c GraftTest -o artifacts

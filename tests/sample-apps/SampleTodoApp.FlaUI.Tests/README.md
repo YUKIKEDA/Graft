@@ -21,4 +21,4 @@ dotnet test tests/sample-apps/SampleTodoApp.FlaUI.Tests
 | Timeline        | `LaunchOptions.Timeline`                    | N/A                                                                              |
 | API             | `GetByAutomationId` Fluent                  | `FindFirstDescendant` + patterns                                                 |
 
-Canonical consumer docs remain [`.dev/graft-core.md`](../../../.dev/graft-core.md) → `SampleTodoApp.Tests`.
+Canonical consumer docs remain [`docs/graft-core.md`](../../../docs/graft-core.md) → `SampleTodoApp.Tests`.

@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Engineering
 
-Until the document PR of Issue #122 adds `docs/conventions.md`, coding details stay in:
+Coding details: [`docs/conventions.md`](../../docs/conventions.md), and:
 
 - [`.cursor/rules/csharp-tooling.mdc`](csharp-tooling.mdc)
 - [`.cursor/rules/testing.mdc`](testing.mdc)
@@ -18,7 +18,7 @@ Human process: `CONTRIBUTING.md`. Local gate: `./build.ps1`.
 - Libraries stay split under `src/` (`Graft.Core`, `Graft.Protocol`, `Graft.Instrumentation`, `Graft.Instrumentation.Wpf`, `Graft.Instrumentation.Analyzer`, `Graft.McpServer`, `Graft.TestUtilities`). Do not collapse them into one project
 - Tests stay under `tests/`. Sample apps stay under `tests/sample-apps/`
 - `tools/Graft.SmokeClient` stays as the manual diagnostic client
-- Canonical design is `.dev/project.md` until the document PR of Issue #122. Do not add an empty `docs/design.md`
+- Canonical design is `docs/design.md`
 - `.dev/task_*.md` are archived phase notes. Do not treat them as permission to code
 
 ## Targets

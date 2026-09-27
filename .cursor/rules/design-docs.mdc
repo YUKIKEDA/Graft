@@ -5,24 +5,15 @@ alwaysApply: true
 
 # Design docs
 
-## Locations during Issue #122
+## Locations
 
-Until the document PR of Issue #122 merges:
-
-- Canonical design: `.dev/project.md`
-- Do not add `docs/design.md`, including an empty placeholder
-- `.dev/task_*.md` are archived phase notes. They are not the design source
-- Gap matrix: `.dev/competitive-gap.md`
-- Consumer notes: `.dev/graft-core.md`
-
-That PR moves the lasting documents to `docs/` and then this rule points at:
-
-- Canonical design: `docs/design.md` (Japanese pair `docs/design.ja.md`)
-- Roadmap: `docs/roadmap.md`
+- Canonical design: `docs/design.md` (Japanese pair `docs/design.ja.md`). English is the source of truth; update both in the same PR
+- Roadmap: `docs/roadmap.md` (open work only)
 - Conventions: `docs/conventions.md`
 - Language: `docs/language.md`
-
-`.dev/` then keeps only the archived `task_*.md` notes. Do not leave new lasting decisions only there.
+- Gap matrix: `docs/competitive-gap.md` (English only)
+- Caller notes: `docs/graft-core.md` (English only)
+- `.dev/task_*.md` are archived phase notes. Do not leave new lasting decisions only in `.dev/`
 
 ## Changing the design
 
