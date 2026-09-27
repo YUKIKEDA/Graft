@@ -164,7 +164,10 @@ TestComplete相当の精度を狙う、という位置づけ。
 - 論理操作は共通パターン名に正規化し、アダプタ内で **ネイティブ API → Peer/Provider → SendInput**
   の順で試す
 - よくある型は対応表（Button→invoke、TextBox→setValue 等）。未知型は Peer パターン有無を見て汎用処理し、
-  だめなら SendInput。ホワイトリスト制限はしない
+  だめなら SendInput。ホワイトリスト制限はしない。
+  利用者は `WpfControlActions` でコントロール型ごとに `invoke` / `setValue` / `toggle` を登録できる。
+  実行時の型に一番近い登録が勝ち、ハンドラが `true` を返すとその場で終わる。`false` なら上記の組み込み順に進む。
+  無効・非表示はハンドラに渡さない。Telerik / DevExpress / Syncfusion の実装は同梱しない
 - Phase 1 完了条件の論理操作: `invoke` / `setValue`。続けて `toggle` とキー入力。
   `scrollIntoView` / `select` / `expand`・`collapse` は **Phase 5**（詳細は Q66 / `task_phase5.md`）。
   ツリー `selected` / `expanded` と状態 Expect は **Phase 6**（詳細は Q67〜 / `task_phase6.md`）

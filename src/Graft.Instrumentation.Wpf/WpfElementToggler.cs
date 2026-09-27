@@ -62,6 +62,11 @@ internal sealed class WpfElementToggler : IElementToggler
             );
         }
 
+        if (WpfControlActions.TryToggle(element))
+        {
+            return;
+        }
+
         // Radio: select (do not flip off). Prefer native before peer Toggle.
         if (element is RadioButton radioButton)
         {

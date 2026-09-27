@@ -175,6 +175,11 @@ internal sealed class WpfElementInvoker : IElementInvoker
             );
         }
 
+        if (WpfControlActions.TryInvoke(element))
+        {
+            return;
+        }
+
         // MenuItem: submenu headers use ExpandCollapse (not Invoke). Open via IsSubmenuOpen /
         // Click before Peer/SendInput so Menu bar File→item stays sync (Phase 20).
         if (element is MenuItem menuItem)

@@ -120,6 +120,18 @@ protected override void OnExit(ExitEventArgs e)
 }
 ```
 
+商用コントロールなど、組み込みの対応表に無い型は `WpfControlActions` で操作を足します。ハンドラが `true` を返すとその操作は終わり、`false` なら従来のネイティブ → Peer → SendInput に進みます。より具体的な型の登録が優先されます。Telerik / DevExpress / Syncfusion の実装は同梱しません。
+
+```csharp
+#if GRAFT_TEST
+Graft.Instrumentation.Wpf.WpfControlActions.RegisterInvoke<MyVendorGrid>(grid =>
+{
+    grid.CommitEdit();
+    return true;
+});
+#endif
+```
+
 有効化:
 
 ```powershell

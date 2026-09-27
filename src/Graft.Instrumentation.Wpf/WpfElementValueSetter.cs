@@ -64,6 +64,11 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
             );
         }
 
+        if (WpfControlActions.TrySetValue(element, value))
+        {
+            return;
+        }
+
         // Native replace first (project.md Q51 / Q114 / Q135).
         if (element is TextBox textBox)
         {

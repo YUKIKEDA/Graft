@@ -37,6 +37,7 @@ public sealed class WpfUiCaptureTests
     /// - Toggle SampleCheckBox then expect name On
     /// - Resolve SampleMouseTarget (SendInput click is covered by SampleWpfApp.Tests E2E)
     /// - Invoke a disabled button
+    /// - Exercise per-type WpfControlActions on a vendor control and a Button
     ///
     /// Expected:
     /// - SampleButton name/bounds and PNG signature as before
@@ -46,6 +47,7 @@ public sealed class WpfUiCaptureTests
     /// - After toggle, SampleCheckBox name is On
     /// - SampleMouseTarget resolves as Border
     /// - Disabled button → element.notActionable
+    /// - VendorGrid handlers run; a declining Button handler still clicks; an accepting one does not
     /// </remarks>
     [StaFact]
     public void GetTreeScreenshotResolveInvokeAndSetValue_OnShownWindow_Succeed()
@@ -314,6 +316,9 @@ public sealed class WpfUiCaptureTests
 
             var ambiguous = Assert.Throws<ElementResolveException>(() => resolver.Resolve(new ElementSelector { AutomationId = "DupId" }));
             Assert.Equal(GraftErrorCodes.ElementAmbiguous, ambiguous.Code);
+
+            // WPF allows one Application per AppDomain, so control-action checks share this window.
+            WpfControlActionsTests.Exercise(window);
         }
         finally
         {
