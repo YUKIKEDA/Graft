@@ -24,6 +24,12 @@ public sealed class AgentConnection : IAsyncDisposable
     // Value: whether an OK response is followed by a binary frame (screenshot). Guarded by _ioLock.
     private readonly Dictionary<string, bool> _abandoned = new(StringComparer.Ordinal);
     private int _pendingBinaryFrames;
+
+    // A read started with CancellationToken.None and parked when the caller cancelled.
+    // The next send awaits this instead of starting a second read on the same pipe.
+    // Guarded by _ioLock. Never observe a cancelled Stream.ReadAsync: that leaves the
+    // operation running and the following read waits forever.
+    private Task<ResponseMessage>? _parkedResponse;
     private bool _broken;
     private int _nextId = 1;
     private bool _disposed;
@@ -1195,6 +1201,17 @@ public sealed class AgentConnection : IAsyncDisposable
         }
 
         _disposed = true;
+        if (_parkedResponse is { } parked)
+        {
+            _parkedResponse = null;
+            _ = parked.ContinueWith(
+                static task => _ = task.Exception,
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnFaulted,
+                TaskScheduler.Default
+            );
+        }
+
         await _stream.DisposeAsync().ConfigureAwait(false);
     }
 
@@ -1429,7 +1446,7 @@ public sealed class AgentConnection : IAsyncDisposable
 
                 while (true)
                 {
-                    var candidate = await JsonMessageCodec.ReadResponseAsync(_stream, cancellationToken).ConfigureAwait(false);
+                    var candidate = await ReadResponseOrParkAsync(cancellationToken).ConfigureAwait(false);
                     if (string.Equals(candidate.Id, request.Id, StringComparison.Ordinal))
                     {
                         response = candidate;
@@ -1495,6 +1512,42 @@ public sealed class AgentConnection : IAsyncDisposable
         {
             _ioLock.Release();
         }
+    }
+
+    /// <summary>
+    /// Reads the next response without cancelling the pipe read itself.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Stream.ReadAsync(Memory{byte}, CancellationToken)"/> can throw while the read
+    /// stays in flight. A later read on the same pipe then waits forever. On caller cancellation
+    /// the in-flight read is parked for the next <see cref="SendCoreAsync"/>, which discards it
+    /// via <see cref="_abandoned"/>.
+    /// </remarks>
+    private async Task<ResponseMessage> ReadResponseOrParkAsync(CancellationToken cancellationToken)
+    {
+        var readTask = _parkedResponse ?? JsonMessageCodec.ReadResponseAsync(_stream, CancellationToken.None);
+        _parkedResponse = null;
+
+        if (!cancellationToken.CanBeCanceled)
+        {
+            return await readTask.ConfigureAwait(false);
+        }
+
+        using var race = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var cancelTask = Task.Delay(Timeout.Infinite, race.Token);
+        var winner = await Task.WhenAny(readTask, cancelTask).ConfigureAwait(false);
+        if (!race.IsCancellationRequested)
+        {
+            race.Cancel();
+        }
+
+        if (winner != readTask)
+        {
+            _parkedResponse = readTask;
+            throw new OperationCanceledException(cancellationToken);
+        }
+
+        return await readTask.ConfigureAwait(false);
     }
 
     private string NextId() => Interlocked.Increment(ref _nextId).ToString();

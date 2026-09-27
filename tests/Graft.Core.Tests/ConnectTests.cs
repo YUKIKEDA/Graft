@@ -152,11 +152,12 @@ public sealed class ConnectTests : IDisposable
 
         await using var connection = await Application.ConnectAsync(_pipeName, Token, TimeSpan.FromSeconds(5));
 
-        var trees = Enumerable.Range(0, 20).Select(_ => Task.Run(() => connection.GetTreeAsync())).ToArray();
-        var invokes = Enumerable.Range(0, 20).Select(i => Task.Run(() => connection.InvokeAsync("Button" + i))).ToArray();
-        await Task.WhenAll(invokes.Concat<Task>(trees)).WaitAsync(TimeSpan.FromSeconds(30));
+        var trees = Enumerable.Range(0, 20).Select(_ => connection.GetTreeAsync()).ToArray();
+        var invokes = Enumerable.Range(0, 20).Select(i => connection.InvokeAsync("Button" + i)).ToArray();
+        var results = await Task.WhenAll(trees).WaitAsync(TimeSpan.FromSeconds(30));
+        await Task.WhenAll(invokes).WaitAsync(TimeSpan.FromSeconds(30));
 
-        Assert.All(trees, t => Assert.Equal("SampleButton", t.Result.Root.AutomationId));
+        Assert.All(results, tree => Assert.Equal("SampleButton", tree.Root.AutomationId));
         Assert.Equal(Enumerable.Range(0, 20).Select(i => "Button" + i).Order(), invoker.Seen.Order());
     }
 
