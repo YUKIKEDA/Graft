@@ -55,14 +55,12 @@ public static class InputInjector
 
         var (absX, absY) = ToAbsolute(screenX, screenY);
         const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute;
-        Send(
-            [
-                CreateMouse(absX, absY, moveAbsolute | NativeMethods.MouseEventFLeftDown),
-                CreateMouse(absX, absY, moveAbsolute | NativeMethods.MouseEventFLeftUp),
-                CreateMouse(absX, absY, moveAbsolute | NativeMethods.MouseEventFLeftDown),
-                CreateMouse(absX, absY, moveAbsolute | NativeMethods.MouseEventFLeftUp),
-            ]
-        );
+        Send([
+            CreateMouse(absX, absY, moveAbsolute | NativeMethods.MouseEventFLeftDown),
+            CreateMouse(absX, absY, moveAbsolute | NativeMethods.MouseEventFLeftUp),
+            CreateMouse(absX, absY, moveAbsolute | NativeMethods.MouseEventFLeftDown),
+            CreateMouse(absX, absY, moveAbsolute | NativeMethods.MouseEventFLeftUp),
+        ]);
     }
 
     /// <summary>
