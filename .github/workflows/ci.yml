@@ -57,6 +57,9 @@ jobs:
       - name: Test Protocol
         run: dotnet test tests/Graft.Protocol.Tests/Graft.Protocol.Tests.csproj --no-build --no-restore -c Debug --logger "trx;LogFileName=protocol.trx"
 
+      - name: Test TestUtilities
+        run: dotnet test tests/Graft.TestUtilities.Tests/Graft.TestUtilities.Tests.csproj --no-build --no-restore -c Debug --logger "trx;LogFileName=testutilities.trx"
+
       - name: Test Instrumentation
         run: dotnet test tests/Graft.Instrumentation.Tests/Graft.Instrumentation.Tests.csproj --no-build --no-restore -c Debug --logger "trx;LogFileName=instrumentation.trx"
 

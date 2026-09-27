@@ -208,7 +208,34 @@ Dispose 後に `index.html` と `frames/*.png` が出力されます。
 ### 既知の制限
 
 - **WebView2 / `HwndHost` 配下:** Visual Tree Walker は WPF のビジュアルツリーを歩くため、`WebView2` などの `HwndHost` 派生コントロールはホスト要素までしか見えません。内部の DOM やネイティブ子ウィンドウの要素は `getTree` に現れず、`GetByAutomationId` などで操作できません。
-- **SendInput 系の操作:** 実デスクトップへの入力注入のため、対話セッションが必要で、複数アプリを並列起動するとフレークします（`-m:1` で直列実行）。
+- **SendInput 系の操作:** 実デスクトップへの入力注入のため、対話セッションが必要で、複数アプリを並列起動するとフレークします。テストプロジェクトをまたぐ実行は `-m:1` が必要です。1 つのテストプロジェクト内は `Graft.TestUtilities` のコレクションで直列化できます（下記）。
+
+テストプロジェクト（`Graft.Core` と `Graft.TestUtilities` を参照）での雛形です。`CollectionDefinition` はテストアセンブリに置きます。
+
+```csharp
+public sealed class TodoAppFixture : Graft.TestUtilities.GraftAppFixture
+{
+    protected override Graft.Core.LaunchOptions CreateLaunchOptions() => new()
+    {
+        AppPath = @"path\to\App.csproj",
+        Configuration = "GraftTest",
+    };
+}
+
+[CollectionDefinition(Name, DisableParallelization = true)]
+public sealed class TodoAppCollection : ICollectionFixture<TodoAppFixture>
+{
+    public const string Name = "TodoApp";
+}
+
+[Collection(TodoAppCollection.Name)]
+public sealed class TodoTests
+{
+    private readonly Graft.Core.GraftSession _session;
+
+    public TodoTests(TodoAppFixture fixture) => _session = fixture.Session;
+}
+```
 
 ## その他の入口
 
@@ -230,6 +257,7 @@ src/
   Graft.Instrumentation.Analyzer GRAFT001
   Graft.Protocol/                ワイヤ／ツリーの共有スキーマ
   Graft.Core/                    Launch、セレクタ、Wait/Expect、Scenario
+  Graft.TestUtilities/           xUnit の共有アプリフィクスチャ
   Graft.McpServer/               MCP ホスト（stdio）
 tests/sample-apps/               SampleTodoApp / SampleWpfApp
 tools/Graft.SmokeClient/         Handshake + GetTree の手動検証
