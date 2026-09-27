@@ -16,6 +16,7 @@ internal static partial class NativeMethods
     public const uint MouseEventFRightUp = 0x0010;
     public const uint MouseEventFWheel = 0x0800;
     public const uint MouseEventFAbsolute = 0x8000;
+    public const uint MouseEventFVirtualDesk = 0x4000;
 
     /// <summary>Standard Win32 wheel notch (positive = away from user).</summary>
     public const int WheelDelta = 120;
@@ -74,6 +75,10 @@ internal static partial class NativeMethods
 
     public const int SmCxScreen = 0;
     public const int SmCyScreen = 1;
+    public const int SmXVirtualScreen = 76;
+    public const int SmYVirtualScreen = 77;
+    public const int SmCxVirtualScreen = 78;
+    public const int SmCyVirtualScreen = 79;
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]

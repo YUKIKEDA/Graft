@@ -14,6 +14,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Graft.Instrumentation.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Graft.Protocol\Graft.Protocol.csproj" />
   </ItemGroup>
 </Project>
