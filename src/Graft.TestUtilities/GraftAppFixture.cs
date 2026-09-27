@@ -15,7 +15,7 @@ namespace Graft.TestUtilities;
 ///     protected override LaunchOptions CreateLaunchOptions() =&gt; new()
 ///     {
 ///         AppPath = @"path\to\App.csproj",
-///         Configuration = "GraftTest",
+///         Configuration = LaunchOptions.DefaultConfiguration,
 ///     };
 /// }
 ///

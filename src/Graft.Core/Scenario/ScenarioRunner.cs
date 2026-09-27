@@ -482,7 +482,7 @@ public static class ScenarioRunner
         return new LaunchOptions
         {
             AppPath = appPath,
-            Configuration = string.IsNullOrWhiteSpace(launch.Configuration) ? "GraftTest" : launch.Configuration!,
+            Configuration = LaunchOptions.NormalizeConfiguration(launch.Configuration),
             Timeout = launch.Timeout ?? LaunchOptions.DefaultTimeout,
         };
     }

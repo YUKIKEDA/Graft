@@ -64,7 +64,7 @@ public sealed partial class GraftAtomicTools
                     var options = new LaunchOptions
                     {
                         AppPath = fullAppPath,
-                        Configuration = string.IsNullOrWhiteSpace(configuration) ? "GraftTest" : configuration!,
+                        Configuration = LaunchOptions.NormalizeConfiguration(configuration),
                         Timeout = timeoutSeconds is > 0 ? TimeSpan.FromSeconds(timeoutSeconds.Value) : LaunchOptions.DefaultTimeout,
                     };
 

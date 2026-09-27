@@ -1,13 +1,10 @@
 using System.Diagnostics;
+using Graft.Protocol;
 
 namespace Graft.SmokeClient;
 
 internal static class SampleLauncher
 {
-    private const string EnableEnv = "GRAFT_ENABLE";
-    private const string PipeNameEnv = "GRAFT_PIPE_NAME";
-    private const string ConnectTokenEnv = "GRAFT_CONNECT_TOKEN";
-
     public static string ResolveDefaultAppPath()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
@@ -41,9 +38,9 @@ internal static class SampleLauncher
             CreateNoWindow = false,
         };
 
-        psi.Environment[EnableEnv] = "1";
-        psi.Environment[PipeNameEnv] = pipeName;
-        psi.Environment[ConnectTokenEnv] = token;
+        psi.Environment[GraftEnvironmentNames.Enable] = "1";
+        psi.Environment[GraftEnvironmentNames.PipeName] = pipeName;
+        psi.Environment[GraftEnvironmentNames.ConnectToken] = token;
 
         if (appPath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
         {
@@ -52,7 +49,7 @@ internal static class SampleLauncher
             psi.ArgumentList.Add("--project");
             psi.ArgumentList.Add(appPath);
             psi.ArgumentList.Add("-c");
-            psi.ArgumentList.Add("GraftTest");
+            psi.ArgumentList.Add(GraftEnvironmentNames.TestConfiguration);
         }
         else
         {
