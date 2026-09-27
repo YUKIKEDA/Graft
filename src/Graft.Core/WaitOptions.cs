@@ -34,4 +34,21 @@ public sealed class WaitOptions
     /// Gets the delay between getTree polls.
     /// </summary>
     public TimeSpan PollInterval { get; init; } = DefaultPollInterval;
+
+    /// <summary>
+    /// Gets <see cref="ActionTimeout"/> when it is positive; otherwise <see cref="DefaultActionTimeout"/>.
+    /// </summary>
+    internal TimeSpan ResolvedActionTimeout => PositiveOrDefault(ActionTimeout, DefaultActionTimeout);
+
+    /// <summary>
+    /// Gets <see cref="ExpectTimeout"/> when it is positive; otherwise <see cref="DefaultExpectTimeout"/>.
+    /// </summary>
+    internal TimeSpan ResolvedExpectTimeout => PositiveOrDefault(ExpectTimeout, DefaultExpectTimeout);
+
+    /// <summary>
+    /// Gets <see cref="PollInterval"/> when it is positive; otherwise <see cref="DefaultPollInterval"/>.
+    /// </summary>
+    internal TimeSpan ResolvedPollInterval => PositiveOrDefault(PollInterval, DefaultPollInterval);
+
+    private static TimeSpan PositiveOrDefault(TimeSpan value, TimeSpan fallback) => value <= TimeSpan.Zero ? fallback : value;
 }

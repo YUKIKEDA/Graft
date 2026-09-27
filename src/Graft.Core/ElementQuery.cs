@@ -9,36 +9,21 @@ namespace Graft.Core;
 /// <summary>
 /// Lazy element query: wait + resolve against getTree, then act or expect.
 /// </summary>
+/// <remarks>
+/// <see cref="Child"/>, <see cref="Sibling"/>, and <see cref="Nth"/> return a new query.
+/// A self-heal applies only for the rest of the call that found it. The next call on the same query starts from the original selector, so reusing a query matches a fresh one.
+/// </remarks>
 public sealed class ElementQuery
 {
-    private readonly AgentConnection _connection;
+    private readonly AsyncLocal<CallState?> _call = new();
+    private readonly SessionContext _session;
     private readonly Selector _selector;
-    private readonly WaitOptions _waitOptions;
-    private readonly OperationLog _operationLog;
-    private readonly TreeBaseline _treeBaseline;
-    private readonly OperationTimeline? _timeline;
     private readonly IReadOnlyList<RelativeStep> _relativeSteps;
-    private Selector _effectiveSelector;
-    private bool _healApplied;
-    private TreeNode? _successRoot;
 
-    internal ElementQuery(
-        AgentConnection connection,
-        Selector selector,
-        WaitOptions waitOptions,
-        OperationLog operationLog,
-        TreeBaseline treeBaseline,
-        IReadOnlyList<RelativeStep>? relativeSteps = null,
-        OperationTimeline? timeline = null
-    )
+    internal ElementQuery(SessionContext session, Selector selector, IReadOnlyList<RelativeStep>? relativeSteps = null)
     {
-        _connection = connection;
+        _session = session;
         _selector = selector;
-        _effectiveSelector = selector;
-        _waitOptions = waitOptions;
-        _operationLog = operationLog;
-        _treeBaseline = treeBaseline;
-        _timeline = timeline;
         _relativeSteps = relativeSteps ?? [];
     }
 
@@ -100,7 +85,7 @@ public sealed class ElementQuery
         if (_relativeSteps.Count == 0)
         {
             return new ElementQuery(
-                _connection,
+                _session,
                 new Selector
                 {
                     AutomationId = _selector.AutomationId,
@@ -109,11 +94,7 @@ public sealed class ElementQuery
                     NearAutomationId = _selector.NearAutomationId,
                     Nth = index,
                 },
-                _waitOptions,
-                _operationLog,
-                _treeBaseline,
-                _relativeSteps,
-                _timeline
+                _relativeSteps
             );
         }
 
@@ -127,7 +108,7 @@ public sealed class ElementQuery
     /// <returns>A task that completes when invoke succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or invoke failed (may include <see cref="GraftException.Report"/>).</exception>
     public Task InvokeAsync(CancellationToken cancellationToken = default) =>
-        RunActionAsync(FailureSteps.Invoke, id => _connection.InvokeAsync(id, cancellationToken), cancellationToken);
+        RunActionAsync(FailureSteps.Invoke, id => _session.Connection.InvokeAsync(id, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Waits until the element is present and actionable, then right-clicks it.
@@ -136,7 +117,7 @@ public sealed class ElementQuery
     /// <returns>A task that completes when rightClick succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or rightClick failed (may include <see cref="GraftException.Report"/>).</exception>
     public Task RightClickAsync(CancellationToken cancellationToken = default) =>
-        RunActionAsync(FailureSteps.RightClick, id => _connection.RightClickAsync(id, cancellationToken), cancellationToken);
+        RunActionAsync(FailureSteps.RightClick, id => _session.Connection.RightClickAsync(id, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Waits until the element is present and actionable, then double-clicks it (SendInput).
@@ -144,7 +125,7 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when doubleClick succeeds.</returns>
     public Task DoubleClickAsync(CancellationToken cancellationToken = default) =>
-        RunActionAsync(FailureSteps.DoubleClick, id => _connection.DoubleClickAsync(id, cancellationToken), cancellationToken);
+        RunActionAsync(FailureSteps.DoubleClick, id => _session.Connection.DoubleClickAsync(id, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Waits until the element is present and actionable, then moves the cursor over it (SendInput).
@@ -152,7 +133,7 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when hover succeeds.</returns>
     public Task HoverAsync(CancellationToken cancellationToken = default) =>
-        RunActionAsync(FailureSteps.Hover, id => _connection.HoverAsync(id, cancellationToken), cancellationToken);
+        RunActionAsync(FailureSteps.Hover, id => _session.Connection.HoverAsync(id, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Waits until this element is actionable, then drags to <paramref name="toAutomationId"/> (SendInput).
@@ -165,7 +146,7 @@ public sealed class ElementQuery
         ArgumentException.ThrowIfNullOrWhiteSpace(toAutomationId);
         return RunActionAsync(
             FailureSteps.Drag,
-            id => _connection.DragAsync(id, toAutomationId, cancellationToken),
+            id => _session.Connection.DragAsync(id, toAutomationId, cancellationToken),
             cancellationToken,
             detail: id => $"{id}->{toAutomationId}"
         );
@@ -181,7 +162,7 @@ public sealed class ElementQuery
     public Task ClickAtAsync(double offsetX, double offsetY, CancellationToken cancellationToken = default) =>
         RunActionAsync(
             FailureSteps.ClickAt,
-            id => _connection.ClickAtAsync(id, offsetX, offsetY, cancellationToken),
+            id => _session.Connection.ClickAtAsync(id, offsetX, offsetY, cancellationToken),
             cancellationToken,
             detail: id => $"{id}@({offsetX},{offsetY})"
         );
@@ -195,7 +176,7 @@ public sealed class ElementQuery
     public Task WheelAsync(int delta, CancellationToken cancellationToken = default) =>
         RunActionAsync(
             FailureSteps.Wheel,
-            id => _connection.WheelAsync(id, delta, cancellationToken),
+            id => _session.Connection.WheelAsync(id, delta, cancellationToken),
             cancellationToken,
             detail: id => $"{id}:{delta}"
         );
@@ -230,16 +211,21 @@ public sealed class ElementQuery
     /// <exception cref="GraftException">Wait, resolve, invoke, or window wait failed.</exception>
     public async Task<WindowInfo?> InvokeOpeningWindowAsync(bool waitForNewWindow, CancellationToken cancellationToken = default)
     {
+        if (_call.Value is null)
+        {
+            return await InCallAsync(() => InvokeOpeningWindowAsync(waitForNewWindow, cancellationToken)).ConfigureAwait(false);
+        }
+
         HashSet<int>? knownIds = null;
         if (waitForNewWindow)
         {
-            var before = await _connection.ListWindowsAsync(cancellationToken).ConfigureAwait(false);
+            var before = await _session.Connection.ListWindowsAsync(cancellationToken).ConfigureAwait(false);
             knownIds = before.Windows.Select(w => w.WindowId).ToHashSet();
         }
 
         var automationId = await SendActionAsync(
                 FailureSteps.InvokeOpeningWindow,
-                id => _connection.InvokeOpeningWindowAsync(id, cancellationToken),
+                id => _session.Connection.InvokeOpeningWindowAsync(id, cancellationToken),
                 cancellationToken
             )
             .ConfigureAwait(false);
@@ -251,13 +237,13 @@ public sealed class ElementQuery
             return null;
         }
 
-        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
+        var timeout = _session.WaitOptions.ResolvedExpectTimeout;
         WindowInfo? opened = null;
         var found = await PollUntilAsync(
                 timeout,
                 async ct =>
                 {
-                    var listed = await _connection.ListWindowsAsync(ct).ConfigureAwait(false);
+                    var listed = await _session.Connection.ListWindowsAsync(ct).ConfigureAwait(false);
                     var newborn = listed.Windows.FirstOrDefault(w => !knownIds!.Contains(w.WindowId));
                     if (newborn is null)
                     {
@@ -266,7 +252,7 @@ public sealed class ElementQuery
 
                     try
                     {
-                        await _connection.SwitchWindowAsync(newborn.WindowId, ct).ConfigureAwait(false);
+                        await _session.Connection.SwitchWindowAsync(newborn.WindowId, ct).ConfigureAwait(false);
                     }
                     catch (GraftException ex) when (ex.Report is null)
                     {
@@ -280,8 +266,8 @@ public sealed class ElementQuery
                             .ConfigureAwait(false);
                     }
 
-                    _successRoot = null;
-                    _treeBaseline.Clear();
+                    Call.SuccessRoot = null;
+                    _session.TreeBaseline.Clear();
                     await RecordSuccessAsync(FailureSteps.InvokeOpeningWindow, $"{automationId}->windowId={newborn.WindowId}", ct)
                         .ConfigureAwait(false);
                     opened = newborn;
@@ -319,7 +305,7 @@ public sealed class ElementQuery
         ArgumentNullException.ThrowIfNull(value);
         return RunActionAsync(
             FailureSteps.SetValue,
-            id => _connection.SetValueAsync(id, value, cancellationToken),
+            id => _session.Connection.SetValueAsync(id, value, cancellationToken),
             cancellationToken,
             expected: value,
             detail: id => $"{id}={value}"
@@ -333,7 +319,7 @@ public sealed class ElementQuery
     /// <returns>A task that completes when toggle succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or toggle failed (may include <see cref="GraftException.Report"/>).</exception>
     public Task ToggleAsync(CancellationToken cancellationToken = default) =>
-        RunActionAsync(FailureSteps.Toggle, id => _connection.ToggleAsync(id, cancellationToken), cancellationToken);
+        RunActionAsync(FailureSteps.Toggle, id => _session.Connection.ToggleAsync(id, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Waits until the element is present and actionable, then types literal text.
@@ -347,7 +333,7 @@ public sealed class ElementQuery
         ArgumentNullException.ThrowIfNull(text);
         return RunActionAsync(
             FailureSteps.SendKeys,
-            id => _connection.SendKeysAsync(id, text, cancellationToken),
+            id => _session.Connection.SendKeysAsync(id, text, cancellationToken),
             cancellationToken,
             expected: text,
             detail: id => $"{id}={text}"
@@ -378,7 +364,7 @@ public sealed class ElementQuery
         var delayMs = (int)delay.TotalMilliseconds;
         return RunActionAsync(
             FailureSteps.TypeHuman,
-            id => _connection.TypeHumanAsync(id, text, delayMs, cancellationToken),
+            id => _session.Connection.TypeHumanAsync(id, text, delayMs, cancellationToken),
             cancellationToken,
             expected: text,
             detail: id => $"{id}={text};delayMs={delayMs}"
@@ -407,7 +393,7 @@ public sealed class ElementQuery
 
         return RunActionAsync(
             FailureSteps.PressKeys,
-            id => _connection.PressKeysAsync(id, keys, cancellationToken),
+            id => _session.Connection.PressKeysAsync(id, keys, cancellationToken),
             cancellationToken,
             expected: keys,
             detail: id => $"{id}={keys}"
@@ -445,7 +431,7 @@ public sealed class ElementQuery
     public Task SelectAsync(int index, CancellationToken cancellationToken = default) =>
         RunActionAsync(
             FailureSteps.Select,
-            id => _connection.SelectAsync(id, index, cancellationToken),
+            id => _session.Connection.SelectAsync(id, index, cancellationToken),
             cancellationToken,
             detail: id => $"{id}[{index}]"
         );
@@ -463,7 +449,7 @@ public sealed class ElementQuery
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         return RunActionAsync(
             FailureSteps.Select,
-            id => _connection.SelectByKeyAsync(id, key, cancellationToken),
+            id => _session.Connection.SelectByKeyAsync(id, key, cancellationToken),
             cancellationToken,
             detail: id => $"{id}[key={key}]"
         );
@@ -482,7 +468,7 @@ public sealed class ElementQuery
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         return RunActionAsync(
             FailureSteps.SelectTree,
-            id => _connection.SelectTreeAsync(id, path, cancellationToken),
+            id => _session.Connection.SelectTreeAsync(id, path, cancellationToken),
             cancellationToken,
             detail: id => $"{id}:{path}"
         );
@@ -501,7 +487,7 @@ public sealed class ElementQuery
         ArgumentNullException.ThrowIfNull(indexes);
         return RunActionAsync(
             FailureSteps.SelectMany,
-            id => _connection.SelectManyAsync(id, indexes, cancellationToken),
+            id => _session.Connection.SelectManyAsync(id, indexes, cancellationToken),
             cancellationToken,
             detail: id => $"{id}[{string.Join(',', indexes)}]"
         );
@@ -519,7 +505,7 @@ public sealed class ElementQuery
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         return RunActionAsync(
             FailureSteps.SelectMenu,
-            id => _connection.SelectMenuAsync(id, path, cancellationToken),
+            id => _session.Connection.SelectMenuAsync(id, path, cancellationToken),
             cancellationToken,
             detail: id => $"{id}:{path}"
         );
@@ -614,7 +600,7 @@ public sealed class ElementQuery
         ArgumentNullException.ThrowIfNull(value);
         return RunActionAsync(
             FailureSteps.SelectRow,
-            id => _connection.SelectRowAsync(id, columnKey, value, cancellationToken),
+            id => _session.Connection.SelectRowAsync(id, columnKey, value, cancellationToken),
             cancellationToken,
             detail: id => $"{id}[{columnKey}={value}]"
         );
@@ -631,7 +617,7 @@ public sealed class ElementQuery
         ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
         return RunActionAsync(
             FailureSteps.ClickColumnHeader,
-            id => _connection.ClickColumnHeaderAsync(id, columnKey, cancellationToken),
+            id => _session.Connection.ClickColumnHeaderAsync(id, columnKey, cancellationToken),
             cancellationToken,
             detail: id => $"{id}:{columnKey}"
         );
@@ -643,7 +629,7 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when addRow succeeds.</returns>
     public Task AddRowAsync(CancellationToken cancellationToken = default) =>
-        RunActionAsync(FailureSteps.AddRow, id => _connection.AddRowAsync(id, cancellationToken), cancellationToken);
+        RunActionAsync(FailureSteps.AddRow, id => _session.Connection.AddRowAsync(id, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Waits until the DataGrid is actionable, then deletes selected rows.
@@ -651,7 +637,7 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when deleteSelectedRows succeeds.</returns>
     public Task DeleteSelectedRowsAsync(CancellationToken cancellationToken = default) =>
-        RunActionAsync(FailureSteps.DeleteSelectedRows, id => _connection.DeleteSelectedRowsAsync(id, cancellationToken), cancellationToken);
+        RunActionAsync(FailureSteps.DeleteSelectedRows, id => _session.Connection.DeleteSelectedRowsAsync(id, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Waits until the DataGrid cell text equals <paramref name="expectedText"/> (column index).
@@ -693,7 +679,7 @@ public sealed class ElementQuery
     /// <returns>A task that completes when expand succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or expand failed.</exception>
     public Task ExpandAsync(CancellationToken cancellationToken = default) =>
-        RunActionAsync(FailureSteps.Expand, id => _connection.ExpandAsync(id, cancellationToken), cancellationToken);
+        RunActionAsync(FailureSteps.Expand, id => _session.Connection.ExpandAsync(id, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Waits until the element is actionable, then collapses it.
@@ -702,7 +688,7 @@ public sealed class ElementQuery
     /// <returns>A task that completes when collapse succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or collapse failed.</exception>
     public Task CollapseAsync(CancellationToken cancellationToken = default) =>
-        RunActionAsync(FailureSteps.Collapse, id => _connection.CollapseAsync(id, cancellationToken), cancellationToken);
+        RunActionAsync(FailureSteps.Collapse, id => _session.Connection.CollapseAsync(id, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Waits until the element's <c>name</c> equals <paramref name="expectedName"/>.
@@ -889,7 +875,12 @@ public sealed class ElementQuery
     /// <returns>The matched node when found.</returns>
     public async Task<TreeNode> WaitForAsync(CancellationToken cancellationToken = default)
     {
-        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
+        if (_call.Value is null)
+        {
+            return await InCallAsync(() => WaitForAsync(cancellationToken)).ConfigureAwait(false);
+        }
+
+        var timeout = _session.WaitOptions.ResolvedExpectTimeout;
         TreeNode? lastRoot = null;
         TreeNode? found = null;
         var matched = await PollUntilAsync(
@@ -898,7 +889,7 @@ public sealed class ElementQuery
                 {
                     try
                     {
-                        var tree = await _connection.GetTreeAsync(ct).ConfigureAwait(false);
+                        var tree = await _session.Connection.GetTreeAsync(ct).ConfigureAwait(false);
                         lastRoot = tree.Root;
                         var node = ResolveNode(tree.Root);
                         await RecordSuccessAsync(FailureSteps.WaitFor, node.AutomationId, ct).ConfigureAwait(false);
@@ -940,12 +931,17 @@ public sealed class ElementQuery
     /// <exception cref="GraftException">Wait, resolve, or screenshot failed (may include <see cref="GraftException.Report"/>).</exception>
     public async Task<Screenshot> ScreenshotAsync(CancellationToken cancellationToken = default)
     {
+        if (_call.Value is null)
+        {
+            return await InCallAsync(() => ScreenshotAsync(cancellationToken)).ConfigureAwait(false);
+        }
+
         var node = await WaitForAsync(cancellationToken).ConfigureAwait(false);
         var automationId = string.IsNullOrWhiteSpace(node.AutomationId) ? null : node.AutomationId;
         int? runtimeId = automationId is null ? node.RuntimeId : null;
         try
         {
-            var (meta, pngBytes) = await _connection.ScreenshotAsync(automationId, runtimeId, cancellationToken).ConfigureAwait(false);
+            var (meta, pngBytes) = await _session.Connection.ScreenshotAsync(automationId, runtimeId, cancellationToken).ConfigureAwait(false);
             var shot = new Screenshot(meta.Format, meta.Width, meta.Height, pngBytes);
             await RecordSuccessAsync(FailureSteps.Screenshot, $"{shot.Width}x{shot.Height}:{shot.PngBytes.Length}", cancellationToken, shot.PngBytes)
                 .ConfigureAwait(false);
@@ -965,7 +961,18 @@ public sealed class ElementQuery
     /// <returns>A task that completes when the element is gone.</returns>
     public async Task ExpectGoneAsync(CancellationToken cancellationToken = default)
     {
-        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
+        if (_call.Value is null)
+        {
+            await InCallAsync(async () =>
+                {
+                    await ExpectGoneAsync(cancellationToken).ConfigureAwait(false);
+                    return true;
+                })
+                .ConfigureAwait(false);
+            return;
+        }
+
+        var timeout = _session.WaitOptions.ResolvedExpectTimeout;
         TreeNode? lastRoot = null;
         string? lastActual = null;
         var gone = await PollUntilAsync(
@@ -974,7 +981,7 @@ public sealed class ElementQuery
                 {
                     try
                     {
-                        var tree = await _connection.GetTreeAsync(ct).ConfigureAwait(false);
+                        var tree = await _session.Connection.GetTreeAsync(ct).ConfigureAwait(false);
                         lastRoot = tree.Root;
                         var node = ResolveNode(tree.Root);
                         if (!node.Visible)
@@ -1025,8 +1032,8 @@ public sealed class ElementQuery
             FailureSteps.GetCellText,
             id =>
                 columnKey is null
-                    ? _connection.GetCellTextAsync(id, row, column!.Value, cancellationToken)
-                    : _connection.GetCellTextAsync(id, row, columnKey, cancellationToken),
+                    ? _session.Connection.GetCellTextAsync(id, row, column!.Value, cancellationToken)
+                    : _session.Connection.GetCellTextAsync(id, row, columnKey, cancellationToken),
             cancellationToken,
             detail: (id, _) => columnKey is null ? $"{id}[{row},{column}]" : $"{id}[{row},{columnKey}]"
         );
@@ -1038,8 +1045,8 @@ public sealed class ElementQuery
             FailureSteps.SetCellValue,
             id =>
                 columnKey is null
-                    ? _connection.SetCellValueAsync(id, row, column!.Value, value, cancellationToken)
-                    : _connection.SetCellValueAsync(id, row, columnKey, value, cancellationToken),
+                    ? _session.Connection.SetCellValueAsync(id, row, column!.Value, value, cancellationToken)
+                    : _session.Connection.SetCellValueAsync(id, row, columnKey, value, cancellationToken),
             cancellationToken,
             expected: value,
             detail: id => columnKey is null ? $"{id}[{row},{column}]={value}" : $"{id}[{row},{columnKey}]={value}"
@@ -1051,17 +1058,28 @@ public sealed class ElementQuery
             FailureSteps.SelectCell,
             id =>
                 columnKey is null
-                    ? _connection.SelectCellAsync(id, row, column!.Value, cancellationToken)
-                    : _connection.SelectCellAsync(id, row, columnKey, cancellationToken),
+                    ? _session.Connection.SelectCellAsync(id, row, column!.Value, cancellationToken)
+                    : _session.Connection.SelectCellAsync(id, row, columnKey, cancellationToken),
             cancellationToken,
             detail: id => columnKey is null ? $"{id}[{row},{column}]" : $"{id}[{row},{columnKey}]"
         );
 
     private async Task ExpectCellTextCoreAsync(int row, int? column, string? columnKey, string expectedText, CancellationToken cancellationToken)
     {
+        if (_call.Value is null)
+        {
+            await InCallAsync(async () =>
+                {
+                    await ExpectCellTextCoreAsync(row, column, columnKey, expectedText, cancellationToken).ConfigureAwait(false);
+                    return true;
+                })
+                .ConfigureAwait(false);
+            return;
+        }
+
         ArgumentNullException.ThrowIfNull(expectedText);
         var hostId = await RequireAutomationIdAsync(FailureSteps.ExpectCellText, cancellationToken, expectedText).ConfigureAwait(false);
-        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
+        var timeout = _session.WaitOptions.ResolvedExpectTimeout;
         string? lastActual = null;
         var sawCell = false;
         var matched = await PollUntilAsync(
@@ -1071,8 +1089,8 @@ public sealed class ElementQuery
                     try
                     {
                         var actual = columnKey is null
-                            ? await _connection.GetCellTextAsync(hostId, row, column!.Value, ct).ConfigureAwait(false)
-                            : await _connection.GetCellTextAsync(hostId, row, columnKey, ct).ConfigureAwait(false);
+                            ? await _session.Connection.GetCellTextAsync(hostId, row, column!.Value, ct).ConfigureAwait(false)
+                            : await _session.Connection.GetCellTextAsync(hostId, row, columnKey, ct).ConfigureAwait(false);
                         sawCell = true;
                         if (string.Equals(actual, expectedText, StringComparison.Ordinal))
                         {
@@ -1156,7 +1174,13 @@ public sealed class ElementQuery
         CancellationToken cancellationToken
     )
     {
-        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
+        if (_call.Value is null)
+        {
+            return await InCallAsync(() => ExpectAsync(step, expected, check, mismatchMessage, timeoutMessage, cancellationToken))
+                .ConfigureAwait(false);
+        }
+
+        var timeout = _session.WaitOptions.ResolvedExpectTimeout;
         string? lastActual = null;
         TreeNode? lastRoot = null;
         var sawElement = false;
@@ -1167,7 +1191,7 @@ public sealed class ElementQuery
                 {
                     try
                     {
-                        var tree = await _connection.GetTreeAsync(ct).ConfigureAwait(false);
+                        var tree = await _session.Connection.GetTreeAsync(ct).ConfigureAwait(false);
                         lastRoot = tree.Root;
                         var node = ResolveNode(tree.Root);
                         sawElement = true;
@@ -1226,7 +1250,7 @@ public sealed class ElementQuery
 
     private async Task<bool> PollUntilAsync(TimeSpan timeout, Func<CancellationToken, Task<bool>> attempt, CancellationToken cancellationToken)
     {
-        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
+        var poll = _session.WaitOptions.ResolvedPollInterval;
         var deadline = DateTime.UtcNow + timeout;
         while (DateTime.UtcNow < deadline)
         {
@@ -1276,6 +1300,11 @@ public sealed class ElementQuery
         bool recordSuccess = true
     )
     {
+        if (_call.Value is null)
+        {
+            return await InCallAsync(() => RunActionAsync(step, send, cancellationToken, expected, detail, recordSuccess)).ConfigureAwait(false);
+        }
+
         var automationId = await RequireAutomationIdAsync(step, cancellationToken, expected).ConfigureAwait(false);
         try
         {
@@ -1326,7 +1355,7 @@ public sealed class ElementQuery
 
     private async Task<TreeNode> WaitForActionableAsync(CancellationToken cancellationToken)
     {
-        var timeout = PositiveOrDefault(_waitOptions.ActionTimeout, WaitOptions.DefaultActionTimeout);
+        var timeout = _session.WaitOptions.ResolvedActionTimeout;
         string? lastActual = null;
         TreeNode? lastRoot = null;
         var sawNotActionable = false;
@@ -1337,7 +1366,7 @@ public sealed class ElementQuery
                 {
                     try
                     {
-                        var tree = await _connection.GetTreeAsync(ct).ConfigureAwait(false);
+                        var tree = await _session.Connection.GetTreeAsync(ct).ConfigureAwait(false);
                         lastRoot = tree.Root;
                         var node = ResolveNode(tree.Root);
                         if (node.Enabled && node.Visible)
@@ -1402,14 +1431,14 @@ public sealed class ElementQuery
         CancellationToken cancellationToken = default
     )
     {
-        _timeline?.MarkFailed();
-        _successRoot = null;
+        _session.Timeline?.MarkFailed();
+        Call.SuccessRoot = null;
         var tree = treeRoot;
         if (tree is null)
         {
             try
             {
-                tree = (await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false)).Root;
+                tree = (await _session.Connection.GetTreeAsync(cancellationToken).ConfigureAwait(false)).Root;
             }
             catch (Exception)
             {
@@ -1421,7 +1450,7 @@ public sealed class ElementQuery
         string? screenshotPath = null;
         try
         {
-            var (_, pngBytes) = await _connection.ScreenshotAsync(cancellationToken).ConfigureAwait(false);
+            var (_, pngBytes) = await _session.Connection.ScreenshotAsync(cancellationToken).ConfigureAwait(false);
             var path = Path.Combine(Path.GetTempPath(), $"graft-fail-{Guid.NewGuid():N}.png");
             await File.WriteAllBytesAsync(path, pngBytes, cancellationToken).ConfigureAwait(false);
             screenshotPath = path;
@@ -1441,7 +1470,7 @@ public sealed class ElementQuery
             }
         }
 
-        var recent = _operationLog.Snapshot();
+        var recent = _session.OperationLog.Snapshot();
         return new GraftException(
             code,
             message,
@@ -1456,7 +1485,7 @@ public sealed class ElementQuery
                 Tree = tree,
                 ScreenshotPath = screenshotPath,
                 HealingCandidates = healingCandidates,
-                TreeDiff = tree is null ? null : _treeBaseline.Diff(tree),
+                TreeDiff = tree is null ? null : _session.TreeBaseline.Diff(tree),
             },
             innerException
         );
@@ -1465,45 +1494,45 @@ public sealed class ElementQuery
     private Task<ElementIdentity> ScrollIntoViewCoreAsync(int? index, CancellationToken cancellationToken) =>
         RunActionAsync(
             FailureSteps.ScrollIntoView,
-            id => _connection.ScrollIntoViewAsync(id, index, cancellationToken),
+            id => _session.Connection.ScrollIntoViewAsync(id, index, cancellationToken),
             cancellationToken,
             detail: (id, identity) => index is null ? id : $"{id}[{index}]->{identity.AutomationId}"
         );
 
     private async Task RecordSuccessAsync(string action, string? detail, CancellationToken cancellationToken, byte[]? pngBytes = null)
     {
-        if (_successRoot is not null)
+        if (Call.SuccessRoot is not null)
         {
-            _treeBaseline.Remember(_successRoot);
-            _successRoot = null;
+            _session.TreeBaseline.Remember(Call.SuccessRoot);
+            Call.SuccessRoot = null;
         }
 
-        _operationLog.Record(action, detail);
-        if (_timeline is not null)
+        _session.OperationLog.Record(action, detail);
+        if (_session.Timeline is not null)
         {
-            await _timeline.CaptureAfterAsync(action, detail, cancellationToken, pngBytes).ConfigureAwait(false);
+            await _session.Timeline.CaptureAfterAsync(action, detail, cancellationToken, pngBytes).ConfigureAwait(false);
         }
     }
 
     private TreeNode ResolveNode(TreeNode root)
     {
-        _successRoot = root;
+        Call.SuccessRoot = root;
         TreeNode node;
         try
         {
-            node = TreeSelector.Resolve(root, _effectiveSelector);
+            node = TreeSelector.Resolve(root, Call.EffectiveSelector);
         }
-        catch (GraftException ex) when (ex.Code == GraftErrorCodes.ElementNotFound && !_healApplied)
+        catch (GraftException ex) when (ex.Code == GraftErrorCodes.ElementNotFound && !Call.HealApplied)
         {
-            if (!SelectorHealer.TryGetAutoHeal(root, _effectiveSelector, out var healed))
+            if (!SelectorHealer.TryGetAutoHeal(root, Call.EffectiveSelector, out var healed))
             {
                 throw;
             }
 
-            _effectiveSelector = healed;
-            _healApplied = true;
-            _operationLog.Record("heal", DescribeSelector(healed));
-            node = TreeSelector.Resolve(root, _effectiveSelector);
+            Call.EffectiveSelector = healed;
+            Call.HealApplied = true;
+            _session.OperationLog.Record("heal", DescribeSelector(healed));
+            node = TreeSelector.Resolve(root, Call.EffectiveSelector);
         }
 
         for (var i = 0; i < _relativeSteps.Count; )
@@ -1540,7 +1569,7 @@ public sealed class ElementQuery
         var steps = new List<RelativeStep>(_relativeSteps.Count + 1);
         steps.AddRange(_relativeSteps);
         steps.Add(step);
-        return new ElementQuery(_connection, _selector, _waitOptions, _operationLog, _treeBaseline, steps, _timeline);
+        return new ElementQuery(_session, _selector, steps);
     }
 
     internal abstract record RelativeStep;
@@ -1577,5 +1606,36 @@ public sealed class ElementQuery
         return string.Join(',', parts);
     }
 
-    private static TimeSpan PositiveOrDefault(TimeSpan value, TimeSpan fallback) => value <= TimeSpan.Zero ? fallback : value;
+    private async Task<T> InCallAsync<T>(Func<Task<T>> body)
+    {
+        var state = new CallState(_selector);
+        _call.Value = state;
+        try
+        {
+            return await body().ConfigureAwait(false);
+        }
+        finally
+        {
+            _call.Value = null;
+        }
+    }
+
+    private CallState Call => _call.Value ?? throw new InvalidOperationException("An element query call is not active.");
+
+    /// <summary>
+    /// Mutable resolve state for one call.
+    /// </summary>
+    /// <remarks>
+    /// A self-heal stays here and does not stick to the query.
+    /// </remarks>
+    private sealed class CallState
+    {
+        public CallState(Selector selector) => EffectiveSelector = selector;
+
+        public Selector EffectiveSelector { get; set; }
+
+        public bool HealApplied { get; set; }
+
+        public TreeNode? SuccessRoot { get; set; }
+    }
 }
