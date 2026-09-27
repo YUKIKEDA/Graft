@@ -1,10 +1,16 @@
 using Graft.Core.Diagnostics;
+using Graft.Protocol;
 
 namespace Graft.Core.Scenario;
 
 /// <summary>
 /// Stable Scenario step <c>action</c> vocabulary (JSON exchange + operation model).
 /// </summary>
+/// <remarks>
+/// Each action except <see cref="Launch"/> aliases <see cref="FailureSteps"/>.
+/// Wire actions therefore share the <see cref="ProtocolMethods"/> string.
+/// Core-only failure steps such as wait and softAssert stay on <see cref="FailureSteps"/>.
+/// </remarks>
 public static class ScenarioActions
 {
     /// <summary>Launch the application under test.</summary>

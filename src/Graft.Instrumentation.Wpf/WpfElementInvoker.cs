@@ -74,11 +74,11 @@ internal sealed class WpfElementInvoker : IElementInvoker
 
     /// <inheritdoc />
     public void DoubleClick(ElementSelector selector) =>
-        RunOnUiThread(selector, static s => WpfInputInjection.DoubleClickElement(ResolveActionableFrameworkElement(s)), "doubleClick");
+        RunOnUiThread(selector, static s => WpfInputInjection.DoubleClickElement(ResolveActionableFrameworkElement(s)), ProtocolMethods.DoubleClick);
 
     /// <inheritdoc />
     public void Hover(ElementSelector selector) =>
-        RunOnUiThread(selector, static s => WpfInputInjection.HoverElement(ResolveActionableFrameworkElement(s)), "hover");
+        RunOnUiThread(selector, static s => WpfInputInjection.HoverElement(ResolveActionableFrameworkElement(s)), ProtocolMethods.Hover);
 
     /// <inheritdoc />
     public void Drag(ElementSelector from, ElementSelector to)
@@ -110,11 +110,15 @@ internal sealed class WpfElementInvoker : IElementInvoker
 
     /// <inheritdoc />
     public void ClickAt(ElementSelector selector, double offsetX, double offsetY) =>
-        RunOnUiThread(selector, s => WpfInputInjection.ClickAtElement(ResolveActionableFrameworkElement(s), offsetX, offsetY), "clickAt");
+        RunOnUiThread(
+            selector,
+            s => WpfInputInjection.ClickAtElement(ResolveActionableFrameworkElement(s), offsetX, offsetY),
+            ProtocolMethods.ClickAt
+        );
 
     /// <inheritdoc />
     public void Wheel(ElementSelector selector, int delta) =>
-        RunOnUiThread(selector, s => WpfInputInjection.WheelElement(ResolveActionableFrameworkElement(s), delta), "wheel");
+        RunOnUiThread(selector, s => WpfInputInjection.WheelElement(ResolveActionableFrameworkElement(s), delta), ProtocolMethods.Wheel);
 
     private static void RunOnUiThread(ElementSelector selector, Action<ElementSelector> action, string operationName)
     {
