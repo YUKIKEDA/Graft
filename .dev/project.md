@@ -372,6 +372,7 @@ GitHub Actions:
 | Phase 33  | 操作タイムライン（D06）                              | PNG 連番 + HTML。Must。GIF/FFmpeg なし                     |
 | Phase 34  | SampleTodoApp（利用ガイド正本）                      | MVVM/DI/テーマ + 実 JSON E2E。Avalonia 前                  |
 | Phase 35  | 要素クリップ Screenshot（P02）                       | Must。窓クリップ + Popup RTB + ToolTip ノード。開時 overlay はホスト合成。Avalonia 前 |
+| （並行）  | WPF UI Gallery 最深部 E2E                            | ローカル `tests/wpfui` + `WpfUi.Gallery.Graft.Tests`。[task_wpfui-gallery-e2e.md](./task_wpfui-gallery-e2e.md) |
 | （次）    | Avalonia（Phase 35 後）                              | 対照表: `competitive-gap.md`。Inspector 任意               |
 
 ## 9. 未検討・今後の課題

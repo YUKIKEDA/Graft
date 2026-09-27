@@ -2,6 +2,9 @@
 # Canonical solution is Graft.slnx (SDK format). Ignore classic .sln if tooling regenerates it.
 Graft.sln
 
+# WPF UI tests
+tests/wpfui/
+
 ## Build
 [Bb]in/
 [Oo]bj/
