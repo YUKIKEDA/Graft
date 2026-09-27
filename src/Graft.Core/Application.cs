@@ -1,3 +1,5 @@
+using Graft.Protocol;
+
 namespace Graft.Core;
 
 /// <summary>
@@ -34,10 +36,11 @@ public static class Application
             : options.Token!;
         var configuration = string.IsNullOrWhiteSpace(options.Configuration) ? "GraftTest" : options.Configuration;
 
-        var process = AppProcessLauncher.Start(options.AppPath, pipeName, token, configuration, options.Environment);
+        var process = AppProcessLauncher.Start(options.AppPath, pipeName, token, configuration, options.Environment, out var outputTail);
         try
         {
-            var connection = await AgentConnection.ConnectAsync(pipeName, token, timeout, cancellationToken).ConfigureAwait(false);
+            var connection = await ConnectWhileAliveAsync(process, outputTail, options.AppPath, pipeName, token, timeout, cancellationToken)
+                .ConfigureAwait(false);
             return new GraftSession(process, connection, options.Timeline);
         }
         catch
@@ -58,6 +61,81 @@ public static class Application
             process.Dispose();
             throw;
         }
+    }
+
+    /// <summary>
+    /// Connect + Handshake, failing fast with diagnostics when the launched process exits first.
+    /// </summary>
+    private static async Task<AgentConnection> ConnectWhileAliveAsync(
+        System.Diagnostics.Process process,
+        AppProcessLauncher.OutputTail outputTail,
+        string appPath,
+        string pipeName,
+        string token,
+        TimeSpan timeout,
+        CancellationToken cancellationToken
+    )
+    {
+        using var raceCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var connectTask = AgentConnection.ConnectAsync(pipeName, token, timeout, raceCts.Token);
+        var exitTask = process.WaitForExitAsync(raceCts.Token);
+
+        var first = await Task.WhenAny(connectTask, exitTask).ConfigureAwait(false);
+        if (first == connectTask)
+        {
+            raceCts.Cancel();
+            return await connectTask.ConfigureAwait(false);
+        }
+
+        if (!exitTask.IsCompletedSuccessfully)
+        {
+            // Caller cancelled; let the connect task surface the cancellation.
+            return await connectTask.ConfigureAwait(false);
+        }
+
+        raceCts.Cancel();
+        try
+        {
+            var late = await connectTask.ConfigureAwait(false);
+            await late.DisposeAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is GraftException or OperationCanceledException)
+        {
+            // Expected: the process is gone, so the connect attempt is abandoned.
+        }
+
+        throw new GraftException(GraftErrorCodes.ActionFailed, BuildEarlyExitMessage(process, outputTail, appPath));
+    }
+
+    private static string BuildEarlyExitMessage(System.Diagnostics.Process process, AppProcessLauncher.OutputTail outputTail, string appPath)
+    {
+        string exitCode;
+        try
+        {
+            exitCode = process.ExitCode.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+        catch (InvalidOperationException)
+        {
+            exitCode = "unknown";
+        }
+
+        var message = new System.Text.StringBuilder()
+            .Append("The application process exited (exit code ")
+            .Append(exitCode)
+            .Append(") before the Graft agent accepted a connection: ")
+            .AppendLine(appPath)
+            .AppendLine("Common causes:")
+            .AppendLine("- The app was not built with the GraftTest configuration, so Agent.Start() is compiled out.")
+            .AppendLine("- Agent.Start() is not called at startup (e.g. missing from App.OnStartup / #if GRAFT_TEST).")
+            .AppendLine("- The app crashed during startup (missing dependency, unhandled exception, build failure for .csproj).");
+
+        var tail = outputTail.Snapshot();
+        if (tail.Length > 0)
+        {
+            message.AppendLine("Last output from the process:").Append(tail);
+        }
+
+        return message.ToString().TrimEnd();
     }
 
     /// <summary>
