@@ -31,7 +31,7 @@ internal sealed class WpfElementScroller : IElementScroller
             return ScrollOnUiThread(selector, index);
         }
 
-        return dispatcher.Invoke(() => ScrollOnUiThread(selector, index), DispatcherPriority.Normal);
+        return dispatcher.InvokeWithTimeout(() => ScrollOnUiThread(selector, index));
     }
 
     /// <summary>

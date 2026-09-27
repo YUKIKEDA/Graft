@@ -37,7 +37,7 @@ internal sealed class WpfElementExpander : IElementExpander
             return;
         }
 
-        dispatcher.Invoke(() => SetExpandedOnUiThread(selector, expanded), DispatcherPriority.Normal);
+        dispatcher.InvokeWithTimeout(() => SetExpandedOnUiThread(selector, expanded));
     }
 
     private static void SetExpandedOnUiThread(ElementSelector selector, bool expanded)

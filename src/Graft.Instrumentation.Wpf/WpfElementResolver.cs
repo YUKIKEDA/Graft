@@ -37,7 +37,7 @@ internal sealed class WpfElementResolver : IElementResolver
             return ResolveOnUiThread(selector);
         }
 
-        return dispatcher.Invoke(() => ResolveOnUiThread(selector), DispatcherPriority.Normal);
+        return dispatcher.InvokeWithTimeout(() => ResolveOnUiThread(selector));
     }
 
     private ResolvedElement ResolveOnUiThread(ElementSelector selector)

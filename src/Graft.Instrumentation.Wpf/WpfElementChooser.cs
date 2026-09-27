@@ -32,7 +32,7 @@ internal sealed class WpfElementChooser : IElementChooser
             return;
         }
 
-        dispatcher.Invoke(() => SelectOnUiThread(selector, index), DispatcherPriority.Normal);
+        dispatcher.InvokeWithTimeout(() => SelectOnUiThread(selector, index));
     }
 
     /// <inheritdoc />
@@ -53,7 +53,7 @@ internal sealed class WpfElementChooser : IElementChooser
             return;
         }
 
-        dispatcher.Invoke(() => SelectByKeyOnUiThread(selector, key), DispatcherPriority.Normal);
+        dispatcher.InvokeWithTimeout(() => SelectByKeyOnUiThread(selector, key));
     }
 
     /// <inheritdoc />
@@ -74,7 +74,7 @@ internal sealed class WpfElementChooser : IElementChooser
             return;
         }
 
-        dispatcher.Invoke(() => SelectManyOnUiThread(selector, indexes), DispatcherPriority.Normal);
+        dispatcher.InvokeWithTimeout(() => SelectManyOnUiThread(selector, indexes));
     }
 
     private static void SelectOnUiThread(ElementSelector selector, int index)

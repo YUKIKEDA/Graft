@@ -429,6 +429,10 @@ internal sealed class AgentPipeServer : IDisposable
             var resultJson = JsonSerializer.SerializeToElement(result, JsonMessageCodec.Options);
             return Ok(request.Id, resultJson);
         }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
         catch (Exception ex)
         {
             return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);

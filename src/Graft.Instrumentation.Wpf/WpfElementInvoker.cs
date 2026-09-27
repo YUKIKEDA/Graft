@@ -34,7 +34,7 @@ internal sealed class WpfElementInvoker : IElementInvoker
             return;
         }
 
-        dispatcher.Invoke(() => InvokeOnUiThread(selector), DispatcherPriority.Normal);
+        dispatcher.InvokeWithTimeout(() => InvokeOnUiThread(selector));
     }
 
     /// <inheritdoc />
@@ -69,7 +69,7 @@ internal sealed class WpfElementInvoker : IElementInvoker
             return;
         }
 
-        dispatcher.Invoke(() => RightClickOnUiThread(selector), DispatcherPriority.Normal);
+        dispatcher.InvokeWithTimeout(() => RightClickOnUiThread(selector));
     }
 
     /// <inheritdoc />
@@ -105,7 +105,7 @@ internal sealed class WpfElementInvoker : IElementInvoker
             return;
         }
 
-        dispatcher.Invoke(Action, DispatcherPriority.Normal);
+        dispatcher.InvokeWithTimeout(Action);
     }
 
     /// <inheritdoc />
@@ -132,7 +132,7 @@ internal sealed class WpfElementInvoker : IElementInvoker
             return;
         }
 
-        dispatcher.Invoke(() => action(selector), DispatcherPriority.Normal);
+        dispatcher.InvokeWithTimeout(() => action(selector));
     }
 
     private static void InvokeOnUiThread(ElementSelector selector)

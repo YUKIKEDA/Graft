@@ -37,7 +37,7 @@ internal sealed class WpfUiTreeProvider : IUiTreeProvider
             return CaptureOnUiThread(options);
         }
 
-        return dispatcher.Invoke(() => CaptureOnUiThread(options), DispatcherPriority.Normal);
+        return dispatcher.InvokeWithTimeout(() => CaptureOnUiThread(options));
     }
 
     private GetTreeResult CaptureOnUiThread(GetTreeOptions options)
