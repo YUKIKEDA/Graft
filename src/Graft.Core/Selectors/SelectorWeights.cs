@@ -1,7 +1,7 @@
 namespace Graft.Core.Selectors;
 
 /// <summary>
-/// Provisional selector scoring weights and threshold (project.md Q49).
+/// Selector scoring weights and threshold (project.md Q49; Name / ControlType raised to 60 in Phase 27 F02).
 /// </summary>
 public static class SelectorWeights
 {

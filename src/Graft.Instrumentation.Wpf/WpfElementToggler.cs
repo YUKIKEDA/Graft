@@ -33,7 +33,7 @@ internal sealed class WpfElementToggler : IElementToggler
             return;
         }
 
-        dispatcher.Invoke(() => ToggleOnUiThread(selector), DispatcherPriority.Normal);
+        dispatcher.InvokeWithTimeout(() => ToggleOnUiThread(selector));
     }
 
     private static void ToggleOnUiThread(ElementSelector selector)

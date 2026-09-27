@@ -128,6 +128,39 @@ public sealed class ConnectTests : IDisposable
         Assert.Equal("hello", fake.LastValue);
     }
 
+    /// <summary>
+    /// Concurrent RPCs on one connection are serialized and each receives its own response.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Agent started with a tree provider and a fake invoker
+    ///
+    /// Steps:
+    /// - Fire 40 getTree / invoke calls concurrently on a single AgentConnection without awaiting in between
+    ///
+    /// Expected:
+    /// - Every call completes without a protocol error
+    /// - Every getTree returns the fake root; the invoker saw every automation id
+    /// </remarks>
+    [Fact]
+    public async Task ConcurrentCalls_OnOneConnection_DoNotCorruptFrames()
+    {
+        var invoker = new RecordingElementInvoker();
+        AgentServices.RegisterTreeProvider(new FakeTreeProvider());
+        AgentServices.RegisterElementInvoker(invoker);
+        StartAgent();
+
+        await using var connection = await Application.ConnectAsync(_pipeName, Token, TimeSpan.FromSeconds(5));
+
+        var trees = Enumerable.Range(0, 20).Select(_ => connection.GetTreeAsync()).ToArray();
+        var invokes = Enumerable.Range(0, 20).Select(i => connection.InvokeAsync("Button" + i)).ToArray();
+        var results = await Task.WhenAll(trees).WaitAsync(TimeSpan.FromSeconds(30));
+        await Task.WhenAll(invokes).WaitAsync(TimeSpan.FromSeconds(30));
+
+        Assert.All(results, tree => Assert.Equal("SampleButton", tree.Root.AutomationId));
+        Assert.Equal(Enumerable.Range(0, 20).Select(i => "Button" + i).Order(), invoker.Seen.Order());
+    }
+
     private void StartAgent()
     {
         Environment.SetEnvironmentVariable(GraftEnvironment.Enable, "1");
@@ -175,6 +208,29 @@ public sealed class ConnectTests : IDisposable
         public string? LastAutomationId { get; private set; }
 
         public void Invoke(ElementSelector selector) => LastAutomationId = selector.AutomationId;
+
+        public void BeginInvoke(ElementSelector selector) => Invoke(selector);
+
+        public void RightClick(ElementSelector selector) => Invoke(selector);
+
+        public void DoubleClick(ElementSelector selector) => Invoke(selector);
+
+        public void Hover(ElementSelector selector) => Invoke(selector);
+
+        public void Drag(ElementSelector from, ElementSelector to) => Invoke(from);
+
+        public void ClickAt(ElementSelector selector, double offsetX, double offsetY) => Invoke(selector);
+
+        public void Wheel(ElementSelector selector, int delta) => Invoke(selector);
+    }
+
+    private sealed class RecordingElementInvoker : IElementInvoker
+    {
+        private readonly System.Collections.Concurrent.ConcurrentBag<string> _seen = new();
+
+        public IEnumerable<string> Seen => _seen;
+
+        public void Invoke(ElementSelector selector) => _seen.Add(selector.AutomationId ?? string.Empty);
 
         public void BeginInvoke(ElementSelector selector) => Invoke(selector);
 

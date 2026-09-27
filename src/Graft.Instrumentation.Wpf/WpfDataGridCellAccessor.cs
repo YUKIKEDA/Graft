@@ -585,6 +585,6 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
             return action();
         }
 
-        return dispatcher.Invoke(action, DispatcherPriority.Normal);
+        return dispatcher.InvokeWithTimeout(action);
     }
 }

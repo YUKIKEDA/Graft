@@ -16,12 +16,13 @@ public sealed class AgentSession : IDisposable
     /// Initializes a new session and starts listening on the named pipe.
     /// </summary>
     /// <param name="pipeName">Named pipe name.</param>
-    /// <param name="connectToken">Handshake token (may be empty).</param>
+    /// <param name="connectToken">Handshake token (must be non-empty).</param>
     public AgentSession(string pipeName, string connectToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(pipeName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectToken);
         PipeName = pipeName;
-        ConnectToken = connectToken ?? string.Empty;
+        ConnectToken = connectToken;
         _server = new AgentPipeServer(PipeName, ConnectToken);
     }
 

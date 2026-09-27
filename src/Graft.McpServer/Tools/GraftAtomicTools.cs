@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Text.Json.Nodes;
 using Graft.Core;
+using Graft.McpServer.Security;
 using Graft.McpServer.Session;
 using Graft.Protocol;
 using ModelContextProtocol.Protocol;
@@ -34,9 +35,12 @@ public sealed partial class GraftAtomicTools
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_launch")]
-    [Description("Launch an instrumented app and open a Graft session. Fails if a session is already open.")]
+    [Description(
+        "Launch an instrumented app and open a Graft session. Fails if a session is already open. "
+            + "appPath must be under the server's allowed roots (default: its working directory; see GRAFT_MCP_ALLOWED_ROOTS)."
+    )]
     public partial Task<CallToolResult> Launch(
-        [Description("Absolute path to the app exe or csproj.")] string appPath,
+        [Description("Absolute path to the app exe or csproj, inside the allowed roots.")] string appPath,
         [Description("MSBuild configuration (default GraftTest).")] string? configuration = null,
         [Description("Launch timeout in seconds (default 30).")] double? timeoutSeconds = null,
         CancellationToken cancellationToken = default
@@ -56,16 +60,17 @@ public sealed partial class GraftAtomicTools
 
                 try
                 {
+                    var fullAppPath = McpPathPolicy.EnsureAllowed(appPath, "appPath");
                     var options = new LaunchOptions
                     {
-                        AppPath = appPath,
+                        AppPath = fullAppPath,
                         Configuration = string.IsNullOrWhiteSpace(configuration) ? "GraftTest" : configuration!,
                         Timeout = timeoutSeconds is > 0 ? TimeSpan.FromSeconds(timeoutSeconds.Value) : LaunchOptions.DefaultTimeout,
                     };
 
                     var launched = await Application.LaunchAsync(options, cancellationToken).ConfigureAwait(false);
                     _hub.SetSession(launched);
-                    return ToolResults.Ok(new JsonObject { ["processId"] = launched.ProcessId, ["appPath"] = Path.GetFullPath(appPath) });
+                    return ToolResults.Ok(new JsonObject { ["processId"] = launched.ProcessId, ["appPath"] = fullAppPath });
                 }
                 catch (GraftException ex)
                 {
@@ -1127,20 +1132,23 @@ public sealed partial class GraftAtomicTools
     /// <returns>JSON tool result with meta and path.</returns>
     [McpServerTool(Name = "graft_screenshot")]
     [Description(
-        "Capture the current target window, or an element when automationId is set, as PNG. Optional path; when omitted writes a temp file."
+        "Capture the current target window, or an element when automationId is set, as PNG. Optional path (inside the allowed roots); when omitted writes a temp file."
     )]
     public partial Task<CallToolResult> Screenshot(
-        [Description("Destination PNG path (optional; temp when omitted).")] string? path = null,
+        [Description("Destination PNG path inside the allowed roots (optional; temp when omitted).")] string? path = null,
         [Description("Optional automationId to clip; window when omitted.")] string? automationId = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
+                // Validate before capturing so a rejected path has no side effects.
+                var dest = string.IsNullOrWhiteSpace(path)
+                    ? Path.Combine(Path.GetTempPath(), $"graft-mcp-{Guid.NewGuid():N}.png")
+                    : McpPathPolicy.EnsureAllowed(path, "path");
                 var shot = string.IsNullOrWhiteSpace(automationId)
                     ? await session.ScreenshotAsync(cancellationToken).ConfigureAwait(false)
                     : await session.GetByAutomationId(automationId).ScreenshotAsync(cancellationToken).ConfigureAwait(false);
-                var dest = string.IsNullOrWhiteSpace(path) ? Path.Combine(Path.GetTempPath(), $"graft-mcp-{Guid.NewGuid():N}.png") : path;
                 await shot.SaveAsync(dest, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(
                     new JsonObject
@@ -1325,14 +1333,15 @@ public sealed partial class GraftAtomicTools
     [McpServerTool(Name = "graft_arm_open_file")]
     [Description("Arm the next OpenFileDialog.ShowDialog (RunDialog seam) to return a path (one-shot).")]
     public partial Task<CallToolResult> ArmOpenFile(
-        [Description("File path to return.")] string path,
+        [Description("File path to return (inside the allowed roots).")] string path,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.ArmOpenFileAsync(path, cancellationToken).ConfigureAwait(false);
-                return ToolResults.Ok(new JsonObject { ["path"] = path });
+                var fullPath = McpPathPolicy.EnsureAllowed(path, "path");
+                await session.ArmOpenFileAsync(fullPath, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["path"] = fullPath });
             },
             cancellationToken
         );
@@ -1363,14 +1372,15 @@ public sealed partial class GraftAtomicTools
     [McpServerTool(Name = "graft_arm_save_file")]
     [Description("Arm the next SaveFileDialog.ShowDialog (RunDialog seam) to return a path (one-shot).")]
     public partial Task<CallToolResult> ArmSaveFile(
-        [Description("File path to return.")] string path,
+        [Description("File path to return (inside the allowed roots).")] string path,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.ArmSaveFileAsync(path, cancellationToken).ConfigureAwait(false);
-                return ToolResults.Ok(new JsonObject { ["path"] = path });
+                var fullPath = McpPathPolicy.EnsureAllowed(path, "path");
+                await session.ArmSaveFileAsync(fullPath, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["path"] = fullPath });
             },
             cancellationToken
         );
@@ -1401,14 +1411,15 @@ public sealed partial class GraftAtomicTools
     [McpServerTool(Name = "graft_arm_open_folder")]
     [Description("Arm the next OpenFolderDialog.ShowDialog (RunDialog seam) to return a folder path (one-shot).")]
     public partial Task<CallToolResult> ArmOpenFolder(
-        [Description("Folder path to return.")] string path,
+        [Description("Folder path to return (inside the allowed roots).")] string path,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.ArmOpenFolderAsync(path, cancellationToken).ConfigureAwait(false);
-                return ToolResults.Ok(new JsonObject { ["path"] = path });
+                var fullPath = McpPathPolicy.EnsureAllowed(path, "path");
+                await session.ArmOpenFolderAsync(fullPath, cancellationToken).ConfigureAwait(false);
+                return ToolResults.Ok(new JsonObject { ["path"] = fullPath });
             },
             cancellationToken
         );

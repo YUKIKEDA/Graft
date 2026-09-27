@@ -54,7 +54,7 @@ public static class InputInjector
         }
 
         var (absX, absY) = ToAbsolute(screenX, screenY);
-        const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute;
+        const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute | NativeMethods.MouseEventFVirtualDesk;
         Send([
             CreateMouse(absX, absY, moveAbsolute | NativeMethods.MouseEventFLeftDown),
             CreateMouse(absX, absY, moveAbsolute | NativeMethods.MouseEventFLeftUp),
@@ -76,7 +76,7 @@ public static class InputInjector
         }
 
         var (absX, absY) = ToAbsolute(screenX, screenY);
-        const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute;
+        const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute | NativeMethods.MouseEventFVirtualDesk;
         Send([CreateMouse(absX, absY, moveAbsolute)]);
     }
 
@@ -92,7 +92,7 @@ public static class InputInjector
         MoveTo(fromScreenX, fromScreenY);
         var (fromAbsX, fromAbsY) = ToAbsolute(fromScreenX, fromScreenY);
         var (toAbsX, toAbsY) = ToAbsolute(toScreenX, toScreenY);
-        const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute;
+        const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute | NativeMethods.MouseEventFVirtualDesk;
 
         Send([CreateMouse(fromAbsX, fromAbsY, moveAbsolute | NativeMethods.MouseEventFLeftDown)]);
         Thread.Sleep(30);
@@ -111,7 +111,7 @@ public static class InputInjector
     {
         MoveTo(screenX, screenY);
         var (absX, absY) = ToAbsolute(screenX, screenY);
-        const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute;
+        const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute | NativeMethods.MouseEventFVirtualDesk;
         Send([CreateMouse(absX, absY, moveAbsolute), CreateMouseWheel(absX, absY, delta)]);
     }
 
@@ -182,19 +182,33 @@ public static class InputInjector
 
         var (absX, absY) = ToAbsolute(screenX, screenY);
 
-        const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute;
+        const uint moveAbsolute = NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute | NativeMethods.MouseEventFVirtualDesk;
         var inputs = new NativeMethods.INPUT[] { CreateMouse(absX, absY, moveAbsolute | downFlag), CreateMouse(absX, absY, moveAbsolute | upFlag) };
 
         Send(inputs);
     }
 
-    private static (int AbsX, int AbsY) ToAbsolute(int screenX, int screenY)
+    private static (int AbsX, int AbsY) ToAbsolute(int screenX, int screenY) =>
+        NormalizeToVirtualDesktop(
+            screenX,
+            screenY,
+            NativeMethods.GetSystemMetrics(NativeMethods.SmXVirtualScreen),
+            NativeMethods.GetSystemMetrics(NativeMethods.SmYVirtualScreen),
+            NativeMethods.GetSystemMetrics(NativeMethods.SmCxVirtualScreen),
+            NativeMethods.GetSystemMetrics(NativeMethods.SmCyVirtualScreen)
+        );
+
+    /// <summary>
+    /// Maps a screen pixel to the 0..65535 range used by <c>MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_VIRTUALDESK</c>,
+    /// relative to the whole virtual desktop (secondary monitors and negative origins included).
+    /// </summary>
+    internal static (int AbsX, int AbsY) NormalizeToVirtualDesktop(int screenX, int screenY, int left, int top, int width, int height)
     {
-        var screenWidth = Math.Max(1, NativeMethods.GetSystemMetrics(NativeMethods.SmCxScreen));
-        var screenHeight = Math.Max(1, NativeMethods.GetSystemMetrics(NativeMethods.SmCyScreen));
-        var absX = (int)Math.Round(screenX * 65535.0 / (screenWidth - 1));
-        var absY = (int)Math.Round(screenY * 65535.0 / (screenHeight - 1));
-        return (absX, absY);
+        var spanX = Math.Max(1, width - 1);
+        var spanY = Math.Max(1, height - 1);
+        var absX = (int)Math.Round((screenX - left) * 65535.0 / spanX);
+        var absY = (int)Math.Round((screenY - top) * 65535.0 / spanY);
+        return (Math.Clamp(absX, 0, 65535), Math.Clamp(absY, 0, 65535));
     }
 
     private static void Send(NativeMethods.INPUT[] inputs)
@@ -232,7 +246,11 @@ public static class InputInjector
                     Dx = absX,
                     Dy = absY,
                     MouseData = unchecked((uint)delta),
-                    DwFlags = NativeMethods.MouseEventFWheel | NativeMethods.MouseEventFMove | NativeMethods.MouseEventFAbsolute,
+                    DwFlags =
+                        NativeMethods.MouseEventFWheel
+                        | NativeMethods.MouseEventFMove
+                        | NativeMethods.MouseEventFAbsolute
+                        | NativeMethods.MouseEventFVirtualDesk,
                 },
             },
         };

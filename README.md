@@ -64,6 +64,8 @@ dotnet test Graft.slnx -m:1
 
 NuGet 配布はまだありません。当面はこのリポジトリを `ProjectReference` してください。
 
+`Graft.Core`（テスト側）と `Graft.Instrumentation(.Wpf)`（対象アプリ側）は**同じ Graft リリースに揃えて**ください。ワイヤプロトコルは整数の版（`ProtocolVersion.Current`）の完全一致で確認し、ずれていると接続時に `protocol.versionMismatch` になります。このときのメッセージには双方のパッケージ版とプロトコル版が出るので、古い側を更新してください。
+
 ### 1. 対象アプリ（WPF）
 
 csproj:
@@ -203,6 +205,13 @@ Dispose 後に `index.html` と `frames/*.png` が出力されます。
 2. **Analyzer:** `GRAFT_TEST` 未定義での参照は GRAFT001（Error）
 3. **実行時:** `GRAFT_ENABLE=1` が無い限りパイプを立てない
 
+> **注意（現状）:** `Graft.Instrumentation` / `Graft.Instrumentation.Wpf` 自体は常に `GRAFT_TEST` 付きでビルドされるため、1 段目は「消費側の呼び出しを `#if GRAFT_TEST` で囲む」運用と Analyzer に依存しています（パッケージ分割による完全な除去は検討中）。
+
+### 既知の制限
+
+- **WebView2 / `HwndHost` 配下:** Visual Tree Walker は WPF のビジュアルツリーを歩くため、`WebView2` などの `HwndHost` 派生コントロールはホスト要素までしか見えません。内部の DOM やネイティブ子ウィンドウの要素は `getTree` に現れず、`GetByAutomationId` などで操作できません。
+- **SendInput 系の操作:** 実デスクトップへの入力注入のため、対話セッションが必要で、複数アプリを並列起動するとフレークします（`-m:1` で直列実行）。
+
 ## その他の入口
 
 Fluent API と同じ内部操作モデルに、次も載ります。
@@ -211,6 +220,8 @@ Fluent API と同じ内部操作モデルに、次も載ります。
 | ------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------- |
 | Scenario JSON | `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync` | 宣言的シナリオ。契約は [`.dev/scenario.schema.json`](.dev/scenario.schema.json) |
 | MCP           | `src/Graft.McpServer`（stdio）                       | LLM / エージェント向け。`graft_launch` など原子ツール                           |
+
+MCP サーバーは呼び出し元（LLM）を半信頼として扱い、受け取ったファイルパス（起動する `appPath`、読み込む Scenario、スクリーンショットの保存先、ダイアログ Arm のパス）を**許可ルート配下**に制限します。既定の許可ルートはサーバーの作業ディレクトリです。追加する場合は `GRAFT_MCP_ALLOWED_ROOTS`（`Path.PathSeparator` 区切り）、制限を外す場合は `GRAFT_MCP_ALLOW_ANY_PATH=1` をサーバーの環境変数に設定してください。
 
 ## リポジトリ構成
 

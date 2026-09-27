@@ -40,7 +40,7 @@ internal sealed class WpfMenuSelector : IMenuSelector
             return;
         }
 
-        dispatcher.Invoke(() => SelectMenuOnUiThread(selector, path, segments), DispatcherPriority.Normal);
+        dispatcher.InvokeWithTimeout(() => SelectMenuOnUiThread(selector, path, segments));
     }
 
     private static void SelectMenuOnUiThread(ElementSelector selector, string path, string[] segments)

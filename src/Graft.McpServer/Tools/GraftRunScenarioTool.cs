@@ -2,6 +2,8 @@ using System.ComponentModel;
 using System.Text.Json.Nodes;
 using Graft.Core;
 using Graft.Core.Scenario;
+using Graft.McpServer.Security;
+using Graft.Protocol;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 
@@ -26,7 +28,8 @@ public static class GraftRunScenarioTool
     /// </returns>
     [McpServerTool(Name = "graft_run_scenario")]
     [Description(
-        "Run a Graft Scenario JSON (launch/invoke/setValue/toggle/sendKeys/expectName). Provide either scenarioJson or scenarioPath. Optional appPath overrides launch.appPath."
+        "Run a Graft Scenario JSON (launch/invoke/setValue/toggle/sendKeys/expectName). Provide either scenarioJson or scenarioPath. Optional appPath overrides launch.appPath. "
+            + "All file paths (scenarioPath, app paths, screenshot and dialog paths) must be under the server's allowed roots (see GRAFT_MCP_ALLOWED_ROOTS)."
     )]
     public static async Task<CallToolResult> RunScenario(
         [Description("Scenario JSON document text.")] string? scenarioJson = null,
@@ -39,14 +42,19 @@ public static class GraftRunScenarioTool
         var hasPath = !string.IsNullOrWhiteSpace(scenarioPath);
         if (hasJson == hasPath)
         {
-            return ToolResults.Error("action.failed", "Provide exactly one of scenarioJson or scenarioPath.");
+            return ToolResults.Error(GraftErrorCodes.ActionFailed, "Provide exactly one of scenarioJson or scenarioPath.");
         }
 
         try
         {
-            var document = hasPath ? ScenarioJson.ParseFile(scenarioPath!) : ScenarioJson.Parse(scenarioJson!);
+            var document = hasPath
+                ? ScenarioJson.ParseFile(McpPathPolicy.EnsureAllowed(scenarioPath, "scenarioPath"))
+                : ScenarioJson.Parse(scenarioJson!);
 
-            var options = string.IsNullOrWhiteSpace(appPath) ? null : new ScenarioRunOptions { AppPath = appPath };
+            var options = string.IsNullOrWhiteSpace(appPath)
+                ? null
+                : new ScenarioRunOptions { AppPath = McpPathPolicy.EnsureAllowed(appPath, "appPath") };
+            McpPathPolicy.EnsureScenarioAllowed(document, options?.AppPath);
 
             await ScenarioRunner.RunAsync(document, options, cancellationToken).ConfigureAwait(false);
 
@@ -62,7 +70,7 @@ public static class GraftRunScenarioTool
         }
         catch (Exception ex)
         {
-            return ToolResults.Error("action.failed", ex.Message);
+            return ToolResults.Error(GraftErrorCodes.ActionFailed, ex.Message);
         }
     }
 }

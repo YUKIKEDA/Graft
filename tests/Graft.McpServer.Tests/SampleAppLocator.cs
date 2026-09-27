@@ -21,4 +21,13 @@ internal static class SampleAppLocator
 
         throw new InvalidOperationException("Could not locate SampleWpfApp.csproj from the test output directory.");
     }
+
+    /// <summary>
+    /// Repository root (allowed MCP path root for tests that launch the sample app).
+    /// </summary>
+    public static string ResolveRepoRoot()
+    {
+        var project = new FileInfo(ResolveProjectPath());
+        return project.Directory!.Parent!.Parent!.Parent!.FullName;
+    }
 }

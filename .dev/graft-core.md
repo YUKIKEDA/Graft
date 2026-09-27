@@ -84,7 +84,7 @@ dotnet test tests/sample-apps/SampleTodoApp.FlaUI.Tests
 - Wait / Expect タイムアウトは `app.WaitOptions`（アクション 5s / Expect 10s 既定）
 - セレクタ: `GetBy(Selector.…)` / `GetByAutomationId` / `GetByName` / `GetByControlType`。`AutomationId`・`Name`・`ControlType` はハード一致（不一致は `element.notFound`）。相対: `Child` / `Sibling` / `Nth`（Phase 27）
 - リストキー選択（Phase 27）: `SelectAsync("Item 35")`（wire `select` + `key`）。ツリーパス: `SelectTreeAsync("Root/Child/Leaf")`（wire `selectTree`）
-- 自己修復（Phase 4）: 解決失敗時に Core が代替セレクタ候補を算出。高信頼で一意なら同一 `ElementQuery` で一回だけ自動再解決し、以降そのセレクタを使う。失敗時は `FailureReport.healingCandidates` に候補を添付（シナリオファイルは書き換えない。ファジー一致はしない）
+- 自己修復（Phase 4）: 解決失敗時に Core が代替セレクタ候補を算出。元セレクタの条件の部分集合（relaxed 候補）が高信頼で一意なら同一 `ElementQuery` で一回だけ自動再解決し（Name+ControlType+Near の stableIdentity 候補は元セレクタと無関係なため自動適用せずレポートのみ）、以降そのセレクタを使う。失敗時は `FailureReport.healingCandidates` に候補を添付（シナリオファイルは書き換えない。ファジー一致はしない）
 - テキスト入力: `GetByAutomationId(…).SetValueAsync(value)`（エージェント wire `setValue`。TextBox 置換。**PasswordBox** は `Password` 代入（tree/value には載せない）。**RichTextBox** は平文全文置換。**Slider** は InvariantCulture の double 文字列 → `Value`。**DatePicker** は `yyyy-MM-dd` → `SelectedDate`）。キー入力: `SendKeysAsync(text)`（リテラル）。chord / 特殊キー: `PressAsync("Control+A")` / `F5` / `NumPad0` 等（wire `pressKeys`。1 呼び出し = 1 chord。**Win/Meta なし**）
 - トグル: `GetByAutomationId(…).ToggleAsync()`（CheckBox / RadioButton / ToggleButton。Radio は選択側へ）
 - フォーカス（Phase 29a）: `ExpectFocusedAsync()`（tree `focused`）

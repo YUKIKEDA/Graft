@@ -23,6 +23,8 @@ namespace Graft.Instrumentation.Pipe;
 /// </remarks>
 internal sealed class AgentPipeServer : IDisposable
 {
+    private static readonly string AgentVersion = DescribeVersion(typeof(AgentPipeServer).Assembly);
+
     private readonly string _pipeName;
     private readonly string _connectToken;
     private readonly CancellationTokenSource _cts = new();
@@ -37,8 +39,9 @@ internal sealed class AgentPipeServer : IDisposable
     public AgentPipeServer(string pipeName, string connectToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(pipeName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectToken);
         _pipeName = pipeName;
-        _connectToken = connectToken ?? string.Empty;
+        _connectToken = connectToken;
         _loop = RunAsync(_cts.Token);
     }
 
@@ -87,6 +90,11 @@ internal sealed class AgentPipeServer : IDisposable
             {
                 break;
             }
+            catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                // A single misbehaving connection must never take down the accept loop.
+                System.Diagnostics.Trace.TraceWarning($"Graft agent pipe: connection dropped after unexpected error: {ex}");
+            }
             finally
             {
                 if (server is not null)
@@ -125,8 +133,29 @@ internal sealed class AgentPipeServer : IDisposable
             {
                 break;
             }
+            catch (Exception ex) when (ex is JsonException or InvalidOperationException)
+            {
+                // Malformed JSON, null envelope, or an invalid / oversized length prefix. The stream
+                // position is no longer trustworthy, so drop this connection and accept a new one.
+                System.Diagnostics.Trace.TraceWarning($"Graft agent pipe: dropping connection after malformed frame: {ex.Message}");
+                break;
+            }
 
-            var (response, closeAfterWrite, binaryFollowUp) = Dispatch(request, handshaken);
+            (ResponseMessage Response, bool CloseAfterWrite, byte[]? BinaryFollowUp) dispatched;
+            try
+            {
+                dispatched = Dispatch(request, handshaken);
+            }
+            catch (Exception ex)
+            {
+                dispatched = (
+                    Error(request.Id ?? string.Empty, GraftErrorCodes.ActionFailed, ex.Message),
+                    CloseAfterWrite: false,
+                    BinaryFollowUp: null
+                );
+            }
+
+            var (response, closeAfterWrite, binaryFollowUp) = dispatched;
             if (response.Ok && request.Method == ProtocolMethods.Handshake)
             {
                 handshaken = true;
@@ -158,7 +187,13 @@ internal sealed class AgentPipeServer : IDisposable
         if (request.V != ProtocolVersion.Current)
         {
             return (
-                Error(request.Id, GraftErrorCodes.ProtocolVersionMismatch, $"Protocol version mismatch. Agent expects v={ProtocolVersion.Current}."),
+                Error(
+                    request.Id,
+                    GraftErrorCodes.ProtocolVersionMismatch,
+                    $"Protocol version mismatch: the client sent v={request.V}, but this agent (Graft.Instrumentation {AgentVersion}) "
+                        + $"speaks v={ProtocolVersion.Current}. Update Graft.Core and Graft.Instrumentation / Graft.Instrumentation.Wpf "
+                        + "to the same Graft release."
+                ),
                 CloseAfterWrite: true,
                 BinaryFollowUp: null
             );
@@ -176,7 +211,7 @@ internal sealed class AgentPipeServer : IDisposable
             }
 
             var token = ReadToken(request.Params);
-            if (!string.Equals(token, _connectToken, StringComparison.Ordinal))
+            if (!IsTokenValid(token))
             {
                 return (Error(request.Id, GraftErrorCodes.HandshakeRejected, "Connect token rejected."), CloseAfterWrite: true, BinaryFollowUp: null);
             }
@@ -187,7 +222,7 @@ internal sealed class AgentPipeServer : IDisposable
         if (request.Method == ProtocolMethods.Handshake)
         {
             var token = ReadToken(request.Params);
-            if (!string.Equals(token, _connectToken, StringComparison.Ordinal))
+            if (!IsTokenValid(token))
             {
                 return (Error(request.Id, GraftErrorCodes.HandshakeRejected, "Connect token rejected."), CloseAfterWrite: true, BinaryFollowUp: null);
             }
@@ -401,6 +436,10 @@ internal sealed class AgentPipeServer : IDisposable
             var result = provider.GetTree(options);
             var resultJson = JsonSerializer.SerializeToElement(result, JsonMessageCodec.Options);
             return Ok(request.Id, resultJson);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
         }
         catch (Exception ex)
         {
@@ -1639,6 +1678,28 @@ internal sealed class AgentPipeServer : IDisposable
         }
 
         return new GetTreeOptions { MaxDepth = maxDepth, MaxNodes = maxNodes };
+    }
+
+    private static string DescribeVersion(System.Reflection.Assembly assembly) =>
+        assembly
+            .GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), inherit: false)
+            .OfType<System.Reflection.AssemblyInformationalVersionAttribute>()
+            .FirstOrDefault()
+            ?.InformationalVersion
+        ?? assembly.GetName().Version?.ToString()
+        ?? "unknown";
+
+    private bool IsTokenValid(string token)
+    {
+        if (string.IsNullOrEmpty(token))
+        {
+            return false;
+        }
+
+        return System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
+            System.Text.Encoding.UTF8.GetBytes(token),
+            System.Text.Encoding.UTF8.GetBytes(_connectToken)
+        );
     }
 
     private static string ReadToken(JsonElement? paramsElement)

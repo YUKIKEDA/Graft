@@ -38,7 +38,7 @@ internal sealed class WpfTreeSelector : ITreeSelector
             return;
         }
 
-        dispatcher.Invoke(() => SelectTreeOnUiThread(selector, path, segments), DispatcherPriority.Normal);
+        dispatcher.InvokeWithTimeout(() => SelectTreeOnUiThread(selector, path, segments));
     }
 
     private static void SelectTreeOnUiThread(ElementSelector selector, string path, string[] segments)

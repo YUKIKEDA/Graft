@@ -45,7 +45,7 @@ internal sealed class WpfScreenshotProvider : IScreenshotProvider
             return CaptureOnUiThread(options);
         }
 
-        return dispatcher.Invoke(() => CaptureOnUiThread(options), DispatcherPriority.Normal);
+        return dispatcher.InvokeWithTimeout(() => CaptureOnUiThread(options));
     }
 
     private ScreenshotCapture CaptureOnUiThread(ScreenshotOptions options)

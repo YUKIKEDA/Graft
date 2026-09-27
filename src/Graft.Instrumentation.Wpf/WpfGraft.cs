@@ -16,6 +16,9 @@ public static class WpfGraft
     /// <remarks>
     /// Call once before <see cref="Agent.Start"/> (typically from <c>OnStartup</c>).
     /// Also installs CommonItemDialog and MessageBox seams (Harmony) once per process.
+    /// The patches are intentionally never removed (there is no <c>Unuse()</c>, and
+    /// <see cref="Agent.Stop"/> does not unpatch): the agent targets one test process per app
+    /// launch, and an un-armed seam falls through to the original dialog.
     /// </remarks>
     public static void Use()
     {

@@ -523,6 +523,6 @@ internal sealed class WpfDataGridOperator : IDataGridOperator
             return action();
         }
 
-        return dispatcher.Invoke(action, DispatcherPriority.Normal);
+        return dispatcher.InvokeWithTimeout(action);
     }
 }

@@ -35,7 +35,7 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
             return;
         }
 
-        dispatcher.Invoke(() => SetValueOnUiThread(selector, value), DispatcherPriority.Normal);
+        dispatcher.InvokeWithTimeout(() => SetValueOnUiThread(selector, value));
     }
 
     private static void SetValueOnUiThread(ElementSelector selector, string value)

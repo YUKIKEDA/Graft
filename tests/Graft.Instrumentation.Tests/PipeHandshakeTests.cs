@@ -76,6 +76,31 @@ public sealed class PipeHandshakeTests : IDisposable
     }
 
     /// <summary>
+    /// A handshake with a missing or empty token is rejected.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Agent started with token "secret"
+    ///
+    /// Steps:
+    /// - Connect and send handshake with token ""
+    ///
+    /// Expected:
+    /// - Response ok=false, code handshake.rejected
+    /// </remarks>
+    [Fact]
+    public async Task Handshake_WithEmptyToken_ReturnsHandshakeRejected()
+    {
+        StartAgent(token: "secret");
+
+        await using var client = await ConnectAsync(_pipeName);
+        var response = await SendHandshakeAsync(client, v: ProtocolVersion.Current, token: "");
+
+        Assert.False(response.Ok);
+        Assert.Equal(GraftErrorCodes.HandshakeRejected, response.Error?.Code);
+    }
+
+    /// <summary>
     /// Protocol version mismatch yields protocol.versionMismatch.
     /// </summary>
     /// <remarks>
@@ -87,6 +112,7 @@ public sealed class PipeHandshakeTests : IDisposable
     ///
     /// Expected:
     /// - Response ok=false, code protocol.versionMismatch
+    /// - Message names the client version and the agent package version
     /// </remarks>
     [Fact]
     public async Task Handshake_WithVersionMismatch_ReturnsProtocolVersionMismatch()
@@ -98,6 +124,8 @@ public sealed class PipeHandshakeTests : IDisposable
 
         Assert.False(response.Ok);
         Assert.Equal(GraftErrorCodes.ProtocolVersionMismatch, response.Error?.Code);
+        Assert.Contains("v=999", response.Error!.Message, StringComparison.Ordinal);
+        Assert.Contains("Graft.Instrumentation ", response.Error.Message, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -125,11 +153,82 @@ public sealed class PipeHandshakeTests : IDisposable
             Assert.True(firstResponse.Ok);
         }
 
-        await using var second = await ConnectAsync(_pipeName);
-        var secondResponse = await SendHandshakeAsync(second, v: ProtocolVersion.Current, token: "secret", id: "2");
+        var (second, secondResponse) = await ReconnectAndHandshakeAsync(_pipeName, token: "secret", id: "2");
+        await using var _ = second;
 
         Assert.True(secondResponse.Ok);
         Assert.Equal("2", secondResponse.Id);
+    }
+
+    /// <summary>
+    /// A malformed JSON frame drops only that connection; the accept loop keeps serving new clients.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Agent started with token "secret"
+    ///
+    /// Steps:
+    /// - Connect and send a length-prefixed frame whose body is not valid JSON
+    /// - Connect again and handshake
+    ///
+    /// Expected:
+    /// - The first connection is closed by the agent (read hits end of stream)
+    /// - The second handshake is ok=true
+    /// </remarks>
+    [Fact]
+    public async Task MalformedJsonFrame_DoesNotStopAcceptLoop()
+    {
+        StartAgent(token: "secret");
+
+        await using (var bad = await ConnectAsync(_pipeName))
+        {
+            await FrameIO.WriteAsync(bad, "{not json"u8.ToArray());
+            await Assert.ThrowsAsync<EndOfStreamException>(() => FrameIO.ReadAsync(bad));
+        }
+
+        var (good, response) = await ReconnectAndHandshakeAsync(_pipeName, token: "secret");
+        await using var _ = good;
+        Assert.True(response.Ok);
+    }
+
+    /// <summary>
+    /// A null JSON envelope or an oversized length prefix drops only that connection.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Agent started with token "secret"
+    ///
+    /// Steps:
+    /// - Connect and send the frame body <c>null</c>; reconnect
+    /// - Send a raw length prefix larger than the maximum payload; reconnect
+    /// - Handshake on a fresh connection
+    ///
+    /// Expected:
+    /// - Each bad connection is closed; the final handshake is ok=true
+    /// </remarks>
+    [Fact]
+    public async Task NullEnvelopeAndOversizedFrame_DoNotStopAcceptLoop()
+    {
+        StartAgent(token: "secret");
+
+        await using (var nullEnvelope = await ConnectAsync(_pipeName))
+        {
+            await FrameIO.WriteAsync(nullEnvelope, "null"u8.ToArray());
+            await Assert.ThrowsAsync<EndOfStreamException>(() => FrameIO.ReadAsync(nullEnvelope));
+        }
+
+        await using (var oversized = await ConnectAsync(_pipeName))
+        {
+            var prefix = new byte[FrameIO.LengthPrefixSize];
+            System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(prefix, FrameIO.DefaultMaxPayloadBytes + 1);
+            await oversized.WriteAsync(prefix);
+            await oversized.FlushAsync();
+            await Assert.ThrowsAsync<EndOfStreamException>(() => FrameIO.ReadAsync(oversized));
+        }
+
+        var (good, response) = await ReconnectAndHandshakeAsync(_pipeName, token: "secret");
+        await using var _ = good;
+        Assert.True(response.Ok);
     }
 
     private void StartAgent(string token)
@@ -163,6 +262,37 @@ public sealed class PipeHandshakeTests : IDisposable
 
         await client.DisposeAsync().ConfigureAwait(false);
         throw new TimeoutException($"Could not connect to pipe '{pipeName}'.", last);
+    }
+
+    /// <summary>
+    /// Connects and handshakes after a previous connection was dropped.
+    /// </summary>
+    /// <remarks>
+    /// On Unix, .NET emulates named pipes with a listening socket that is closed and re-created when the
+    /// agent recycles its single server instance, so a client that connects in that gap is reset. Windows
+    /// named pipes queue the client instead. Retry so the reconnect tests are stable on both.
+    /// </remarks>
+    private static async Task<(NamedPipeClientStream Client, ResponseMessage Response)> ReconnectAndHandshakeAsync(
+        string pipeName,
+        string token,
+        string id = "1"
+    )
+    {
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
+        while (true)
+        {
+            var client = await ConnectAsync(pipeName).ConfigureAwait(false);
+            try
+            {
+                var response = await SendHandshakeAsync(client, v: ProtocolVersion.Current, token: token, id: id).ConfigureAwait(false);
+                return (client, response);
+            }
+            catch (Exception ex) when (ex is IOException && DateTime.UtcNow < deadline)
+            {
+                await client.DisposeAsync().ConfigureAwait(false);
+                await Task.Delay(50).ConfigureAwait(false);
+            }
+        }
     }
 
     private static async Task<ResponseMessage> SendHandshakeAsync(Stream stream, int v, string token, string id = "1")

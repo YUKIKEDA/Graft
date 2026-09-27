@@ -42,7 +42,7 @@ internal sealed class WpfElementKeySender : IElementKeySender
             return;
         }
 
-        dispatcher.Invoke(action, DispatcherPriority.Normal);
+        dispatcher.InvokeWithTimeout(action);
     }
 
     private static void SendKeysOnUiThread(ElementSelector selector, string text)

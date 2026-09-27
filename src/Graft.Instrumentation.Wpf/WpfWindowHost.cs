@@ -87,16 +87,13 @@ internal sealed class WpfWindowHost : IWindowCatalog
             }
         }
 
-        return dispatcher.Invoke(
-            () =>
+        return dispatcher.InvokeWithTimeout(() =>
+        {
+            lock (_gate)
             {
-                lock (_gate)
-                {
-                    return action();
-                }
-            },
-            DispatcherPriority.Normal
-        );
+                return action();
+            }
+        });
     }
 
     private void InvokeOnUi(Action action) =>

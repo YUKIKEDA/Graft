@@ -1,5 +1,7 @@
 namespace Graft.Instrumentation.Dialogs;
 
+#if GRAFT_TEST
+
 /// <summary>
 /// One-shot OpenFolder dialog arm state for the in-process agent (test seam).
 /// </summary>
@@ -86,3 +88,5 @@ public static class OpenFolderArm
         Cancel,
     }
 }
+
+#endif
