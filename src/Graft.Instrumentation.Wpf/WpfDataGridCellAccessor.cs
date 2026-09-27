@@ -38,7 +38,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
 
     private static string GetCellTextOnUiThread(ElementSelector selector, int row, int? column, string? columnKey)
     {
-        var host = ResolveCellHost(selector);
+        var (host, _) = ResolveCellHost(selector);
         if (host is ListView listView)
         {
             return GetListViewCellText(listView, row, column, columnKey);
@@ -151,14 +151,14 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
 
     private static void SetCellValueOnUiThread(ElementSelector selector, int row, int? column, string? columnKey, string value)
     {
-        var host = ResolveCellHost(selector);
+        var (host, automationId) = ResolveCellHost(selector);
         if (host is ListView)
         {
             throw new ElementActionException(GraftErrorCodes.ActionFailed, "setCellValue is not supported for ListView/GridView (read-only).");
         }
 
         var dataGrid = (DataGrid)host;
-        WpfElementResolve.RequireActionable(dataGrid, selector.AutomationId ?? string.Empty, "DataGrid");
+        WpfElementResolve.RequireActionable(dataGrid, automationId, "DataGrid");
 
         var columnIndex = ResolveColumnIndex(dataGrid, column, columnKey);
         EnsureRowIndex(dataGrid, row);
@@ -307,10 +307,10 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         return ReadDisplayText(content);
     }
 
-    private static FrameworkElement ResolveCellHost(ElementSelector selector)
+    private static (FrameworkElement Host, string AutomationId) ResolveCellHost(ElementSelector selector)
     {
         var resolved = WpfElementResolve.Lookup(selector);
-        return resolved.Target switch
+        FrameworkElement host = resolved.Target switch
         {
             DataGrid dataGrid => dataGrid,
             ListView listView => listView,
@@ -319,6 +319,8 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
                 $"getCellText/setCellValue requires a DataGrid or ListView (got {resolved.Target.GetType().Name})."
             ),
         };
+
+        return (host, resolved.AutomationId);
     }
 
     private static int ResolveGridViewColumnIndex(GridView gridView, int? column, string? columnKey)

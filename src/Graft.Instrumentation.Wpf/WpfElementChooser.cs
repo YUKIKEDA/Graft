@@ -134,14 +134,14 @@ internal sealed class WpfElementChooser : IElementChooser
 
     private static void SelectManyOnUiThread(ElementSelector selector, IReadOnlyList<int> indexes)
     {
-        var element = ResolveActionable(selector);
+        var (element, automationId) = WpfElementResolve.ResolveActionable(selector);
         switch (element)
         {
             case ListBox listBox:
-                SelectManyListBox(listBox, selector, indexes);
+                SelectManyListBox(listBox, automationId, indexes);
                 break;
             case DataGrid dataGrid:
-                SelectManyDataGrid(dataGrid, selector, indexes);
+                SelectManyDataGrid(dataGrid, automationId, indexes);
                 break;
             default:
                 throw new ElementActionException(
@@ -151,13 +151,13 @@ internal sealed class WpfElementChooser : IElementChooser
         }
     }
 
-    private static void SelectManyListBox(ListBox listBox, ElementSelector selector, IReadOnlyList<int> indexes)
+    private static void SelectManyListBox(ListBox listBox, string automationId, IReadOnlyList<int> indexes)
     {
         if (listBox.SelectionMode == SelectionMode.Single)
         {
             throw new ElementActionException(
                 GraftErrorCodes.ActionFailed,
-                $"selectMany requires SelectionMode Multiple or Extended (got Single on '{selector.AutomationId}')."
+                $"selectMany requires SelectionMode Multiple or Extended (got Single on '{automationId}')."
             );
         }
 
@@ -175,13 +175,13 @@ internal sealed class WpfElementChooser : IElementChooser
         listBox.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
     }
 
-    private static void SelectManyDataGrid(DataGrid dataGrid, ElementSelector selector, IReadOnlyList<int> indexes)
+    private static void SelectManyDataGrid(DataGrid dataGrid, string automationId, IReadOnlyList<int> indexes)
     {
         if (dataGrid.SelectionUnit != DataGridSelectionUnit.FullRow)
         {
             throw new ElementActionException(
                 GraftErrorCodes.ActionFailed,
-                $"selectMany requires SelectionUnit FullRow (got {dataGrid.SelectionUnit} on '{selector.AutomationId}')."
+                $"selectMany requires SelectionUnit FullRow (got {dataGrid.SelectionUnit} on '{automationId}')."
             );
         }
 
@@ -189,7 +189,7 @@ internal sealed class WpfElementChooser : IElementChooser
         {
             throw new ElementActionException(
                 GraftErrorCodes.ActionFailed,
-                $"selectMany requires SelectionMode Extended (got Single on '{selector.AutomationId}')."
+                $"selectMany requires SelectionMode Extended (got Single on '{automationId}')."
             );
         }
 
