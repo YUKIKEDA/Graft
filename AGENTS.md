@@ -42,7 +42,7 @@ dotnet test Graft.slnx -m:1
 - Format with CSharpier only; do not hand-warp layout against it
 - StyleCop is warning-level overall
 - **Public API in `src/`** must have XML docs (`summary` / `param` / `returns` as needed) — warning for now, escalate later
-- **Tests (`tests/**`):** every Fact/Theory needs `summary` + `remarks` with `Preconditions` / `Steps` / `Expected` in English. Theory: one remarks block per method. See `.cursor/rules/testing.mdc`
+- **Tests (`tests/**`):** every Fact/Theory needs `summary`+`remarks`with`Preconditions`/`Steps`/`Expected`in English. Theory: one remarks block per method. See`.cursor/rules/testing.mdc`
 - `tools/`, sample-apps: XML docs not required
 - Escalate StyleCop / docs to errors later after the codebase settles
 
@@ -50,6 +50,11 @@ dotnet test Graft.slnx -m:1
 
 - `type/<issue-number>-<slug>` after an Issue exists (`.cursor/rules/workflow.mdc`)
 - Solution file: `Graft.slnx` (classic `Graft.sln` is gitignored)
+
+## Issues
+
+- Open from a template; the template sets the label: `bug`→`bug`, `feat`→`enhancement`, `refactor`→`refactor`, `test`→`test`, `design` / `task`→`documentation`
+- Refactoring uses `refactor`, not `task`. Mapping: `CONTRIBUTING.md` § Issues, `.cursor/rules/workflow.mdc`
 
 ## Pull requests
 

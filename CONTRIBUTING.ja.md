@@ -24,6 +24,21 @@ dotnet build Graft.slnx
 dotnet test Graft.slnx -m:1
 ```
 
+## Issues
+
+Issue は必ずテンプレートから作る（空の Issue は無効にしてある）。各テンプレートはラベルを 1 つ付け、そのラベルは作業の Conventional Commits の type に対応する。
+
+| Template   | Label           | 用途                                                 | Commit / PR type                  |
+| ---------- | --------------- | ---------------------------------------------------- | --------------------------------- |
+| `bug`      | `bug`           | 仕様が決まっている振る舞いの不具合                   | `fix`                             |
+| `feat`     | `enhancement`   | 呼び出し側が使える新しい機能                         | `feat`                            |
+| `refactor` | `refactor`      | 呼び出し側から見て振る舞いが変わらない内部の構造変更 | `refactor`                        |
+| `test`     | `test`          | テストだけの作業（カバレッジ、構成、ヘルパー）       | `test`                            |
+| `design`   | `documentation` | `docs/design.md` の変更だけ（実装なし）              | `docs`                            |
+| `task`     | `documentation` | ツール、規約、ドキュメント                           | `docs` / `chore` / `build` / `ci` |
+
+複数の Issue をまとめる親 Issue は、子 Issue と同じラベルを付け、子を sub-issue として紐付ける。
+
 ## プルリクエスト
 
 1. Conventional Commits のタイトル（`type(scope): 件名`。件名は英語）

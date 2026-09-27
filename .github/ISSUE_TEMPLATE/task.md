@@ -1,6 +1,6 @@
 ---
 name: Task
-about: Tooling, conventions, refactoring, or documentation
+about: Tooling, conventions, or documentation
 labels: ["documentation"]
 ---
 
