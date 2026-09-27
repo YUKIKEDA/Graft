@@ -33,7 +33,7 @@ internal static class RequestParamsReader
         }
         catch (JsonException ex)
         {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, ex.Message);
+            throw new InvalidParamsException(ex.Message);
         }
     }
 
@@ -50,7 +50,7 @@ internal static class RequestParamsReader
         {
             parsed = Read<GetTreeParams>(paramsElement).Value;
         }
-        catch (ElementResolveException)
+        catch (Exception ex) when (ex is ElementResolveException or InvalidParamsException)
         {
             return new GetTreeOptions();
         }
@@ -66,7 +66,7 @@ internal static class RequestParamsReader
         {
             return Read<HandshakeParams>(paramsElement).Value.Token ?? string.Empty;
         }
-        catch (ElementResolveException)
+        catch (Exception ex) when (ex is ElementResolveException or InvalidParamsException)
         {
             return string.Empty;
         }
@@ -79,7 +79,7 @@ internal static class RequestParamsReader
         {
             target = Read<ElementTargetParams>(paramsElement).Value;
         }
-        catch (ElementResolveException)
+        catch (Exception ex) when (ex is ElementResolveException or InvalidParamsException)
         {
             return ScreenshotOptions.Default;
         }
@@ -104,17 +104,17 @@ internal static class RequestParamsReader
         var parsed = Read<ClickAtParams>(paramsElement);
         if (!parsed.HadObject)
         {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.offsetX is required.");
+            throw new InvalidParamsException("params.offsetX is required.");
         }
 
         if (parsed.Value.OffsetX is not double offsetX)
         {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.offsetX must be a number.");
+            throw new InvalidParamsException("params.offsetX must be a number.");
         }
 
         if (parsed.Value.OffsetY is not double offsetY)
         {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.offsetY must be a number.");
+            throw new InvalidParamsException("params.offsetY must be a number.");
         }
 
         return (ToSelector(parsed.Value.AutomationId, runtimeId: null), offsetX, offsetY);
@@ -147,7 +147,7 @@ internal static class RequestParamsReader
         var text = RequireString(parsed.Value.Text, "text", allowEmpty: true);
         if (parsed.Value.DelayMs is not int delayMs || delayMs < 0)
         {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.delayMs must be a non-negative integer.");
+            throw new InvalidParamsException("params.delayMs must be a non-negative integer.");
         }
 
         return (ToSelector(parsed.Value.AutomationId, runtimeId: null), text, TimeSpan.FromMilliseconds(delayMs));
@@ -173,7 +173,7 @@ internal static class RequestParamsReader
         var hasKey = parsed.Value.Key is not null;
         if (hasIndex == hasKey)
         {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params must have exactly one of index or key.");
+            throw new InvalidParamsException("params must have exactly one of index or key.");
         }
 
         if (hasIndex)
@@ -183,7 +183,7 @@ internal static class RequestParamsReader
 
         if (string.IsNullOrWhiteSpace(parsed.Value.Key))
         {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.key must be a non-empty string.");
+            throw new InvalidParamsException("params.key must be a non-empty string.");
         }
 
         return (ToSelector(parsed.Value.AutomationId, runtimeId: null), null, parsed.Value.Key);
@@ -194,7 +194,7 @@ internal static class RequestParamsReader
         var parsed = Read<SelectManyParams>(paramsElement);
         if (parsed.Value.Indexes is null)
         {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.indexes is required.");
+            throw new InvalidParamsException("params.indexes is required.");
         }
 
         return (ToSelector(parsed.Value.AutomationId, runtimeId: null), parsed.Value.Indexes);
@@ -212,22 +212,19 @@ internal static class RequestParamsReader
         var parsed = Read<CellParams>(paramsElement);
         if (!parsed.HadObject)
         {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.row and exactly one of params.column or params.columnKey are required."
-            );
+            throw new InvalidParamsException("params.row and exactly one of params.column or params.columnKey are required.");
         }
 
         if (parsed.Value.Row is not int row)
         {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.row must be an integer.");
+            throw new InvalidParamsException("params.row must be an integer.");
         }
 
         var hasColumn = parsed.Value.Column is not null;
         var hasKey = !string.IsNullOrWhiteSpace(parsed.Value.ColumnKey);
         if (hasColumn == hasKey)
         {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "Exactly one of params.column or params.columnKey is required.");
+            throw new InvalidParamsException("Exactly one of params.column or params.columnKey is required.");
         }
 
         return (
@@ -285,12 +282,12 @@ internal static class RequestParamsReader
     {
         if (value is null)
         {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} is required.");
+            throw new InvalidParamsException($"params.{propertyName} is required.");
         }
 
         if (!allowEmpty && string.IsNullOrWhiteSpace(value))
         {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, emptyMessage ?? $"params.{propertyName} must be a non-empty string.");
+            throw new InvalidParamsException(emptyMessage ?? $"params.{propertyName} must be a non-empty string.");
         }
 
         return value;
@@ -301,12 +298,12 @@ internal static class RequestParamsReader
     {
         if (!parsed.HadObject)
         {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} is required.");
+            throw new InvalidParamsException($"params.{propertyName} is required.");
         }
 
         if (value is not int number)
         {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} must be an integer.");
+            throw new InvalidParamsException($"params.{propertyName} must be an integer.");
         }
 
         return number;
