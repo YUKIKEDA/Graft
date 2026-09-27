@@ -19,6 +19,14 @@ public static class JsonMessageCodec
     };
 
     /// <summary>
+    /// Serializes a params object with <see cref="Options"/>.
+    /// </summary>
+    /// <typeparam name="T">Params type.</typeparam>
+    /// <param name="value">Params value.</param>
+    /// <returns>A JSON object element.</returns>
+    public static JsonElement SerializeParams<T>(T value) => JsonSerializer.SerializeToElement(value, Options);
+
+    /// <summary>
     /// Serializes a request envelope to UTF-8 JSON bytes.
     /// </summary>
     /// <param name="message">Request message.</param>

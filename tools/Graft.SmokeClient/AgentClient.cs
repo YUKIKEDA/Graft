@@ -50,14 +50,13 @@ internal sealed class AgentClient : IAsyncDisposable
 
     public async Task HandshakeAsync(string token, CancellationToken cancellationToken)
     {
-        using var paramsDoc = JsonDocument.Parse($"{{\"token\":{JsonSerializer.Serialize(token)}}}");
         var response = await SendAsync(
                 new RequestMessage
                 {
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.Handshake,
-                    Params = paramsDoc.RootElement.Clone(),
+                    Params = JsonMessageCodec.SerializeParams(new HandshakeParams { Token = token }),
                 },
                 cancellationToken
             )
@@ -74,7 +73,7 @@ internal sealed class AgentClient : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.GetTree,
-                    Params = JsonSerializer.SerializeToElement(new { depth = 25, maxNodes = 2000 }),
+                    Params = JsonMessageCodec.SerializeParams(new GetTreeParams { Depth = 25, MaxNodes = 2000 }),
                 },
                 cancellationToken
             )
@@ -139,7 +138,7 @@ internal sealed class AgentClient : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.Invoke,
-                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                    Params = JsonMessageCodec.SerializeParams(new ElementTargetParams { AutomationId = automationId }),
                 },
                 cancellationToken
             )

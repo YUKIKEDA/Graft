@@ -210,7 +210,7 @@ internal sealed class AgentPipeServer : IDisposable
                 );
             }
 
-            var token = ReadToken(request.Params);
+            var token = RequestParamsReader.ReadHandshakeToken(request.Params);
             if (!IsTokenValid(token))
             {
                 return (Error(request.Id, GraftErrorCodes.HandshakeRejected, "Connect token rejected."), CloseAfterWrite: true, BinaryFollowUp: null);
@@ -221,7 +221,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         if (request.Method == ProtocolMethods.Handshake)
         {
-            var token = ReadToken(request.Params);
+            var token = RequestParamsReader.ReadHandshakeToken(request.Params);
             if (!IsTokenValid(token))
             {
                 return (Error(request.Id, GraftErrorCodes.HandshakeRejected, "Connect token rejected."), CloseAfterWrite: true, BinaryFollowUp: null);
@@ -437,7 +437,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var options = ReadGetTreeOptions(request.Params);
+            var options = RequestParamsReader.ReadGetTreeOptions(request.Params);
             var result = provider.GetTree(options);
             var resultJson = JsonSerializer.SerializeToElement(result, JsonMessageCodec.Options);
             return Ok(request.Id, resultJson);
@@ -466,7 +466,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var options = ReadScreenshotOptions(request.Params);
+            var options = RequestParamsReader.ReadScreenshotOptions(request.Params);
             var capture = provider.Capture(options);
             var resultJson = JsonSerializer.SerializeToElement(capture.Meta, JsonMessageCodec.Options);
             return (Ok(request.Id, resultJson), CloseAfterWrite: false, capture.PngBytes);
@@ -499,7 +499,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var selector = ReadElementSelector(request.Params);
+            var selector = RequestParamsReader.ReadSelector(request.Params);
             invoker.Invoke(selector);
             return Ok(request.Id);
         }
@@ -527,7 +527,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var selector = ReadElementSelector(request.Params);
+            var selector = RequestParamsReader.ReadSelector(request.Params);
             invoker.RightClick(selector);
             return Ok(request.Id);
         }
@@ -561,8 +561,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var from = ReadElementSelector(request.Params);
-            var toAutomationId = ReadRequiredString(request.Params, "toAutomationId");
+            var (from, toAutomationId) = RequestParamsReader.ReadDrag(request.Params);
             var to = new ElementSelector { AutomationId = toAutomationId };
             invoker.Drag(from, to);
             return Ok(request.Id);
@@ -591,9 +590,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var selector = ReadElementSelector(request.Params);
-            var offsetX = ReadRequiredDouble(request.Params, "offsetX");
-            var offsetY = ReadRequiredDouble(request.Params, "offsetY");
+            var (selector, offsetX, offsetY) = RequestParamsReader.ReadClickAt(request.Params);
             invoker.ClickAt(selector, offsetX, offsetY);
             return Ok(request.Id);
         }
@@ -621,8 +618,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var selector = ReadElementSelector(request.Params);
-            var delta = ReadRequiredInt32(request.Params, "delta");
+            var (selector, delta) = RequestParamsReader.ReadWheel(request.Params);
             invoker.Wheel(selector, delta);
             return Ok(request.Id);
         }
@@ -650,7 +646,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var selector = ReadElementSelector(request.Params);
+            var selector = RequestParamsReader.ReadSelector(request.Params);
             action(invoker, selector);
             return Ok(request.Id);
         }
@@ -682,7 +678,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var (selector, value) = ReadSetValueParams(request.Params);
+            var (selector, value) = RequestParamsReader.ReadSetValue(request.Params);
             setter.SetValue(selector, value);
             return Ok(request.Id);
         }
@@ -710,7 +706,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var selector = ReadElementSelector(request.Params);
+            var selector = RequestParamsReader.ReadSelector(request.Params);
             toggler.Toggle(selector);
             return Ok(request.Id);
         }
@@ -738,7 +734,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var (selector, text) = ReadSendKeysParams(request.Params);
+            var (selector, text) = RequestParamsReader.ReadSendKeys(request.Params);
             keySender.SendKeys(selector, text);
             return Ok(request.Id);
         }
@@ -766,7 +762,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var (selector, text, delay) = ReadTypeHumanParams(request.Params);
+            var (selector, text, delay) = RequestParamsReader.ReadTypeHuman(request.Params);
             keySender.TypeHuman(selector, text, delay);
             return Ok(request.Id);
         }
@@ -794,7 +790,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var (selector, keys) = ReadPressKeysParams(request.Params);
+            var (selector, keys) = RequestParamsReader.ReadPressKeys(request.Params);
             keySender.PressKeys(selector, keys);
             return Ok(request.Id);
         }
@@ -822,7 +818,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var (selector, index) = ReadScrollIntoViewParams(request.Params);
+            var (selector, index) = RequestParamsReader.ReadScrollIntoView(request.Params);
             var identity = scroller.ScrollIntoView(selector, index);
             var resultJson = JsonSerializer.SerializeToElement(identity, JsonMessageCodec.Options);
             return Ok(request.Id, resultJson);
@@ -851,7 +847,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var (selector, index, key) = ReadSelectParams(request.Params);
+            var (selector, index, key) = RequestParamsReader.ReadSelect(request.Params);
             if (index is not null)
             {
                 chooser.Select(selector, index.Value);
@@ -887,7 +883,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var (selector, indexes) = ReadSelectManyParams(request.Params);
+            var (selector, indexes) = RequestParamsReader.ReadSelectMany(request.Params);
             chooser.SelectMany(selector, indexes);
             return Ok(request.Id);
         }
@@ -915,8 +911,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var selector = ReadElementSelector(request.Params);
-            var path = ReadRequiredString(request.Params, "path");
+            var (selector, path) = RequestParamsReader.ReadElementPath(request.Params);
             menuSelector.SelectMenu(selector, path);
             return Ok(request.Id);
         }
@@ -944,8 +939,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var selector = ReadElementSelector(request.Params);
-            var path = ReadRequiredString(request.Params, "path");
+            var (selector, path) = RequestParamsReader.ReadElementPath(request.Params);
             treeSelector.SelectTree(selector, path);
             return Ok(request.Id);
         }
@@ -977,7 +971,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var (selector, row, column, columnKey) = ReadCellColumnParams(request.Params);
+            var (selector, row, column, columnKey) = RequestParamsReader.ReadCell(request.Params);
             var text = accessor.GetCellText(selector, row, column, columnKey);
             var resultJson = JsonSerializer.SerializeToElement(new CellTextResult { Text = text }, JsonMessageCodec.Options);
             return Ok(request.Id, resultJson);
@@ -1010,7 +1004,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var (selector, row, column, columnKey, value) = ReadSetCellValueParams(request.Params);
+            var (selector, row, column, columnKey, value) = RequestParamsReader.ReadSetCellValue(request.Params);
             accessor.SetCellValue(selector, row, column, columnKey, value);
             return Ok(request.Id);
         }
@@ -1038,7 +1032,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var (selector, row, column, columnKey) = ReadCellColumnParams(request.Params);
+            var (selector, row, column, columnKey) = RequestParamsReader.ReadCell(request.Params);
             op.SelectCell(selector, row, column, columnKey);
             return Ok(request.Id);
         }
@@ -1066,9 +1060,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var selector = ReadElementSelector(request.Params);
-            var columnKey = ReadRequiredString(request.Params, "columnKey");
-            var value = ReadRequiredString(request.Params, "value");
+            var (selector, columnKey, value) = RequestParamsReader.ReadSelectRow(request.Params);
             op.SelectRow(selector, columnKey, value);
             return Ok(request.Id);
         }
@@ -1096,8 +1088,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var selector = ReadElementSelector(request.Params);
-            var columnKey = ReadRequiredString(request.Params, "columnKey");
+            var (selector, columnKey) = RequestParamsReader.ReadColumnKey(request.Params);
             op.ClickColumnHeader(selector, columnKey);
             return Ok(request.Id);
         }
@@ -1125,7 +1116,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var selector = ReadElementSelector(request.Params);
+            var selector = RequestParamsReader.ReadSelector(request.Params);
             op.AddRow(selector);
             return Ok(request.Id);
         }
@@ -1153,7 +1144,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var selector = ReadElementSelector(request.Params);
+            var selector = RequestParamsReader.ReadSelector(request.Params);
             op.DeleteSelectedRows(selector);
             return Ok(request.Id);
         }
@@ -1175,7 +1166,7 @@ internal sealed class AgentPipeServer : IDisposable
     {
         try
         {
-            var path = ReadRequiredString(request.Params, "path");
+            var path = RequestParamsReader.ReadDialogPath(request.Params);
             OpenFileArm.ArmPath(path);
             return Ok(request.Id);
         }
@@ -1206,7 +1197,7 @@ internal sealed class AgentPipeServer : IDisposable
     {
         try
         {
-            var path = ReadRequiredString(request.Params, "path");
+            var path = RequestParamsReader.ReadDialogPath(request.Params);
             SaveFileArm.ArmPath(path);
             return Ok(request.Id);
         }
@@ -1237,7 +1228,7 @@ internal sealed class AgentPipeServer : IDisposable
     {
         try
         {
-            var path = ReadRequiredString(request.Params, "path");
+            var path = RequestParamsReader.ReadDialogPath(request.Params);
             OpenFolderArm.ArmPath(path);
             return Ok(request.Id);
         }
@@ -1268,7 +1259,7 @@ internal sealed class AgentPipeServer : IDisposable
     {
         try
         {
-            var result = ReadRequiredString(request.Params, "result");
+            var result = RequestParamsReader.ReadMessageBoxResult(request.Params);
             MessageBoxArm.ArmResult(result);
             return Ok(request.Id);
         }
@@ -1296,7 +1287,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var selector = ReadElementSelector(request.Params);
+            var selector = RequestParamsReader.ReadSelector(request.Params);
             if (expand)
             {
                 expander.Expand(selector);
@@ -1352,7 +1343,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var windowId = ReadWindowId(request.Params);
+            var windowId = RequestParamsReader.ReadWindowId(request.Params);
             catalog.SwitchWindow(windowId);
             return Ok(request.Id);
         }
@@ -1376,7 +1367,7 @@ internal sealed class AgentPipeServer : IDisposable
 
         try
         {
-            var selector = ReadElementSelector(request.Params);
+            var selector = RequestParamsReader.ReadSelector(request.Params);
             invoker.BeginInvoke(selector);
             return Ok(request.Id);
         }
@@ -1392,346 +1383,6 @@ internal sealed class AgentPipeServer : IDisposable
         {
             return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
         }
-    }
-
-    private static int ReadWindowId(JsonElement? paramsElement)
-    {
-        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.windowId is required.");
-        }
-
-        if (!element.TryGetProperty("windowId", out var windowIdProperty) || !windowIdProperty.TryGetInt32(out var windowId))
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.windowId must be an integer.");
-        }
-
-        return windowId;
-    }
-
-    private static ElementSelector ReadElementSelector(JsonElement? paramsElement)
-    {
-        string? automationId = null;
-        int? runtimeId = null;
-
-        if (paramsElement is { } element && element.ValueKind == JsonValueKind.Object)
-        {
-            if (element.TryGetProperty("automationId", out var automationIdProperty) && automationIdProperty.ValueKind == JsonValueKind.String)
-            {
-                automationId = automationIdProperty.GetString();
-            }
-
-            if (element.TryGetProperty("runtimeId", out var runtimeIdProperty) && runtimeIdProperty.TryGetInt32(out var id))
-            {
-                runtimeId = id;
-            }
-        }
-
-        return new ElementSelector { AutomationId = automationId, RuntimeId = runtimeId };
-    }
-
-    private static ScreenshotOptions ReadScreenshotOptions(JsonElement? paramsElement)
-    {
-        var selector = ReadElementSelector(paramsElement);
-        if (string.IsNullOrWhiteSpace(selector.AutomationId) && selector.RuntimeId is null)
-        {
-            return ScreenshotOptions.Default;
-        }
-
-        return new ScreenshotOptions { Selector = selector };
-    }
-
-    private static (ElementSelector Selector, string Value) ReadSetValueParams(JsonElement? paramsElement)
-    {
-        var selector = ReadElementSelector(paramsElement);
-        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.value is required.");
-        }
-
-        if (!element.TryGetProperty("value", out var valueProperty))
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.value is required.");
-        }
-
-        var value = valueProperty.ValueKind switch
-        {
-            JsonValueKind.String => valueProperty.GetString() ?? string.Empty,
-            JsonValueKind.Null => string.Empty,
-            _ => throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.value must be a string."),
-        };
-
-        return (selector, value);
-    }
-
-    private static (ElementSelector Selector, int? Index) ReadScrollIntoViewParams(JsonElement? paramsElement) =>
-        ReadIndexParams(paramsElement, requireIndex: false);
-
-    private static (ElementSelector Selector, int Row, int? Column, string? ColumnKey) ReadCellColumnParams(JsonElement? paramsElement)
-    {
-        var selector = ReadElementSelector(paramsElement);
-        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
-        {
-            throw new ElementResolveException(
-                GraftErrorCodes.SelectorInvalid,
-                "params.row and exactly one of params.column or params.columnKey are required."
-            );
-        }
-
-        if (!element.TryGetProperty("row", out var rowProperty) || !rowProperty.TryGetInt32(out var row))
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.row must be an integer.");
-        }
-
-        int? column = null;
-        if (element.TryGetProperty("column", out var columnProperty))
-        {
-            if (!columnProperty.TryGetInt32(out var columnValue))
-            {
-                throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.column must be an integer.");
-            }
-
-            column = columnValue;
-        }
-
-        string? columnKey = null;
-        if (element.TryGetProperty("columnKey", out var columnKeyProperty))
-        {
-            columnKey = columnKeyProperty.ValueKind switch
-            {
-                JsonValueKind.String => columnKeyProperty.GetString(),
-                JsonValueKind.Null => null,
-                _ => throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.columnKey must be a string."),
-            };
-        }
-
-        var hasColumn = column is not null;
-        var hasKey = !string.IsNullOrWhiteSpace(columnKey);
-        if (hasColumn == hasKey)
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "Exactly one of params.column or params.columnKey is required.");
-        }
-
-        return (selector, row, column, hasKey ? columnKey : null);
-    }
-
-    private static (ElementSelector Selector, int Row, int? Column, string? ColumnKey, string Value) ReadSetCellValueParams(
-        JsonElement? paramsElement
-    )
-    {
-        var (selector, row, column, columnKey) = ReadCellColumnParams(paramsElement);
-        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.value is required.");
-        }
-
-        if (!element.TryGetProperty("value", out var valueProperty))
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.value is required.");
-        }
-
-        var value = valueProperty.ValueKind switch
-        {
-            JsonValueKind.String => valueProperty.GetString() ?? string.Empty,
-            JsonValueKind.Null => string.Empty,
-            _ => throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.value must be a string."),
-        };
-
-        return (selector, row, column, columnKey, value);
-    }
-
-    private static (ElementSelector Selector, int? Index) ReadIndexParams(JsonElement? paramsElement, bool requireIndex)
-    {
-        var selector = ReadElementSelector(paramsElement);
-        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
-        {
-            if (requireIndex)
-            {
-                throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.index is required.");
-            }
-
-            return (selector, null);
-        }
-
-        if (!element.TryGetProperty("index", out var indexProperty))
-        {
-            if (requireIndex)
-            {
-                throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.index is required.");
-            }
-
-            return (selector, null);
-        }
-
-        if (!indexProperty.TryGetInt32(out var index))
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.index must be an integer.");
-        }
-
-        return (selector, index);
-    }
-
-    private static (ElementSelector Selector, int? Index, string? Key) ReadSelectParams(JsonElement? paramsElement)
-    {
-        var selector = ReadElementSelector(paramsElement);
-        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params must have exactly one of index or key.");
-        }
-
-        var hasIndex = element.TryGetProperty("index", out var indexProperty);
-        var hasKey = element.TryGetProperty("key", out var keyProperty);
-        if (hasIndex == hasKey)
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params must have exactly one of index or key.");
-        }
-
-        if (hasIndex)
-        {
-            if (!indexProperty.TryGetInt32(out var index))
-            {
-                throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.index must be an integer.");
-            }
-
-            return (selector, index, null);
-        }
-
-        if (keyProperty.ValueKind != JsonValueKind.String)
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.key must be a string.");
-        }
-
-        var key = keyProperty.GetString();
-        if (string.IsNullOrWhiteSpace(key))
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.key must be a non-empty string.");
-        }
-
-        return (selector, null, key);
-    }
-
-    private static (ElementSelector Selector, IReadOnlyList<int> Indexes) ReadSelectManyParams(JsonElement? paramsElement)
-    {
-        var selector = ReadElementSelector(paramsElement);
-        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.indexes is required.");
-        }
-
-        if (!element.TryGetProperty("indexes", out var indexesProperty))
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.indexes is required.");
-        }
-
-        if (indexesProperty.ValueKind != JsonValueKind.Array)
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.indexes must be an array of integers.");
-        }
-
-        var indexes = new List<int>(indexesProperty.GetArrayLength());
-        foreach (var entry in indexesProperty.EnumerateArray())
-        {
-            if (!entry.TryGetInt32(out var index))
-            {
-                throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.indexes must be an array of integers.");
-            }
-
-            indexes.Add(index);
-        }
-
-        return (selector, indexes);
-    }
-
-    private static (ElementSelector Selector, string Text) ReadSendKeysParams(JsonElement? paramsElement)
-    {
-        var selector = ReadElementSelector(paramsElement);
-        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.text is required.");
-        }
-
-        if (!element.TryGetProperty("text", out var textProperty))
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.text is required.");
-        }
-
-        var text = textProperty.ValueKind switch
-        {
-            JsonValueKind.String => textProperty.GetString() ?? string.Empty,
-            JsonValueKind.Null => string.Empty,
-            _ => throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.text must be a string."),
-        };
-
-        return (selector, text);
-    }
-
-    private static (ElementSelector Selector, string Text, TimeSpan Delay) ReadTypeHumanParams(JsonElement? paramsElement)
-    {
-        var (selector, text) = ReadSendKeysParams(paramsElement);
-        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.delayMs is required.");
-        }
-
-        if (!element.TryGetProperty("delayMs", out var delayProperty) || !delayProperty.TryGetInt32(out var delayMs))
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.delayMs must be a non-negative integer.");
-        }
-
-        if (delayMs < 0)
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.delayMs must be a non-negative integer.");
-        }
-
-        return (selector, text, TimeSpan.FromMilliseconds(delayMs));
-    }
-
-    private static (ElementSelector Selector, string Keys) ReadPressKeysParams(JsonElement? paramsElement)
-    {
-        var selector = ReadElementSelector(paramsElement);
-        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.keys is required.");
-        }
-
-        if (!element.TryGetProperty("keys", out var keysProperty))
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.keys is required.");
-        }
-
-        if (keysProperty.ValueKind != JsonValueKind.String)
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.keys must be a string.");
-        }
-
-        var keys = keysProperty.GetString();
-        if (string.IsNullOrWhiteSpace(keys))
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.keys must be a non-empty chord string.");
-        }
-
-        return (selector, keys);
-    }
-
-    private static GetTreeOptions ReadGetTreeOptions(JsonElement? paramsElement)
-    {
-        var maxDepth = GetTreeOptions.DefaultMaxDepth;
-        var maxNodes = GetTreeOptions.DefaultMaxNodes;
-
-        if (paramsElement is { } element && element.ValueKind == JsonValueKind.Object)
-        {
-            if (element.TryGetProperty("depth", out var depthProperty) && depthProperty.TryGetInt32(out var depth) && depth >= 0)
-            {
-                maxDepth = depth;
-            }
-
-            if (element.TryGetProperty("maxNodes", out var maxNodesProperty) && maxNodesProperty.TryGetInt32(out var nodes) && nodes > 0)
-            {
-                maxNodes = nodes;
-            }
-        }
-
-        return new GetTreeOptions { MaxDepth = maxDepth, MaxNodes = maxNodes };
     }
 
     private static string DescribeVersion(System.Reflection.Assembly assembly) =>
@@ -1754,86 +1405,6 @@ internal sealed class AgentPipeServer : IDisposable
             System.Text.Encoding.UTF8.GetBytes(token),
             System.Text.Encoding.UTF8.GetBytes(_connectToken)
         );
-    }
-
-    private static string ReadToken(JsonElement? paramsElement)
-    {
-        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
-        {
-            return string.Empty;
-        }
-
-        if (!element.TryGetProperty("token", out var tokenProperty))
-        {
-            return string.Empty;
-        }
-
-        return tokenProperty.ValueKind switch
-        {
-            JsonValueKind.String => tokenProperty.GetString() ?? string.Empty,
-            JsonValueKind.Null => string.Empty,
-            _ => string.Empty,
-        };
-    }
-
-    private static string ReadRequiredString(JsonElement? paramsElement, string propertyName)
-    {
-        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} is required.");
-        }
-
-        if (!element.TryGetProperty(propertyName, out var property))
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} is required.");
-        }
-
-        if (property.ValueKind != JsonValueKind.String)
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} must be a string.");
-        }
-
-        var value = property.GetString();
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} must be a non-empty string.");
-        }
-
-        return value;
-    }
-
-    private static double ReadRequiredDouble(JsonElement? paramsElement, string propertyName)
-    {
-        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} is required.");
-        }
-
-        if (
-            !element.TryGetProperty(propertyName, out var property)
-            || property.ValueKind != JsonValueKind.Number
-            || !property.TryGetDouble(out var value)
-        )
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} must be a number.");
-        }
-
-        return value;
-    }
-
-    private static int ReadRequiredInt32(JsonElement? paramsElement, string propertyName)
-    {
-        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} is required.");
-        }
-
-        if (!element.TryGetProperty(propertyName, out var property) || !property.TryGetInt32(out var value))
-        {
-            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, $"params.{propertyName} must be an integer.");
-        }
-
-        return value;
     }
 
     private static ResponseMessage Ok(string id, JsonElement? result = null) =>
