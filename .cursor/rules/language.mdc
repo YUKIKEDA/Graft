@@ -45,9 +45,8 @@ These have a Japanese translation next to them. **English is the source of truth
 - The language switch line
 - Sample-app UI strings, XAML, and fixture JSON that the app under test displays
 - The Win32 dialog accessible name, which matches the OS label
-- `.dev/task_*.md`, which stay Japanese as archived phase notes
 - Test data that is non-ASCII on purpose. Write the reason in a comment next to it
 
 ## Design source
 
-The design source is [`docs/design.md`](../../docs/design.md). `.dev/task_*.md` are archived phase notes.
+The design source is [`docs/design.md`](../../docs/design.md). `.dev/` is local scratch and is gitignored.

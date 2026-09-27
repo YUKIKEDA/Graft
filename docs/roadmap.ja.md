@@ -2,7 +2,7 @@
 
 # ロードマップ
 
-未完了の製品作業だけを載せる。Graft が既に覆っている範囲の表は [`docs/competitive-gap.md`](competitive-gap.md)。完了したフェーズのメモは `.dev/task_*.md` に残り、ここには載せない。
+未完了の製品作業だけを載せる。Graft が既に覆っている範囲の表は [`docs/competitive-gap.md`](competitive-gap.md)。完了したフェーズはここには載せない。
 
 このページの題名は、実装を始めてよい許可ではない。先に Issue を切る。[`.cursor/rules/workflow.mdc`](../.cursor/rules/workflow.mdc) を見る。
 

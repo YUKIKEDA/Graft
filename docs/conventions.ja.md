@@ -10,7 +10,7 @@
 - ライブラリは `src/` の分割のままにする。`Graft.Core`、`Graft.Protocol`、`Graft.Instrumentation`、`Graft.Instrumentation.Wpf`、`Graft.Instrumentation.Analyzer`、`Graft.McpServer`、`Graft.TestUtilities`。一つにまとめない
 - テストは `tests/` のまま。サンプルアプリは `tests/sample-apps/` のまま
 - `tools/Graft.SmokeClient` は手動の診断クライアントとして残す
-- 残す決定は `docs/` に置く。`.dev/task_*.md` はフェーズの作業ログである
+- 残す決定は `docs/` に置く。`.dev/` はローカルの作業置き場で、gitignore する
 
 ## ターゲットとアナライザー
 

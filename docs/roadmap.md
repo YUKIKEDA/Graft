@@ -2,7 +2,7 @@ English | [日本語](roadmap.ja.md)
 
 # Roadmap
 
-Open product work. The matrix of what Graft already covers is [`docs/competitive-gap.md`](competitive-gap.md). Completed phase notes stay in `.dev/task_*.md` and are not listed here.
+Open product work. The matrix of what Graft already covers is [`docs/competitive-gap.md`](competitive-gap.md). Completed phases are not listed here.
 
 A title on this page is not permission to start coding. Open an Issue first. See [`.cursor/rules/workflow.mdc`](../.cursor/rules/workflow.mdc).
 

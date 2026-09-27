@@ -1,8 +1,8 @@
 # Graft — Agent notes
 
-In-process UI testing for WPF. Design source of truth: `docs/design.md`. Open work: `docs/roadmap.md`. Archived phase notes: `.dev/task_*.md`. WPF gap matrix: `docs/competitive-gap.md`.
+In-process UI testing for WPF. Design source of truth: `docs/design.md`. Open work: `docs/roadmap.md`. WPF gap matrix: `docs/competitive-gap.md`.
 
-**Consumer usage example (canonical):** `tests/sample-apps/SampleTodoApp.Tests` (see `docs/graft-core.md`). Feature matrix: `SampleWpfApp.Tests`. WPF UI Gallery deep E2E (local `tests/wpfui`): `.dev/task_wpfui-gallery-e2e.md`.
+**Consumer usage example (canonical):** `tests/sample-apps/SampleTodoApp.Tests` (see `docs/graft-core.md`). Feature matrix: `SampleWpfApp.Tests`. WPF UI Gallery deep E2E uses a local `tests/wpfui` checkout.
 
 ## Tooling (must follow)
 
@@ -25,7 +25,7 @@ In-process UI testing for WPF. Design source of truth: `docs/design.md`. Open wo
 
 dotnet test tests/sample-apps/SampleWpfApp.Tests
 # Full solution: SendInput UI tests flake under cross-assembly parallel launches.
-# Required: -m:1 (or run UI projects sequentially). See docs/design.md §9 / .dev/task_phase31.md.
+# Required: -m:1 (or run UI projects sequentially). See docs/design.md §9.
 dotnet test Graft.slnx -m:1
 ```
 

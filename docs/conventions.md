@@ -10,7 +10,7 @@ Coding details that agents also enforce live in [`.cursor/rules/csharp-tooling.m
 - Libraries stay split under `src/`: `Graft.Core`, `Graft.Protocol`, `Graft.Instrumentation`, `Graft.Instrumentation.Wpf`, `Graft.Instrumentation.Analyzer`, `Graft.McpServer`, `Graft.TestUtilities`. Do not collapse them into one project
 - Tests stay under `tests/`. Sample apps stay under `tests/sample-apps/`
 - `tools/Graft.SmokeClient` stays as the manual diagnostic client
-- Lasting decisions go in `docs/`. `.dev/task_*.md` are archived phase notes
+- Lasting decisions go in `docs/`. `.dev/` is local scratch and is gitignored
 
 ## Targets and analyzers
 

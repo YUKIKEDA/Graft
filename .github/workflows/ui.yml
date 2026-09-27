@@ -47,6 +47,6 @@ jobs:
             dotnet test Graft.slnx -m:1 -c Debug --logger "trx;LogFileName=ui.trx"
           }
           else {
-            Write-Host "tests/wpfui Gallery missing — excluding WpfUi.Gallery.Graft.Tests (see .dev/task_wpfui-gallery-e2e.md)"
+            Write-Host "tests/wpfui Gallery missing — excluding WpfUi.Gallery.Graft.Tests"
             dotnet test Graft.slnx -m:1 -c Debug --filter "FullyQualifiedName!~WpfUi.Gallery.Graft.Tests" --logger "trx;LogFileName=ui.trx"
           }

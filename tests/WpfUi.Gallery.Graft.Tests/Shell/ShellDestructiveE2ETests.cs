@@ -30,9 +30,7 @@ public sealed class ShellDestructiveE2ETests
     {
         if (!GalleryAppLocator.IsAvailable)
         {
-            throw new InvalidOperationException(
-                "Gallery was not launched. Ensure tests/wpfui is cloned and Graft-patched " + "(see .dev/task_wpfui-gallery-e2e.md)."
-            );
+            throw new InvalidOperationException("Gallery was not launched. Ensure tests/wpfui is cloned and Graft-patched.");
         }
 
         var leaf = $"shell-close-{Guid.NewGuid():N}";

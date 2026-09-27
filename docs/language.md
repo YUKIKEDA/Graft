@@ -70,5 +70,4 @@ Japanese text is allowed only in:
 - the terminology table in the writing skill, and examples in this policy
 - sample-app UI strings, XAML, and fixture JSON that the app under test displays
 - Win32 dialog accessible names, which match the OS label (for example `ファイル名(N):`)
-- `.dev/task_*.md`, archived phase notes. Do not add new lasting decisions there
 - other test data that must be non-ASCII on purpose. Write the reason in a comment next to it

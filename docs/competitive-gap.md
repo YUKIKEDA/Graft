@@ -2,7 +2,7 @@
 
 This is the source of truth that lines up **in-house WPF E2E scenarios** covered by FlaUI / WinAppDriver / TestStack.White / Appium (Windows) with what Graft does today.
 Playwright DX (codegen / trace / video) and the whole of TestComplete Object Spy are not comparison axes (optional, later is fine).
-See [`docs/design.md`](design.md) Q125 onward, [`.dev/task_phase23.md`](../.dev/task_phase23.md), and the caller surface in [`docs/graft-core.md`](graft-core.md).
+See [`docs/design.md`](design.md) Q125 onward, and the caller surface in [`docs/graft-core.md`](graft-core.md).
 
 **Gate:** Every **Must** row is implemented and the sample E2E is green. No Must row remains.
 
@@ -213,7 +213,7 @@ Inspector (F08) is **optional** for an in-house app that already has `getTree` (
 | ID  | Scenario                   | Competitors | Graft | Priority     | Phase | Notes                                                                                                                                                                                                           |
 | --- | -------------------------- | ----------- | ----- | ------------ | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | P01 | Whole-window PNG           | Yes         | OK    | Done         | —     |                                                                                                                                                                                                                 |
-| P02 | Element-clipped screenshot | Yes         | OK    | **Must**     | 35    | Window RTB intersection clip + popup root RTB. An open ToolTip is a child node. An open overlay is composited onto the element and window screenshots. Done ([`.dev/task_phase35.md`](../.dev/task_phase35.md)) |
+| P02 | Element-clipped screenshot | Yes         | OK    | **Must**     | 35    | Window RTB intersection clip + popup root RTB. An open ToolTip is a child node. An open overlay is composited onto the element and window screenshots. Done |
 | P03 | Image expect / diff        | Yes         | NO    | Optional     | —     |                                                                                                                                                                                                                 |
 | P04 | Whole desktop              | PART        | NO    | Out of scope | —     |                                                                                                                                                                                                                 |
 | P05 | Video / trace recording    | Yes         | NO    | Out of scope | —     |                                                                                                                                                                                                                 |
@@ -244,7 +244,7 @@ Inspector (F08) is **optional** for an in-house app that already has `getTree` (
 | D03 | Attach the tree on failure              | Yes         | OK    | Done         | —     |                                                                                                                                  |
 | D04 | Tree diff JSON                          | PART        | OK    | Done         | —     | `FailureReport.treeDiff` (added/removed/changed). Not JSON Patch. On by default; turn off with `IncludeTreeDiff`                 |
 | D05 | Rewrite the scenario file automatically | PART        | NO    | Out of scope | —     |                                                                                                                                  |
-| D06 | Action timeline (visual review)         | PART        | OK    | Done         | 33    | PNG sequence + HTML (pace and action-name captions). No GIF/FFmpeg/ImageSharp. [`.dev/task_phase33.md`](../.dev/task_phase33.md) |
+| D06 | Action timeline (visual review)         | PART        | OK    | Done         | 33    | PNG sequence + HTML (pace and action-name captions). No GIF/FFmpeg/ImageSharp. |
 
 ---
 
@@ -298,4 +298,4 @@ Remaining Must: **none** (P02 / H02 / X04 / D06 are Done).
 - [x] P02 was promoted to Must (Phase 35. Avalonia blocked again until it landed)
 - [x] Inspector is optional (outside the gate)
 - [x] Agreed the Avalonia resume gate (every Must green)
-- [x] The Phase 24 acceptance line is fixed in `.dev/task_phase24.md` (and each later `task_phaseN.md`)
+- [x] The Phase 24 acceptance line is fixed in (and each later `task_phaseN.md`)

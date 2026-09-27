@@ -27,7 +27,7 @@ Human source of truth: `CONTRIBUTING.md`.
 ## Forbidden
 
 - Starting implementation without an Issue number and branch
-- Treating `docs/roadmap.md` titles, or `.dev/task_*.md`, as permission to code
+- Treating `docs/roadmap.md` titles, or files under `.dev/`, as permission to code
 - Opening a PR without a related Issue / without closing keywords
 - Merging design-affecting PRs without a human
 - Walk-in PRs with no Issue (external or agent)

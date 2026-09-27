@@ -19,7 +19,7 @@ Human process: `CONTRIBUTING.md`. Local gate: `./build.ps1`.
 - Tests stay under `tests/`. Sample apps stay under `tests/sample-apps/`
 - `tools/Graft.SmokeClient` stays as the manual diagnostic client
 - Canonical design is `docs/design.md`
-- `.dev/task_*.md` are archived phase notes. Do not treat them as permission to code
+- `.dev/` is local scratch and is gitignored. Do not treat it as permission to code
 
 ## Targets
 

@@ -21,8 +21,7 @@ internal static class GalleryAppLocator
         TryResolveProjectPath()
         ?? throw new InvalidOperationException(
             "Could not locate tests/wpfui/src/Wpf.Ui.Gallery/Wpf.Ui.Gallery.csproj. "
-                + "Clone https://github.com/lepoco/wpfui into tests/wpfui and apply the local Graft patch "
-                + "(see .dev/task_wpfui-gallery-e2e.md)."
+                + "Clone https://github.com/lepoco/wpfui into tests/wpfui and apply the local Graft patch."
         );
 
     /// <summary>
