@@ -10,7 +10,7 @@ Human source of truth: `CONTRIBUTING.md`.
 ## Required order
 
 1. **Grill if needed (before the first Issue):** when the work has branching design or API decisions. Skill: [`.agents/skills/grilling/SKILL.md`](../../.agents/skills/grilling/SKILL.md). Skip when the Issue already has acceptance criteria and matches `docs/design.md`
-2. Create a GitHub Issue from a template (blank issues are disabled)
+2. Create a GitHub Issue from a template (blank issues are disabled). Pick the template by the Conventional Commits type of the work; the template sets the label (see "Issue templates and labels" below)
 3. **Grill again if needed** and fold answers into the Issue body, or checklists
 4. Create branch `type/<issue-number>-<slug>`
 5. Implement. On Windows, run `./build.ps1` before opening a PR. Launched-app and SendInput tests stay outside that script: `dotnet test Graft.slnx -m:1`
@@ -23,6 +23,26 @@ Human source of truth: `CONTRIBUTING.md`.
 ```text
 (grill if design decisions remain) → create Issue → (grill again if not implementable) → create branch → work → PR → human review → squash merge
 ```
+
+## Issue templates and labels
+
+Human source of truth: `CONTRIBUTING.md` § Issues.
+
+Labels use the form `<axis>:<value>`. The only axis today is `type`.
+
+| Template   | Label           | Commit / PR type         |
+| ---------- | --------------- | ------------------------ |
+| `bug`      | `type:bug`      | `fix`                    |
+| `feat`     | `type:feat`     | `feat`                   |
+| `refactor` | `type:refactor` | `refactor`               |
+| `test`     | `type:test`     | `test`                   |
+| `design`   | `type:docs`     | `docs`                   |
+| `task`     | `type:chore`    | `chore` / `build` / `ci` |
+
+- Refactoring goes to `refactor`, not `task`. Test-only work goes to `test`
+- A documentation-only `task` Issue switches its label to `type:docs`
+- A tracking Issue uses the label of its sub-issues and links them as sub-issues
+- Do not create a label without the `<axis>:<value>` form
 
 ## Forbidden
 

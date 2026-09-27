@@ -1,7 +1,7 @@
 ---
 name: Task
-about: Tooling, conventions, refactoring, or documentation
-labels: ["documentation"]
+about: Tooling, conventions, or documentation
+labels: ["type:chore"]
 ---
 
 ## Goal

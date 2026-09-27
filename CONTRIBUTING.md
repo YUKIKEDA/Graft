@@ -24,6 +24,24 @@ dotnet build Graft.slnx
 dotnet test Graft.slnx -m:1
 ```
 
+## Issues
+
+Open every Issue from a template (blank Issues are disabled). Each template adds one label.
+
+Labels use the form `<axis>:<value>` (for example `type:bug`). The only axis today is `type`. A new axis, such as `priority:` or `area:`, uses the same form.
+
+| Template   | Label           | Use for                                               | Commit / PR type         |
+| ---------- | --------------- | ----------------------------------------------------- | ------------------------ |
+| `bug`      | `type:bug`      | A defect in behavior that is already specified        | `fix`                    |
+| `feat`     | `type:feat`     | A new capability callers can use                      | `feat`                   |
+| `refactor` | `type:refactor` | Internal restructuring with no change callers can see | `refactor`               |
+| `test`     | `type:test`     | Test-only work: coverage, structure, helpers          | `test`                   |
+| `design`   | `type:docs`     | A `docs/design.md` change only (no implementation)    | `docs`                   |
+| `task`     | `type:chore`    | Tooling, conventions, CI, or other documentation      | `chore` / `build` / `ci` |
+
+- A `task` Issue that only changes documentation switches its label to `type:docs`
+- A tracking Issue that groups several Issues uses the label of its sub-issues and links them as sub-issues
+
 ## Pull requests
 
 1. Conventional Commits title (`type(scope): subject`, subject in English)

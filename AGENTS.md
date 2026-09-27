@@ -51,6 +51,11 @@ dotnet test Graft.slnx -m:1
 - `type/<issue-number>-<slug>` after an Issue exists (`.cursor/rules/workflow.mdc`)
 - Solution file: `Graft.slnx` (classic `Graft.sln` is gitignored)
 
+## Issues
+
+- Open from a template; the template sets a `type:<value>` label: `bug`→`type:bug`, `feat`→`type:feat`, `refactor`→`type:refactor`, `test`→`type:test`, `design`→`type:docs`, `task`→`type:chore`
+- Labels always use `<axis>:<value>`. Refactoring uses `refactor`, not `task`. Mapping: `CONTRIBUTING.md` § Issues, `.cursor/rules/workflow.mdc`
+
 ## Pull requests
 
 - Title: Conventional Commits (`type(scope): subject`)
