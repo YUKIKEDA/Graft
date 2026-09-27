@@ -1,9 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\src\Graft.Instrumentation.Wpf\build\Graft.props" />
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
+    <!-- Exercises WpfGraft, so the reference must be the GraftTest build. -->
+    <GraftTest>true</GraftTest>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <!--
+      Assets-file transitive refs follow the solution configuration (Debug).
+      That would compile these tests against the stripped agent. Reference both
+      GraftTest outputs directly instead.
+    -->
+    <DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
@@ -18,6 +27,9 @@
     <Using Include="Xunit" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Graft.Instrumentation.Wpf\Graft.Instrumentation.Wpf.csproj" />
+    <ProjectReference Include="..\..\src\Graft.Protocol\Graft.Protocol.csproj" />
+    <ProjectReference Include="..\..\src\Graft.Instrumentation\Graft.Instrumentation.csproj" AdditionalProperties="Configuration=GraftTest" />
+    <ProjectReference Include="..\..\src\Graft.Instrumentation.Wpf\Graft.Instrumentation.Wpf.csproj" AdditionalProperties="Configuration=GraftTest" />
   </ItemGroup>
+  <Import Project="..\..\src\Graft.Instrumentation.Wpf\build\Graft.targets" />
 </Project>

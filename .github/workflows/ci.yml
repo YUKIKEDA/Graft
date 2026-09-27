@@ -60,6 +60,9 @@ jobs:
       - name: Test Instrumentation
         run: dotnet test tests/Graft.Instrumentation.Tests/Graft.Instrumentation.Tests.csproj --no-build --no-restore -c Debug --logger "trx;LogFileName=instrumentation.trx"
 
+      - name: Test Instrumentation surface (non-GraftTest)
+        run: dotnet test tests/Graft.Instrumentation.Surface.Tests/Graft.Instrumentation.Surface.Tests.csproj --no-build --no-restore -c Debug --logger "trx;LogFileName=instrumentation-surface.trx"
+
       - name: Test Analyzer
         run: dotnet test tests/Graft.Instrumentation.Analyzer.Tests/Graft.Instrumentation.Analyzer.Tests.csproj --no-build --no-restore -c Debug --logger "trx;LogFileName=analyzer.trx"
 

@@ -1,0 +1,14 @@
+<Project>
+  <!--
+    Shared by Graft.Instrumentation and Graft.Instrumentation.Wpf.
+    The agent is compiled only when this project is built with GraftTest=true
+    (command-line /p:GraftTest=true, or Configuration=GraftTest). A normal
+    Debug/Release build must not contain Agent.Start, the pipe server, or WPF patches.
+  -->
+  <PropertyGroup Condition="'$(Configuration)' == 'GraftTest' AND '$(GraftTest)' == ''">
+    <GraftTest>true</GraftTest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(GraftTest)' == 'true'">
+    <DefineConstants>$(DefineConstants);GRAFT_TEST</DefineConstants>
+  </PropertyGroup>
+</Project>

@@ -6,7 +6,7 @@ namespace Graft.Instrumentation;
 public static class GraftEnvironment
 {
     /// <summary>
-    /// When set to <c>1</c>, <see cref="Agent.Start"/> may activate the agent.
+    /// When set to <c>1</c>, <c>Agent.Start</c> may activate the agent.
     /// </summary>
     public const string Enable = "GRAFT_ENABLE";
 
