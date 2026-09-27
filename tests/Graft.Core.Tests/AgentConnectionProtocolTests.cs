@@ -155,12 +155,47 @@ public sealed class AgentConnectionProtocolTests
         await server.WaitAsync(TimeSpan.FromSeconds(5));
     }
 
+    /// <summary>
+    /// A protocol mismatch during Connect names both the agent package and the Graft.Core version.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Fake agent answers the handshake with protocol.versionMismatch
+    ///
+    /// Steps:
+    /// - Application.ConnectAsync
+    ///
+    /// Expected:
+    /// - GraftException protocol.versionMismatch whose message keeps the agent text and adds "Graft.Core"
+    /// </remarks>
+    [Fact]
+    public async Task Handshake_VersionMismatch_MessageNamesCoreVersion()
+    {
+        var pipeName = NewPipeName();
+        var server = RunFakeAgentAsync(
+            pipeName,
+            (_, _) => Task.CompletedTask,
+            handshakeError: new ErrorObject
+            {
+                Code = GraftErrorCodes.ProtocolVersionMismatch,
+                Message = "Agent (Graft.Instrumentation 9.9.9) speaks v=2.",
+            }
+        );
+
+        var ex = await Assert.ThrowsAsync<GraftException>(() => Application.ConnectAsync(pipeName, Token, TimeSpan.FromSeconds(5)));
+
+        Assert.Equal(GraftErrorCodes.ProtocolVersionMismatch, ex.Code);
+        Assert.Contains("Graft.Instrumentation 9.9.9", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("Graft.Core ", ex.Message, StringComparison.Ordinal);
+        await server.WaitAsync(TimeSpan.FromSeconds(5));
+    }
+
     private static string NewPipeName() => "graft-proto-" + Guid.NewGuid().ToString("N");
 
     /// <summary>
     /// Accepts one client, answers the handshake, then hands every later request to <paramref name="onRequest"/>.
     /// </summary>
-    private static async Task RunFakeAgentAsync(string pipeName, Func<Stream, RequestMessage, Task> onRequest)
+    private static async Task RunFakeAgentAsync(string pipeName, Func<Stream, RequestMessage, Task> onRequest, ErrorObject? handshakeError = null)
     {
         await using var server = new NamedPipeServerStream(
             pipeName,
@@ -180,9 +215,14 @@ public sealed class AgentConnectionProtocolTests
                 {
                     V = ProtocolVersion.Current,
                     Id = handshake.Id,
-                    Ok = true,
+                    Ok = handshakeError is null,
+                    Error = handshakeError,
                 }
             );
+            if (handshakeError is not null)
+            {
+                return;
+            }
 
             while (true)
             {

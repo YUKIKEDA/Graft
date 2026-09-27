@@ -23,6 +23,8 @@ namespace Graft.Instrumentation.Pipe;
 /// </remarks>
 internal sealed class AgentPipeServer : IDisposable
 {
+    private static readonly string AgentVersion = DescribeVersion(typeof(AgentPipeServer).Assembly);
+
     private readonly string _pipeName;
     private readonly string _connectToken;
     private readonly CancellationTokenSource _cts = new();
@@ -185,7 +187,13 @@ internal sealed class AgentPipeServer : IDisposable
         if (request.V != ProtocolVersion.Current)
         {
             return (
-                Error(request.Id, GraftErrorCodes.ProtocolVersionMismatch, $"Protocol version mismatch. Agent expects v={ProtocolVersion.Current}."),
+                Error(
+                    request.Id,
+                    GraftErrorCodes.ProtocolVersionMismatch,
+                    $"Protocol version mismatch: the client sent v={request.V}, but this agent (Graft.Instrumentation {AgentVersion}) "
+                        + $"speaks v={ProtocolVersion.Current}. Update Graft.Core and Graft.Instrumentation / Graft.Instrumentation.Wpf "
+                        + "to the same Graft release."
+                ),
                 CloseAfterWrite: true,
                 BinaryFollowUp: null
             );
@@ -1671,6 +1679,15 @@ internal sealed class AgentPipeServer : IDisposable
 
         return new GetTreeOptions { MaxDepth = maxDepth, MaxNodes = maxNodes };
     }
+
+    private static string DescribeVersion(System.Reflection.Assembly assembly) =>
+        assembly
+            .GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), inherit: false)
+            .OfType<System.Reflection.AssemblyInformationalVersionAttribute>()
+            .FirstOrDefault()
+            ?.InformationalVersion
+        ?? assembly.GetName().Version?.ToString()
+        ?? "unknown";
 
     private bool IsTokenValid(string token)
     {

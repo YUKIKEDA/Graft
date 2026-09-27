@@ -112,6 +112,7 @@ public sealed class PipeHandshakeTests : IDisposable
     ///
     /// Expected:
     /// - Response ok=false, code protocol.versionMismatch
+    /// - Message names the client version and the agent package version
     /// </remarks>
     [Fact]
     public async Task Handshake_WithVersionMismatch_ReturnsProtocolVersionMismatch()
@@ -123,6 +124,8 @@ public sealed class PipeHandshakeTests : IDisposable
 
         Assert.False(response.Ok);
         Assert.Equal(GraftErrorCodes.ProtocolVersionMismatch, response.Error?.Code);
+        Assert.Contains("v=999", response.Error!.Message, StringComparison.Ordinal);
+        Assert.Contains("Graft.Instrumentation ", response.Error.Message, StringComparison.Ordinal);
     }
 
     /// <summary>

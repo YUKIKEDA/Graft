@@ -1334,8 +1334,26 @@ public sealed class AgentConnection : IAsyncDisposable
             )
             .ConfigureAwait(false);
 
+        if (!response.Ok && response.Error?.Code == GraftErrorCodes.ProtocolVersionMismatch)
+        {
+            // Name both sides so the user knows which package to update.
+            throw new GraftException(
+                GraftErrorCodes.ProtocolVersionMismatch,
+                $"{response.Error.Message} (This client is Graft.Core {CoreVersion}, protocol v={ProtocolVersion.Current}.)"
+            );
+        }
+
         EnsureOk(response, "Handshake failed.");
     }
+
+    private static string CoreVersion =>
+        typeof(AgentConnection)
+            .Assembly.GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), inherit: false)
+            .OfType<System.Reflection.AssemblyInformationalVersionAttribute>()
+            .FirstOrDefault()
+            ?.InformationalVersion
+        ?? typeof(AgentConnection).Assembly.GetName().Version?.ToString()
+        ?? "unknown";
 
     private static async Task<NamedPipeClientStream> ConnectPipeAsync(string pipeName, CancellationToken cancellationToken)
     {
