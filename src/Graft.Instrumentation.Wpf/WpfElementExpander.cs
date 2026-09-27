@@ -83,6 +83,11 @@ internal sealed class WpfElementExpander : IElementExpander
                 comboBox.IsDropDownOpen = expanded;
                 break;
             default:
+                if (TrySetIsExpandedProperty(element, expanded))
+                {
+                    break;
+                }
+
                 throw new ElementActionException(
                     GraftErrorCodes.ActionFailed,
                     $"expand/collapse is not supported for control type '{element.GetType().Name}'."
@@ -90,6 +95,21 @@ internal sealed class WpfElementExpander : IElementExpander
         }
 
         element.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
+    }
+
+    /// <summary>
+    /// Sets a public <c>IsExpanded</c> bool property when present (e.g. WPF UI NavigationViewItem).
+    /// </summary>
+    private static bool TrySetIsExpandedProperty(FrameworkElement element, bool expanded)
+    {
+        var prop = element.GetType().GetProperty("IsExpanded");
+        if (prop is null || prop.PropertyType != typeof(bool) || !prop.CanWrite)
+        {
+            return false;
+        }
+
+        prop.SetValue(element, expanded);
+        return true;
     }
 
     private static bool TrySetViaAutomationPeer(FrameworkElement element, bool expanded)
