@@ -55,6 +55,31 @@ internal static class WpfVisualTreeWalker
     public static ResolvedElement ResolveForScreenshot(Window root, ElementSelector selector) =>
         ResolveCore(root, selector, requireAutomationId: false);
 
+    /// <summary>
+    /// Returns the <c>runtimeId</c> that <c>getTree</c> (default depth / maxNodes) assigns to <paramref name="target"/>.
+    /// </summary>
+    /// <param name="root">Window that <c>getTree</c> walks.</param>
+    /// <param name="target">Live element or hyperlink.</param>
+    /// <returns>The runtime id, or <see langword="null"/> when the target is outside the default walk.</returns>
+    public static int? FindRuntimeId(Window root, object target)
+    {
+        ArgumentNullException.ThrowIfNull(root);
+        ArgumentNullException.ThrowIfNull(target);
+
+        var state = new WalkState(new GetTreeOptions());
+        var matches = new List<(object Target, int RuntimeId, string ControlType)>();
+        CollectMatches(root, depth: 0, state, automationId: null, runtimeIdFilter: null, matches);
+        foreach (var (candidate, runtimeId, _) in matches)
+        {
+            if (ReferenceEquals(candidate, target))
+            {
+                return runtimeId;
+            }
+        }
+
+        return null;
+    }
+
     private static ResolvedElement ResolveCore(Window root, ElementSelector selector, bool requireAutomationId)
     {
         ArgumentNullException.ThrowIfNull(root);

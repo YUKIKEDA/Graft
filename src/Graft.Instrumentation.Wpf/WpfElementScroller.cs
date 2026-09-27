@@ -214,6 +214,10 @@ internal sealed class WpfElementScroller : IElementScroller
             throw new ElementActionException(GraftErrorCodes.ActionFailed, "Scrolled element has no automationId; cannot return identity.");
         }
 
-        return new ElementIdentity { AutomationId = automationId, RuntimeId = element.GetHashCode() };
+        // Use the same walk-order numbering as getTree / resolve so the id can round-trip into a selector.
+        // Elements outside a Window's default walk (e.g. popups) get no runtimeId rather than a meaningless one.
+        var window = Window.GetWindow(element);
+        var runtimeId = window is null ? null : WpfVisualTreeWalker.FindRuntimeId(window, element);
+        return new ElementIdentity { AutomationId = automationId, RuntimeId = runtimeId };
     }
 }
