@@ -27,14 +27,7 @@ public sealed class SliderE2ETests
     [Fact]
     public async Task SetValue_SampleSlider_UpdatesStatusText()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleSlider").SetValueAsync("75");
         await app.GetByAutomationId("StatusText").ExpectNameAsync("Slider 75");

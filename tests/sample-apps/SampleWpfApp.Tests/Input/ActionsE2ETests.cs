@@ -23,14 +23,7 @@ public sealed class ActionsE2ETests
     [Fact]
     public async Task ScrollIntoView_VirtualizedListIndex_ReturnsIdentity()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         var identity = await app.GetByAutomationId("SampleList").ScrollIntoViewAsync(40);
         Assert.Equal("ListItem-40", identity.AutomationId);
@@ -55,14 +48,7 @@ public sealed class ActionsE2ETests
     [Fact]
     public async Task Select_VirtualizedListIndex_UpdatesStatus()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleList").SelectAsync(35);
         await app.GetByAutomationId("StatusText").ExpectNameAsync("Selected Item 35");
@@ -85,14 +71,7 @@ public sealed class ActionsE2ETests
     [Fact]
     public async Task Select_ComboBoxIndex_UpdatesStatus()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleCombo").SelectAsync(1);
         await app.GetByAutomationId("StatusText").ExpectNameAsync("Combo Beta");
@@ -115,14 +94,7 @@ public sealed class ActionsE2ETests
     [Fact]
     public async Task ExpandCollapse_TreeRoot_UpdatesStatus()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleTreeRoot").ExpandAsync();
         await app.GetByAutomationId("StatusText").ExpectNameAsync("Expanded");

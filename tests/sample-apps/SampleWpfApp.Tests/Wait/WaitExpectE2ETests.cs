@@ -29,14 +29,7 @@ public sealed class WaitExpectE2ETests
     [Fact]
     public async Task ProgressWindow_WaitExpectValue_ThenNextScreenPanel()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("NextScreenLabel").ExpectGoneAsync();
 

@@ -30,7 +30,7 @@ public sealed class ElementScreenshotE2ETests
     [Fact]
     public async Task Screenshot_SampleButton_IsSmallerThanWindow()
     {
-        await using var app = await LaunchAsync();
+        await using var app = await SampleWpfLaunch.LaunchAsync();
         await app.GetByAutomationId("SampleButton").WaitForAsync();
         var window = await app.ScreenshotAsync();
         var clip = await app.GetByAutomationId("SampleButton").ScreenshotAsync();
@@ -63,7 +63,7 @@ public sealed class ElementScreenshotE2ETests
     [Fact]
     public async Task Screenshot_OpenPopupButton_ReturnsPng()
     {
-        await using var app = await LaunchAsync();
+        await using var app = await SampleWpfLaunch.LaunchAsync();
         await app.GetByAutomationId("SamplePhase29bOpenPopup").ScrollIntoViewAsync();
         var closed = await app.GetByAutomationId("SamplePhase29bOpenPopup").ScreenshotAsync();
         AssertPng(closed);
@@ -101,7 +101,7 @@ public sealed class ElementScreenshotE2ETests
     [Fact]
     public async Task Screenshot_OpenToolTip_ReturnsPng()
     {
-        await using var app = await LaunchAsync();
+        await using var app = await SampleWpfLaunch.LaunchAsync();
         await app.GetByAutomationId("SamplePhase29bTipHost").ScrollIntoViewAsync();
         await app.GetByAutomationId("SamplePhase29bTipHost").HoverAsync();
         await app.GetByAutomationId("SamplePhase29bTipHost").ExpectToolTipAsync("Phase29bTip");
@@ -127,16 +127,6 @@ public sealed class ElementScreenshotE2ETests
         );
         await SaveArtifactAsync(windowWithTip, "phase35-fluent-window-with-tooltip.png");
     }
-
-    private static Task<GraftSession> LaunchAsync() =>
-        Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
 
     private static Task SaveArtifactAsync(Screenshot shot, string fileName) =>
         shot.SaveAsync(Path.Combine(AppContext.BaseDirectory, "Artifacts", fileName));

@@ -25,14 +25,7 @@ public sealed class OpenFileE2ETests
     {
         const string path = @"C:\graft-open-file-ok.txt";
 
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.ArmOpenFileAsync(path);
         _ = await app.GetByAutomationId("OpenFileButton").InvokeOpeningWindowAsync(waitForNewWindow: false);
@@ -57,14 +50,7 @@ public sealed class OpenFileE2ETests
     [Fact]
     public async Task ArmOpenFileCancel_ThenInvoke_UpdatesStatusCancel()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.ArmOpenFileCancelAsync();
         _ = await app.GetByAutomationId("OpenFileButton").InvokeOpeningWindowAsync(waitForNewWindow: false);

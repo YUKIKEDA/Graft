@@ -1,3 +1,5 @@
+using Graft.TestSupport;
+
 namespace Graft.Core.Tests;
 
 /// <summary>
@@ -27,7 +29,7 @@ public sealed class M2AcceptanceTests
     [Fact]
     public async Task Launch_InvokeSampleButton_ExpectStatusClicked1()
     {
-        var appPath = SampleAppPaths.ResolveSampleWpfAppProject();
+        var appPath = SampleWpfAppLocator.ResolveProjectPath();
         await using var session = await Application.LaunchAsync(new LaunchOptions { AppPath = appPath, Timeout = TimeSpan.FromSeconds(60) });
 
         await session.GetByAutomationId("SampleButton").InvokeAsync();

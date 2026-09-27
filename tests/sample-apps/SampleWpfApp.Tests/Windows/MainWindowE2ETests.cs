@@ -44,14 +44,7 @@ public sealed class MainWindowE2ETests
     [Fact]
     public async Task ClickSampleButton_UpdatesStatusText()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleButton").InvokeAsync();
         await app.GetByAutomationId("StatusText").ExpectNameAsync("Clicked 1");
@@ -75,14 +68,7 @@ public sealed class MainWindowE2ETests
     [Fact]
     public async Task SetValue_SampleTextBox_UpdatesName()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         const string typed = "hello-graft";
         await app.GetByAutomationId("SampleTextBox").SetValueAsync(typed);
@@ -107,14 +93,7 @@ public sealed class MainWindowE2ETests
     [Fact]
     public async Task Toggle_SampleCheckBox_UpdatesName()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleCheckBox").ToggleAsync();
         await app.GetByAutomationId("SampleCheckBox").ExpectNameAsync("On");
@@ -138,14 +117,7 @@ public sealed class MainWindowE2ETests
     [Fact]
     public async Task SendKeys_SampleTextBox_UpdatesName()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         const string typed = "keys-graft";
         await app.GetByAutomationId("SampleTextBox").SendKeysAsync(typed);
@@ -169,14 +141,7 @@ public sealed class MainWindowE2ETests
     [Fact]
     public async Task Screenshot_TargetWindow_ReturnsPng()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         var shot = await app.ScreenshotAsync();
         Assert.Equal("png", shot.Format);
@@ -208,14 +173,7 @@ public sealed class MainWindowE2ETests
     [Fact]
     public async Task PressKeys_ControlA_Delete_ClearsSampleTextBox()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         var textBox = app.GetByAutomationId("SampleTextBox");
         await textBox.SetValueAsync("hello");
@@ -243,14 +201,7 @@ public sealed class MainWindowE2ETests
     [Fact]
     public async Task Invoke_SampleMouseTarget_ViaSendInput_UpdatesStatus()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleMouseTarget").InvokeAsync();
         await app.GetByAutomationId("StatusText").ExpectNameAsync("MouseHit");

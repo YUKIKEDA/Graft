@@ -29,14 +29,7 @@ public sealed class SelectManyE2ETests
     [Fact]
     public async Task SelectMany_SampleMultiList_SelectsTwoItems()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleMultiList").SelectManyAsync([1, 3]);
         await app.GetByAutomationId("MultiListItem-01").ExpectSelectedAsync(true);
@@ -62,14 +55,7 @@ public sealed class SelectManyE2ETests
     [Fact]
     public async Task SelectMany_EmptyIndexes_ClearsSelection()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleMultiList").SelectManyAsync([0, 1]);
         await app.GetByAutomationId("SampleMultiList").SelectManyAsync([]);
@@ -93,14 +79,7 @@ public sealed class SelectManyE2ETests
     [Fact]
     public async Task SelectMany_SampleListSingleMode_Fails()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         var ex = await Assert.ThrowsAsync<GraftException>(() => app.GetByAutomationId("SampleList").SelectManyAsync([1]));
         Assert.Equal(GraftErrorCodes.ActionFailed, ex.Code);

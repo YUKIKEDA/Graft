@@ -25,14 +25,7 @@ public sealed class OpenFolderE2ETests
     {
         const string path = @"C:\graft-open-folder-ok";
 
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.ArmOpenFolderAsync(path);
         _ = await app.GetByAutomationId("OpenFolderButton").InvokeOpeningWindowAsync(waitForNewWindow: false);
@@ -57,14 +50,7 @@ public sealed class OpenFolderE2ETests
     [Fact]
     public async Task ArmOpenFolderCancel_ThenInvoke_UpdatesStatusCancel()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.ArmOpenFolderCancelAsync();
         _ = await app.GetByAutomationId("OpenFolderButton").InvokeOpeningWindowAsync(waitForNewWindow: false);

@@ -28,14 +28,7 @@ public sealed class TabControlE2ETests
     [Fact]
     public async Task Select_SampleTabs_SelectsTabB()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleTabs").SelectAsync(1);
         await app.GetByAutomationId("SampleTabB").ExpectSelectedAsync(true);
