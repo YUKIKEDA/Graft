@@ -1,7 +1,7 @@
 ---
 name: Refactor
 about: Internal restructuring with no change in behavior callers can see
-labels: ["refactor"]
+labels: ["type: refactor"]
 ---
 
 ## Goal

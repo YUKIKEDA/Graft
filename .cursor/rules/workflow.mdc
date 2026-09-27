@@ -28,17 +28,21 @@ Human source of truth: `CONTRIBUTING.md`.
 
 Human source of truth: `CONTRIBUTING.md` § Issues.
 
-| Template   | Label           | Commit / PR type                  |
-| ---------- | --------------- | --------------------------------- |
-| `bug`      | `bug`           | `fix`                             |
-| `feat`     | `enhancement`   | `feat`                            |
-| `refactor` | `refactor`      | `refactor`                        |
-| `test`     | `test`          | `test`                            |
-| `design`   | `documentation` | `docs`                            |
-| `task`     | `documentation` | `docs` / `chore` / `build` / `ci` |
+Labels use the form `<axis>: <value>`. The only axis today is `type`.
+
+| Template   | Label            | Commit / PR type         |
+| ---------- | ---------------- | ------------------------ |
+| `bug`      | `type: bug`      | `fix`                    |
+| `feat`     | `type: feature`  | `feat`                   |
+| `refactor` | `type: refactor` | `refactor`               |
+| `test`     | `type: test`     | `test`                   |
+| `design`   | `type: docs`     | `docs`                   |
+| `task`     | `type: chore`    | `chore` / `build` / `ci` |
 
 - Refactoring goes to `refactor`, not `task`. Test-only work goes to `test`
+- A documentation-only `task` Issue switches its label to `type: docs`
 - A tracking Issue uses the label of its sub-issues and links them as sub-issues
+- Do not create a label without the `<axis>: <value>` form
 
 ## Forbidden
 

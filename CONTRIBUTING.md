@@ -26,18 +26,21 @@ dotnet test Graft.slnx -m:1
 
 ## Issues
 
-Open every Issue from a template (blank Issues are disabled). Each template adds one label, and the label matches the Conventional Commits type of the work.
+Open every Issue from a template (blank Issues are disabled). Each template adds one label.
 
-| Template   | Label           | Use for                                               | Commit / PR type                  |
-| ---------- | --------------- | ----------------------------------------------------- | --------------------------------- |
-| `bug`      | `bug`           | A defect in behavior that is already specified        | `fix`                             |
-| `feat`     | `enhancement`   | A new capability callers can use                      | `feat`                            |
-| `refactor` | `refactor`      | Internal restructuring with no change callers can see | `refactor`                        |
-| `test`     | `test`          | Test-only work: coverage, structure, helpers          | `test`                            |
-| `design`   | `documentation` | A `docs/design.md` change only (no implementation)    | `docs`                            |
-| `task`     | `documentation` | Tooling, conventions, or documentation                | `docs` / `chore` / `build` / `ci` |
+Labels use the form `<axis>: <value>` (for example `type: bug`). The only axis today is `type`. A new axis, such as `priority:` or `area:`, uses the same form.
 
-A tracking Issue that groups several Issues uses the label of its sub-issues and links them as sub-issues.
+| Template   | Label            | Use for                                               | Commit / PR type         |
+| ---------- | ---------------- | ----------------------------------------------------- | ------------------------ |
+| `bug`      | `type: bug`      | A defect in behavior that is already specified        | `fix`                    |
+| `feat`     | `type: feature`  | A new capability callers can use                      | `feat`                   |
+| `refactor` | `type: refactor` | Internal restructuring with no change callers can see | `refactor`               |
+| `test`     | `type: test`     | Test-only work: coverage, structure, helpers          | `test`                   |
+| `design`   | `type: docs`     | A `docs/design.md` change only (no implementation)    | `docs`                   |
+| `task`     | `type: chore`    | Tooling, conventions, CI, or other documentation      | `chore` / `build` / `ci` |
+
+- A `task` Issue that only changes documentation switches its label to `type: docs`
+- A tracking Issue that groups several Issues uses the label of its sub-issues and links them as sub-issues
 
 ## Pull requests
 

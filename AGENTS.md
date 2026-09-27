@@ -53,8 +53,8 @@ dotnet test Graft.slnx -m:1
 
 ## Issues
 
-- Open from a template; the template sets the label: `bug`→`bug`, `feat`→`enhancement`, `refactor`→`refactor`, `test`→`test`, `design` / `task`→`documentation`
-- Refactoring uses `refactor`, not `task`. Mapping: `CONTRIBUTING.md` § Issues, `.cursor/rules/workflow.mdc`
+- Open from a template; the template sets a `type: <value>` label: `bug`→`type: bug`, `feat`→`type: feature`, `refactor`→`type: refactor`, `test`→`type: test`, `design`→`type: docs`, `task`→`type: chore`
+- Labels always use `<axis>: <value>`. Refactoring uses `refactor`, not `task`. Mapping: `CONTRIBUTING.md` § Issues, `.cursor/rules/workflow.mdc`
 
 ## Pull requests
 
