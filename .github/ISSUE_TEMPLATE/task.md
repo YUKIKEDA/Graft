@@ -1,6 +1,6 @@
 ---
 name: Task
-about: Tooling, conventions, or repository chores
+about: Tooling, conventions, or documentation
 labels: ["type:chore"]
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: Test
-about: Tests only. No production behavior change
+about: Test-only work (coverage, structure, helpers) with no production code change
 labels: ["type:test"]
 ---
 
@@ -14,7 +14,7 @@ labels: ["type:test"]
 
 ## Out of scope
 
-- Production behavior
+- Production code changes (open a Refactor, Bug, or Feature Issue instead)
 
 ## Acceptance
 
@@ -22,12 +22,8 @@ labels: ["type:test"]
 
 ## Test plan
 
--
+- Command that runs the affected tests (`./build.ps1` for hosted CI, `dotnet test Graft.slnx -m:1` for launched-app tests):
 
 ## Related
 
-- Design section:
-
-## Grill
-
-- Done / not needed (reason):
+-

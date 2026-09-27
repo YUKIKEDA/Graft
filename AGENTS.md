@@ -10,7 +10,6 @@ In-process UI testing for WPF. Design source of truth: `docs/design.md`. Open wo
 | ------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Commits       | Conventional Commits            | `.cursor/rules/conventional-commits.mdc` (`alwaysApply`)                                                                                                                    |
 | Pull requests | GitHub template + rules         | `.github/pull_request_template.md`, `.cursor/rules/pull-requests.mdc`                                                                                                       |
-| Issues        | `type:` labels                  | Templates in `.github/ISSUE_TEMPLATE/` set `type:bug`, `type:feat`, `type:docs`, `type:refactor`, `type:test`, or `type:chore`. See `CONTRIBUTING.md`                      |
 | Shell         | PowerShell (Windows)            | `.cursor/rules/powershell-shell.mdc` (`alwaysApply`); skill: `.cursor/skills/powershell-git/`                                                                               |
 | Formatter     | CSharpier                       | `.config/dotnet-tools.json`, `.csharpierrc.json`, format on save via `.vscode/`                                                                                             |
 | CI            | GitHub Actions                  | `.github/workflows/ci.yml` (hosted: format/build/unit). Full UI: `.github/workflows/ui.yml` self-hosted interactive, opt-in via `GRAFT_ENABLE_UI_CI`. See `CONTRIBUTING.md` |
@@ -51,6 +50,11 @@ dotnet test Graft.slnx -m:1
 
 - `type/<issue-number>-<slug>` after an Issue exists (`.cursor/rules/workflow.mdc`)
 - Solution file: `Graft.slnx` (classic `Graft.sln` is gitignored)
+
+## Issues
+
+- Open from a template; the template sets a `type:<value>` label: `bug`→`type:bug`, `feat`→`type:feat`, `refactor`→`type:refactor`, `test`→`type:test`, `design`→`type:docs`, `task`→`type:chore`
+- Labels always use `<axis>:<value>`. Refactoring uses `refactor`, not `task`. Mapping: `CONTRIBUTING.md` § Issues, `.cursor/rules/workflow.mdc`
 
 ## Pull requests
 
