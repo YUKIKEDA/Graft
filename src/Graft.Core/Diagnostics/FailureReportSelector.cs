@@ -33,6 +33,12 @@ public sealed class FailureReportSelector
     public string? NearAutomationId { get; init; }
 
     /// <summary>
+    /// Gets the zero-based index among qualifying matches when set.
+    /// </summary>
+    [JsonPropertyName("nth")]
+    public int? Nth { get; init; }
+
+    /// <summary>
     /// Creates a report selector from a live <see cref="Selector"/>.
     /// </summary>
     /// <param name="selector">Source selector.</param>
@@ -46,6 +52,7 @@ public sealed class FailureReportSelector
             Name = selector.Name,
             ControlType = selector.ControlType,
             NearAutomationId = selector.NearAutomationId,
+            Nth = selector.Nth,
         };
     }
 
@@ -60,5 +67,6 @@ public sealed class FailureReportSelector
             Name = Name,
             ControlType = ControlType,
             NearAutomationId = NearAutomationId,
+            Nth = Nth,
         };
 }
