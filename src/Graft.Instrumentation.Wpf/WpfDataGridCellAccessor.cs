@@ -159,6 +159,14 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         }
 
         var dataGrid = (DataGrid)host;
+        if (!dataGrid.IsEnabled || !dataGrid.IsVisible)
+        {
+            throw new ElementActionException(
+                GraftErrorCodes.ElementNotActionable,
+                $"DataGrid '{selector.AutomationId}' is not actionable (enabled={dataGrid.IsEnabled}, visible={dataGrid.IsVisible})."
+            );
+        }
+
         var columnIndex = ResolveColumnIndex(dataGrid, column, columnKey);
         EnsureRowIndex(dataGrid, row);
         var dataColumn = dataGrid.Columns[columnIndex];
@@ -166,14 +174,6 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         if (dataGrid.IsReadOnly || dataColumn.IsReadOnly)
         {
             throw new ElementActionException(GraftErrorCodes.ActionFailed, $"DataGrid cell at column {columnIndex} is read-only.");
-        }
-
-        if (!dataGrid.IsEnabled || !dataGrid.IsVisible)
-        {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotActionable,
-                $"DataGrid '{selector.AutomationId}' is not actionable (enabled={dataGrid.IsEnabled}, visible={dataGrid.IsVisible})."
-            );
         }
 
         _ = WpfElementScroller.ScrollListItem(dataGrid, row);
