@@ -185,6 +185,7 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | C04 | ToolBar / StatusBar 項目操作       | Yes  | OK    | Done | 29b     | 専用 API なし（Sample） |
 | C05 | Popup / Flyout                     | Yes  | OK    | Done | 29b     | 開時 Child ツリー合流 |
 | C06 | Hyperlink / カスタムクリック可能   | Yes  | OK    | Done | 29b     | TextBlock 内 Hyperlink + Click |
+| C07 | サードパーティ型の操作登録          | PART | OK    | Done | —       | `WpfControlActions`（invoke / setValue / toggle）。実装は利用側。同梱なし |
 
 ---
 

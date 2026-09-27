@@ -23,6 +23,8 @@ Graft.Instrumentation.Agent.Start();
 
 （実装例: `tests/sample-apps/SampleTodoApp/App.xaml.cs`）
 
+組み込みの型に無いコントロールは、同じ `#if GRAFT_TEST` で `WpfControlActions.RegisterInvoke` / `RegisterSetValue` / `RegisterToggle` を登録する。ハンドラが `true` ならそこで終わり、`false` ならネイティブ → Peer → SendInput。実行時の型に一番近い登録が勝つ。無効・非表示の要素はハンドラに渡さない。Telerik / DevExpress / Syncfusion の実装は同梱しない。`WpfGraft.ResetForTests` は登録も消す。
+
 ## テスト側（コントローラ）
 
 ```csharp

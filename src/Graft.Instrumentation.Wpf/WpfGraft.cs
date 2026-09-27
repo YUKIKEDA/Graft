@@ -55,5 +55,6 @@ public static class WpfGraft
     {
         _registered = 0;
         AgentServices.Reset();
+        WpfControlActions.Clear();
     }
 }
