@@ -34,8 +34,6 @@ dotnet test Graft.slnx -m:1
 6. The GitHub-hosted **CI** workflow is green
 7. In `## Related`, put `Closes #N` on its own line. Open an Issue before the branch (`type/<issue-number>-<slug>`)
 
-The Avalonia adapter waits until the remaining WPF Must work is done. See [`docs/competitive-gap.md`](docs/competitive-gap.md).
-
 ## CI
 
 | Workflow                                 | Runner                 | What it does                                                                                                                       |

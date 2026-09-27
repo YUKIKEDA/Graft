@@ -1,15 +1,15 @@
 [English](README.md) | 日本語
 
-# Graft — In-process UI testing for WPF & AvaloniaUI
+# Graft — In-process UI testing for WPF
 
 [![CI](https://github.com/YUKIKEDA/Graft/actions/workflows/ci.yml/badge.svg)](https://github.com/YUKIKEDA/Graft/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-WPF / AvaloniaUI 向けの **in-process GUI E2E テスト** ツールです。
+WPF 向けの **in-process GUI E2E テスト** ツールです。
 
 対象アプリにエージェントを事前組み込み、Visual Tree へ直接アクセスします。FlaUI などが使う UI Automation（UIA）の COM 越し走査ではなく、自社アプリ限定で TestComplete の Open Applications に近い精度を狙います。
 
-> **現状:** WPF（.NET 8+）は利用できます。Avalonia アダプタは未実装です。パッケージ版は **0.1.0**（1.0 未満。公開 API は壊れることがあります）。NuGet.org への公開はタグ `v*` で行います。最初のタグを push するまでは、このリポジトリの `ProjectReference` でも使えます。
+> **現状:** WPF（.NET 8+）は利用できます。パッケージ版は **0.1.0**（1.0 未満。公開 API は壊れることがあります）。NuGet.org への公開はタグ `v*` で行います。最初のタグを push するまでは、このリポジトリの `ProjectReference` でも使えます。
 
 ## なぜ in-process か
 
@@ -17,7 +17,7 @@ WPF / AvaloniaUI 向けの **in-process GUI E2E テスト** ツールです。
 | --------------------------------------------------------- | ------------------------------------------------ | --------------------------------- |
 | FlaUI / WinAppDriver / TestStack.White / Appium (Windows) | UIA (COM) ラップ                                 | 汎用 Windows                      |
 | TestComplete                                              | フレームワーク別の in-process アクセス（非公開） | 商用・多フレームワーク            |
-| **Graft**                                                 | 対象アプリへの事前組み込み                       | **自社 WPF / Avalonia、OSS 想定** |
+| **Graft**                                                 | 対象アプリへの事前組み込み                       | **自社 WPF、OSS 想定**            |
 
 サードパーティ製 exe のブラックボックステストは対象外です。Playwright が「自分たちの Web アプリ」を対象にするのと同じ立ち位置です。
 

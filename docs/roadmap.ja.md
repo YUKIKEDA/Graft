@@ -18,5 +18,3 @@
 | [#119](https://github.com/YUKIKEDA/Graft/issues/119) | スクリーンショットの expect / diff（P03）                                                  |
 | [#120](https://github.com/YUKIKEDA/Graft/issues/120) | `ConnectAsync` を第一級の手順として書く（S02）                                             |
 | [#121](https://github.com/YUKIKEDA/Graft/issues/121) | セッション再利用のオプトインを書く（S04）                                                  |
-
-Avalonia アダプタは、WPF の対照表のあとである。残っている WPF の Must 行はない。[`docs/competitive-gap.md`](competitive-gap.md) を見る。

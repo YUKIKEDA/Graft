@@ -1,6 +1,6 @@
 # Graft — Agent notes
 
-In-process UI testing for WPF & AvaloniaUI. Design source of truth: `docs/design.md`. Open work: `docs/roadmap.md`. Archived phase notes: `.dev/task_*.md`. WPF gap matrix: `docs/competitive-gap.md`.
+In-process UI testing for WPF. Design source of truth: `docs/design.md`. Open work: `docs/roadmap.md`. Archived phase notes: `.dev/task_*.md`. WPF gap matrix: `docs/competitive-gap.md`.
 
 **Consumer usage example (canonical):** `tests/sample-apps/SampleTodoApp.Tests` (see `docs/graft-core.md`). Feature matrix: `SampleWpfApp.Tests`. WPF UI Gallery deep E2E (local `tests/wpfui`): `.dev/task_wpfui-gallery-e2e.md`.
 
