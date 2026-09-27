@@ -126,31 +126,8 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when invoke succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or invoke failed (may include <see cref="GraftException.Report"/>).</exception>
-    public async Task InvokeAsync(CancellationToken cancellationToken = default)
-    {
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot invoke over the wire.",
-                    FailureSteps.Invoke,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.InvokeAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.Invoke, node.AutomationId, cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Invoke, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
-    }
+    public Task InvokeAsync(CancellationToken cancellationToken = default) =>
+        RunActionAsync(FailureSteps.Invoke, id => _connection.InvokeAsync(id, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Waits until the element is present and actionable, then right-clicks it.
@@ -158,93 +135,24 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when rightClick succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or rightClick failed (may include <see cref="GraftException.Report"/>).</exception>
-    public async Task RightClickAsync(CancellationToken cancellationToken = default)
-    {
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot rightClick over the wire.",
-                    FailureSteps.RightClick,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.RightClickAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.RightClick, node.AutomationId, cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.RightClick, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
-    }
+    public Task RightClickAsync(CancellationToken cancellationToken = default) =>
+        RunActionAsync(FailureSteps.RightClick, id => _connection.RightClickAsync(id, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Waits until the element is present and actionable, then double-clicks it (SendInput).
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when doubleClick succeeds.</returns>
-    public async Task DoubleClickAsync(CancellationToken cancellationToken = default)
-    {
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot doubleClick over the wire.",
-                    FailureSteps.DoubleClick,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.DoubleClickAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.DoubleClick, node.AutomationId, cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.DoubleClick, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
-    }
+    public Task DoubleClickAsync(CancellationToken cancellationToken = default) =>
+        RunActionAsync(FailureSteps.DoubleClick, id => _connection.DoubleClickAsync(id, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Waits until the element is present and actionable, then moves the cursor over it (SendInput).
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when hover succeeds.</returns>
-    public async Task HoverAsync(CancellationToken cancellationToken = default)
-    {
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot hover over the wire.",
-                    FailureSteps.Hover,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.HoverAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.Hover, node.AutomationId, cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Hover, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
-    }
+    public Task HoverAsync(CancellationToken cancellationToken = default) =>
+        RunActionAsync(FailureSteps.Hover, id => _connection.HoverAsync(id, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Waits until this element is actionable, then drags to <paramref name="toAutomationId"/> (SendInput).
@@ -252,31 +160,15 @@ public sealed class ElementQuery
     /// <param name="toAutomationId">Drop target automation id.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when drag succeeds.</returns>
-    public async Task DragAsync(string toAutomationId, CancellationToken cancellationToken = default)
+    public Task DragAsync(string toAutomationId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(toAutomationId);
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot drag over the wire.",
-                    FailureSteps.Drag,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.DragAsync(node.AutomationId, toAutomationId, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.Drag, $"{node.AutomationId}->{toAutomationId}", cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Drag, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
+        return RunActionAsync(
+            FailureSteps.Drag,
+            id => _connection.DragAsync(id, toAutomationId, cancellationToken),
+            cancellationToken,
+            detail: id => $"{id}->{toAutomationId}"
+        );
     }
 
     /// <summary>
@@ -286,31 +178,13 @@ public sealed class ElementQuery
     /// <param name="offsetY">Vertical DIP offset from the clickable point.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when clickAt succeeds.</returns>
-    public async Task ClickAtAsync(double offsetX, double offsetY, CancellationToken cancellationToken = default)
-    {
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot clickAt over the wire.",
-                    FailureSteps.ClickAt,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.ClickAtAsync(node.AutomationId, offsetX, offsetY, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.ClickAt, $"{node.AutomationId}@({offsetX},{offsetY})", cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.ClickAt, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
-    }
+    public Task ClickAtAsync(double offsetX, double offsetY, CancellationToken cancellationToken = default) =>
+        RunActionAsync(
+            FailureSteps.ClickAt,
+            id => _connection.ClickAtAsync(id, offsetX, offsetY, cancellationToken),
+            cancellationToken,
+            detail: id => $"{id}@({offsetX},{offsetY})"
+        );
 
     /// <summary>
     /// Waits until the element is actionable, then scrolls the mouse wheel over it (SendInput).
@@ -318,31 +192,13 @@ public sealed class ElementQuery
     /// <param name="delta">Wheel delta (typically multiples of 120; positive = away from user).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when wheel succeeds.</returns>
-    public async Task WheelAsync(int delta, CancellationToken cancellationToken = default)
-    {
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot wheel over the wire.",
-                    FailureSteps.Wheel,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.WheelAsync(node.AutomationId, delta, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.Wheel, $"{node.AutomationId}:{delta}", cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Wheel, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
-    }
+    public Task WheelAsync(int delta, CancellationToken cancellationToken = default) =>
+        RunActionAsync(
+            FailureSteps.Wheel,
+            id => _connection.WheelAsync(id, delta, cancellationToken),
+            cancellationToken,
+            detail: id => $"{id}:{delta}"
+        );
 
     /// <summary>
     /// Invokes the element via <c>invokeOpeningWindow</c> (BeginInvoke), optionally waiting for a new window.
@@ -381,82 +237,63 @@ public sealed class ElementQuery
             knownIds = before.Windows.Select(w => w.WindowId).ToHashSet();
         }
 
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot invokeOpeningWindow over the wire.",
-                    FailureSteps.InvokeOpeningWindow,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.InvokeOpeningWindowAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.InvokeOpeningWindow,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
-                .ConfigureAwait(false);
-        }
+        var automationId = await SendActionAsync(
+                FailureSteps.InvokeOpeningWindow,
+                id => _connection.InvokeOpeningWindowAsync(id, cancellationToken),
+                cancellationToken
+            )
+            .ConfigureAwait(false);
 
         if (!waitForNewWindow)
         {
-            await RecordSuccessAsync(FailureSteps.InvokeOpeningWindow, $"{node.AutomationId};waitForNewWindow=false", cancellationToken)
+            await RecordSuccessAsync(FailureSteps.InvokeOpeningWindow, $"{automationId};waitForNewWindow=false", cancellationToken)
                 .ConfigureAwait(false);
             return null;
         }
 
         var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
-        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
-        var deadline = DateTime.UtcNow + timeout;
+        WindowInfo? opened = null;
+        var found = await PollUntilAsync(
+                timeout,
+                async ct =>
+                {
+                    var listed = await _connection.ListWindowsAsync(ct).ConfigureAwait(false);
+                    var newborn = listed.Windows.FirstOrDefault(w => !knownIds!.Contains(w.WindowId));
+                    if (newborn is null)
+                    {
+                        return false;
+                    }
 
-        while (DateTime.UtcNow < deadline)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var listed = await _connection.ListWindowsAsync(cancellationToken).ConfigureAwait(false);
-            var newborn = listed.Windows.FirstOrDefault(w => !knownIds!.Contains(w.WindowId));
-            if (newborn is not null)
-            {
-                try
-                {
-                    await _connection.SwitchWindowAsync(newborn.WindowId, cancellationToken).ConfigureAwait(false);
-                }
-                catch (GraftException ex) when (ex.Report is null)
-                {
-                    throw await CreateFailureAsync(
-                            ex.Code,
-                            ex.Message,
-                            FailureSteps.InvokeOpeningWindow,
-                            cancellationToken: cancellationToken,
-                            innerException: ex
-                        )
+                    try
+                    {
+                        await _connection.SwitchWindowAsync(newborn.WindowId, ct).ConfigureAwait(false);
+                    }
+                    catch (GraftException ex) when (ex.Report is null)
+                    {
+                        throw await CreateFailureAsync(
+                                ex.Code,
+                                ex.Message,
+                                FailureSteps.InvokeOpeningWindow,
+                                cancellationToken: ct,
+                                innerException: ex
+                            )
+                            .ConfigureAwait(false);
+                    }
+
+                    _successRoot = null;
+                    _treeBaseline.Clear();
+                    await RecordSuccessAsync(FailureSteps.InvokeOpeningWindow, $"{automationId}->windowId={newborn.WindowId}", ct)
                         .ConfigureAwait(false);
-                }
+                    opened = newborn;
+                    return true;
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
 
-                _successRoot = null;
-                _treeBaseline.Clear();
-                await RecordSuccessAsync(FailureSteps.InvokeOpeningWindow, $"{node.AutomationId}->windowId={newborn.WindowId}", cancellationToken)
-                    .ConfigureAwait(false);
-                return newborn;
-            }
-
-            var remaining = deadline - DateTime.UtcNow;
-            if (remaining <= TimeSpan.Zero)
-            {
-                break;
-            }
-
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
+        if (found)
+        {
+            return opened;
         }
 
         throw await CreateFailureAsync(
@@ -477,40 +314,16 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when setValue succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or setValue failed (may include <see cref="GraftException.Report"/>).</exception>
-    public async Task SetValueAsync(string value, CancellationToken cancellationToken = default)
+    public Task SetValueAsync(string value, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(value);
-
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot setValue over the wire.",
-                    FailureSteps.SetValue,
-                    expected: value,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.SetValueAsync(node.AutomationId, value, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.SetValue, $"{node.AutomationId}={value}", cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.SetValue,
-                    expected: value,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
-                .ConfigureAwait(false);
-        }
+        return RunActionAsync(
+            FailureSteps.SetValue,
+            id => _connection.SetValueAsync(id, value, cancellationToken),
+            cancellationToken,
+            expected: value,
+            detail: id => $"{id}={value}"
+        );
     }
 
     /// <summary>
@@ -519,31 +332,8 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when toggle succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or toggle failed (may include <see cref="GraftException.Report"/>).</exception>
-    public async Task ToggleAsync(CancellationToken cancellationToken = default)
-    {
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot toggle over the wire.",
-                    FailureSteps.Toggle,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.ToggleAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.Toggle, node.AutomationId, cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Toggle, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
-    }
+    public Task ToggleAsync(CancellationToken cancellationToken = default) =>
+        RunActionAsync(FailureSteps.Toggle, id => _connection.ToggleAsync(id, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Waits until the element is present and actionable, then types literal text.
@@ -552,40 +342,16 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when sendKeys succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or sendKeys failed (may include <see cref="GraftException.Report"/>).</exception>
-    public async Task SendKeysAsync(string text, CancellationToken cancellationToken = default)
+    public Task SendKeysAsync(string text, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(text);
-
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot sendKeys over the wire.",
-                    FailureSteps.SendKeys,
-                    expected: text,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.SendKeysAsync(node.AutomationId, text, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.SendKeys, $"{node.AutomationId}={text}", cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.SendKeys,
-                    expected: text,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
-                .ConfigureAwait(false);
-        }
+        return RunActionAsync(
+            FailureSteps.SendKeys,
+            id => _connection.SendKeysAsync(id, text, cancellationToken),
+            cancellationToken,
+            expected: text,
+            detail: id => $"{id}={text}"
+        );
     }
 
     /// <summary>
@@ -601,7 +367,7 @@ public sealed class ElementQuery
     /// The agent waits on its request thread, so the UI dispatcher can run debounce between characters.
     /// <see cref="SetValueAsync"/> and <see cref="SendKeysAsync"/> stay immediate.
     /// </remarks>
-    public async Task TypeHumanAsync(string text, TimeSpan delay, CancellationToken cancellationToken = default)
+    public Task TypeHumanAsync(string text, TimeSpan delay, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(text);
         if (delay < TimeSpan.Zero || delay.TotalMilliseconds > int.MaxValue)
@@ -610,37 +376,13 @@ public sealed class ElementQuery
         }
 
         var delayMs = (int)delay.TotalMilliseconds;
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot typeHuman over the wire.",
-                    FailureSteps.TypeHuman,
-                    expected: text,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.TypeHumanAsync(node.AutomationId, text, delayMs, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.TypeHuman, $"{node.AutomationId}={text};delayMs={delayMs}", cancellationToken)
-                .ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.TypeHuman,
-                    expected: text,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
-                .ConfigureAwait(false);
-        }
+        return RunActionAsync(
+            FailureSteps.TypeHuman,
+            id => _connection.TypeHumanAsync(id, text, delayMs, cancellationToken),
+            cancellationToken,
+            expected: text,
+            detail: id => $"{id}={text};delayMs={delayMs}"
+        );
     }
 
     /// <summary>
@@ -650,7 +392,7 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when pressKeys succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, invalid chord, or pressKeys failed (may include <see cref="GraftException.Report"/>).</exception>
-    public async Task PressAsync(string keys, CancellationToken cancellationToken = default)
+    public Task PressAsync(string keys, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(keys);
 
@@ -663,36 +405,13 @@ public sealed class ElementQuery
             throw new GraftException(GraftErrorCodes.ActionFailed, ex.Message, ex);
         }
 
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot pressKeys over the wire.",
-                    FailureSteps.PressKeys,
-                    expected: keys,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.PressKeysAsync(node.AutomationId, keys, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.PressKeys, $"{node.AutomationId}={keys}", cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.PressKeys,
-                    expected: keys,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
-                .ConfigureAwait(false);
-        }
+        return RunActionAsync(
+            FailureSteps.PressKeys,
+            id => _connection.PressKeysAsync(id, keys, cancellationToken),
+            cancellationToken,
+            expected: keys,
+            detail: id => $"{id}={keys}"
+        );
     }
 
     /// <summary>
@@ -723,31 +442,13 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when select succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or select failed.</exception>
-    public async Task SelectAsync(int index, CancellationToken cancellationToken = default)
-    {
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot select over the wire.",
-                    FailureSteps.Select,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.SelectAsync(node.AutomationId, index, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.Select, $"{node.AutomationId}[{index}]", cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Select, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
-    }
+    public Task SelectAsync(int index, CancellationToken cancellationToken = default) =>
+        RunActionAsync(
+            FailureSteps.Select,
+            id => _connection.SelectAsync(id, index, cancellationToken),
+            cancellationToken,
+            detail: id => $"{id}[{index}]"
+        );
 
     /// <summary>
     /// Waits until the list/combo is actionable, then selects the item whose name equals
@@ -757,32 +458,15 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when select succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or select failed.</exception>
-    public async Task SelectAsync(string key, CancellationToken cancellationToken = default)
+    public Task SelectAsync(string key, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
-
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot select over the wire.",
-                    FailureSteps.Select,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.SelectByKeyAsync(node.AutomationId, key, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.Select, $"{node.AutomationId}[key={key}]", cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Select, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
+        return RunActionAsync(
+            FailureSteps.Select,
+            id => _connection.SelectByKeyAsync(id, key, cancellationToken),
+            cancellationToken,
+            detail: id => $"{id}[key={key}]"
+        );
     }
 
     /// <summary>
@@ -793,32 +477,15 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when selectTree succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or selectTree failed.</exception>
-    public async Task SelectTreeAsync(string path, CancellationToken cancellationToken = default)
+    public Task SelectTreeAsync(string path, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
-
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot selectTree over the wire.",
-                    FailureSteps.SelectTree,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.SelectTreeAsync(node.AutomationId, path, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.SelectTree, $"{node.AutomationId}:{path}", cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.SelectTree, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
+        return RunActionAsync(
+            FailureSteps.SelectTree,
+            id => _connection.SelectTreeAsync(id, path, cancellationToken),
+            cancellationToken,
+            detail: id => $"{id}:{path}"
+        );
     }
 
     /// <summary>
@@ -829,33 +496,15 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when selectMany succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or selectMany failed.</exception>
-    public async Task SelectManyAsync(IReadOnlyList<int> indexes, CancellationToken cancellationToken = default)
+    public Task SelectManyAsync(IReadOnlyList<int> indexes, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(indexes);
-
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot selectMany over the wire.",
-                    FailureSteps.SelectMany,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.SelectManyAsync(node.AutomationId, indexes, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.SelectMany, $"{node.AutomationId}[{string.Join(',', indexes)}]", cancellationToken)
-                .ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.SelectMany, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
+        return RunActionAsync(
+            FailureSteps.SelectMany,
+            id => _connection.SelectManyAsync(id, indexes, cancellationToken),
+            cancellationToken,
+            detail: id => $"{id}[{string.Join(',', indexes)}]"
+        );
     }
 
     /// <summary>
@@ -865,32 +514,15 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when selectMenu succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or selectMenu failed.</exception>
-    public async Task SelectMenuAsync(string path, CancellationToken cancellationToken = default)
+    public Task SelectMenuAsync(string path, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
-
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot selectMenu over the wire.",
-                    FailureSteps.SelectMenu,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.SelectMenuAsync(node.AutomationId, path, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.SelectMenu, $"{node.AutomationId}:{path}", cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.SelectMenu, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
+        return RunActionAsync(
+            FailureSteps.SelectMenu,
+            id => _connection.SelectMenuAsync(id, path, cancellationToken),
+            cancellationToken,
+            detail: id => $"{id}:{path}"
+        );
     }
 
     /// <summary>
@@ -976,33 +608,16 @@ public sealed class ElementQuery
     /// <param name="value">Exact cell display text.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when selectRow succeeds.</returns>
-    public async Task SelectRowAsync(string columnKey, string value, CancellationToken cancellationToken = default)
+    public Task SelectRowAsync(string columnKey, string value, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
         ArgumentNullException.ThrowIfNull(value);
-
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot selectRow over the wire.",
-                    FailureSteps.SelectRow,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.SelectRowAsync(node.AutomationId, columnKey, value, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.SelectRow, $"{node.AutomationId}[{columnKey}={value}]", cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.SelectRow, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
+        return RunActionAsync(
+            FailureSteps.SelectRow,
+            id => _connection.SelectRowAsync(id, columnKey, value, cancellationToken),
+            cancellationToken,
+            detail: id => $"{id}[{columnKey}={value}]"
+        );
     }
 
     /// <summary>
@@ -1011,38 +626,15 @@ public sealed class ElementQuery
     /// <param name="columnKey">Column Header string.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when clickColumnHeader succeeds.</returns>
-    public async Task ClickColumnHeaderAsync(string columnKey, CancellationToken cancellationToken = default)
+    public Task ClickColumnHeaderAsync(string columnKey, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(columnKey);
-
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot clickColumnHeader over the wire.",
-                    FailureSteps.ClickColumnHeader,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.ClickColumnHeaderAsync(node.AutomationId, columnKey, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.ClickColumnHeader, $"{node.AutomationId}:{columnKey}", cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.ClickColumnHeader,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
-                .ConfigureAwait(false);
-        }
+        return RunActionAsync(
+            FailureSteps.ClickColumnHeader,
+            id => _connection.ClickColumnHeaderAsync(id, columnKey, cancellationToken),
+            cancellationToken,
+            detail: id => $"{id}:{columnKey}"
+        );
     }
 
     /// <summary>
@@ -1050,68 +642,16 @@ public sealed class ElementQuery
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when addRow succeeds.</returns>
-    public async Task AddRowAsync(CancellationToken cancellationToken = default)
-    {
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot addRow over the wire.",
-                    FailureSteps.AddRow,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.AddRowAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.AddRow, node.AutomationId, cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.AddRow, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
-    }
+    public Task AddRowAsync(CancellationToken cancellationToken = default) =>
+        RunActionAsync(FailureSteps.AddRow, id => _connection.AddRowAsync(id, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Waits until the DataGrid is actionable, then deletes selected rows.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when deleteSelectedRows succeeds.</returns>
-    public async Task DeleteSelectedRowsAsync(CancellationToken cancellationToken = default)
-    {
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot deleteSelectedRows over the wire.",
-                    FailureSteps.DeleteSelectedRows,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.DeleteSelectedRowsAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.DeleteSelectedRows, node.AutomationId, cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.DeleteSelectedRows,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
-                .ConfigureAwait(false);
-        }
-    }
+    public Task DeleteSelectedRowsAsync(CancellationToken cancellationToken = default) =>
+        RunActionAsync(FailureSteps.DeleteSelectedRows, id => _connection.DeleteSelectedRowsAsync(id, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Waits until the DataGrid cell text equals <paramref name="expectedText"/> (column index).
@@ -1152,31 +692,8 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when expand succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or expand failed.</exception>
-    public async Task ExpandAsync(CancellationToken cancellationToken = default)
-    {
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot expand over the wire.",
-                    FailureSteps.Expand,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.ExpandAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.Expand, node.AutomationId, cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Expand, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
-    }
+    public Task ExpandAsync(CancellationToken cancellationToken = default) =>
+        RunActionAsync(FailureSteps.Expand, id => _connection.ExpandAsync(id, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Waits until the element is actionable, then collapses it.
@@ -1184,31 +701,8 @@ public sealed class ElementQuery
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when collapse succeeds.</returns>
     /// <exception cref="GraftException">Wait, resolve, or collapse failed.</exception>
-    public async Task CollapseAsync(CancellationToken cancellationToken = default)
-    {
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot collapse over the wire.",
-                    FailureSteps.Collapse,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            await _connection.CollapseAsync(node.AutomationId, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.Collapse, node.AutomationId, cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.Collapse, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
-    }
+    public Task CollapseAsync(CancellationToken cancellationToken = default) =>
+        RunActionAsync(FailureSteps.Collapse, id => _connection.CollapseAsync(id, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Waits until the element's <c>name</c> equals <paramref name="expectedName"/>.
@@ -1221,74 +715,17 @@ public sealed class ElementQuery
     /// <c>action.timeout</c> when the element never qualifies in time.
     /// Includes <see cref="GraftException.Report"/> with diagnostics attachments when available.
     /// </exception>
-    public async Task<TreeNode> ExpectNameAsync(string expectedName, CancellationToken cancellationToken = default)
+    public Task<TreeNode> ExpectNameAsync(string expectedName, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(expectedName);
-
-        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
-        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
-        var deadline = DateTime.UtcNow + timeout;
-
-        string? lastActual = null;
-        TreeNode? lastRoot = null;
-        var sawElement = false;
-
-        while (DateTime.UtcNow < deadline)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
-                lastRoot = tree.Root;
-                var node = ResolveNode(tree.Root);
-                sawElement = true;
-                if (string.Equals(node.Name, expectedName, StringComparison.Ordinal))
-                {
-                    await RecordSuccessAsync(FailureSteps.ExpectName, expectedName, cancellationToken).ConfigureAwait(false);
-                    return node;
-                }
-
-                lastActual = node.Name;
-            }
-            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
-            {
-                // Still waiting for the element to appear / tree to be ready.
-            }
-
-            var remaining = deadline - DateTime.UtcNow;
-            if (remaining <= TimeSpan.Zero)
-            {
-                break;
-            }
-
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
-        }
-
-        if (sawElement && lastActual is not null)
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ExpectFailed,
-                    $"Expected name '{expectedName}' but was '{lastActual}'.",
-                    FailureSteps.ExpectName,
-                    expected: expectedName,
-                    actual: lastActual,
-                    timedOut: true,
-                    treeRoot: lastRoot,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        throw await CreateFailureAsync(
-                GraftErrorCodes.ActionTimeout,
-                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for name '{expectedName}'.",
-                FailureSteps.ExpectName,
-                expected: expectedName,
-                timedOut: true,
-                treeRoot: lastRoot,
-                cancellationToken: cancellationToken
-            )
-            .ConfigureAwait(false);
+        return ExpectAsync(
+            FailureSteps.ExpectName,
+            expectedName,
+            node => (string.Equals(node.Name, expectedName, StringComparison.Ordinal), node.Name),
+            actual => $"Expected name '{expectedName}' but was '{actual}'.",
+            seconds => $"Timed out after {seconds:0.###}s waiting for name '{expectedName}'.",
+            cancellationToken
+        );
     }
 
     /// <summary>
@@ -1366,74 +803,17 @@ public sealed class ElementQuery
     /// <param name="substring">Expected non-empty ordinal substring.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The matched node when the expectation holds.</returns>
-    public async Task<TreeNode> ExpectNameContainsAsync(string substring, CancellationToken cancellationToken = default)
+    public Task<TreeNode> ExpectNameContainsAsync(string substring, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(substring);
-
-        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
-        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
-        var deadline = DateTime.UtcNow + timeout;
-
-        string? lastActual = null;
-        TreeNode? lastRoot = null;
-        var sawElement = false;
-
-        while (DateTime.UtcNow < deadline)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
-                lastRoot = tree.Root;
-                var node = ResolveNode(tree.Root);
-                sawElement = true;
-                if (node.Name.Contains(substring, StringComparison.Ordinal))
-                {
-                    await RecordSuccessAsync(FailureSteps.ExpectNameContains, substring, cancellationToken).ConfigureAwait(false);
-                    return node;
-                }
-
-                lastActual = node.Name;
-            }
-            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
-            {
-                // Still waiting for the element to appear / tree to be ready.
-            }
-
-            var remaining = deadline - DateTime.UtcNow;
-            if (remaining <= TimeSpan.Zero)
-            {
-                break;
-            }
-
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
-        }
-
-        if (sawElement && lastActual is not null)
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ExpectFailed,
-                    $"Expected name to contain '{substring}' but was '{lastActual}'.",
-                    FailureSteps.ExpectNameContains,
-                    expected: substring,
-                    actual: lastActual,
-                    timedOut: true,
-                    treeRoot: lastRoot,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        throw await CreateFailureAsync(
-                GraftErrorCodes.ActionTimeout,
-                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for name containing '{substring}'.",
-                FailureSteps.ExpectNameContains,
-                expected: substring,
-                timedOut: true,
-                treeRoot: lastRoot,
-                cancellationToken: cancellationToken
-            )
-            .ConfigureAwait(false);
+        return ExpectAsync(
+            FailureSteps.ExpectNameContains,
+            substring,
+            node => (node.Name.Contains(substring, StringComparison.Ordinal), node.Name),
+            actual => $"Expected name to contain '{substring}' but was '{actual}'.",
+            seconds => $"Timed out after {seconds:0.###}s waiting for name containing '{substring}'.",
+            cancellationToken
+        );
     }
 
     /// <summary>
@@ -1442,75 +822,18 @@ public sealed class ElementQuery
     /// <param name="pattern">.NET regular expression pattern.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The matched node when the expectation holds.</returns>
-    public async Task<TreeNode> ExpectNameMatchesAsync(string pattern, CancellationToken cancellationToken = default)
+    public Task<TreeNode> ExpectNameMatchesAsync(string pattern, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(pattern);
         var regex = new Regex(pattern, RegexOptions.CultureInvariant | RegexOptions.Singleline);
-
-        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
-        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
-        var deadline = DateTime.UtcNow + timeout;
-
-        string? lastActual = null;
-        TreeNode? lastRoot = null;
-        var sawElement = false;
-
-        while (DateTime.UtcNow < deadline)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
-                lastRoot = tree.Root;
-                var node = ResolveNode(tree.Root);
-                sawElement = true;
-                if (regex.IsMatch(node.Name))
-                {
-                    await RecordSuccessAsync(FailureSteps.ExpectNameMatches, pattern, cancellationToken).ConfigureAwait(false);
-                    return node;
-                }
-
-                lastActual = node.Name;
-            }
-            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
-            {
-                // Still waiting for the element to appear / tree to be ready.
-            }
-
-            var remaining = deadline - DateTime.UtcNow;
-            if (remaining <= TimeSpan.Zero)
-            {
-                break;
-            }
-
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
-        }
-
-        if (sawElement && lastActual is not null)
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ExpectFailed,
-                    $"Expected name to match /{pattern}/ but was '{lastActual}'.",
-                    FailureSteps.ExpectNameMatches,
-                    expected: pattern,
-                    actual: lastActual,
-                    timedOut: true,
-                    treeRoot: lastRoot,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        throw await CreateFailureAsync(
-                GraftErrorCodes.ActionTimeout,
-                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for name matching /{pattern}/.",
-                FailureSteps.ExpectNameMatches,
-                expected: pattern,
-                timedOut: true,
-                treeRoot: lastRoot,
-                cancellationToken: cancellationToken
-            )
-            .ConfigureAwait(false);
+        return ExpectAsync(
+            FailureSteps.ExpectNameMatches,
+            pattern,
+            node => (regex.IsMatch(node.Name), node.Name),
+            actual => $"Expected name to match /{pattern}/ but was '{actual}'.",
+            seconds => $"Timed out after {seconds:0.###}s waiting for name matching /{pattern}/.",
+            cancellationToken
+        );
     }
 
     /// <summary>
@@ -1523,74 +846,17 @@ public sealed class ElementQuery
     /// <c>expect.failed</c> when the value differs or is not applicable;
     /// <c>action.timeout</c> when the element never qualifies in time.
     /// </exception>
-    public async Task<TreeNode> ExpectValueAsync(string expectedValue, CancellationToken cancellationToken = default)
+    public Task<TreeNode> ExpectValueAsync(string expectedValue, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(expectedValue);
-
-        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
-        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
-        var deadline = DateTime.UtcNow + timeout;
-
-        string? lastActual = null;
-        TreeNode? lastRoot = null;
-        var sawElement = false;
-
-        while (DateTime.UtcNow < deadline)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
-                lastRoot = tree.Root;
-                var node = ResolveNode(tree.Root);
-                sawElement = true;
-                if (node.Value is not null && string.Equals(node.Value, expectedValue, StringComparison.Ordinal))
-                {
-                    await RecordSuccessAsync(FailureSteps.ExpectValue, expectedValue, cancellationToken).ConfigureAwait(false);
-                    return node;
-                }
-
-                lastActual = node.Value ?? "n/a";
-            }
-            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
-            {
-                // Still waiting for the element to appear / tree to be ready.
-            }
-
-            var remaining = deadline - DateTime.UtcNow;
-            if (remaining <= TimeSpan.Zero)
-            {
-                break;
-            }
-
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
-        }
-
-        if (sawElement && lastActual is not null)
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ExpectFailed,
-                    $"Expected value '{expectedValue}' but was '{lastActual}'.",
-                    FailureSteps.ExpectValue,
-                    expected: expectedValue,
-                    actual: lastActual,
-                    timedOut: true,
-                    treeRoot: lastRoot,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        throw await CreateFailureAsync(
-                GraftErrorCodes.ActionTimeout,
-                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for value '{expectedValue}'.",
-                FailureSteps.ExpectValue,
-                expected: expectedValue,
-                timedOut: true,
-                treeRoot: lastRoot,
-                cancellationToken: cancellationToken
-            )
-            .ConfigureAwait(false);
+        return ExpectAsync(
+            FailureSteps.ExpectValue,
+            expectedValue,
+            node => (node.Value is not null && string.Equals(node.Value, expectedValue, StringComparison.Ordinal), node.Value ?? "n/a"),
+            actual => $"Expected value '{expectedValue}' but was '{actual}'.",
+            seconds => $"Timed out after {seconds:0.###}s waiting for value '{expectedValue}'.",
+            cancellationToken
+        );
     }
 
     /// <summary>
@@ -1603,74 +869,17 @@ public sealed class ElementQuery
     /// <c>expect.failed</c> when a mismatched ToolTip is observed until timeout, or
     /// <c>action.timeout</c> when the element never qualifies in time.
     /// </exception>
-    public async Task<TreeNode> ExpectToolTipAsync(string expectedToolTip, CancellationToken cancellationToken = default)
+    public Task<TreeNode> ExpectToolTipAsync(string expectedToolTip, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(expectedToolTip);
-
-        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
-        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
-        var deadline = DateTime.UtcNow + timeout;
-
-        string? lastActual = null;
-        TreeNode? lastRoot = null;
-        var sawElement = false;
-
-        while (DateTime.UtcNow < deadline)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
-                lastRoot = tree.Root;
-                var node = ResolveNode(tree.Root);
-                sawElement = true;
-                if (node.ToolTip is not null && string.Equals(node.ToolTip, expectedToolTip, StringComparison.Ordinal))
-                {
-                    await RecordSuccessAsync(FailureSteps.ExpectToolTip, expectedToolTip, cancellationToken).ConfigureAwait(false);
-                    return node;
-                }
-
-                lastActual = node.ToolTip ?? "n/a";
-            }
-            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
-            {
-                // Still waiting for the element to appear / tree to be ready.
-            }
-
-            var remaining = deadline - DateTime.UtcNow;
-            if (remaining <= TimeSpan.Zero)
-            {
-                break;
-            }
-
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
-        }
-
-        if (sawElement && lastActual is not null)
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ExpectFailed,
-                    $"Expected toolTip '{expectedToolTip}' but was '{lastActual}'.",
-                    FailureSteps.ExpectToolTip,
-                    expected: expectedToolTip,
-                    actual: lastActual,
-                    timedOut: true,
-                    treeRoot: lastRoot,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        throw await CreateFailureAsync(
-                GraftErrorCodes.ActionTimeout,
-                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for toolTip '{expectedToolTip}'.",
-                FailureSteps.ExpectToolTip,
-                expected: expectedToolTip,
-                timedOut: true,
-                treeRoot: lastRoot,
-                cancellationToken: cancellationToken
-            )
-            .ConfigureAwait(false);
+        return ExpectAsync(
+            FailureSteps.ExpectToolTip,
+            expectedToolTip,
+            node => (node.ToolTip is not null && string.Equals(node.ToolTip, expectedToolTip, StringComparison.Ordinal), node.ToolTip ?? "n/a"),
+            actual => $"Expected toolTip '{expectedToolTip}' but was '{actual}'.",
+            seconds => $"Timed out after {seconds:0.###}s waiting for toolTip '{expectedToolTip}'.",
+            cancellationToken
+        );
     }
 
     /// <summary>
@@ -1681,33 +890,34 @@ public sealed class ElementQuery
     public async Task<TreeNode> WaitForAsync(CancellationToken cancellationToken = default)
     {
         var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
-        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
-        var deadline = DateTime.UtcNow + timeout;
         TreeNode? lastRoot = null;
+        TreeNode? found = null;
+        var matched = await PollUntilAsync(
+                timeout,
+                async ct =>
+                {
+                    try
+                    {
+                        var tree = await _connection.GetTreeAsync(ct).ConfigureAwait(false);
+                        lastRoot = tree.Root;
+                        var node = ResolveNode(tree.Root);
+                        await RecordSuccessAsync(FailureSteps.WaitFor, node.AutomationId, ct).ConfigureAwait(false);
+                        found = node;
+                        return true;
+                    }
+                    catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+                    {
+                        // Keep polling.
+                        return false;
+                    }
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
 
-        while (DateTime.UtcNow < deadline)
+        if (matched)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
-                lastRoot = tree.Root;
-                var node = ResolveNode(tree.Root);
-                await RecordSuccessAsync(FailureSteps.WaitFor, node.AutomationId, cancellationToken).ConfigureAwait(false);
-                return node;
-            }
-            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
-            {
-                // Keep polling.
-            }
-
-            var remaining = deadline - DateTime.UtcNow;
-            if (remaining <= TimeSpan.Zero)
-            {
-                break;
-            }
-
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
+            return found!;
         }
 
         throw await CreateFailureAsync(
@@ -1756,44 +966,44 @@ public sealed class ElementQuery
     public async Task ExpectGoneAsync(CancellationToken cancellationToken = default)
     {
         var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
-        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
-        var deadline = DateTime.UtcNow + timeout;
         TreeNode? lastRoot = null;
         string? lastActual = null;
-
-        while (DateTime.UtcNow < deadline)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
-                lastRoot = tree.Root;
-                var node = ResolveNode(tree.Root);
-                if (!node.Visible)
+        var gone = await PollUntilAsync(
+                timeout,
+                async ct =>
                 {
-                    await RecordSuccessAsync(FailureSteps.ExpectGone, "not-visible", cancellationToken).ConfigureAwait(false);
-                    return;
-                }
+                    try
+                    {
+                        var tree = await _connection.GetTreeAsync(ct).ConfigureAwait(false);
+                        lastRoot = tree.Root;
+                        var node = ResolveNode(tree.Root);
+                        if (!node.Visible)
+                        {
+                            await RecordSuccessAsync(FailureSteps.ExpectGone, "not-visible", ct).ConfigureAwait(false);
+                            return true;
+                        }
 
-                lastActual = $"visible={node.Visible}";
-            }
-            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound)
-            {
-                await RecordSuccessAsync(FailureSteps.ExpectGone, "not-found", cancellationToken).ConfigureAwait(false);
-                return;
-            }
-            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ActionFailed)
-            {
-                // Keep polling.
-            }
+                        lastActual = $"visible={node.Visible}";
+                        return false;
+                    }
+                    catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound)
+                    {
+                        await RecordSuccessAsync(FailureSteps.ExpectGone, "not-found", ct).ConfigureAwait(false);
+                        return true;
+                    }
+                    catch (GraftException ex) when (ex.Code is GraftErrorCodes.ActionFailed)
+                    {
+                        // Keep polling.
+                        return false;
+                    }
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
 
-            var remaining = deadline - DateTime.UtcNow;
-            if (remaining <= TimeSpan.Zero)
-            {
-                break;
-            }
-
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
+        if (gone)
+        {
+            return;
         }
 
         var goneTimeoutMessage =
@@ -1810,168 +1020,82 @@ public sealed class ElementQuery
             .ConfigureAwait(false);
     }
 
-    private async Task<string> GetCellTextCoreAsync(int row, int? column, string? columnKey, CancellationToken cancellationToken)
-    {
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot getCellText over the wire.",
-                    FailureSteps.GetCellText,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
+    private Task<string> GetCellTextCoreAsync(int row, int? column, string? columnKey, CancellationToken cancellationToken) =>
+        RunActionAsync(
+            FailureSteps.GetCellText,
+            id =>
+                columnKey is null
+                    ? _connection.GetCellTextAsync(id, row, column!.Value, cancellationToken)
+                    : _connection.GetCellTextAsync(id, row, columnKey, cancellationToken),
+            cancellationToken,
+            detail: (id, _) => columnKey is null ? $"{id}[{row},{column}]" : $"{id}[{row},{columnKey}]"
+        );
 
-        try
-        {
-            var text = columnKey is null
-                ? await _connection.GetCellTextAsync(node.AutomationId, row, column!.Value, cancellationToken).ConfigureAwait(false)
-                : await _connection.GetCellTextAsync(node.AutomationId, row, columnKey, cancellationToken).ConfigureAwait(false);
-            var detail = columnKey is null ? $"{node.AutomationId}[{row},{column}]" : $"{node.AutomationId}[{row},{columnKey}]";
-            await RecordSuccessAsync(FailureSteps.GetCellText, detail, cancellationToken).ConfigureAwait(false);
-            return text;
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.GetCellText, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
-    }
-
-    private async Task SetCellValueCoreAsync(int row, int? column, string? columnKey, string value, CancellationToken cancellationToken)
+    private Task SetCellValueCoreAsync(int row, int? column, string? columnKey, string value, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(value);
-
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot setCellValue over the wire.",
-                    FailureSteps.SetCellValue,
-                    expected: value,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            if (columnKey is null)
-            {
-                await _connection.SetCellValueAsync(node.AutomationId, row, column!.Value, value, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                await _connection.SetCellValueAsync(node.AutomationId, row, columnKey, value, cancellationToken).ConfigureAwait(false);
-            }
-
-            var detail = columnKey is null ? $"{node.AutomationId}[{row},{column}]={value}" : $"{node.AutomationId}[{row},{columnKey}]={value}";
-            await RecordSuccessAsync(FailureSteps.SetCellValue, detail, cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(
-                    ex.Code,
-                    ex.Message,
-                    FailureSteps.SetCellValue,
-                    expected: value,
-                    cancellationToken: cancellationToken,
-                    innerException: ex
-                )
-                .ConfigureAwait(false);
-        }
+        return RunActionAsync(
+            FailureSteps.SetCellValue,
+            id =>
+                columnKey is null
+                    ? _connection.SetCellValueAsync(id, row, column!.Value, value, cancellationToken)
+                    : _connection.SetCellValueAsync(id, row, columnKey, value, cancellationToken),
+            cancellationToken,
+            expected: value,
+            detail: id => columnKey is null ? $"{id}[{row},{column}]={value}" : $"{id}[{row},{columnKey}]={value}"
+        );
     }
 
-    private async Task SelectCellCoreAsync(int row, int? column, string? columnKey, CancellationToken cancellationToken)
-    {
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot selectCell over the wire.",
-                    FailureSteps.SelectCell,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            if (columnKey is null)
-            {
-                await _connection.SelectCellAsync(node.AutomationId, row, column!.Value, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                await _connection.SelectCellAsync(node.AutomationId, row, columnKey, cancellationToken).ConfigureAwait(false);
-            }
-
-            var detail = columnKey is null ? $"{node.AutomationId}[{row},{column}]" : $"{node.AutomationId}[{row},{columnKey}]";
-            await RecordSuccessAsync(FailureSteps.SelectCell, detail, cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.SelectCell, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
-    }
+    private Task SelectCellCoreAsync(int row, int? column, string? columnKey, CancellationToken cancellationToken) =>
+        RunActionAsync(
+            FailureSteps.SelectCell,
+            id =>
+                columnKey is null
+                    ? _connection.SelectCellAsync(id, row, column!.Value, cancellationToken)
+                    : _connection.SelectCellAsync(id, row, columnKey, cancellationToken),
+            cancellationToken,
+            detail: id => columnKey is null ? $"{id}[{row},{column}]" : $"{id}[{row},{columnKey}]"
+        );
 
     private async Task ExpectCellTextCoreAsync(int row, int? column, string? columnKey, string expectedText, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(expectedText);
-
-        var host = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(host.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot expectCellText over the wire.",
-                    FailureSteps.ExpectCellText,
-                    expected: expectedText,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
+        var hostId = await RequireAutomationIdAsync(FailureSteps.ExpectCellText, cancellationToken, expectedText).ConfigureAwait(false);
         var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
-        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
-        var deadline = DateTime.UtcNow + timeout;
         string? lastActual = null;
         var sawCell = false;
-
-        while (DateTime.UtcNow < deadline)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                var actual = columnKey is null
-                    ? await _connection.GetCellTextAsync(host.AutomationId, row, column!.Value, cancellationToken).ConfigureAwait(false)
-                    : await _connection.GetCellTextAsync(host.AutomationId, row, columnKey, cancellationToken).ConfigureAwait(false);
-                sawCell = true;
-                if (string.Equals(actual, expectedText, StringComparison.Ordinal))
+        var matched = await PollUntilAsync(
+                timeout,
+                async ct =>
                 {
-                    await RecordSuccessAsync(FailureSteps.ExpectCellText, expectedText, cancellationToken).ConfigureAwait(false);
-                    return;
-                }
+                    try
+                    {
+                        var actual = columnKey is null
+                            ? await _connection.GetCellTextAsync(hostId, row, column!.Value, ct).ConfigureAwait(false)
+                            : await _connection.GetCellTextAsync(hostId, row, columnKey, ct).ConfigureAwait(false);
+                        sawCell = true;
+                        if (string.Equals(actual, expectedText, StringComparison.Ordinal))
+                        {
+                            await RecordSuccessAsync(FailureSteps.ExpectCellText, expectedText, ct).ConfigureAwait(false);
+                            return true;
+                        }
 
-                lastActual = actual;
-            }
-            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
-            {
-                // Still waiting for the cell / grid to be ready.
-            }
+                        lastActual = actual;
+                        return false;
+                    }
+                    catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+                    {
+                        // Still waiting for the cell / grid to be ready.
+                        return false;
+                    }
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
 
-            var remaining = deadline - DateTime.UtcNow;
-            if (remaining <= TimeSpan.Zero)
-            {
-                break;
-            }
-
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
+        if (matched)
+        {
+            return;
         }
 
         if (sawCell && lastActual is not null)
@@ -1999,7 +1123,7 @@ public sealed class ElementQuery
             .ConfigureAwait(false);
     }
 
-    private async Task<TreeNode> ExpectBoolPropertyAsync(
+    private Task<TreeNode> ExpectBoolPropertyAsync(
         bool expected,
         Func<TreeNode, bool?> getter,
         string step,
@@ -2007,54 +1131,79 @@ public sealed class ElementQuery
         CancellationToken cancellationToken
     )
     {
-        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
-        var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
-        var deadline = DateTime.UtcNow + timeout;
         var expectedText = expected ? "true" : "false";
+        return ExpectAsync(
+            step,
+            expectedText,
+            node =>
+            {
+                var actual = getter(node);
+                var text = actual is null ? "n/a" : (actual.Value ? "true" : "false");
+                return (actual is { } value && value == expected, text);
+            },
+            actual => $"Expected {propertyName} '{expectedText}' but was '{actual}'.",
+            seconds => $"Timed out after {seconds:0.###}s waiting for {propertyName} '{expectedText}'.",
+            cancellationToken
+        );
+    }
 
+    private async Task<TreeNode> ExpectAsync(
+        string step,
+        string expected,
+        Func<TreeNode, (bool Ok, string? Actual)> check,
+        Func<string, string> mismatchMessage,
+        Func<double, string> timeoutMessage,
+        CancellationToken cancellationToken
+    )
+    {
+        var timeout = PositiveOrDefault(_waitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
         string? lastActual = null;
         TreeNode? lastRoot = null;
         var sawElement = false;
-
-        while (DateTime.UtcNow < deadline)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
-                lastRoot = tree.Root;
-                var node = ResolveNode(tree.Root);
-                sawElement = true;
-                var actual = getter(node);
-                if (actual is { } value && value == expected)
+        TreeNode? matched = null;
+        var found = await PollUntilAsync(
+                timeout,
+                async ct =>
                 {
-                    await RecordSuccessAsync(step, expectedText, cancellationToken).ConfigureAwait(false);
-                    return node;
-                }
+                    try
+                    {
+                        var tree = await _connection.GetTreeAsync(ct).ConfigureAwait(false);
+                        lastRoot = tree.Root;
+                        var node = ResolveNode(tree.Root);
+                        sawElement = true;
+                        var (ok, actual) = check(node);
+                        if (ok)
+                        {
+                            await RecordSuccessAsync(step, expected, ct).ConfigureAwait(false);
+                            matched = node;
+                            return true;
+                        }
 
-                lastActual = actual is null ? "n/a" : (actual.Value ? "true" : "false");
-            }
-            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
-            {
-                // Still waiting for the element to appear / tree to be ready.
-            }
+                        lastActual = actual;
+                        return false;
+                    }
+                    catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+                    {
+                        // Still waiting for the element to appear / tree to be ready.
+                        return false;
+                    }
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
 
-            var remaining = deadline - DateTime.UtcNow;
-            if (remaining <= TimeSpan.Zero)
-            {
-                break;
-            }
-
-            await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
+        if (found)
+        {
+            return matched!;
         }
 
         if (sawElement && lastActual is not null)
         {
             throw await CreateFailureAsync(
                     GraftErrorCodes.ExpectFailed,
-                    $"Expected {propertyName} '{expectedText}' but was '{lastActual}'.",
+                    mismatchMessage(lastActual),
                     step,
-                    expected: expectedText,
+                    expected: expected,
                     actual: lastActual,
                     timedOut: true,
                     treeRoot: lastRoot,
@@ -2065,9 +1214,9 @@ public sealed class ElementQuery
 
         throw await CreateFailureAsync(
                 GraftErrorCodes.ActionTimeout,
-                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for {propertyName} '{expectedText}'.",
+                timeoutMessage(timeout.TotalSeconds),
                 step,
-                expected: expectedText,
+                expected: expected,
                 timedOut: true,
                 treeRoot: lastRoot,
                 cancellationToken: cancellationToken
@@ -2075,35 +1224,16 @@ public sealed class ElementQuery
             .ConfigureAwait(false);
     }
 
-    private async Task<TreeNode> WaitForActionableAsync(CancellationToken cancellationToken)
+    private async Task<bool> PollUntilAsync(TimeSpan timeout, Func<CancellationToken, Task<bool>> attempt, CancellationToken cancellationToken)
     {
-        var timeout = PositiveOrDefault(_waitOptions.ActionTimeout, WaitOptions.DefaultActionTimeout);
         var poll = PositiveOrDefault(_waitOptions.PollInterval, WaitOptions.DefaultPollInterval);
         var deadline = DateTime.UtcNow + timeout;
-
-        string? lastActual = null;
-        TreeNode? lastRoot = null;
-        var sawNotActionable = false;
-
         while (DateTime.UtcNow < deadline)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            try
+            if (await attempt(cancellationToken).ConfigureAwait(false))
             {
-                var tree = await _connection.GetTreeAsync(cancellationToken).ConfigureAwait(false);
-                lastRoot = tree.Root;
-                var node = ResolveNode(tree.Root);
-                if (node.Enabled && node.Visible)
-                {
-                    return node;
-                }
-
-                lastActual = $"enabled={node.Enabled}, visible={node.Visible}";
-                sawNotActionable = true;
-            }
-            catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
-            {
-                // Keep polling.
+                return true;
             }
 
             var remaining = deadline - DateTime.UtcNow;
@@ -2113,6 +1243,126 @@ public sealed class ElementQuery
             }
 
             await Task.Delay(remaining < poll ? remaining : poll, cancellationToken).ConfigureAwait(false);
+        }
+
+        return false;
+    }
+
+    private Task RunActionAsync(
+        string step,
+        Func<string, Task> send,
+        CancellationToken cancellationToken,
+        string? expected = null,
+        Func<string, string>? detail = null
+    ) =>
+        RunActionAsync<object?>(
+            step,
+            async id =>
+            {
+                await send(id).ConfigureAwait(false);
+                return null;
+            },
+            cancellationToken,
+            expected,
+            detail is null ? null : (id, _) => detail(id)
+        );
+
+    private async Task<T> RunActionAsync<T>(
+        string step,
+        Func<string, Task<T>> send,
+        CancellationToken cancellationToken,
+        string? expected = null,
+        Func<string, T, string>? detail = null,
+        bool recordSuccess = true
+    )
+    {
+        var automationId = await RequireAutomationIdAsync(step, cancellationToken, expected).ConfigureAwait(false);
+        try
+        {
+            var result = await send(automationId).ConfigureAwait(false);
+            if (recordSuccess)
+            {
+                await RecordSuccessAsync(step, detail?.Invoke(automationId, result) ?? automationId, cancellationToken).ConfigureAwait(false);
+            }
+
+            return result;
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(ex.Code, ex.Message, step, expected: expected, cancellationToken: cancellationToken, innerException: ex)
+                .ConfigureAwait(false);
+        }
+    }
+
+    private Task<string> SendActionAsync(string step, Func<string, Task> send, CancellationToken cancellationToken) =>
+        RunActionAsync(
+            step,
+            async id =>
+            {
+                await send(id).ConfigureAwait(false);
+                return id;
+            },
+            cancellationToken,
+            recordSuccess: false
+        );
+
+    private async Task<string> RequireAutomationIdAsync(string step, CancellationToken cancellationToken, string? expected = null)
+    {
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    $"Resolved element has no automationId; cannot {step} over the wire.",
+                    step,
+                    expected: expected,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        return node.AutomationId;
+    }
+
+    private async Task<TreeNode> WaitForActionableAsync(CancellationToken cancellationToken)
+    {
+        var timeout = PositiveOrDefault(_waitOptions.ActionTimeout, WaitOptions.DefaultActionTimeout);
+        string? lastActual = null;
+        TreeNode? lastRoot = null;
+        var sawNotActionable = false;
+        TreeNode? actionable = null;
+        var found = await PollUntilAsync(
+                timeout,
+                async ct =>
+                {
+                    try
+                    {
+                        var tree = await _connection.GetTreeAsync(ct).ConfigureAwait(false);
+                        lastRoot = tree.Root;
+                        var node = ResolveNode(tree.Root);
+                        if (node.Enabled && node.Visible)
+                        {
+                            actionable = node;
+                            return true;
+                        }
+
+                        lastActual = $"enabled={node.Enabled}, visible={node.Visible}";
+                        sawNotActionable = true;
+                        return false;
+                    }
+                    catch (GraftException ex) when (ex.Code is GraftErrorCodes.ElementNotFound or GraftErrorCodes.ActionFailed)
+                    {
+                        // Keep polling.
+                        return false;
+                    }
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        if (found)
+        {
+            return actionable!;
         }
 
         if (sawNotActionable && lastActual is not null)
@@ -2212,33 +1462,13 @@ public sealed class ElementQuery
         );
     }
 
-    private async Task<ElementIdentity> ScrollIntoViewCoreAsync(int? index, CancellationToken cancellationToken)
-    {
-        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
-        {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    "Resolved element has no automationId; cannot scrollIntoView over the wire.",
-                    FailureSteps.ScrollIntoView,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
-
-        try
-        {
-            var identity = await _connection.ScrollIntoViewAsync(node.AutomationId, index, cancellationToken).ConfigureAwait(false);
-            var detail = index is null ? node.AutomationId : $"{node.AutomationId}[{index}]->{identity.AutomationId}";
-            await RecordSuccessAsync(FailureSteps.ScrollIntoView, detail, cancellationToken).ConfigureAwait(false);
-            return identity;
-        }
-        catch (GraftException ex) when (ex.Report is null)
-        {
-            throw await CreateFailureAsync(ex.Code, ex.Message, FailureSteps.ScrollIntoView, cancellationToken: cancellationToken, innerException: ex)
-                .ConfigureAwait(false);
-        }
-    }
+    private Task<ElementIdentity> ScrollIntoViewCoreAsync(int? index, CancellationToken cancellationToken) =>
+        RunActionAsync(
+            FailureSteps.ScrollIntoView,
+            id => _connection.ScrollIntoViewAsync(id, index, cancellationToken),
+            cancellationToken,
+            detail: (id, identity) => index is null ? id : $"{id}[{index}]->{identity.AutomationId}"
+        );
 
     private async Task RecordSuccessAsync(string action, string? detail, CancellationToken cancellationToken, byte[]? pngBytes = null)
     {
