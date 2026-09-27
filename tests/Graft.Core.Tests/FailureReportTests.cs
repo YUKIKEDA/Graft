@@ -53,7 +53,7 @@ public sealed class FailureReportTests
     /// - Serialize; parse as JsonDocument; FromSelector on a composite Selector
     ///
     /// Expected:
-    /// - expected/actual keys absent; FromSelector mirrors AutomationId and Name
+    /// - expected/actual keys absent; FromSelector mirrors AutomationId, Name, and Nth
     /// </remarks>
     [Fact]
     public void Serialize_OmitsNullOptionals_AndFromSelectorCopiesCriteria()
@@ -79,11 +79,46 @@ public sealed class FailureReportTests
                 AutomationId = "Box",
                 Name = "Hello",
                 ControlType = "TextBox",
+                Nth = 2,
             }
         );
         Assert.Equal("Box", fromComposite.AutomationId);
         Assert.Equal("Hello", fromComposite.Name);
         Assert.Equal("TextBox", fromComposite.ControlType);
+        Assert.Equal(2, fromComposite.Nth);
+        Assert.Equal(2, fromComposite.ToSelector().Nth);
+    }
+
+    /// <summary>
+    /// Nth survives a failure-report JSON round-trip and comes back on the live selector.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Selector with ControlType Button and Nth 2
+    ///
+    /// Steps:
+    /// - FromSelector, serialize the report, deserialize, ToSelector
+    ///
+    /// Expected:
+    /// - JSON selector.nth is 2
+    /// - ToSelector().Nth is 2
+    /// </remarks>
+    [Fact]
+    public void Serialize_ThenDeserialize_PreservesNth()
+    {
+        var report = new FailureReport
+        {
+            Step = FailureSteps.Invoke,
+            TimedOut = true,
+            Selector = FailureReportSelector.FromSelector(new Selector { ControlType = "Button", Nth = 2 }),
+        };
+
+        using var doc = JsonDocument.Parse(FailureReportJson.Serialize(report));
+        Assert.Equal(2, doc.RootElement.GetProperty("selector").GetProperty("nth").GetInt32());
+
+        var decoded = FailureReportJson.Deserialize(FailureReportJson.Serialize(report));
+        Assert.Equal(2, decoded.Selector.Nth);
+        Assert.Equal(2, decoded.Selector.ToSelector().Nth);
     }
 
     /// <summary>
