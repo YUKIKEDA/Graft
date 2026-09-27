@@ -84,6 +84,69 @@ public sealed class SendKeysDispatchTests : IDisposable
     }
 
     /// <summary>
+    /// typeHuman without a registered key sender returns action.failed.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Agent started; ElementKeySender is null
+    ///
+    /// Steps:
+    /// - Handshake then typeHuman
+    ///
+    /// Expected:
+    /// - ok=false with action.failed
+    /// </remarks>
+    [Fact]
+    public async Task TypeHuman_WithoutSender_ReturnsActionFailed()
+    {
+        StartAgent();
+
+        await using var client = await ConnectAsync(_pipeName);
+        Assert.True((await SendHandshakeAsync(client)).Ok);
+
+        var response = await SendTypeHumanAsync(client, "SampleTextBox", "ab", 40);
+        Assert.False(response.Ok);
+        Assert.Equal(GraftErrorCodes.ActionFailed, response.Error?.Code);
+    }
+
+    /// <summary>
+    /// typeHuman dispatches text and delay, and rejects a negative delay.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Fake IElementKeySender registered
+    ///
+    /// Steps:
+    /// - Handshake then typeHuman with delayMs 40
+    /// - typeHuman with delayMs -1
+    ///
+    /// Expected:
+    /// - the first call is ok and the fake records text and 40ms
+    /// - the second call is selector.invalid and does not replace the recorded call
+    /// </remarks>
+    [Fact]
+    public async Task TypeHuman_WithFakeSender_PassesDelay_AndRejectsNegative()
+    {
+        var fake = new FakeElementKeySender();
+        AgentServices.RegisterElementKeySender(fake);
+        StartAgent();
+
+        await using var client = await ConnectAsync(_pipeName);
+        Assert.True((await SendHandshakeAsync(client)).Ok);
+
+        var response = await SendTypeHumanAsync(client, "SampleTextBox", "ab", 40);
+        Assert.True(response.Ok, response.Error?.Message);
+        Assert.Equal("SampleTextBox", fake.LastTypeAutomationId);
+        Assert.Equal("ab", fake.LastTypeText);
+        Assert.Equal(TimeSpan.FromMilliseconds(40), fake.LastDelay);
+
+        var rejected = await SendTypeHumanAsync(client, "SampleTextBox", "nope", -1);
+        Assert.False(rejected.Ok);
+        Assert.Equal(GraftErrorCodes.SelectorInvalid, rejected.Error?.Code);
+        Assert.Equal("ab", fake.LastTypeText);
+    }
+
+    /// <summary>
     /// pressKeys without a registered key sender returns action.failed.
     /// </summary>
     /// <remarks>
@@ -197,6 +260,26 @@ public sealed class SendKeysDispatchTests : IDisposable
         return await JsonMessageCodec.ReadResponseAsync(stream);
     }
 
+    private static async Task<ResponseMessage> SendTypeHumanAsync(Stream stream, string automationId, string text, int delayMs)
+    {
+        var request = new RequestMessage
+        {
+            V = ProtocolVersion.Current,
+            Id = "4",
+            Method = ProtocolMethods.TypeHuman,
+            Params = JsonSerializer.SerializeToElement(
+                new
+                {
+                    automationId,
+                    text,
+                    delayMs,
+                }
+            ),
+        };
+        await JsonMessageCodec.WriteRequestAsync(stream, request);
+        return await JsonMessageCodec.ReadResponseAsync(stream);
+    }
+
     private static async Task<ResponseMessage> SendPressKeysAsync(Stream stream, string automationId, string keys)
     {
         var request = new RequestMessage
@@ -223,6 +306,12 @@ public sealed class SendKeysDispatchTests : IDisposable
 
         public string? LastText { get; private set; }
 
+        public string? LastTypeAutomationId { get; private set; }
+
+        public string? LastTypeText { get; private set; }
+
+        public TimeSpan? LastDelay { get; private set; }
+
         public string? LastPressAutomationId { get; private set; }
 
         public string? LastKeys { get; private set; }
@@ -231,6 +320,13 @@ public sealed class SendKeysDispatchTests : IDisposable
         {
             LastAutomationId = selector.AutomationId;
             LastText = text;
+        }
+
+        public void TypeHuman(ElementSelector selector, string text, TimeSpan delay)
+        {
+            LastTypeAutomationId = selector.AutomationId;
+            LastTypeText = text;
+            LastDelay = delay;
         }
 
         public void PressKeys(ElementSelector selector, string keys)

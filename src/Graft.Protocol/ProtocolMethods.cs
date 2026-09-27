@@ -88,6 +88,11 @@ public static class ProtocolMethods
     public const string SendKeys = "sendKeys";
 
     /// <summary>
+    /// Types literal text one Unicode scalar at a time, waiting <c>params.delayMs</c> between scalars.
+    /// </summary>
+    public const string TypeHuman = "typeHuman";
+
+    /// <summary>
     /// Presses one keyboard chord on a focused element via <c>params.automationId</c> and <c>params.keys</c>.
     /// </summary>
     public const string PressKeys = "pressKeys";

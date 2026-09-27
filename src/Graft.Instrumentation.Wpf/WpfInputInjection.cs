@@ -116,6 +116,19 @@ internal static class WpfInputInjection
         element.Dispatcher.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.ContextIdle);
     }
 
+    /// <summary>
+    /// Types <paramref name="text"/> into an element that is already focused.
+    /// </summary>
+    /// <param name="element">Focused element.</param>
+    /// <param name="text">One or more characters.</param>
+    public static void TypeIntoFocused(FrameworkElement element, string text)
+    {
+        ArgumentNullException.ThrowIfNull(element);
+        ArgumentNullException.ThrowIfNull(text);
+        InputInjector.TypeText(text);
+        FlushIdle(element);
+    }
+
     public static void FocusAndPress(FrameworkElement element, string keys)
     {
         ActivateWindow(element);

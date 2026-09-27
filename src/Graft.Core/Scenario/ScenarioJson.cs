@@ -163,6 +163,7 @@ public static class ScenarioJson
             ScenarioActions.SetValue => CompileSetValue(step, index),
             ScenarioActions.Toggle => CompileToggle(step, index),
             ScenarioActions.SendKeys => CompileSendKeys(step, index),
+            ScenarioActions.TypeHuman => CompileTypeHuman(step, index),
             ScenarioActions.PressKeys => CompilePressKeys(step, index),
             ScenarioActions.Screenshot => CompileScreenshot(step, index),
             ScenarioActions.ScrollIntoView => CompileScrollIntoView(step, index),
@@ -287,6 +288,22 @@ public static class ScenarioJson
         }
 
         return new SendKeysOperation(automationId, textElement.GetString() ?? string.Empty);
+    }
+
+    private static TypeHumanOperation CompileTypeHuman(JsonElement step, int index)
+    {
+        var automationId = RequireNonEmptyString(step, "automationId", index);
+        if (!step.TryGetProperty("text", out var textElement) || textElement.ValueKind != JsonValueKind.String)
+        {
+            throw Invalid($"steps[{index}] typeHuman requires string property 'text'.");
+        }
+
+        if (!step.TryGetProperty("delayMs", out var delayElement) || !delayElement.TryGetInt32(out var delayMs) || delayMs < 0)
+        {
+            throw Invalid($"steps[{index}] typeHuman requires non-negative integer property 'delayMs'.");
+        }
+
+        return new TypeHumanOperation(automationId, textElement.GetString() ?? string.Empty, delayMs);
     }
 
     private static PressKeysOperation CompilePressKeys(JsonElement step, int index)

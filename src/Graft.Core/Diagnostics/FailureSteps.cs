@@ -38,6 +38,9 @@ public static class FailureSteps
     /// <summary>sendKeys action failed.</summary>
     public const string SendKeys = "sendKeys";
 
+    /// <summary>typeHuman action failed.</summary>
+    public const string TypeHuman = "typeHuman";
+
     /// <summary>pressKeys action failed.</summary>
     public const string PressKeys = "pressKeys";
 
