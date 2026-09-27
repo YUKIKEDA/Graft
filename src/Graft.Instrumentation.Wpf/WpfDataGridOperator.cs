@@ -317,8 +317,8 @@ internal sealed class WpfDataGridOperator : IDataGridOperator
 
     private static DataGrid ResolveActionableDataGrid(ElementSelector selector)
     {
-        var (dataGrid, automationId) = WpfElementResolve.Resolve<DataGrid>(selector, "DataGrid operation requires a DataGrid");
-        WpfElementResolve.RequireActionable(dataGrid, automationId, "DataGrid");
+        var (dataGrid, _) = WpfElementResolve.Resolve<DataGrid>(selector, "DataGrid operation requires a DataGrid");
+        WpfElementResolve.RequireActionable(dataGrid, selector.AutomationId ?? string.Empty, "DataGrid");
         return dataGrid;
     }
 
