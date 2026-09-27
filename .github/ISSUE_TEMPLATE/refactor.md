@@ -1,7 +1,7 @@
 ---
-name: Feature
-about: A new capability callers can use
-labels: ["type:feat"]
+name: Refactor
+about: Internal change with the same caller-visible behavior
+labels: ["type:refactor"]
 ---
 
 ## Goal
@@ -26,7 +26,7 @@ labels: ["type:feat"]
 
 ## Related
 
-- Design section (`docs/design.md`):
+- Design section:
 
 ## Grill
 

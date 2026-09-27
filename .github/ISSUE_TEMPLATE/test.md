@@ -1,7 +1,7 @@
 ---
-name: Feature
-about: A new capability callers can use
-labels: ["type:feat"]
+name: Test
+about: Tests only. No production behavior change
+labels: ["type:test"]
 ---
 
 ## Goal
@@ -14,7 +14,7 @@ labels: ["type:feat"]
 
 ## Out of scope
 
-- N/A
+- Production behavior
 
 ## Acceptance
 
@@ -26,7 +26,7 @@ labels: ["type:feat"]
 
 ## Related
 
-- Design section (`docs/design.md`):
+- Design section:
 
 ## Grill
 

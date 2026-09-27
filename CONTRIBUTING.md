@@ -34,6 +34,21 @@ dotnet test Graft.slnx -m:1
 6. The GitHub-hosted **CI** workflow is green
 7. In `## Related`, put `Closes #N` on its own line. Open an Issue before the branch (`type/<issue-number>-<slug>`)
 
+## Issues
+
+Open an Issue from a template before the branch. Labels use `axis:value`. Each template sets one `type:` label:
+
+| Template | Label |
+| --- | --- |
+| Bug | `type:bug` |
+| Feature | `type:feat` |
+| Design | `type:docs` |
+| Refactor | `type:refactor` |
+| Test | `type:test` |
+| Task | `type:chore` |
+
+Other axes (`priority:`, `area:`) can be added later. Do not add an unprefixed label.
+
 ## CI
 
 | Workflow                                 | Runner                 | What it does                                                                                                                       |

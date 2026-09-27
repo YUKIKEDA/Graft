@@ -10,7 +10,7 @@ Human source of truth: `CONTRIBUTING.md`.
 ## Required order
 
 1. **Grill if needed (before the first Issue):** when the work has branching design or API decisions. Skill: [`.agents/skills/grilling/SKILL.md`](../../.agents/skills/grilling/SKILL.md). Skip when the Issue already has acceptance criteria and matches `docs/design.md`
-2. Create a GitHub Issue from a template (blank issues are disabled)
+2. Create a GitHub Issue from a template (blank issues are disabled). The template sets one `type:` label: `type:bug`, `type:feat`, `type:docs`, `type:refactor`, `type:test`, or `type:chore`
 3. **Grill again if needed** and fold answers into the Issue body, or checklists
 4. Create branch `type/<issue-number>-<slug>`
 5. Implement. On Windows, run `./build.ps1` before opening a PR. Launched-app and SendInput tests stay outside that script: `dotnet test Graft.slnx -m:1`

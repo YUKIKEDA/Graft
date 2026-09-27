@@ -34,6 +34,21 @@ dotnet test Graft.slnx -m:1
 6. GitHub-hosted の **CI** workflow が緑であること
 7. `## Related` に `Closes #N` を独立した行で書く。ブランチの前に Issue を切る（`type/<issue-number>-<slug>`）
 
+## Issue
+
+ブランチの前に、テンプレートから Issue を切ります。ラベルは `axis:value` です。各テンプレートは `type:` ラベルを1つ付けます。
+
+| テンプレート | ラベル |
+| --- | --- |
+| Bug | `type:bug` |
+| Feature | `type:feat` |
+| Design | `type:docs` |
+| Refactor | `type:refactor` |
+| Test | `type:test` |
+| Task | `type:chore` |
+
+別の軸（`priority:`、`area:`）は後から足せます。接頭辞のないラベルは付けません。
+
 ## CI
 
 | Workflow                                 | Runner               | 内容                                                                                                                       |
