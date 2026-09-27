@@ -28,7 +28,10 @@ public static class Application
 
         var timeout = options.Timeout <= TimeSpan.Zero ? LaunchOptions.DefaultTimeout : options.Timeout;
         var pipeName = string.IsNullOrWhiteSpace(options.PipeName) ? "graft-" + Guid.NewGuid().ToString("N") : options.PipeName!;
-        var token = string.IsNullOrWhiteSpace(options.Token) ? Guid.NewGuid().ToString("N") : options.Token!;
+        // The connect token is the handshake secret: use a CSPRNG (128 bits, hex) rather than Guid.NewGuid().
+        var token = string.IsNullOrWhiteSpace(options.Token)
+            ? System.Security.Cryptography.RandomNumberGenerator.GetHexString(32, lowercase: true)
+            : options.Token!;
         var configuration = string.IsNullOrWhiteSpace(options.Configuration) ? "GraftTest" : options.Configuration;
 
         var process = AppProcessLauncher.Start(options.AppPath, pipeName, token, configuration, options.Environment);

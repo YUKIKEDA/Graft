@@ -31,7 +31,8 @@ public static class Agent
     /// client (reconnect after disconnect is allowed).
     /// </remarks>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when enabled but <c>GRAFT_PIPE_NAME</c> is missing or empty.
+    /// Thrown when enabled but <c>GRAFT_PIPE_NAME</c> or <c>GRAFT_CONNECT_TOKEN</c> is missing or empty.
+    /// An empty token would let any same-user process pass the handshake, so it is rejected.
     /// </exception>
     public static void Start()
     {
@@ -46,7 +47,11 @@ public static class Agent
             throw new InvalidOperationException($"{GraftEnvironment.PipeName} is required when {GraftEnvironment.Enable}=1.");
         }
 
-        var token = Environment.GetEnvironmentVariable(GraftEnvironment.ConnectToken) ?? string.Empty;
+        var token = Environment.GetEnvironmentVariable(GraftEnvironment.ConnectToken);
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            throw new InvalidOperationException($"{GraftEnvironment.ConnectToken} is required when {GraftEnvironment.Enable}=1.");
+        }
 
         lock (Sync)
         {

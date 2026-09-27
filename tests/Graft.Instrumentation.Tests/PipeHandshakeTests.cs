@@ -76,6 +76,31 @@ public sealed class PipeHandshakeTests : IDisposable
     }
 
     /// <summary>
+    /// A handshake with a missing or empty token is rejected.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Agent started with token "secret"
+    ///
+    /// Steps:
+    /// - Connect and send handshake with token ""
+    ///
+    /// Expected:
+    /// - Response ok=false, code handshake.rejected
+    /// </remarks>
+    [Fact]
+    public async Task Handshake_WithEmptyToken_ReturnsHandshakeRejected()
+    {
+        StartAgent(token: "secret");
+
+        await using var client = await ConnectAsync(_pipeName);
+        var response = await SendHandshakeAsync(client, v: ProtocolVersion.Current, token: "");
+
+        Assert.False(response.Ok);
+        Assert.Equal(GraftErrorCodes.HandshakeRejected, response.Error?.Code);
+    }
+
+    /// <summary>
     /// Protocol version mismatch yields protocol.versionMismatch.
     /// </summary>
     /// <remarks>

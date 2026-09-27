@@ -37,8 +37,9 @@ internal sealed class AgentPipeServer : IDisposable
     public AgentPipeServer(string pipeName, string connectToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(pipeName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectToken);
         _pipeName = pipeName;
-        _connectToken = connectToken ?? string.Empty;
+        _connectToken = connectToken;
         _loop = RunAsync(_cts.Token);
     }
 
@@ -202,7 +203,7 @@ internal sealed class AgentPipeServer : IDisposable
             }
 
             var token = ReadToken(request.Params);
-            if (!string.Equals(token, _connectToken, StringComparison.Ordinal))
+            if (!IsTokenValid(token))
             {
                 return (Error(request.Id, GraftErrorCodes.HandshakeRejected, "Connect token rejected."), CloseAfterWrite: true, BinaryFollowUp: null);
             }
@@ -213,7 +214,7 @@ internal sealed class AgentPipeServer : IDisposable
         if (request.Method == ProtocolMethods.Handshake)
         {
             var token = ReadToken(request.Params);
-            if (!string.Equals(token, _connectToken, StringComparison.Ordinal))
+            if (!IsTokenValid(token))
             {
                 return (Error(request.Id, GraftErrorCodes.HandshakeRejected, "Connect token rejected."), CloseAfterWrite: true, BinaryFollowUp: null);
             }
@@ -1665,6 +1666,19 @@ internal sealed class AgentPipeServer : IDisposable
         }
 
         return new GetTreeOptions { MaxDepth = maxDepth, MaxNodes = maxNodes };
+    }
+
+    private bool IsTokenValid(string token)
+    {
+        if (string.IsNullOrEmpty(token))
+        {
+            return false;
+        }
+
+        return System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
+            System.Text.Encoding.UTF8.GetBytes(token),
+            System.Text.Encoding.UTF8.GetBytes(_connectToken)
+        );
     }
 
     private static string ReadToken(JsonElement? paramsElement)
