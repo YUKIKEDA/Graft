@@ -5,6 +5,8 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>Graft.Instrumentation.Wpf</RootNamespace>
     <AssemblyName>Graft.Instrumentation.Wpf</AssemblyName>
+    <Description>WPF adapter for the Graft in-process agent. Packed with the agent and GRAFT001.</Description>
+    <GraftEmbedAnalyzer>true</GraftEmbedAnalyzer>
   </PropertyGroup>
   <ItemGroup Condition="'$(GraftTest)' != 'true'">
     <!-- Default globs include every agent file. Keep only the marker in non-test builds. -->

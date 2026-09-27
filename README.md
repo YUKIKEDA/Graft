@@ -7,7 +7,7 @@ WPF / AvaloniaUI 向けの **in-process GUI E2E テスト** ツールです。
 
 対象アプリにエージェントを事前組み込み、Visual Tree へ直接アクセスします。FlaUI などが使う UI Automation（UIA）の COM 越し走査ではなく、自社アプリ限定で TestComplete の Open Applications に近い精度を狙います。
 
-> **現状:** WPF（.NET 8+）は利用できます。Avalonia アダプタは未実装です。NuGet パッケージはまだ出していません。API は公開直後のため変わることがあります。
+> **現状:** WPF（.NET 8+）は利用できます。Avalonia アダプタは未実装です。パッケージ版は **0.1.0**（1.0 未満。公開 API は壊れることがあります）。NuGet.org への公開はタグ `v*` で行います。最初のタグを push するまでは、このリポジトリの `ProjectReference` でも使えます。
 
 ## なぜ in-process か
 
@@ -62,13 +62,26 @@ dotnet test Graft.slnx -m:1
 | 対象アプリ       | `Graft.Instrumentation.Wpf` | `GRAFT_TEST` 時だけ Agent を起動 |
 | E2E プロジェクト | `Graft.Core` のみ           | `Application.LaunchAsync` で操作 |
 
-NuGet 配布はまだありません。当面はこのリポジトリを `ProjectReference` してください。
+公開パッケージはすべて**同じバージョン**です（`Graft.Core` 0.1.0 と `Graft.Instrumentation.Wpf` 0.1.0 を揃える）。ワイヤの互換は NuGet 版とは別の整数 `ProtocolVersion.Current` で、完全一致しないと `protocol.versionMismatch` になります。メッセージには双方のパッケージ版とプロトコル版が出ます。
 
-`Graft.Core`（テスト側）と `Graft.Instrumentation(.Wpf)`（対象アプリ側）は**同じ Graft リリースに揃えて**ください。ワイヤプロトコルは整数の版（`ProtocolVersion.Current`）の完全一致で確認し、ずれていると接続時に `protocol.versionMismatch` になります。このときのメッセージには双方のパッケージ版とプロトコル版が出るので、古い側を更新してください。
+| パッケージ | 誰が参照するか |
+| --- | --- |
+| `Graft.Instrumentation.Wpf` | 対象アプリ。`Graft.Instrumentation` と `Graft.Protocol` が依存として付く。GRAFT001 の DLL は `analyzers/dotnet/cs` に同梱 |
+| `Graft.Instrumentation` | WPF パッケージの依存。直接参照しても GRAFT001 は同梱される |
+| `Graft.Instrumentation.Analyzer` | 単体でも pack する。アプリは上のパッケージ経由で足りる |
+| `Graft.Core` | テスト。`Graft.Protocol` は依存として付く |
+| `Graft.TestUtilities` | テスト（任意）。xUnit の共有フィクスチャ |
+
+```powershell
+dotnet add package Graft.Instrumentation.Wpf --version 0.1.0
+dotnet add package Graft.Core --version 0.1.0
+```
+
+NuGet の `Graft.Instrumentation` / `Graft.Instrumentation.Wpf` は `GraftTest` 構成で pack してあり、DLL に Agent と WPF パッチが入っています。呼び出し側の `#if GRAFT_TEST` と GRAFT001 は、これまでどおり利用プロジェクト側の記号で決まります。このリポジトリを `ProjectReference` するときは、Debug / Release の出力には Agent は入らないので、エージェントが要る参照は `Configuration=GraftTest` にしてください。
 
 ### 1. 対象アプリ（WPF）
 
-csproj:
+NuGet 参照では `PackageReference` だけで props / targets が入ります。このリポジトリを直接参照する場合の csproj:
 
 ```xml
 <Import Project="path\to\src\Graft.Instrumentation.Wpf\build\Graft.props" />

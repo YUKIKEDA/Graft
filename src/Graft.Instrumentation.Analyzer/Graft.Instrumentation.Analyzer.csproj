@@ -7,9 +7,18 @@
     <IsRoslynComponent>true</IsRoslynComponent>
     <RootNamespace>Graft.Instrumentation.Analyzer</RootNamespace>
     <AssemblyName>Graft.Instrumentation.Analyzer</AssemblyName>
+    <Description>Roslyn analyzer GRAFT001 for Graft. Reports Agent.Start when GRAFT_TEST is not defined.</Description>
     <!-- Release-tracking table deferred; keep RS2008 quiet for M0. -->
     <NoWarn>$(NoWarn);RS2008</NoWarn>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <!-- IncludeBuildOutput is false, so a symbol package has nothing to pack (NU5017). -->
+    <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.9.0">
       <PrivateAssets>all</PrivateAssets>

@@ -4,5 +4,26 @@
   <PropertyGroup>
     <!-- Public API docs: warning-level via StyleCop; escalate to error later. -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!--
+      Lockstep version. Core and Instrumentation must be the same release:
+      the wire check is ProtocolVersion.Current, and the packages are published together.
+      Pre-1.0 (0.y.z): minor bumps may break the public API.
+    -->
+    <Version>0.1.0</Version>
+    <Authors>YUKIKEDA and Graft contributors</Authors>
+    <Copyright>Copyright (c) 2026 YUKIKEDA and Graft contributors</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/YUKIKEDA/Graft</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/YUKIKEDA/Graft</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageTags>graft;wpf;ui-testing;e2e</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <None Include="$(MSBuildThisFileDirectory)..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 </Project>

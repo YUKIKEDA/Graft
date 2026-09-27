@@ -1,0 +1,73 @@
+name: Pack
+
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+  workflow_dispatch:
+
+concurrency:
+  group: pack-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  pack:
+    name: Pack GraftTest and publish tagged releases
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Pack
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          $versionArgs = @()
+          if ($env:REF_TYPE -eq "tag" -and $env:REF_NAME -match "^v(.+)$") {
+            $versionArgs = @("-p:Version=$($Matches[1])", "-p:ContinuousIntegrationBuild=true")
+          }
+          $projects = @(
+            "src/Graft.Protocol/Graft.Protocol.csproj",
+            "src/Graft.Core/Graft.Core.csproj",
+            "src/Graft.Instrumentation/Graft.Instrumentation.csproj",
+            "src/Graft.Instrumentation.Analyzer/Graft.Instrumentation.Analyzer.csproj",
+            "src/Graft.Instrumentation.Wpf/Graft.Instrumentation.Wpf.csproj",
+            "src/Graft.TestUtilities/Graft.TestUtilities.csproj"
+          )
+          foreach ($project in $projects) {
+            dotnet pack $project -c GraftTest -o artifacts --nologo @versionArgs
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+
+      - name: Push to NuGet.org
+        if: github.ref_type == 'tag'
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
+            Write-Host "NUGET_API_KEY is not set. Packages were packed and were not pushed."
+            exit 0
+          }
+          $packages = @(Get-ChildItem artifacts -File | Where-Object { $_.Extension -in ".nupkg", ".snupkg" })
+          if ($packages.Count -eq 0) { throw "No packages to push" }
+          foreach ($package in $packages) {
+            dotnet nuget push $package.FullName --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }

@@ -5,6 +5,7 @@
     <RootNamespace>Graft.Instrumentation</RootNamespace>
     <AssemblyName>Graft.Instrumentation</AssemblyName>
     <Description>In-process Graft agent shared core.</Description>
+    <GraftEmbedAnalyzer>true</GraftEmbedAnalyzer>
     <!-- LibraryImport source generator for Win32 P/Invoke (NativeMethods). -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
@@ -13,5 +14,11 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Graft.Protocol\Graft.Protocol.csproj" />
+    <!-- Built with this package and shipped under analyzers/ so NuGet consumers get GRAFT001. -->
+    <ProjectReference Include="..\Graft.Instrumentation.Analyzer\Graft.Instrumentation.Analyzer.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <OutputItemType>Analyzer</OutputItemType>
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
   </ItemGroup>
 </Project>
