@@ -1,7 +1,7 @@
 ---
 name: Feature
 about: A new capability callers can use
-labels: ["type: feature"]
+labels: ["type:feat"]
 ---
 
 ## Goal

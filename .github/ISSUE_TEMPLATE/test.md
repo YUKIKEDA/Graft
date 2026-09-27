@@ -1,7 +1,7 @@
 ---
 name: Test
 about: Test-only work (coverage, structure, helpers) with no production code change
-labels: ["type: test"]
+labels: ["type:test"]
 ---
 
 ## Goal

@@ -1,7 +1,7 @@
 ---
 name: Bug
 about: A defect in behavior that is already specified
-labels: ["type: bug"]
+labels: ["type:bug"]
 ---
 
 ## Repro

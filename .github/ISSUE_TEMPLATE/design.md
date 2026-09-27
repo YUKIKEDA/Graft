@@ -1,7 +1,7 @@
 ---
 name: Design
 about: Design document change only (no implementation)
-labels: ["type: docs"]
+labels: ["type:docs"]
 ---
 
 ## Sections to change

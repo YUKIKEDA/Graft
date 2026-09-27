@@ -28,18 +28,18 @@ dotnet test Graft.slnx -m:1
 
 Issue は必ずテンプレートから作る（空の Issue は無効にしてある）。各テンプレートはラベルを 1 つ付ける。
 
-ラベルは `<軸>: <値>` の形にする（例: `type: bug`）。今ある軸は `type` だけ。`priority:` や `area:` のような軸を足すときも同じ形にする。
+ラベルは `<軸>:<値>` の形にする（例: `type:bug`）。今ある軸は `type` だけ。`priority:` や `area:` のような軸を足すときも同じ形にする。
 
-| Template   | Label            | 用途                                                 | Commit / PR type         |
-| ---------- | ---------------- | ---------------------------------------------------- | ------------------------ |
-| `bug`      | `type: bug`      | 仕様が決まっている振る舞いの不具合                   | `fix`                    |
-| `feat`     | `type: feature`  | 呼び出し側が使える新しい機能                         | `feat`                   |
-| `refactor` | `type: refactor` | 呼び出し側から見て振る舞いが変わらない内部の構造変更 | `refactor`               |
-| `test`     | `type: test`     | テストだけの作業（カバレッジ、構成、ヘルパー）       | `test`                   |
-| `design`   | `type: docs`     | `docs/design.md` の変更だけ（実装なし）              | `docs`                   |
-| `task`     | `type: chore`    | ツール、規約、CI、その他のドキュメント               | `chore` / `build` / `ci` |
+| Template   | Label           | 用途                                                 | Commit / PR type         |
+| ---------- | --------------- | ---------------------------------------------------- | ------------------------ |
+| `bug`      | `type:bug`      | 仕様が決まっている振る舞いの不具合                   | `fix`                    |
+| `feat`     | `type:feat`     | 呼び出し側が使える新しい機能                         | `feat`                   |
+| `refactor` | `type:refactor` | 呼び出し側から見て振る舞いが変わらない内部の構造変更 | `refactor`               |
+| `test`     | `type:test`     | テストだけの作業（カバレッジ、構成、ヘルパー）       | `test`                   |
+| `design`   | `type:docs`     | `docs/design.md` の変更だけ（実装なし）              | `docs`                   |
+| `task`     | `type:chore`    | ツール、規約、CI、その他のドキュメント               | `chore` / `build` / `ci` |
 
-- ドキュメントだけを変える `task` の Issue は、ラベルを `type: docs` に付け替える
+- ドキュメントだけを変える `task` の Issue は、ラベルを `type:docs` に付け替える
 - 複数の Issue をまとめる親 Issue は、子 Issue と同じラベルを付け、子を sub-issue として紐付ける
 
 ## プルリクエスト
