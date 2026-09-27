@@ -212,6 +212,8 @@ Fluent API と同じ内部操作モデルに、次も載ります。
 | Scenario JSON | `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync` | 宣言的シナリオ。契約は [`.dev/scenario.schema.json`](.dev/scenario.schema.json) |
 | MCP           | `src/Graft.McpServer`（stdio）                       | LLM / エージェント向け。`graft_launch` など原子ツール                           |
 
+MCP サーバーは呼び出し元（LLM）を半信頼として扱い、受け取ったファイルパス（起動する `appPath`、読み込む Scenario、スクリーンショットの保存先、ダイアログ Arm のパス）を**許可ルート配下**に制限します。既定の許可ルートはサーバーの作業ディレクトリです。追加する場合は `GRAFT_MCP_ALLOWED_ROOTS`（`Path.PathSeparator` 区切り）、制限を外す場合は `GRAFT_MCP_ALLOW_ANY_PATH=1` をサーバーの環境変数に設定してください。
+
 ## リポジトリ構成
 
 ```

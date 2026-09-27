@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Graft.McpServer.Security;
 using Graft.McpServer.Tools;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
@@ -62,6 +63,10 @@ public sealed class McpScenarioRunTests
                 Name = "Graft.McpServer",
                 Command = "dotnet",
                 Arguments = ["exec", serverDll],
+                EnvironmentVariables = new Dictionary<string, string?>
+                {
+                    [McpPathPolicy.AllowedRootsEnvironmentVariable] = SampleAppLocator.ResolveRepoRoot(),
+                },
             }
         );
 
