@@ -15,13 +15,13 @@ public sealed class SetValueDispatchTests : IDisposable
     {
         PipeTestClient.ClearEnvironment();
         Agent.Stop();
-        AgentServices.Reset();
+        Agent.Reset();
     }
 
     public void Dispose()
     {
         Agent.Stop();
-        AgentServices.Reset();
+        Agent.Reset();
         PipeTestClient.ClearEnvironment();
     }
 
@@ -68,7 +68,7 @@ public sealed class SetValueDispatchTests : IDisposable
     public async Task SetValue_WithFakeSetter_CallsSetValue()
     {
         var fake = new FakeElementValueSetter();
-        AgentServices.RegisterElementValueSetter(fake);
+        Agent.Use(new AgentBackend { ElementValueSetter = fake });
         PipeTestClient.Start(_pipeName);
 
         await using var client = await PipeTestClient.ConnectAsync(_pipeName);
@@ -96,7 +96,7 @@ public sealed class SetValueDispatchTests : IDisposable
     [Fact]
     public async Task SetValue_WithoutValue_ReturnsSelectorInvalid()
     {
-        AgentServices.RegisterElementValueSetter(new FakeElementValueSetter());
+        Agent.Use(new AgentBackend { ElementValueSetter = new FakeElementValueSetter() });
         PipeTestClient.Start(_pipeName);
 
         await using var client = await PipeTestClient.ConnectAsync(_pipeName);

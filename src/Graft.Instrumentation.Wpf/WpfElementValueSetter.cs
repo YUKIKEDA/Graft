@@ -16,6 +16,18 @@ namespace Graft.Instrumentation.Wpf;
 /// </summary>
 internal sealed class WpfElementValueSetter : IElementValueSetter
 {
+    private readonly IElementResolver _resolver;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WpfElementValueSetter"/> class.
+    /// </summary>
+    /// <param name="resolver">Element resolver from the agent backend.</param>
+    public WpfElementValueSetter(IElementResolver resolver)
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+        _resolver = resolver;
+    }
+
     /// <inheritdoc />
     public void SetValue(ElementSelector selector, string value)
     {
@@ -37,9 +49,9 @@ internal sealed class WpfElementValueSetter : IElementValueSetter
         dispatcher.InvokeWithTimeout(() => SetValueOnUiThread(selector, value));
     }
 
-    private static void SetValueOnUiThread(ElementSelector selector, string value)
+    private void SetValueOnUiThread(ElementSelector selector, string value)
     {
-        var (element, automationId) = WpfElementResolve.ResolveActionable(selector);
+        var (element, automationId) = WpfElementResolve.ResolveActionable(_resolver, selector);
 
         if (WpfControlActions.TrySetValue(element, value))
         {

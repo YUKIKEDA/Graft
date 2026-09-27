@@ -16,6 +16,18 @@ namespace Graft.Instrumentation.Wpf;
 /// </summary>
 internal sealed class WpfElementInvoker : IElementInvoker
 {
+    private readonly IElementResolver _resolver;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WpfElementInvoker"/> class.
+    /// </summary>
+    /// <param name="resolver">Element resolver from the agent backend.</param>
+    public WpfElementInvoker(IElementResolver resolver)
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+        _resolver = resolver;
+    }
+
     /// <inheritdoc />
     public void Invoke(ElementSelector selector)
     {
@@ -73,11 +85,11 @@ internal sealed class WpfElementInvoker : IElementInvoker
 
     /// <inheritdoc />
     public void DoubleClick(ElementSelector selector) =>
-        RunOnUiThread(selector, static s => WpfInputInjection.DoubleClickElement(ResolveActionableFrameworkElement(s)), ProtocolMethods.DoubleClick);
+        RunOnUiThread(selector, s => WpfInputInjection.DoubleClickElement(ResolveActionableFrameworkElement(s)), ProtocolMethods.DoubleClick);
 
     /// <inheritdoc />
     public void Hover(ElementSelector selector) =>
-        RunOnUiThread(selector, static s => WpfInputInjection.HoverElement(ResolveActionableFrameworkElement(s)), ProtocolMethods.Hover);
+        RunOnUiThread(selector, s => WpfInputInjection.HoverElement(ResolveActionableFrameworkElement(s)), ProtocolMethods.Hover);
 
     /// <inheritdoc />
     public void Drag(ElementSelector from, ElementSelector to)
@@ -138,9 +150,9 @@ internal sealed class WpfElementInvoker : IElementInvoker
         dispatcher.InvokeWithTimeout(() => action(selector));
     }
 
-    private static void InvokeOnUiThread(ElementSelector selector)
+    private void InvokeOnUiThread(ElementSelector selector)
     {
-        var resolved = WpfElementResolve.Lookup(selector);
+        var resolved = WpfElementResolve.Lookup(_resolver, selector);
         if (resolved.Target is Hyperlink hyperlink)
         {
             if (!hyperlink.IsEnabled)
@@ -202,14 +214,14 @@ internal sealed class WpfElementInvoker : IElementInvoker
         menuItem.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
     }
 
-    private static void RightClickOnUiThread(ElementSelector selector)
+    private void RightClickOnUiThread(ElementSelector selector)
     {
         var element = ResolveActionableFrameworkElement(selector);
         WpfInputInjection.RightClickElement(element);
     }
 
-    private static FrameworkElement ResolveActionableFrameworkElement(ElementSelector selector) =>
-        WpfElementResolve.ResolveActionable(selector).Element;
+    private FrameworkElement ResolveActionableFrameworkElement(ElementSelector selector) =>
+        WpfElementResolve.ResolveActionable(_resolver, selector).Element;
 
     private static bool TryInvokeViaAutomationPeer(FrameworkElement element)
     {

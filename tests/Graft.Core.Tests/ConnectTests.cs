@@ -18,13 +18,13 @@ public sealed class ConnectTests : IDisposable
     {
         ClearGraftEnvironment();
         Agent.Stop();
-        AgentServices.Reset();
+        Agent.Reset();
     }
 
     public void Dispose()
     {
         Agent.Stop();
-        AgentServices.Reset();
+        Agent.Reset();
         ClearGraftEnvironment();
     }
 
@@ -44,7 +44,7 @@ public sealed class ConnectTests : IDisposable
     [Fact]
     public async Task Connect_ThenGetTree_ReturnsFakeRoot()
     {
-        AgentServices.RegisterTreeProvider(new FakeTreeProvider());
+        Agent.Use(new AgentBackend { TreeProvider = new FakeTreeProvider() });
         StartAgent();
 
         await using var connection = await Application.ConnectAsync(_pipeName, Token, TimeSpan.FromSeconds(5));
@@ -93,7 +93,7 @@ public sealed class ConnectTests : IDisposable
     public async Task Connect_ThenInvoke_CallsFakeInvoker()
     {
         var fake = new FakeElementInvoker();
-        AgentServices.RegisterElementInvoker(fake);
+        Agent.Use(new AgentBackend { ElementInvoker = fake });
         StartAgent();
 
         await using var connection = await Application.ConnectAsync(_pipeName, Token, TimeSpan.FromSeconds(5));
@@ -119,7 +119,7 @@ public sealed class ConnectTests : IDisposable
     public async Task Connect_ThenSetValue_CallsFakeValueSetter()
     {
         var fake = new FakeElementValueSetter();
-        AgentServices.RegisterElementValueSetter(fake);
+        Agent.Use(new AgentBackend { ElementValueSetter = fake });
         StartAgent();
 
         await using var connection = await Application.ConnectAsync(_pipeName, Token, TimeSpan.FromSeconds(5));
@@ -147,8 +147,7 @@ public sealed class ConnectTests : IDisposable
     public async Task ConcurrentCalls_OnOneConnection_DoNotCorruptFrames()
     {
         var invoker = new RecordingElementInvoker();
-        AgentServices.RegisterTreeProvider(new FakeTreeProvider());
-        AgentServices.RegisterElementInvoker(invoker);
+        Agent.Use(new AgentBackend { TreeProvider = new FakeTreeProvider(), ElementInvoker = invoker });
         StartAgent();
 
         await using var connection = await Application.ConnectAsync(_pipeName, Token, TimeSpan.FromSeconds(5));

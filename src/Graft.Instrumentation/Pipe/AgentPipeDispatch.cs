@@ -55,9 +55,9 @@ internal sealed partial class AgentPipeServer
         return (Ok(request.Id), false, null);
     }
 
-    private static DispatchResult Screenshot(RequestMessage request)
+    private DispatchResult Screenshot(RequestMessage request)
     {
-        var provider = AgentServices.ScreenshotProvider;
+        var provider = Backend?.ScreenshotProvider;
         if (provider is null)
         {
             return (
@@ -99,10 +99,10 @@ internal sealed partial class AgentPipeServer
         return new Dictionary<string, Func<AgentPipeServer, RequestMessage, DispatchResult>>(StringComparer.Ordinal)
         {
             [ProtocolMethods.Handshake] = (server, request) => server.Handshake(request),
-            [ProtocolMethods.GetTree] = (_, request) =>
+            [ProtocolMethods.GetTree] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.TreeProvider,
+                    server.Backend?.TreeProvider,
                     treeMissing,
                     provider =>
                     {
@@ -111,62 +111,62 @@ internal sealed partial class AgentPipeServer
                     },
                     MapActionOnly
                 ),
-            [ProtocolMethods.ListWindows] = (_, request) =>
+            [ProtocolMethods.ListWindows] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.WindowCatalog,
+                    server.Backend?.WindowCatalog,
                     windowsMissing,
                     catalog => Ok(request.Id, JsonSerializer.SerializeToElement(catalog.ListWindows(), JsonMessageCodec.Options)),
                     MapAllFailed
                 ),
-            [ProtocolMethods.SwitchWindow] = (_, request) =>
+            [ProtocolMethods.SwitchWindow] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.WindowCatalog,
+                    server.Backend?.WindowCatalog,
                     windowsMissing,
                     catalog => catalog.SwitchWindow(RequestParamsReader.ReadWindowId(request.Params)),
                     MapResolveOnly
                 ),
-            [ProtocolMethods.InvokeOpeningWindow] = (_, request) =>
+            [ProtocolMethods.InvokeOpeningWindow] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.ElementInvoker,
+                    server.Backend?.ElementInvoker,
                     invokerMissing,
                     invoker => invoker.BeginInvoke(RequestParamsReader.ReadSelector(request.Params))
                 ),
-            [ProtocolMethods.Screenshot] = (_, request) => Screenshot(request),
-            [ProtocolMethods.Invoke] = (_, request) =>
+            [ProtocolMethods.Screenshot] = (server, request) => server.Screenshot(request),
+            [ProtocolMethods.Invoke] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.ElementInvoker,
+                    server.Backend?.ElementInvoker,
                     invokerMissing,
                     invoker => invoker.Invoke(RequestParamsReader.ReadSelector(request.Params))
                 ),
-            [ProtocolMethods.RightClick] = (_, request) =>
+            [ProtocolMethods.RightClick] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.ElementInvoker,
+                    server.Backend?.ElementInvoker,
                     invokerMissing,
                     invoker => invoker.RightClick(RequestParamsReader.ReadSelector(request.Params))
                 ),
-            [ProtocolMethods.DoubleClick] = (_, request) =>
+            [ProtocolMethods.DoubleClick] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.ElementInvoker,
+                    server.Backend?.ElementInvoker,
                     invokerMissing,
                     invoker => invoker.DoubleClick(RequestParamsReader.ReadSelector(request.Params))
                 ),
-            [ProtocolMethods.Hover] = (_, request) =>
+            [ProtocolMethods.Hover] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.ElementInvoker,
+                    server.Backend?.ElementInvoker,
                     invokerMissing,
                     invoker => invoker.Hover(RequestParamsReader.ReadSelector(request.Params))
                 ),
-            [ProtocolMethods.Drag] = (_, request) =>
+            [ProtocolMethods.Drag] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.ElementInvoker,
+                    server.Backend?.ElementInvoker,
                     invokerMissing,
                     invoker =>
                     {
@@ -174,10 +174,10 @@ internal sealed partial class AgentPipeServer
                         invoker.Drag(from, new ElementSelector { AutomationId = toAutomationId });
                     }
                 ),
-            [ProtocolMethods.ClickAt] = (_, request) =>
+            [ProtocolMethods.ClickAt] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.ElementInvoker,
+                    server.Backend?.ElementInvoker,
                     invokerMissing,
                     invoker =>
                     {
@@ -185,10 +185,10 @@ internal sealed partial class AgentPipeServer
                         invoker.ClickAt(selector, offsetX, offsetY);
                     }
                 ),
-            [ProtocolMethods.Wheel] = (_, request) =>
+            [ProtocolMethods.Wheel] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.ElementInvoker,
+                    server.Backend?.ElementInvoker,
                     invokerMissing,
                     invoker =>
                     {
@@ -196,10 +196,10 @@ internal sealed partial class AgentPipeServer
                         invoker.Wheel(selector, delta);
                     }
                 ),
-            [ProtocolMethods.SetValue] = (_, request) =>
+            [ProtocolMethods.SetValue] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.ElementValueSetter,
+                    server.Backend?.ElementValueSetter,
                     valueMissing,
                     setter =>
                     {
@@ -207,17 +207,17 @@ internal sealed partial class AgentPipeServer
                         setter.SetValue(selector, value);
                     }
                 ),
-            [ProtocolMethods.Toggle] = (_, request) =>
+            [ProtocolMethods.Toggle] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.ElementToggler,
+                    server.Backend?.ElementToggler,
                     togglerMissing,
                     toggler => toggler.Toggle(RequestParamsReader.ReadSelector(request.Params))
                 ),
-            [ProtocolMethods.SendKeys] = (_, request) =>
+            [ProtocolMethods.SendKeys] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.ElementKeySender,
+                    server.Backend?.ElementKeySender,
                     keysMissing,
                     sender =>
                     {
@@ -225,10 +225,10 @@ internal sealed partial class AgentPipeServer
                         sender.SendKeys(selector, text);
                     }
                 ),
-            [ProtocolMethods.TypeHuman] = (_, request) =>
+            [ProtocolMethods.TypeHuman] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.ElementKeySender,
+                    server.Backend?.ElementKeySender,
                     keysMissing,
                     sender =>
                     {
@@ -236,10 +236,10 @@ internal sealed partial class AgentPipeServer
                         sender.TypeHuman(selector, text, delay);
                     }
                 ),
-            [ProtocolMethods.PressKeys] = (_, request) =>
+            [ProtocolMethods.PressKeys] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.ElementKeySender,
+                    server.Backend?.ElementKeySender,
                     keysMissing,
                     sender =>
                     {
@@ -247,10 +247,10 @@ internal sealed partial class AgentPipeServer
                         sender.PressKeys(selector, keys);
                     }
                 ),
-            [ProtocolMethods.ScrollIntoView] = (_, request) =>
+            [ProtocolMethods.ScrollIntoView] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.ElementScroller,
+                    server.Backend?.ElementScroller,
                     scrollerMissing,
                     scroller =>
                     {
@@ -259,10 +259,10 @@ internal sealed partial class AgentPipeServer
                         return Ok(request.Id, JsonSerializer.SerializeToElement(identity, JsonMessageCodec.Options));
                     }
                 ),
-            [ProtocolMethods.Select] = (_, request) =>
+            [ProtocolMethods.Select] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.ElementChooser,
+                    server.Backend?.ElementChooser,
                     chooserMissing,
                     chooser =>
                     {
@@ -277,10 +277,10 @@ internal sealed partial class AgentPipeServer
                         }
                     }
                 ),
-            [ProtocolMethods.SelectMany] = (_, request) =>
+            [ProtocolMethods.SelectMany] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.ElementChooser,
+                    server.Backend?.ElementChooser,
                     chooserMissing,
                     chooser =>
                     {
@@ -288,10 +288,10 @@ internal sealed partial class AgentPipeServer
                         chooser.SelectMany(selector, indexes);
                     }
                 ),
-            [ProtocolMethods.SelectMenu] = (_, request) =>
+            [ProtocolMethods.SelectMenu] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.MenuSelector,
+                    server.Backend?.MenuSelector,
                     menuMissing,
                     menu =>
                     {
@@ -299,10 +299,10 @@ internal sealed partial class AgentPipeServer
                         menu.SelectMenu(selector, path);
                     }
                 ),
-            [ProtocolMethods.SelectTree] = (_, request) =>
+            [ProtocolMethods.SelectTree] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.TreeSelector,
+                    server.Backend?.TreeSelector,
                     treeSelectorMissing,
                     tree =>
                     {
@@ -310,12 +310,12 @@ internal sealed partial class AgentPipeServer
                         tree.SelectTree(selector, path);
                     }
                 ),
-            [ProtocolMethods.Expand] = (_, request) => Expand(request, expand: true),
-            [ProtocolMethods.Collapse] = (_, request) => Expand(request, expand: false),
-            [ProtocolMethods.GetCellText] = (_, request) =>
+            [ProtocolMethods.Expand] = (server, request) => Expand(server, request, expand: true),
+            [ProtocolMethods.Collapse] = (server, request) => Expand(server, request, expand: false),
+            [ProtocolMethods.GetCellText] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.ElementCellAccessor,
+                    server.Backend?.ElementCellAccessor,
                     cellMissing,
                     accessor =>
                     {
@@ -324,10 +324,10 @@ internal sealed partial class AgentPipeServer
                         return Ok(request.Id, JsonSerializer.SerializeToElement(new CellTextResult { Text = text }, JsonMessageCodec.Options));
                     }
                 ),
-            [ProtocolMethods.SetCellValue] = (_, request) =>
+            [ProtocolMethods.SetCellValue] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.ElementCellAccessor,
+                    server.Backend?.ElementCellAccessor,
                     cellMissing,
                     accessor =>
                     {
@@ -335,10 +335,10 @@ internal sealed partial class AgentPipeServer
                         accessor.SetCellValue(selector, row, column, columnKey, value);
                     }
                 ),
-            [ProtocolMethods.SelectCell] = (_, request) =>
+            [ProtocolMethods.SelectCell] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.DataGridOperator,
+                    server.Backend?.DataGridOperator,
                     gridMissing,
                     grid =>
                     {
@@ -346,10 +346,10 @@ internal sealed partial class AgentPipeServer
                         grid.SelectCell(selector, row, column, columnKey);
                     }
                 ),
-            [ProtocolMethods.SelectRow] = (_, request) =>
+            [ProtocolMethods.SelectRow] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.DataGridOperator,
+                    server.Backend?.DataGridOperator,
                     gridMissing,
                     grid =>
                     {
@@ -357,10 +357,10 @@ internal sealed partial class AgentPipeServer
                         grid.SelectRow(selector, columnKey, value);
                     }
                 ),
-            [ProtocolMethods.ClickColumnHeader] = (_, request) =>
+            [ProtocolMethods.ClickColumnHeader] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.DataGridOperator,
+                    server.Backend?.DataGridOperator,
                     gridMissing,
                     grid =>
                     {
@@ -368,16 +368,16 @@ internal sealed partial class AgentPipeServer
                         grid.ClickColumnHeader(selector, columnKey);
                     }
                 ),
-            [ProtocolMethods.AddRow] = (_, request) =>
-                Call(request, AgentServices.DataGridOperator, gridMissing, grid => grid.AddRow(RequestParamsReader.ReadSelector(request.Params))),
-            [ProtocolMethods.DeleteSelectedRows] = (_, request) =>
+            [ProtocolMethods.AddRow] = (server, request) =>
+                Call(request, server.Backend?.DataGridOperator, gridMissing, grid => grid.AddRow(RequestParamsReader.ReadSelector(request.Params))),
+            [ProtocolMethods.DeleteSelectedRows] = (server, request) =>
                 Call(
                     request,
-                    AgentServices.DataGridOperator,
+                    server.Backend?.DataGridOperator,
                     gridMissing,
                     grid => grid.DeleteSelectedRows(RequestParamsReader.ReadSelector(request.Params))
                 ),
-            [ProtocolMethods.ArmOpenFile] = (_, request) =>
+            [ProtocolMethods.ArmOpenFile] = (server, request) =>
                 Guard(
                     request,
                     () =>
@@ -387,7 +387,7 @@ internal sealed partial class AgentPipeServer
                     },
                     MapResolveOnly
                 ),
-            [ProtocolMethods.ArmOpenFileCancel] = (_, request) =>
+            [ProtocolMethods.ArmOpenFileCancel] = (server, request) =>
                 Guard(
                     request,
                     () =>
@@ -397,7 +397,7 @@ internal sealed partial class AgentPipeServer
                     },
                     MapAllFailed
                 ),
-            [ProtocolMethods.ArmSaveFile] = (_, request) =>
+            [ProtocolMethods.ArmSaveFile] = (server, request) =>
                 Guard(
                     request,
                     () =>
@@ -407,7 +407,7 @@ internal sealed partial class AgentPipeServer
                     },
                     MapResolveOnly
                 ),
-            [ProtocolMethods.ArmSaveFileCancel] = (_, request) =>
+            [ProtocolMethods.ArmSaveFileCancel] = (server, request) =>
                 Guard(
                     request,
                     () =>
@@ -417,7 +417,7 @@ internal sealed partial class AgentPipeServer
                     },
                     MapAllFailed
                 ),
-            [ProtocolMethods.ArmOpenFolder] = (_, request) =>
+            [ProtocolMethods.ArmOpenFolder] = (server, request) =>
                 Guard(
                     request,
                     () =>
@@ -427,7 +427,7 @@ internal sealed partial class AgentPipeServer
                     },
                     MapResolveOnly
                 ),
-            [ProtocolMethods.ArmOpenFolderCancel] = (_, request) =>
+            [ProtocolMethods.ArmOpenFolderCancel] = (server, request) =>
                 Guard(
                     request,
                     () =>
@@ -437,7 +437,7 @@ internal sealed partial class AgentPipeServer
                     },
                     MapAllFailed
                 ),
-            [ProtocolMethods.ArmMessageBox] = (_, request) =>
+            [ProtocolMethods.ArmMessageBox] = (server, request) =>
                 Guard(
                     request,
                     () =>
@@ -450,12 +450,12 @@ internal sealed partial class AgentPipeServer
         };
     }
 
-    private static DispatchResult Expand(RequestMessage request, bool expand)
+    private static DispatchResult Expand(AgentPipeServer server, RequestMessage request, bool expand)
     {
         const string missing = "No element expander is registered. Call WpfGraft.Use() before Agent.Start().";
         return Call(
             request,
-            AgentServices.ElementExpander,
+            server.Backend?.ElementExpander,
             missing,
             expander =>
             {

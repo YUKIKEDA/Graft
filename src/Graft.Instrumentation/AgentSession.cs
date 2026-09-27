@@ -17,13 +17,14 @@ public sealed class AgentSession : IDisposable
     /// </summary>
     /// <param name="pipeName">Named pipe name.</param>
     /// <param name="connectToken">Handshake token (must be non-empty).</param>
-    public AgentSession(string pipeName, string connectToken)
+    /// <param name="backend">Framework services for this session. Null services fail their wire methods.</param>
+    public AgentSession(string pipeName, string connectToken, AgentBackend? backend)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(pipeName);
         ArgumentException.ThrowIfNullOrWhiteSpace(connectToken);
         PipeName = pipeName;
         ConnectToken = connectToken;
-        _server = new AgentPipeServer(PipeName, ConnectToken);
+        _server = new AgentPipeServer(PipeName, ConnectToken, backend);
     }
 
     /// <summary>

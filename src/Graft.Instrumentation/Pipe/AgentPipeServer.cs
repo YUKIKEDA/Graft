@@ -1,5 +1,6 @@
 using System.IO.Pipes;
 using System.Text.Json;
+using Graft.Instrumentation;
 using Graft.Protocol;
 using Graft.Protocol.Framing;
 using Graft.Protocol.Messages;
@@ -22,6 +23,7 @@ internal sealed partial class AgentPipeServer : IDisposable
 
     private readonly string _pipeName;
     private readonly string _connectToken;
+    private readonly AgentBackend? _backend;
     private readonly CancellationTokenSource _cts = new();
     private readonly Task _loop;
     private bool _disposed;
@@ -31,14 +33,21 @@ internal sealed partial class AgentPipeServer : IDisposable
     /// </summary>
     /// <param name="pipeName">Pipe name (without <c>\\.\pipe\</c> prefix).</param>
     /// <param name="connectToken">Expected handshake token.</param>
-    public AgentPipeServer(string pipeName, string connectToken)
+    /// <param name="backend">Framework services. A missing service fails that wire method.</param>
+    public AgentPipeServer(string pipeName, string connectToken, AgentBackend? backend)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(pipeName);
         ArgumentException.ThrowIfNullOrWhiteSpace(connectToken);
         _pipeName = pipeName;
         _connectToken = connectToken;
+        _backend = backend;
         _loop = RunAsync(_cts.Token);
     }
+
+    /// <summary>
+    /// Gets the backend this server dispatches against.
+    /// </summary>
+    internal AgentBackend? Backend => _backend;
 
     /// <inheritdoc />
     public void Dispose()

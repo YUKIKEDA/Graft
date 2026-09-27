@@ -1,3 +1,4 @@
+using Graft.Instrumentation;
 using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Elements;
 using Graft.Instrumentation.Screenshot;
@@ -17,20 +18,25 @@ internal static class RecordingServices
 
     internal static void RegisterAll()
     {
-        AgentServices.RegisterTreeProvider(new FakeTreeProvider());
-        AgentServices.RegisterScreenshotProvider(new ScreenshotFake());
-        AgentServices.RegisterElementInvoker(new FakeElementInvoker());
-        AgentServices.RegisterElementValueSetter(new FakeElementValueSetter());
-        AgentServices.RegisterElementToggler(new TogglerFake());
-        AgentServices.RegisterElementKeySender(new KeySenderFake());
-        AgentServices.RegisterElementScroller(new ScrollerFake());
-        AgentServices.RegisterElementChooser(new ChooserFake());
-        AgentServices.RegisterMenuSelector(new MenuFake());
-        AgentServices.RegisterTreeSelector(new TreeFake());
-        AgentServices.RegisterElementExpander(new ExpanderFake());
-        AgentServices.RegisterElementCellAccessor(new CellFake());
-        AgentServices.RegisterDataGridOperator(new GridFake());
-        AgentServices.RegisterWindowCatalog(new WindowFake());
+        Agent.Use(
+            new AgentBackend
+            {
+                TreeProvider = new FakeTreeProvider(),
+                ScreenshotProvider = new ScreenshotFake(),
+                ElementInvoker = new FakeElementInvoker(),
+                ElementValueSetter = new FakeElementValueSetter(),
+                ElementToggler = new TogglerFake(),
+                ElementKeySender = new KeySenderFake(),
+                ElementScroller = new ScrollerFake(),
+                ElementChooser = new ChooserFake(),
+                MenuSelector = new MenuFake(),
+                TreeSelector = new TreeFake(),
+                ElementExpander = new ExpanderFake(),
+                ElementCellAccessor = new CellFake(),
+                DataGridOperator = new GridFake(),
+                WindowCatalog = new WindowFake(),
+            }
+        );
     }
 
     private sealed class ScreenshotFake : IScreenshotProvider

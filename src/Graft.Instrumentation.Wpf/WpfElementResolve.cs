@@ -1,7 +1,6 @@
 using System.Windows;
 using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Elements;
-using Graft.Instrumentation.Tree;
 using Graft.Protocol;
 
 namespace Graft.Instrumentation.Wpf;
@@ -18,25 +17,32 @@ internal static class WpfElementResolve
     /// <summary>
     /// Resolves <paramref name="selector"/> to an enabled and visible <see cref="FrameworkElement"/>.
     /// </summary>
+    /// <param name="resolver">Element resolver from the agent backend.</param>
     /// <param name="selector">Element selector.</param>
     /// <returns>The element and its automation id.</returns>
     /// <exception cref="ElementActionException">No resolver is registered, the target is the wrong type, or the element is not actionable.</exception>
-    internal static (FrameworkElement Element, string AutomationId) ResolveActionable(ElementSelector selector) =>
-        ResolveActionable<FrameworkElement>(selector, FrameworkElementOperation);
+    internal static (FrameworkElement Element, string AutomationId) ResolveActionable(IElementResolver? resolver, ElementSelector selector) =>
+        ResolveActionable<FrameworkElement>(resolver, selector, FrameworkElementOperation);
 
     /// <summary>
     /// Resolves <paramref name="selector"/> to an enabled and visible <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T">Expected element type.</typeparam>
+    /// <param name="resolver">Element resolver from the agent backend.</param>
     /// <param name="selector">Element selector.</param>
     /// <param name="operation">Type-mismatch text before <c>(got …)</c>.</param>
     /// <param name="subject">Noun in the not-actionable message. <c>Element</c> or <c>DataGrid</c>.</param>
     /// <returns>The element and its automation id.</returns>
     /// <exception cref="ElementActionException">No resolver is registered, the target is the wrong type, or the element is not actionable.</exception>
-    internal static (T Element, string AutomationId) ResolveActionable<T>(ElementSelector selector, string operation, string subject = "Element")
+    internal static (T Element, string AutomationId) ResolveActionable<T>(
+        IElementResolver? resolver,
+        ElementSelector selector,
+        string operation,
+        string subject = "Element"
+    )
         where T : FrameworkElement
     {
-        var (element, automationId) = Resolve<T>(selector, operation);
+        var (element, automationId) = Resolve<T>(resolver, selector, operation);
         RequireActionable(element, automationId, subject);
         return (element, automationId);
     }
@@ -44,35 +50,42 @@ internal static class WpfElementResolve
     /// <summary>
     /// Resolves <paramref name="selector"/> to a <see cref="FrameworkElement"/> without an enabled or visible check.
     /// </summary>
+    /// <param name="resolver">Element resolver from the agent backend.</param>
     /// <param name="selector">Element selector.</param>
     /// <returns>The element and its automation id.</returns>
     /// <exception cref="ElementActionException">No resolver is registered, or the target is not a <see cref="FrameworkElement"/>.</exception>
-    internal static (FrameworkElement Element, string AutomationId) Resolve(ElementSelector selector) =>
-        Resolve<FrameworkElement>(selector, FrameworkElementOperation);
+    internal static (FrameworkElement Element, string AutomationId) Resolve(IElementResolver? resolver, ElementSelector selector) =>
+        Resolve<FrameworkElement>(resolver, selector, FrameworkElementOperation);
 
     /// <summary>
     /// Resolves <paramref name="selector"/> to a <typeparamref name="T"/> without an enabled or visible check.
     /// </summary>
     /// <typeparam name="T">Expected element type.</typeparam>
+    /// <param name="resolver">Element resolver from the agent backend.</param>
     /// <param name="selector">Element selector.</param>
     /// <param name="operation">Type-mismatch text before <c>(got …)</c>.</param>
     /// <returns>The element and its automation id.</returns>
     /// <exception cref="ElementActionException">No resolver is registered, or the target is not a <typeparamref name="T"/>.</exception>
-    internal static (T Element, string AutomationId) Resolve<T>(ElementSelector selector, string operation)
+    internal static (T Element, string AutomationId) Resolve<T>(IElementResolver? resolver, ElementSelector selector, string operation)
         where T : FrameworkElement
     {
-        return Cast<T>(Lookup(selector), operation);
+        return Cast<T>(Lookup(resolver, selector), operation);
     }
 
     /// <summary>
     /// Returns the registered resolver's match for <paramref name="selector"/>.
     /// </summary>
+    /// <param name="resolver">Element resolver from the agent backend.</param>
     /// <param name="selector">Element selector.</param>
     /// <returns>The resolved element.</returns>
     /// <exception cref="ElementActionException">No resolver is registered.</exception>
-    internal static ResolvedElement Lookup(ElementSelector selector)
+    internal static ResolvedElement Lookup(IElementResolver? resolver, ElementSelector selector)
     {
-        var resolver = AgentServices.ElementResolver ?? throw new ElementActionException(GraftErrorCodes.ActionFailed, MissingResolverMessage);
+        if (resolver is null)
+        {
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, MissingResolverMessage);
+        }
+
         return resolver.Resolve(selector);
     }
 

@@ -14,6 +14,18 @@ namespace Graft.Instrumentation.Wpf;
 /// </summary>
 internal sealed class WpfElementScroller : IElementScroller
 {
+    private readonly IElementResolver _resolver;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WpfElementScroller"/> class.
+    /// </summary>
+    /// <param name="resolver">Element resolver from the agent backend.</param>
+    public WpfElementScroller(IElementResolver resolver)
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+        _resolver = resolver;
+    }
+
     /// <inheritdoc />
     public ElementIdentity ScrollIntoView(ElementSelector selector, int? index)
     {
@@ -73,9 +85,9 @@ internal sealed class WpfElementScroller : IElementScroller
         return ToIdentity(element, automationId);
     }
 
-    private static ElementIdentity ScrollOnUiThread(ElementSelector selector, int? index)
+    private ElementIdentity ScrollOnUiThread(ElementSelector selector, int? index)
     {
-        var (element, automationId) = WpfElementResolve.Resolve(selector);
+        var (element, automationId) = WpfElementResolve.Resolve(_resolver, selector);
 
         if (index is null)
         {

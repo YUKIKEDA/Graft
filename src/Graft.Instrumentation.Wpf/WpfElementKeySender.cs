@@ -11,6 +11,18 @@ namespace Graft.Instrumentation.Wpf;
 /// </summary>
 internal sealed class WpfElementKeySender : IElementKeySender
 {
+    private readonly IElementResolver _resolver;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WpfElementKeySender"/> class.
+    /// </summary>
+    /// <param name="resolver">Element resolver from the agent backend.</param>
+    public WpfElementKeySender(IElementResolver resolver)
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+        _resolver = resolver;
+    }
+
     /// <inheritdoc />
     public void SendKeys(ElementSelector selector, string text)
     {
@@ -78,18 +90,18 @@ internal sealed class WpfElementKeySender : IElementKeySender
         dispatcher.InvokeWithTimeout(action);
     }
 
-    private static void SendKeysOnUiThread(ElementSelector selector, string text)
+    private void SendKeysOnUiThread(ElementSelector selector, string text)
     {
         var element = ResolveActionableFrameworkElement(selector);
         WpfInputInjection.FocusAndType(element, text, clearFirst: false);
     }
 
-    private static void PressKeysOnUiThread(ElementSelector selector, string keys)
+    private void PressKeysOnUiThread(ElementSelector selector, string keys)
     {
         var element = ResolveActionableFrameworkElement(selector);
         WpfInputInjection.FocusAndPress(element, keys);
     }
 
-    private static FrameworkElement ResolveActionableFrameworkElement(ElementSelector selector) =>
-        WpfElementResolve.ResolveActionable(selector).Element;
+    private FrameworkElement ResolveActionableFrameworkElement(ElementSelector selector) =>
+        WpfElementResolve.ResolveActionable(_resolver, selector).Element;
 }

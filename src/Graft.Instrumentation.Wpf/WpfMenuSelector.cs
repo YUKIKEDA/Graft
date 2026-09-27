@@ -15,6 +15,18 @@ namespace Graft.Instrumentation.Wpf;
 /// </summary>
 internal sealed class WpfMenuSelector : IMenuSelector
 {
+    private readonly IElementResolver _resolver;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WpfMenuSelector"/> class.
+    /// </summary>
+    /// <param name="resolver">Element resolver from the agent backend.</param>
+    public WpfMenuSelector(IElementResolver resolver)
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+        _resolver = resolver;
+    }
+
     /// <inheritdoc />
     public void SelectMenu(ElementSelector selector, string path)
     {
@@ -42,7 +54,7 @@ internal sealed class WpfMenuSelector : IMenuSelector
         dispatcher.InvokeWithTimeout(() => SelectMenuOnUiThread(selector, path, segments));
     }
 
-    private static void SelectMenuOnUiThread(ElementSelector selector, string path, string[] segments)
+    private void SelectMenuOnUiThread(ElementSelector selector, string path, string[] segments)
     {
         var root = ResolveMenuRoot(selector);
         ItemsControl current = root;
@@ -80,9 +92,9 @@ internal sealed class WpfMenuSelector : IMenuSelector
         }
     }
 
-    private static ItemsControl ResolveMenuRoot(ElementSelector selector)
+    private ItemsControl ResolveMenuRoot(ElementSelector selector)
     {
-        var (element, automationId) = WpfElementResolve.Resolve(selector);
+        var (element, automationId) = WpfElementResolve.Resolve(_resolver, selector);
         if (element is not Menu and not ContextMenu)
         {
             throw new ElementActionException(

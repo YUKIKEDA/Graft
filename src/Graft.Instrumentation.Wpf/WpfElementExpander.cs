@@ -14,13 +14,25 @@ namespace Graft.Instrumentation.Wpf;
 /// </summary>
 internal sealed class WpfElementExpander : IElementExpander
 {
+    private readonly IElementResolver _resolver;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WpfElementExpander"/> class.
+    /// </summary>
+    /// <param name="resolver">Element resolver from the agent backend.</param>
+    public WpfElementExpander(IElementResolver resolver)
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+        _resolver = resolver;
+    }
+
     /// <inheritdoc />
     public void Expand(ElementSelector selector) => SetExpanded(selector, expanded: true);
 
     /// <inheritdoc />
     public void Collapse(ElementSelector selector) => SetExpanded(selector, expanded: false);
 
-    private static void SetExpanded(ElementSelector selector, bool expanded)
+    private void SetExpanded(ElementSelector selector, bool expanded)
     {
         ArgumentNullException.ThrowIfNull(selector);
 
@@ -39,9 +51,9 @@ internal sealed class WpfElementExpander : IElementExpander
         dispatcher.InvokeWithTimeout(() => SetExpandedOnUiThread(selector, expanded));
     }
 
-    private static void SetExpandedOnUiThread(ElementSelector selector, bool expanded)
+    private void SetExpandedOnUiThread(ElementSelector selector, bool expanded)
     {
-        var (element, _) = WpfElementResolve.ResolveActionable(selector);
+        var (element, _) = WpfElementResolve.ResolveActionable(_resolver, selector);
 
         if (TrySetViaAutomationPeer(element, expanded))
         {

@@ -16,13 +16,13 @@ public sealed class SendKeysDispatchTests : IDisposable
     {
         PipeTestClient.ClearEnvironment();
         Agent.Stop();
-        AgentServices.Reset();
+        Agent.Reset();
     }
 
     public void Dispose()
     {
         Agent.Stop();
-        AgentServices.Reset();
+        Agent.Reset();
         PipeTestClient.ClearEnvironment();
     }
 
@@ -69,7 +69,7 @@ public sealed class SendKeysDispatchTests : IDisposable
     public async Task SendKeys_WithFakeSender_CallsSendKeys()
     {
         var fake = new FakeElementKeySender();
-        AgentServices.RegisterElementKeySender(fake);
+        Agent.Use(new AgentBackend { ElementKeySender = fake });
         PipeTestClient.Start(_pipeName);
 
         await using var client = await PipeTestClient.ConnectAsync(_pipeName);
@@ -126,7 +126,7 @@ public sealed class SendKeysDispatchTests : IDisposable
     public async Task TypeHuman_WithFakeSender_PassesDelay_AndRejectsNegative()
     {
         var fake = new FakeElementKeySender();
-        AgentServices.RegisterElementKeySender(fake);
+        Agent.Use(new AgentBackend { ElementKeySender = fake });
         PipeTestClient.Start(_pipeName);
 
         await using var client = await PipeTestClient.ConnectAsync(_pipeName);
@@ -187,7 +187,7 @@ public sealed class SendKeysDispatchTests : IDisposable
     public async Task PressKeys_WithFakeSender_CallsPressKeys()
     {
         var fake = new FakeElementKeySender();
-        AgentServices.RegisterElementKeySender(fake);
+        Agent.Use(new AgentBackend { ElementKeySender = fake });
         PipeTestClient.Start(_pipeName);
 
         await using var client = await PipeTestClient.ConnectAsync(_pipeName);
