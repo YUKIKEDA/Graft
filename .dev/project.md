@@ -254,6 +254,7 @@ Graft/
 - Fluent / Scenario(JSON) / MCP はいずれも同じ内部操作モデルにコンパイルする（どれも唯一の正本ではない）
 - Scenario は初期は `Graft.Core` 内。MCP のみ `Graft.McpServer` に分離
 - 自己修復セレクタは **Core 側**。Instrumentation は現在ツリーとヒント提供に徹する
+- `Graft.TestUtilities` は xUnit 向け。`GraftAppFixture` がコレクション単位で Launch / Dispose する。直列化の `[CollectionDefinition(DisableParallelization = true)]` はテストアセンブリ側に置く（属性は継承されない）。アセンブリをまたぐ SendInput は引き続き `dotnet test -m:1`
 
 ## 6. プロダクト名
 

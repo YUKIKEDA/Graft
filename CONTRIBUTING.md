@@ -17,6 +17,7 @@ dotnet build Graft.slnx
 
 # ホスト CI 相当（アプリ起動なし）
 dotnet test tests/Graft.Protocol.Tests
+dotnet test tests/Graft.TestUtilities.Tests
 dotnet test tests/Graft.Instrumentation.Tests
 dotnet test tests/Graft.Instrumentation.Analyzer.Tests
 dotnet test tests/Graft.Instrumentation.Wpf.Tests
