@@ -2,7 +2,7 @@
 
 In-process UI testing for WPF & AvaloniaUI. Design source of truth: `.dev/project.md`. M0/M1/M2: `.dev/task_m0.md` / `task_m1.md` / `task_m2.md`. Phase 2–35: `.dev/task_phase2.md` … `task_phase35.md`. WPF vs competitors gap matrix: `.dev/competitive-gap.md` (WPF Must Done including D06 / P02; Avalonia after Phase 35).
 
-**Consumer usage example (canonical):** `tests/sample-apps/SampleTodoApp.Tests` (see `.dev/graft-core.md`). Feature matrix: `SampleWpfApp.Tests`.
+**Consumer usage example (canonical):** `tests/sample-apps/SampleTodoApp.Tests` (see `.dev/graft-core.md`). Feature matrix: `SampleWpfApp.Tests`. WPF UI Gallery deep E2E (local `tests/wpfui`): `.dev/task_wpfui-gallery-e2e.md`.
 
 ## Tooling (must follow)
 
