@@ -141,7 +141,10 @@ TestComplete相当の精度を狙う、という位置づけ。
   このため `GetByName` / `GetByControlType` 単体でも閾値に届く（Phase 27 F02 で初期仮重み name=40 / controlType=15 から変更）。
   単体使用時の曖昧さは「閾値以上が複数 → `element.ambiguous`」で検出する
   ショートハンド API として automationId→name 相当も用意
-- セッション内 `runtimeId` は内部ハンドル。テスト記述の正本にはしない
+- セッション内 `runtimeId` は、1回の `getTree` 走査が付ける通し番号である。テストとワイヤが使うのは公開セレクタである
+- 要素操作は、既存 params の任意フィールドで公開セレクタを送る。フィールドは `automationId`、`name`、`controlType`、`nearAutomationId`、`nth`。`automationId` だけを置いた params はそのまま有効である。ドラッグのもう一方は `toAutomationId`、`toName`、`toControlType`、`toNearAutomationId`、`toNth` を使う
+- Core は待ち、その呼び出しの heal、失敗レポートのために `getTree` を見て、heal したあとのセレクタを送る。エージェントは heal しない。`getTree` と同じ順序、同じ重み、同じハードゲートでライブの木を1回解決し、その要素を操作する。automation id が無い要素も操作できる。`child` と `sibling` は送らない。スクリーンショットも同じフィールドを使う。`ProtocolVersion.Current` は 1 のまま
+- 採点は `Graft.Protocol` に置く。呼び出し側は `Graft.Core.Selectors.Selector` のまま書き、それをワイヤのフィールドへ写す。コード変更はフォローアップの実装 Issue
 - Phase 1 必須ノード: `runtimeId`, `controlType`, `name`, `automationId`, `bounds`,
   `enabled`, `visible`, `focused`, `children`
   （パターン可否・現在値・セレクタ候補は早期追加するが Phase 1 完了条件外）
@@ -553,3 +556,4 @@ GitHub Actions:
 | Q141 | Avalonia 前に SampleTodoApp を利用ガイド正本化。MVVM+DI+テーマ+実 JSON。R3/ObservableCollections。                                                                                                             |
 | Q142 | LaunchOptions.Environment 汎用（任意）。SampleTodo 保存先は UI/OpenFolder（settings.json）。E2E は ArmOpenFolder。ストーリー 1 本。R3（CommunityToolkit.Mvvm 不使用）。デモシードなし                                                |
 | Q143 | P02 を Must 昇格（Phase 35）。Avalonia 再禁止。`element.ScreenshotAsync`。窓 RTB 交差クリップ + Popup ルート RTB。開時 ToolTip 子ノード。開時 overlay は要素・窓 SS に合成。wire 任意 automationId/runtimeId。 |
+| Q144 | 要素操作のワイヤ宛先は、既存 params 上の公開セレクタ（`automationId`, `name`, `controlType`, `nearAutomationId`, `nth`。ドラッグは `toName`, `toControlType`, `toNearAutomationId`, `toNth` も）。Core は待ち・その呼び出しの heal・失敗レポートのために getTree を見て、heal 後のセレクタを送る。エージェントは heal せず、getTree 順・同一重みでライブの木を1回解決する。`child`/`sibling` は送らない。スクリーンショットも同じフィールド。`runtimeId` は走査の通し番号のままで、ワイヤ宛先にしない。`ProtocolVersion.Current` は 1。採点は Protocol へ移し、`Selector` は Core に残す。Q143 のスクリーンショット宛先（automationId/runtimeId）に代わる。コードはフォローアップ Issue。 |
