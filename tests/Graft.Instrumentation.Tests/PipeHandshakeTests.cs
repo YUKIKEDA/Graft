@@ -132,6 +132,77 @@ public sealed class PipeHandshakeTests : IDisposable
         Assert.Equal("2", secondResponse.Id);
     }
 
+    /// <summary>
+    /// A malformed JSON frame drops only that connection; the accept loop keeps serving new clients.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Agent started with token "secret"
+    ///
+    /// Steps:
+    /// - Connect and send a length-prefixed frame whose body is not valid JSON
+    /// - Connect again and handshake
+    ///
+    /// Expected:
+    /// - The first connection is closed by the agent (read hits end of stream)
+    /// - The second handshake is ok=true
+    /// </remarks>
+    [Fact]
+    public async Task MalformedJsonFrame_DoesNotStopAcceptLoop()
+    {
+        StartAgent(token: "secret");
+
+        await using (var bad = await ConnectAsync(_pipeName))
+        {
+            await FrameIO.WriteAsync(bad, "{not json"u8.ToArray());
+            await Assert.ThrowsAsync<EndOfStreamException>(() => FrameIO.ReadAsync(bad));
+        }
+
+        await using var good = await ConnectAsync(_pipeName);
+        var response = await SendHandshakeAsync(good, v: ProtocolVersion.Current, token: "secret");
+        Assert.True(response.Ok);
+    }
+
+    /// <summary>
+    /// A null JSON envelope or an oversized length prefix drops only that connection.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Agent started with token "secret"
+    ///
+    /// Steps:
+    /// - Connect and send the frame body <c>null</c>; reconnect
+    /// - Send a raw length prefix larger than the maximum payload; reconnect
+    /// - Handshake on a fresh connection
+    ///
+    /// Expected:
+    /// - Each bad connection is closed; the final handshake is ok=true
+    /// </remarks>
+    [Fact]
+    public async Task NullEnvelopeAndOversizedFrame_DoNotStopAcceptLoop()
+    {
+        StartAgent(token: "secret");
+
+        await using (var nullEnvelope = await ConnectAsync(_pipeName))
+        {
+            await FrameIO.WriteAsync(nullEnvelope, "null"u8.ToArray());
+            await Assert.ThrowsAsync<EndOfStreamException>(() => FrameIO.ReadAsync(nullEnvelope));
+        }
+
+        await using (var oversized = await ConnectAsync(_pipeName))
+        {
+            var prefix = new byte[FrameIO.LengthPrefixSize];
+            System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(prefix, FrameIO.DefaultMaxPayloadBytes + 1);
+            await oversized.WriteAsync(prefix);
+            await oversized.FlushAsync();
+            await Assert.ThrowsAsync<EndOfStreamException>(() => FrameIO.ReadAsync(oversized));
+        }
+
+        await using var good = await ConnectAsync(_pipeName);
+        var response = await SendHandshakeAsync(good, v: ProtocolVersion.Current, token: "secret");
+        Assert.True(response.Ok);
+    }
+
     private void StartAgent(string token)
     {
         Environment.SetEnvironmentVariable(GraftEnvironment.Enable, "1");

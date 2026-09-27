@@ -87,6 +87,11 @@ internal sealed class AgentPipeServer : IDisposable
             {
                 break;
             }
+            catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                // A single misbehaving connection must never take down the accept loop.
+                System.Diagnostics.Trace.TraceWarning($"Graft agent pipe: connection dropped after unexpected error: {ex}");
+            }
             finally
             {
                 if (server is not null)
@@ -125,8 +130,29 @@ internal sealed class AgentPipeServer : IDisposable
             {
                 break;
             }
+            catch (Exception ex) when (ex is JsonException or InvalidOperationException)
+            {
+                // Malformed JSON, null envelope, or an invalid / oversized length prefix. The stream
+                // position is no longer trustworthy, so drop this connection and accept a new one.
+                System.Diagnostics.Trace.TraceWarning($"Graft agent pipe: dropping connection after malformed frame: {ex.Message}");
+                break;
+            }
 
-            var (response, closeAfterWrite, binaryFollowUp) = Dispatch(request, handshaken);
+            (ResponseMessage Response, bool CloseAfterWrite, byte[]? BinaryFollowUp) dispatched;
+            try
+            {
+                dispatched = Dispatch(request, handshaken);
+            }
+            catch (Exception ex)
+            {
+                dispatched = (
+                    Error(request.Id ?? string.Empty, GraftErrorCodes.ActionFailed, ex.Message),
+                    CloseAfterWrite: false,
+                    BinaryFollowUp: null
+                );
+            }
+
+            var (response, closeAfterWrite, binaryFollowUp) = dispatched;
             if (response.Ok && request.Method == ProtocolMethods.Handshake)
             {
                 handshaken = true;
