@@ -1419,7 +1419,7 @@ public sealed class ElementQuery
             .ConfigureAwait(false);
     }
 
-    private async Task<GraftException> CreateFailureAsync(
+    private Task<GraftException> CreateFailureAsync(
         string code,
         string message,
         string step,
@@ -1431,63 +1431,28 @@ public sealed class ElementQuery
         CancellationToken cancellationToken = default
     )
     {
-        _session.Timeline?.MarkFailed();
         Call.SuccessRoot = null;
-        var tree = treeRoot;
-        if (tree is null)
-        {
-            try
-            {
-                tree = (await _session.Connection.GetTreeAsync(cancellationToken).ConfigureAwait(false)).Root;
-            }
-            catch (Exception)
-            {
-                // Best-effort: GraftException, OperationCanceledException, IO, etc.
-                // Must not replace the original failure being reported.
-            }
-        }
-
-        string? screenshotPath = null;
-        try
-        {
-            var (_, pngBytes) = await _session.Connection.ScreenshotAsync(cancellationToken).ConfigureAwait(false);
-            var path = Path.Combine(Path.GetTempPath(), $"graft-fail-{Guid.NewGuid():N}.png");
-            await File.WriteAllBytesAsync(path, pngBytes, cancellationToken).ConfigureAwait(false);
-            screenshotPath = path;
-        }
-        catch (Exception)
-        {
-            // Best-effort attachment; keep the original failure.
-        }
-
-        IReadOnlyList<HealingCandidate>? healingCandidates = null;
-        if (tree is not null)
-        {
-            var proposed = SelectorHealer.ProposeCandidates(tree, _selector);
-            if (proposed.Count > 0)
-            {
-                healingCandidates = proposed;
-            }
-        }
-
-        var recent = _session.OperationLog.Snapshot();
-        return new GraftException(
+        return _session.Reports.CreateAsync(
             code,
             message,
-            new FailureReport
+            step,
+            FailureReportSelector.FromSelector(_selector),
+            expected,
+            actual,
+            timedOut,
+            treeRoot,
+            tree =>
             {
-                Step = step,
-                Expected = expected,
-                Actual = actual,
-                TimedOut = timedOut,
-                Selector = FailureReportSelector.FromSelector(_selector),
-                RecentOperations = recent.Count == 0 ? null : recent,
-                Tree = tree,
-                ScreenshotPath = screenshotPath,
-                HealingCandidates = healingCandidates,
-                TreeDiff = tree is null ? null : _session.TreeBaseline.Diff(tree),
+                if (tree is null)
+                {
+                    return null;
+                }
+
+                var proposed = SelectorHealer.ProposeCandidates(tree, _selector);
+                return proposed.Count == 0 ? null : proposed;
             },
-            innerException
+            innerException,
+            cancellationToken
         );
     }
 
