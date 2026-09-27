@@ -1,17 +1,17 @@
 [English](design.md) | 日本語
 
-# Graft — WPF/AvaloniaUI向けGUIテスト自動化ツール 開発概要
+# Graft — WPF向けGUIテスト自動化ツール 開発概要
 
 ## 1. プロジェクトの目的
 
-WPFおよびAvaloniaUIアプリケーション向けのGUI（E2E）テスト自動化ツールを開発する。
+WPFアプリケーション向けのGUI（E2E）テスト自動化ツールを開発する。
 Playwright（Web）やTestComplete（マルチフレームワーク対応の商用ツール）に相当する立ち位置を、
-WPF/AvaloniaUIに特化することで実現する。
+WPFに特化することで実現する。
 
-対象は**自社で開発しソースコードを管理できるWPF/Avaloniaアプリケーション**に限定する
+対象は**自社で開発しソースコードを管理できるWPFアプリケーション**に限定する
 （サードパーティ製の既存exeに対するブラックボックステストは対象外。詳細は3節参照）。
 
-**初期ランタイムスコープ:** .NET 8 以降の WPF / Avalonia のみ。.NET Framework 製 WPF は需要が固まってから検討する（10節参照）。
+**初期ランタイムスコープ:** .NET 8 以降の WPF。.NET Framework 製 WPF は需要が固まってから検討する（10節参照）。
 
 ## 2. 既存ツールの調査結果と差別化の根拠
 
@@ -39,10 +39,10 @@ UIAとは別の「アプリケーションプロセス内部に直接アクセ�
 | -------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------- |
 | FlaUI / WinAppDriver / TestStack.White / Appium(Windows) | UIA(COM)ラップのみ                                     | 汎用Windows全般                                   |
 | TestComplete                                             | フレームワーク別のin-process直接アクセス（非公開実装） | 汎用+多数フレームワーク、商用・高額               |
-| **Graft（本プロジェクト）**                              | in-process直接アクセス（対象アプリへの事前組み込み）   | **WPF/AvaloniaUIに特化、自社アプリ限定、OSS想定** |
+| **Graft（本プロジェクト）**                              | in-process直接アクセス（対象アプリへの事前組み込み）   | **WPFに特化、自社アプリ限定、OSS想定**            |
 
 OSSの中でin-process直接アクセスを実装しているものは存在しないため、
-スコープをWPF/AvaloniaUIの2フレームワーク・自社アプリに絞ることで、実装をシンプルに保ちながら
+スコープをWPF・自社アプリに絞ることで、実装をシンプルに保ちながら
 TestComplete相当の精度を狙う、という位置づけ。
 
 ## 3. アーキテクチャ方針
@@ -73,7 +73,7 @@ TestComplete相当の精度を狙う、という位置づけ。
 **トレードオフ（許容する制約）**
 - ソースコードを管理できない対象（サードパーティ製アプリ、ブラックボックステスト）
   には使えない。これはPlaywright/Cypressが「自分たちのWebアプリを対象にする」のと
-  同じ立ち位置であり、Graftの「WPF/AvaloniaUIに特化する」という方向性とも矛盾しない
+  同じ立ち位置であり、Graftの「WPFに特化する」という方向性とも矛盾しない
 - 本番ビルドへの誤混入を防ぐ仕組みが必須（後述）
 
 ### 処理フロー
@@ -277,7 +277,7 @@ Graft/
 「対象に接続する」という核心的なコンセプトは共通しているため、名称はそのまま維持する）。
 単語自体からは「GUIテスト自動化ツール」であることは伝わりにくいため、
 README・パッケージ説明・CLIヘルプ等では必ず
-「Graft — In-process UI testing for WPF & AvaloniaUI」のようなタグラインを併記する運用とする。
+「Graft — In-process UI testing for WPF」のようなタグラインを併記する運用とする。
 
 ## 7. 推奨する着手順序（更新版）
 
@@ -299,8 +299,7 @@ Core / Avalonia / McpServer 等の空スケルトンは作らない。
 1. **M0:** Directory.Build.props → SampleWpfApp → Protocol + Instrumentation(+Wpf) → Analyzer(`GRAFT001`) → SmokeClient（Launch 正本）
 2. **M1:** Screenshot + `invoke` + props/targets。続けて `setValue` / `toggle` / キー
 3. **M2:** Core Launch・待機・スコアリングセレクタ・エラーコード + xUnit 1本
-4. WPF が安定したら `Graft.Instrumentation.Avalonia`
-5. Phase 2 以降（失敗診断、Scenario JSON、MCP、自己修復）
+4. Phase 2 以降（失敗診断、Scenario JSON、MCP、自己修復）
 
 ## 8. LLMによるテスト作成・修正・確認への対応
 
@@ -385,21 +384,20 @@ GitHub Actions:
 | Phase 31  | SendInput 並列対策                                   | X04。正本 `-m:1` で Done（mutex 見送り）                                                                                  |
 | Phase 32  | Frame 遷移（H02）                                    | Frame のみ。専用 DSL なし                                                                                                 |
 | Phase 33  | 操作タイムライン（D06）                              | PNG 連番 + HTML。Must。GIF/FFmpeg なし                                                                                    |
-| Phase 34  | SampleTodoApp（利用ガイド正本）                      | MVVM/DI/テーマ + 実 JSON E2E。Avalonia 前                                                                                 |
-| Phase 35  | 要素クリップ Screenshot（P02）                       | Must。窓クリップ + Popup RTB + ToolTip ノード。開時 overlay はホスト合成。Avalonia 前                                     |
+| Phase 34  | SampleTodoApp（利用ガイド正本）                      | MVVM/DI/テーマ + 実 JSON E2E                                                                                              |
+| Phase 35  | 要素クリップ Screenshot（P02）                       | Must。窓クリップ + Popup RTB + ToolTip ノード。開時 overlay はホスト合成                                                  |
 | （並行）  | WPF UI Gallery 最深部 E2E                            | ローカル `tests/wpfui` + `WpfUi.Gallery.Graft.Tests`。[.dev/task_wpfui-gallery-e2e.md](../.dev/task_wpfui-gallery-e2e.md) |
-| （次）    | Avalonia（Phase 35 後）                              | 対照表: `docs/competitive-gap.md`。Inspector 任意                                                                         |
 
 ## 9. 未検討・今後の課題
 
 - `GRAFT001` のメッセージ文言、マルチターゲット時の記号伝播の検証項目
 - `Graft.props` / `Graft.targets` の具体 MSBuild 断片（サンプルへの落とし込み）
-- よくある型の対応表の具体行（WPF/Avalonia それぞれの型名）
+- よくある型の対応表の具体行（WPF の型名）
 - セレクタ重みの実測チューニング、`details` スキーマのフィールド確定
 - scroll/select の項目キー・表示名指定（index 正本の次候補）
 - 実 OS コモンダイアログの UIA 操作（方針上非採用。必要なら別検討）
 - WPF 競合ギャップ（正本: [competitive-gap.md](./competitive-gap.md)。Must 確定済み → Phase 24+）
-- Avalonia アダプタ（**残 Must なし。Phase 35 / P02 Done 後に解禁**）。Inspector は任意（自社アプリでは getTree で代替しやすい）
+- Inspector は任意（自社アプリでは getTree で代替しやすい）
 - MessagePack 評価用の実測ログ形式
 - .NET Framework WPF 対応の要否（需要が固まってから）
 - 多言語バインディング / gRPC（v1 スコープ外。再検討は操作モデル安定後）

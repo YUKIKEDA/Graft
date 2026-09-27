@@ -1,17 +1,17 @@
 English | [日本語](design.ja.md)
 
-# Graft — development overview for a WPF and AvaloniaUI GUI test tool
+# Graft — development overview for a WPF GUI test tool
 
 ## 1. Purpose
 
-Build a GUI (end-to-end) test tool for WPF and AvaloniaUI applications.
+Build a GUI (end-to-end) test tool for WPF applications.
 The stance matches Playwright (web) and TestComplete (a commercial multi-framework tool),
-specialized to WPF and AvaloniaUI.
+specialized to WPF.
 
-The target is limited to **WPF and Avalonia applications you develop and whose source you control**
+The target is limited to **WPF applications you develop and whose source you control**
 (black-box tests of an existing third-party exe are out of scope. See section 3).
 
-**Initial runtime scope:** WPF and Avalonia on .NET 8 or later only. .NET Framework WPF waits until there is real demand (see section 10).
+**Initial runtime scope:** WPF on .NET 8 or later. .NET Framework WPF waits until there is real demand (see section 10).
 
 ## 2. Survey of existing tools and why Graft is different
 
@@ -40,9 +40,9 @@ That is the same idea as the in-process access this project aims at.
 | --------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------ |
 | FlaUI / WinAppDriver / TestStack.White / Appium (Windows) | UIA (COM) wrapper only                                   | General Windows                                        |
 | TestComplete                                              | Per-framework in-process access (closed implementation)  | General plus many frameworks, commercial and expensive |
-| **Graft (this project)**                                  | In-process access (embedded in the app under test first) | **WPF/AvaloniaUI only, your own apps, aimed at OSS**   |
+| **Graft (this project)**                                  | In-process access (embedded in the app under test first) | **WPF only, your own apps, aimed at OSS**              |
 
-No OSS tool implements in-process access, so limiting the scope to two frameworks and to apps you own
+No OSS tool implements in-process access, so limiting the scope to WPF and to apps you own
 keeps the implementation small while aiming at TestComplete-level accuracy.
 
 ## 3. Architecture
@@ -67,7 +67,7 @@ The first idea was process injection (start the target exe suspended and inject 
 
 **Tradeoff (an accepted constraint)**
 
-- It cannot test a target whose source you do not control (a third-party app, a black-box test). That is the same stance as Playwright and Cypress testing your own web app, and it matches specializing Graft to WPF and AvaloniaUI
+- It cannot test a target whose source you do not control (a third-party app, a black-box test). That is the same stance as Playwright and Cypress testing your own web app, and it matches specializing Graft to WPF
 - A mechanism that keeps the agent out of production builds is required (below)
 
 ### Flow
@@ -264,7 +264,7 @@ Graft/
 because the core idea, connecting to the target, is the same).
 The word alone does not say "GUI test tool", so README, package description, and CLI help
 always carry a tagline such as
-"Graft — In-process UI testing for WPF & AvaloniaUI".
+"Graft — In-process UI testing for WPF".
 
 ## 7. Recommended build order (updated)
 
@@ -286,8 +286,7 @@ Do not create empty skeletons for Core / Avalonia / McpServer and similar.
 1. **M0:** Directory.Build.props → SampleWpfApp → Protocol + Instrumentation(+Wpf) → Analyzer (`GRAFT001`) → SmokeClient (Launch is the canonical demo)
 2. **M1:** Screenshot + `invoke` + props/targets. Then `setValue` / `toggle` / keys
 3. **M2:** Core Launch, waits, scored selectors, error codes + one xUnit test
-4. When WPF is stable, `Graft.Instrumentation.Avalonia`
-5. Phase 2 onward (failure diagnosis, Scenario JSON, MCP, self-heal)
+4. Phase 2 onward (failure diagnosis, Scenario JSON, MCP, self-heal)
 
 ## 8. Letting an LLM write, fix, and check tests
 
@@ -372,21 +371,20 @@ GitHub Actions:
 | Phase 31   | SendInput parallelism                                        | X04. Done with the canonical `-m:1` (mutex dropped)                                                                      |
 | Phase 32   | Frame navigation (H02)                                       | Frame only. No dedicated DSL                                                                                             |
 | Phase 33   | Action timeline (D06)                                        | PNG sequence + HTML. Must. No GIF/FFmpeg                                                                                 |
-| Phase 34   | SampleTodoApp (canonical caller guide)                       | MVVM/DI/theme + real JSON E2E. Before Avalonia                                                                           |
-| Phase 35   | Element-clipped screenshot (P02)                             | Must. Window clip + popup RTB + ToolTip node. An open overlay is composited on the host. Before Avalonia                 |
+| Phase 34   | SampleTodoApp (canonical caller guide)                       | MVVM/DI/theme + real JSON E2E                                                                                            |
+| Phase 35   | Element-clipped screenshot (P02)                             | Must. Window clip + popup RTB + ToolTip node. An open overlay is composited on the host                                  |
 | (parallel) | Deepest WPF UI Gallery E2E                                   | Local `tests/wpfui` + `WpfUi.Gallery.Graft.Tests`. [`.dev/task_wpfui-gallery-e2e.md`](../.dev/task_wpfui-gallery-e2e.md) |
-| (next)     | Avalonia (after Phase 35)                                    | Matrix: `docs/competitive-gap.md`. Inspector is optional                                                                 |
 
 ## 9. Open questions
 
 - Wording of the `GRAFT001` message, and what to verify when a symbol propagates across multi-targeting
 - Concrete MSBuild fragments for `Graft.props` / `Graft.targets` (how they land in the samples)
-- Concrete rows of the common-type map (type names for WPF and for Avalonia)
+- Concrete rows of the common-type map (WPF type names)
 - Measured tuning of selector weights, and the final fields of the `details` schema
 - Item key and display-name forms of scroll/select (the next candidate after index as the source of truth)
 - Driving a real OS common dialog through UIA (rejected by policy. A separate discussion if it is ever needed)
 - WPF competitive gap (source of truth: [`docs/competitive-gap.md`](competitive-gap.md). Must is fixed → Phase 24+)
-- Avalonia adapter (**no remaining Must. Unblocked after Phase 35 / P02 Done**). Inspector is optional (an in-house app can often use `getTree` instead)
+- Inspector is optional (an in-house app can often use `getTree` instead)
 - The measured-log format used to evaluate MessagePack
 - Whether to support .NET Framework WPF (only after demand is clear)
 - Multi-language bindings / gRPC (outside v1. Revisit after the action model is stable)

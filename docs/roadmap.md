@@ -18,5 +18,3 @@ A title on this page is not permission to start coding. Open an Issue first. See
 | [#119](https://github.com/YUKIKEDA/Graft/issues/119) | Screenshot expect / diff (P03)                                                                             |
 | [#120](https://github.com/YUKIKEDA/Graft/issues/120) | Document `ConnectAsync` as a first-class step (S02)                                                        |
 | [#121](https://github.com/YUKIKEDA/Graft/issues/121) | Document the session-reuse opt-in (S04)                                                                    |
-
-The Avalonia adapter stays after the WPF matrix. There is no remaining WPF Must row. See [`docs/competitive-gap.md`](competitive-gap.md).

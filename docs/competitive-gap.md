@@ -1,10 +1,10 @@
 # Graft — WPF competitive scenario matrix
 
-Before Avalonia resumes, this is the source of truth that lines up **in-house desktop E2E scenarios** covered by FlaUI / WinAppDriver / TestStack.White / Appium (Windows) with what Graft does today.
+This is the source of truth that lines up **in-house WPF E2E scenarios** covered by FlaUI / WinAppDriver / TestStack.White / Appium (Windows) with what Graft does today.
 Playwright DX (codegen / trace / video) and the whole of TestComplete Object Spy are not comparison axes (optional, later is fine).
 See [`docs/design.md`](design.md) Q125 onward, [`.dev/task_phase23.md`](../.dev/task_phase23.md), and the caller surface in [`docs/graft-core.md`](graft-core.md).
 
-**Gate:** Avalonia stayed blocked until every **Must** row was implemented and the sample E2E was green. That gate is open: no Must row remains.
+**Gate:** Every **Must** row is implemented and the sample E2E is green. No Must row remains.
 
 ---
 
@@ -15,7 +15,7 @@ See [`docs/design.md`](design.md) Q125 onward, [`.dev/task_phase23.md`](../.dev/
 | Graft OK         | A representative scenario is covered by a sample or a contract |
 | Graft PART       | Only part of it, a workaround, or a remaining hole             |
 | Graft NO         | Not implemented, or intentionally unsupported                  |
-| **Must**         | Required before Avalonia could resume (**fixed**)              |
+| **Must**         | Required for the WPF coverage gate (**fixed**)                 |
 | **Optional**     | Nice to have. Outside the gate                                 |
 | **Out of scope** | The design does not do this / another product's area           |
 | **Done**         | Already enough (counts as a finished Must)                     |
@@ -26,7 +26,7 @@ The competitor column means "is this a scenario that class of tool normally writ
 
 ## Fixed Must (review result)
 
-Starting from the proposed list, K05 / V06 / W12 / A08 are optional. **X04 is Must (Done by the `-m:1` practice).** **D06 (action timeline) was added as Must** (finish one framework first). **P02 (element-clipped screenshot) was promoted to Must** (Phase 35. Avalonia is after that).
+Starting from the proposed list, K05 / V06 / W12 / A08 are optional. **X04 is Must (Done by the `-m:1` practice).** **D06 (action timeline) was added as Must** (finish one framework first). **P02 (element-clipped screenshot) was promoted to Must** (Phase 35).
 
 `F02 F04 F05` · `M03–M08` · `K03 K04` · `V03 V05` · `T03 T04` · `L04 L05 L06` · `E04` · `H02 H03` · `U02 U03 U04` · `G06–G10` · `C01–C06` · `W06–W11` · `A04–A07` · `X04` · `D06` · `P02`
 
@@ -263,7 +263,7 @@ Inspector (F08) is **optional** for an in-house app that already has `getTree` (
 
 | ID  | Scenario              | Competitors | Graft | Priority      | Phase | Notes                             |
 | --- | --------------------- | ----------- | ----- | ------------- | ----- | --------------------------------- |
-| Z01 | Avalonia adapter      | —           | NO    | Out of scope* | —     | *Unblocked after Must is complete |
+| Z01 | Avalonia adapter      | —           | NO    | Out of scope  | —     | Not implemented                   |
 | Z02 | .NET Framework WPF    | PART        | NO    | Out of scope  | —     |                                   |
 | Z03 | Headless-only backend | PART        | NO    | Out of scope  | —     |                                   |
 
@@ -286,7 +286,7 @@ Inspector (F08) is **optional** for an in-house app that already has `getTree` (
 | 33    | Action timeline                              | D06                                             |
 | 35    | Element-clipped screenshot                   | P02                                             |
 
-Remaining Must (before Avalonia): **none** (P02 / H02 / X04 / D06 are Done). Avalonia may start.
+Remaining Must: **none** (P02 / H02 / X04 / D06 are Done).
 
 ---
 

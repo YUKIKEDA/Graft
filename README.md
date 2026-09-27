@@ -1,15 +1,15 @@
 English | [日本語](README.ja.md)
 
-# Graft — In-process UI testing for WPF & AvaloniaUI
+# Graft — In-process UI testing for WPF
 
 [![CI](https://github.com/YUKIKEDA/Graft/actions/workflows/ci.yml/badge.svg)](https://github.com/YUKIKEDA/Graft/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-In-process GUI end-to-end tests for WPF and AvaloniaUI.
+In-process GUI end-to-end tests for WPF.
 
 Graft embeds an agent in the app under test and reads the visual tree directly. It does not walk UI Automation (UIA) over COM the way FlaUI does. The goal is TestComplete-style Open Applications accuracy, limited to apps you own.
 
-> **Status:** WPF on .NET 8+ works. The Avalonia adapter is not implemented. Packages are **0.1.0** (pre-1.0; the public API may break). Publish to NuGet.org happens on a `v*` tag. Until the first tag is pushed, a `ProjectReference` in this repository works too.
+> **Status:** WPF on .NET 8+ works. Packages are **0.1.0** (pre-1.0; the public API may break). Publish to NuGet.org happens on a `v*` tag. Until the first tag is pushed, a `ProjectReference` in this repository works too.
 
 ## Why in-process
 
@@ -17,7 +17,7 @@ Graft embeds an agent in the app under test and reads the visual tree directly. 
 | --------------------------------------------------------- | ---------------------------------------- | ------------------------------------------ |
 | FlaUI / WinAppDriver / TestStack.White / Appium (Windows) | UIA (COM) wrapper                        | General Windows                            |
 | TestComplete                                              | Per-framework in-process access (closed) | Commercial, many frameworks                |
-| **Graft**                                                 | Embedded in the app under test           | **Your WPF / Avalonia apps, aimed at OSS** |
+| **Graft**                                                 | Embedded in the app under test           | **Your WPF apps, aimed at OSS**            |
 
 Black-box tests of a third-party exe are out of scope. The stance is the same as Playwright testing your own web app.
 

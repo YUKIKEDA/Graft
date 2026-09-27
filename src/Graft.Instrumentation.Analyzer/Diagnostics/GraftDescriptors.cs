@@ -17,6 +17,6 @@ internal static class GraftDescriptors
         category: "Graft.Safety",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
-        description: "Calling Agent.Start outside a GRAFT_TEST compilation is not allowed. The WPF/Avalonia packages ship this analyzer so accidental production enablement fails at build time."
+        description: "Calling Agent.Start outside a GRAFT_TEST compilation is not allowed. The WPF package ships this analyzer so accidental production enablement fails at build time."
     );
 }

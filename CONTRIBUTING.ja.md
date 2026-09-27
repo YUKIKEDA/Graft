@@ -34,8 +34,6 @@ dotnet test Graft.slnx -m:1
 6. GitHub-hosted の **CI** workflow が緑であること
 7. `## Related` に `Closes #N` を独立した行で書く。ブランチの前に Issue を切る（`type/<issue-number>-<slug>`）
 
-Avalonia アダプタは WPF の残 Must 完了後です。詳細は [`docs/competitive-gap.md`](docs/competitive-gap.md) を見てください。
-
 ## CI
 
 | Workflow                                 | Runner               | 内容                                                                                                                       |
