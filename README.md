@@ -185,7 +185,7 @@ await app.WaitForWindowAsync(automationId: "Main");
 
 既定タイムアウトはアクション前待ち 5 秒 / Expect 10 秒 / 起動+Handshake 30 秒（`LaunchOptions` / `WaitOptions` で上書き可）。
 
-失敗時は `GraftException.Report` にステップ・期待値・セレクタ・直近操作・ツリー・スクリーンショット参照が付きます。セレクタ解決に失敗すると、信頼できる代替がある場合だけ一度自己修復します。
+失敗時は `GraftException.Report` にステップ・期待値・セレクタ・直近操作・ツリー・スクリーンショット参照が付きます。直前に成功した操作があるときは `treeDiff`（追加・削除・属性変更）も付きます。`GraftSession.IncludeTreeDiff = false` で外せます。セレクタ解決に失敗すると、信頼できる代替がある場合だけ一度自己修復します。
 
 ### 操作タイムライン（任意）
 

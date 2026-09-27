@@ -17,6 +17,7 @@ public sealed class GraftSession : IAsyncDisposable
     private readonly Process _process;
     private readonly AgentConnection _connection;
     private readonly OperationLog _operationLog = new();
+    private readonly TreeBaseline _treeBaseline = new();
     private readonly OperationTimeline? _timeline;
     private bool _disposed;
 
@@ -53,6 +54,27 @@ public sealed class GraftSession : IAsyncDisposable
     public string? TimelineIndexPath => _timeline?.IndexPath;
 
     /// <summary>
+    /// Gets or sets a value indicating whether failure reports include <c>treeDiff</c>
+    /// against the last successful getTree.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see langword="true"/>. The agent still returns a full tree; Core computes the diff.
+    /// Switching the target window drops the baseline. There is no diff until a success has stored one.
+    /// </remarks>
+    public bool IncludeTreeDiff
+    {
+        get => _treeBaseline.Enabled;
+        set
+        {
+            _treeBaseline.Enabled = value;
+            if (!value)
+            {
+                _treeBaseline.Clear();
+            }
+        }
+    }
+
+    /// <summary>
     /// Creates an element query for the given selector (resolved via getTree scoring).
     /// </summary>
     /// <param name="selector">Composite selector.</param>
@@ -60,7 +82,7 @@ public sealed class GraftSession : IAsyncDisposable
     public ElementQuery GetBy(Selector selector)
     {
         ArgumentNullException.ThrowIfNull(selector);
-        return new ElementQuery(_connection, selector, WaitOptions, _operationLog, timeline: _timeline);
+        return new ElementQuery(_connection, selector, WaitOptions, _operationLog, _treeBaseline, timeline: _timeline);
     }
 
     /// <summary>
@@ -117,6 +139,7 @@ public sealed class GraftSession : IAsyncDisposable
         try
         {
             await _connection.SwitchWindowAsync(windowId, cancellationToken).ConfigureAwait(false);
+            _treeBaseline.Clear();
             await RecordSuccessAsync(FailureSteps.SwitchWindow, $"windowId={windowId}", cancellationToken).ConfigureAwait(false);
         }
         catch (GraftException)
@@ -168,6 +191,7 @@ public sealed class GraftSession : IAsyncDisposable
                 if (switchTo)
                 {
                     await _connection.SwitchWindowAsync(match.WindowId, cancellationToken).ConfigureAwait(false);
+                    _treeBaseline.Clear();
                     await RecordSuccessAsync(FailureSteps.WaitForWindow, $"windowId={match.WindowId};switched", cancellationToken)
                         .ConfigureAwait(false);
                 }

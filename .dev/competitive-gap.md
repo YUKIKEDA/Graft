@@ -241,7 +241,7 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | D01 | 構造化 FailureReport         | Yes  | OK    | Done   | —       |      |
 | D02 | 失敗時スクショ添付           | Yes  | OK    | Done   | —       |      |
 | D03 | 失敗時ツリー添付             | Yes  | OK    | Done   | —       |      |
-| D04 | ツリー差分 JSON              | PART | NO    | 任意   | —       |      |
+| D04 | ツリー差分 JSON              | PART | OK    | Done   | —       | `FailureReport.treeDiff`（added/removed/changed）。JSON Patch ではない。既定オン、`IncludeTreeDiff` で切る |
 | D05 | シナリオファイル自動書き換え | PART | NO    | 非目標 | —       |      |
 | D06 | 操作タイムライン（目視レビュー） | PART | OK    | Done | 33      | PNG 連番 + HTML（速度・操作名字幕）。GIF/FFmpeg/ImageSharp なし。`task_phase33.md` |
 
