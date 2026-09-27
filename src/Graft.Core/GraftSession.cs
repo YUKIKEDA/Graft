@@ -91,7 +91,7 @@ public sealed class GraftSession : IAsyncDisposable
     public ElementQuery GetBy(Selector selector)
     {
         ArgumentNullException.ThrowIfNull(selector);
-        return new ElementQuery(_connection, selector, WaitOptions, _operationLog, _treeBaseline, timeline: _timeline);
+        return new ElementQuery(new SessionContext(_connection, WaitOptions, _operationLog, _treeBaseline, _timeline), selector);
     }
 
     /// <summary>
@@ -182,8 +182,8 @@ public sealed class GraftSession : IAsyncDisposable
             throw new ArgumentException("At least one of title or automationId must be provided.");
         }
 
-        var timeout = PositiveOrDefault(WaitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
-        var poll = PositiveOrDefault(WaitOptions.PollInterval, WaitOptions.DefaultPollInterval);
+        var timeout = WaitOptions.ResolvedExpectTimeout;
+        var poll = WaitOptions.ResolvedPollInterval;
         var deadline = DateTime.UtcNow + timeout;
 
         while (DateTime.UtcNow < deadline)
@@ -248,8 +248,8 @@ public sealed class GraftSession : IAsyncDisposable
             throw new ArgumentException("At least one of title or automationId must be provided.");
         }
 
-        var timeout = PositiveOrDefault(WaitOptions.ExpectTimeout, WaitOptions.DefaultExpectTimeout);
-        var poll = PositiveOrDefault(WaitOptions.PollInterval, WaitOptions.DefaultPollInterval);
+        var timeout = WaitOptions.ResolvedExpectTimeout;
+        var poll = WaitOptions.ResolvedPollInterval;
         var deadline = DateTime.UtcNow + timeout;
 
         while (DateTime.UtcNow < deadline)
@@ -521,8 +521,6 @@ public sealed class GraftSession : IAsyncDisposable
             await _timeline.CaptureAfterAsync(action, detail, cancellationToken, pngBytes).ConfigureAwait(false);
         }
     }
-
-    private static TimeSpan PositiveOrDefault(TimeSpan value, TimeSpan fallback) => value <= TimeSpan.Zero ? fallback : value;
 
     private static void TryKill(Process process)
     {
