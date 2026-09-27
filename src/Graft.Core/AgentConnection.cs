@@ -16,6 +16,15 @@ namespace Graft.Core;
 public sealed class AgentConnection : IAsyncDisposable
 {
     private readonly NamedPipeClientStream _stream;
+
+    // Serializes each write-request / read-response exchange so concurrent callers cannot interleave frames.
+    private readonly SemaphoreSlim _ioLock = new(1, 1);
+
+    // Requests whose response was never read because the caller cancelled after the write.
+    // Value: whether an OK response is followed by a binary frame (screenshot). Guarded by _ioLock.
+    private readonly Dictionary<string, bool> _abandoned = new(StringComparer.Ordinal);
+    private int _pendingBinaryFrames;
+    private bool _broken;
     private int _nextId = 1;
     private bool _disposed;
 
@@ -1142,7 +1151,7 @@ public sealed class AgentConnection : IAsyncDisposable
             paramsElement = JsonSerializer.SerializeToElement(new { automationId, runtimeId }, JsonMessageCodec.Options);
         }
 
-        var response = await SendAsync(
+        var (response, binary) = await SendCoreAsync(
                 new RequestMessage
                 {
                     V = ProtocolVersion.Current,
@@ -1150,6 +1159,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     Method = ProtocolMethods.Screenshot,
                     Params = paramsElement,
                 },
+                expectsBinaryFollowUp: true,
                 cancellationToken
             )
             .ConfigureAwait(false);
@@ -1164,16 +1174,7 @@ public sealed class AgentConnection : IAsyncDisposable
             resultElement.Deserialize<ScreenshotResult>(JsonMessageCodec.Options)
             ?? throw new GraftException(GraftErrorCodes.ActionFailed, "screenshot result deserialized to null.");
 
-        byte[] pngBytes;
-        try
-        {
-            pngBytes = await FrameIO.ReadAsync(_stream, cancellationToken: cancellationToken).ConfigureAwait(false);
-        }
-        catch (IOException ex)
-        {
-            throw new GraftException(GraftErrorCodes.PipeDisconnected, "Named pipe connection was lost while reading screenshot bytes.", ex);
-        }
-
+        var pngBytes = binary ?? Array.Empty<byte>();
         if (pngBytes.Length != meta.ByteLength)
         {
             throw new GraftException(
@@ -1365,18 +1366,116 @@ public sealed class AgentConnection : IAsyncDisposable
 
     private async Task<ResponseMessage> SendAsync(RequestMessage request, CancellationToken cancellationToken)
     {
+        var (response, _) = await SendCoreAsync(request, expectsBinaryFollowUp: false, cancellationToken).ConfigureAwait(false);
+        return response;
+    }
+
+    /// <summary>
+    /// Writes one request and reads its correlated response (plus the binary follow-up frame for an OK
+    /// screenshot) while holding the I/O lock.
+    /// </summary>
+    /// <remarks>
+    /// Responses to requests abandoned by an earlier cancellation are drained and discarded. Any other
+    /// id mismatch or malformed frame means the stream can no longer be trusted, so the connection is
+    /// marked broken and every later call fails fast with <c>pipe.disconnected</c>.
+    /// </remarks>
+    private async Task<(ResponseMessage Response, byte[]? Binary)> SendCoreAsync(
+        RequestMessage request,
+        bool expectsBinaryFollowUp,
+        CancellationToken cancellationToken
+    )
+    {
+        await _ioLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            await JsonMessageCodec.WriteRequestAsync(_stream, request, cancellationToken).ConfigureAwait(false);
-            return await JsonMessageCodec.ReadResponseAsync(_stream, cancellationToken).ConfigureAwait(false);
+            if (_broken)
+            {
+                throw new GraftException(
+                    GraftErrorCodes.PipeDisconnected,
+                    "Named pipe connection is unusable after an earlier protocol error. Relaunch or reconnect."
+                );
+            }
+
+            var written = false;
+            ResponseMessage? response = null;
+            try
+            {
+                await JsonMessageCodec.WriteRequestAsync(_stream, request, cancellationToken).ConfigureAwait(false);
+                written = true;
+
+                while (_pendingBinaryFrames > 0)
+                {
+                    _ = await FrameIO.ReadAsync(_stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    _pendingBinaryFrames--;
+                }
+
+                while (true)
+                {
+                    var candidate = await JsonMessageCodec.ReadResponseAsync(_stream, cancellationToken).ConfigureAwait(false);
+                    if (string.Equals(candidate.Id, request.Id, StringComparison.Ordinal))
+                    {
+                        response = candidate;
+                        break;
+                    }
+
+                    if (candidate.Id is not null && _abandoned.Remove(candidate.Id, out var staleHasBinary))
+                    {
+                        if (staleHasBinary && candidate.Ok)
+                        {
+                            _ = await FrameIO.ReadAsync(_stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+                        }
+
+                        continue;
+                    }
+
+                    _broken = true;
+                    throw new GraftException(
+                        GraftErrorCodes.PipeDisconnected,
+                        $"Response id '{candidate.Id}' does not match request id '{request.Id}' ({request.Method}). "
+                            + "The connection was marked unusable."
+                    );
+                }
+
+                byte[]? binary = null;
+                if (expectsBinaryFollowUp && response.Ok)
+                {
+                    binary = await FrameIO.ReadAsync(_stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
+
+                return (response, binary);
+            }
+            catch (OperationCanceledException) when (written)
+            {
+                if (response is null)
+                {
+                    _abandoned[request.Id] = expectsBinaryFollowUp;
+                }
+                else if (expectsBinaryFollowUp && response.Ok)
+                {
+                    _pendingBinaryFrames++;
+                }
+
+                throw;
+            }
+            catch (IOException ex)
+            {
+                _broken = true;
+                throw new GraftException(GraftErrorCodes.PipeDisconnected, "Named pipe connection was lost.", ex);
+            }
+            catch (ObjectDisposedException ex)
+            {
+                _broken = true;
+                throw new GraftException(GraftErrorCodes.PipeDisconnected, "Named pipe connection was disposed.", ex);
+            }
+            catch (Exception ex) when (ex is JsonException or InvalidOperationException)
+            {
+                _broken = true;
+                throw new GraftException(GraftErrorCodes.PipeDisconnected, $"Received a malformed response frame: {ex.Message}", ex);
+            }
         }
-        catch (IOException ex)
+        finally
         {
-            throw new GraftException(GraftErrorCodes.PipeDisconnected, "Named pipe connection was lost.", ex);
-        }
-        catch (ObjectDisposedException ex)
-        {
-            throw new GraftException(GraftErrorCodes.PipeDisconnected, "Named pipe connection was disposed.", ex);
+            _ioLock.Release();
         }
     }
 
