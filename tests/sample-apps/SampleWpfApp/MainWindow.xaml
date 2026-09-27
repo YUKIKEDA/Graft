@@ -1,630 +1,635 @@
-﻿<Window x:Class="SampleWpfApp.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d"
-        Title="Graft Sample WPF App"
-        AutomationProperties.AutomationId="Main"
-        Height="720"
-        Width="480">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="24">
-            <Menu x:Name="SampleMenu"
-                  AutomationProperties.AutomationId="SampleMenu"
-                  Margin="0,0,0,16">
-                <MenuItem x:Name="SampleMenuFile"
-                          AutomationProperties.AutomationId="SampleMenuFile"
-                          Header="File">
-                    <MenuItem x:Name="SampleMenuPing"
-                              AutomationProperties.AutomationId="SampleMenuPing"
-                              Header="Ping"
-                              Click="SampleMenuPing_OnClick" />
-                    <MenuItem x:Name="SampleMenuRecent"
-                              AutomationProperties.AutomationId="SampleMenuRecent"
-                              Header="Recent">
-                        <MenuItem x:Name="SampleMenuOpenRecent"
-                                  AutomationProperties.AutomationId="SampleMenuOpenRecent"
-                                  Header="Open recent"
-                                  Click="SampleMenuOpenRecent_OnClick" />
-                    </MenuItem>
-                    <MenuItem x:Name="SampleMenuDisabled"
-                              AutomationProperties.AutomationId="SampleMenuDisabled"
-                              Header="Disabled"
-                              IsEnabled="False" />
-                </MenuItem>
-            </Menu>
-            <TextBlock x:Name="StatusText"
-                       AutomationProperties.AutomationId="StatusText"
-                       Text="Ready"
-                       FontSize="16"
-                       Margin="0,0,0,16" />
-            <TextBox x:Name="SampleTextBox"
-                     AutomationProperties.AutomationId="SampleTextBox"
-                     Text=""
-                     Margin="0,0,0,16" />
-            <Button x:Name="SampleButton"
-                    AutomationProperties.AutomationId="SampleButton"
-                    AutomationProperties.Name="SampleClickMe"
-                    Content="Click Me"
-                    Padding="12,6"
-                    HorizontalAlignment="Left"
-                    Margin="0,0,0,16"
-                    Click="SampleButton_OnClick" />
-            <CheckBox x:Name="SampleCheckBox"
-                      AutomationProperties.AutomationId="SampleCheckBox"
-                      Content="Off"
-                      Margin="0,0,0,16"
-                      Checked="SampleCheckBox_OnChecked"
-                      Unchecked="SampleCheckBox_OnUnchecked" />
-            <Border x:Name="SampleMouseTarget"
-                    AutomationProperties.AutomationId="SampleMouseTarget"
-                    AutomationProperties.Name="MouseReady"
-                    Background="#FFDDDDDD"
-                    Height="36"
-                    Margin="0,0,0,16"
-                    Cursor="Hand"
-                    MouseLeftButtonDown="SampleMouseTarget_OnMouseLeftButtonDown">
-                <TextBlock Text="Mouse target"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center" />
-            </Border>
+﻿<Window
+  x:Class="SampleWpfApp.MainWindow"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  mc:Ignorable="d"
+  Title="Graft Sample WPF App"
+  AutomationProperties.AutomationId="Main"
+  Height="720"
+  Width="480"
+>
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Margin="24">
+      <Menu x:Name="SampleMenu" AutomationProperties.AutomationId="SampleMenu" Margin="0,0,0,16">
+        <MenuItem x:Name="SampleMenuFile" AutomationProperties.AutomationId="SampleMenuFile" Header="File">
+          <MenuItem x:Name="SampleMenuPing" AutomationProperties.AutomationId="SampleMenuPing" Header="Ping" Click="SampleMenuPing_OnClick" />
+          <MenuItem x:Name="SampleMenuRecent" AutomationProperties.AutomationId="SampleMenuRecent" Header="Recent">
+            <MenuItem
+              x:Name="SampleMenuOpenRecent"
+              AutomationProperties.AutomationId="SampleMenuOpenRecent"
+              Header="Open recent"
+              Click="SampleMenuOpenRecent_OnClick"
+            />
+          </MenuItem>
+          <MenuItem x:Name="SampleMenuDisabled" AutomationProperties.AutomationId="SampleMenuDisabled" Header="Disabled" IsEnabled="False" />
+        </MenuItem>
+      </Menu>
+      <TextBlock x:Name="StatusText" AutomationProperties.AutomationId="StatusText" Text="Ready" FontSize="16" Margin="0,0,0,16" />
+      <TextBox x:Name="SampleTextBox" AutomationProperties.AutomationId="SampleTextBox" Text="" Margin="0,0,0,16" />
+      <Button
+        x:Name="SampleButton"
+        AutomationProperties.AutomationId="SampleButton"
+        AutomationProperties.Name="SampleClickMe"
+        Content="Click Me"
+        Padding="12,6"
+        HorizontalAlignment="Left"
+        Margin="0,0,0,16"
+        Click="SampleButton_OnClick"
+      />
+      <CheckBox
+        x:Name="SampleCheckBox"
+        AutomationProperties.AutomationId="SampleCheckBox"
+        Content="Off"
+        Margin="0,0,0,16"
+        Checked="SampleCheckBox_OnChecked"
+        Unchecked="SampleCheckBox_OnUnchecked"
+      />
+      <Border
+        x:Name="SampleMouseTarget"
+        AutomationProperties.AutomationId="SampleMouseTarget"
+        AutomationProperties.Name="MouseReady"
+        Background="#FFDDDDDD"
+        Height="36"
+        Margin="0,0,0,16"
+        Cursor="Hand"
+        MouseLeftButtonDown="SampleMouseTarget_OnMouseLeftButtonDown"
+      >
+        <TextBlock Text="Mouse target" VerticalAlignment="Center" HorizontalAlignment="Center" />
+      </Border>
 
-            <TextBlock Text="Mouse advanced" Margin="0,0,0,4" />
-            <Button x:Name="DoubleClickTarget"
-                    AutomationProperties.AutomationId="DoubleClickTarget"
-                    AutomationProperties.Name="DoubleClickReady"
-                    Background="#FFFFE0B2"
-                    Height="36"
-                    Margin="0,0,0,8"
-                    Padding="12,0"
-                    HorizontalAlignment="Left"
-                    Cursor="Hand"
-                    Content="Double-click target" />
-            <Border x:Name="HoverTarget"
-                    AutomationProperties.AutomationId="HoverTarget"
-                    AutomationProperties.Name="HoverReady"
-                    Background="#FFE1BEE7"
-                    Height="36"
-                    Margin="0,0,0,8"
-                    Cursor="Hand"
-                    MouseEnter="HoverTarget_OnMouseEnter">
-                <TextBlock Text="Hover target"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center" />
-            </Border>
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <Border x:Name="DragSource"
-                        AutomationProperties.AutomationId="DragSource"
-                        Background="#FFBBDEFB"
-                        Width="120"
-                        Height="48"
-                        Margin="0,0,12,0"
-                        Cursor="Hand"
-                        AllowDrop="False"
-                        MouseMove="DragSource_OnMouseMove">
-                    <TextBlock Text="Drag source"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center" />
-                </Border>
-                <Border x:Name="DropTarget"
-                        AutomationProperties.AutomationId="DropTarget"
-                        AutomationProperties.Name="DropReady"
-                        Background="#FFC8E6C9"
-                        Width="120"
-                        Height="48"
-                        AllowDrop="True"
-                        Drop="DropTarget_OnDrop"
-                        DragOver="DropTarget_OnDragOver">
-                    <TextBlock Text="Drop target"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center" />
-                </Border>
-            </StackPanel>
-            <Border x:Name="ClickAtPad"
-                    AutomationProperties.AutomationId="ClickAtPad"
-                    Background="#FFFFCDD2"
-                    Width="160"
-                    Height="80"
-                    HorizontalAlignment="Left"
-                    Margin="0,0,0,8"
-                    Cursor="Hand"
-                    MouseLeftButtonDown="ClickAtPad_OnMouseLeftButtonDown">
-                <TextBlock Text="ClickAt pad (L/R)"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center" />
-            </Border>
-            <ScrollViewer x:Name="WheelScroller"
-                          AutomationProperties.AutomationId="WheelScroller"
-                          Height="80"
-                          Margin="0,0,0,16"
-                          VerticalScrollBarVisibility="Auto"
-                          ScrollChanged="WheelScroller_OnScrollChanged">
-                <StackPanel>
-                    <TextBlock Text="Wheel top" Margin="0,0,0,40" />
-                    <TextBlock x:Name="WheelBottomLabel"
-                               AutomationProperties.AutomationId="WheelBottomLabel"
-                               Text="WheelBottom"
-                               Margin="0,120,0,0" />
-                </StackPanel>
-            </ScrollViewer>
-
-            <Border x:Name="ContextMenuTarget"
-                    AutomationProperties.AutomationId="ContextMenuTarget"
-                    Background="#FFE8F0FF"
-                    Height="36"
-                    Margin="0,0,0,16"
-                    Cursor="Hand">
-                <Border.ContextMenu>
-                    <ContextMenu x:Name="SampleContextMenu"
-                                 AutomationProperties.AutomationId="SampleContextMenu">
-                        <MenuItem x:Name="ContextMenuPing"
-                                  AutomationProperties.AutomationId="ContextMenuPing"
-                                  Header="Ping"
-                                  Click="ContextMenuPing_OnClick" />
-                        <MenuItem x:Name="ContextMenuMore"
-                                  AutomationProperties.AutomationId="ContextMenuMore"
-                                  Header="More">
-                            <MenuItem x:Name="ContextMenuSubPing"
-                                      AutomationProperties.AutomationId="ContextMenuSubPing"
-                                      Header="Sub ping"
-                                      Click="ContextMenuSubPing_OnClick" />
-                        </MenuItem>
-                    </ContextMenu>
-                </Border.ContextMenu>
-                <TextBlock Text="Context menu target"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center" />
-            </Border>
-
-            <TextBlock Text="Slider" Margin="0,0,0,4" />
-            <Slider x:Name="SampleSlider"
-                    AutomationProperties.AutomationId="SampleSlider"
-                    Minimum="0"
-                    Maximum="100"
-                    Value="0"
-                    TickFrequency="1"
-                    IsSnapToTickEnabled="True"
-                    Margin="0,0,0,16"
-                    ValueChanged="SampleSlider_OnValueChanged" />
-
-            <TextBlock Text="Tabs" Margin="0,0,0,4" />
-            <TabControl x:Name="SampleTabs"
-                        AutomationProperties.AutomationId="SampleTabs"
-                        Height="100"
-                        Margin="0,0,0,16"
-                        SelectionChanged="SampleTabs_OnSelectionChanged">
-                <TabItem x:Name="SampleTabA"
-                         AutomationProperties.AutomationId="SampleTabA"
-                         Header="A">
-                    <TextBlock Text="Content A" Margin="8" />
-                </TabItem>
-                <TabItem x:Name="SampleTabB"
-                         AutomationProperties.AutomationId="SampleTabB"
-                         Header="B">
-                    <TextBlock Text="Content B" Margin="8" />
-                </TabItem>
-            </TabControl>
-
-            <TextBlock Text="Virtualized list" Margin="0,0,0,4" />
-            <ListBox x:Name="SampleList"
-                     AutomationProperties.AutomationId="SampleList"
-                     Height="120"
-                     Margin="0,0,0,16"
-                     DisplayMemberPath="Name"
-                     VirtualizingStackPanel.IsVirtualizing="True"
-                     VirtualizingStackPanel.VirtualizationMode="Recycling"
-                     ScrollViewer.CanContentScroll="True"
-                     SelectionChanged="SampleList_OnSelectionChanged">
-                <ListBox.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem">
-                        <Setter Property="AutomationProperties.AutomationId"
-                                Value="{Binding AutomationId}" />
-                        <Setter Property="AutomationProperties.Name"
-                                Value="{Binding Name}" />
-                    </Style>
-                </ListBox.ItemContainerStyle>
-            </ListBox>
-
-            <TextBlock Text="Multi-select list" Margin="0,0,0,4" />
-            <ListBox x:Name="SampleMultiList"
-                     AutomationProperties.AutomationId="SampleMultiList"
-                     Height="100"
-                     Margin="0,0,0,16"
-                     DisplayMemberPath="Name"
-                     SelectionMode="Extended"
-                     SelectionChanged="SampleMultiList_OnSelectionChanged">
-                <ListBox.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem">
-                        <Setter Property="AutomationProperties.AutomationId"
-                                Value="{Binding AutomationId}" />
-                        <Setter Property="AutomationProperties.Name"
-                                Value="{Binding Name}" />
-                    </Style>
-                </ListBox.ItemContainerStyle>
-            </ListBox>
-
-            <TextBlock Text="Combo" Margin="0,0,0,4" />
-            <ComboBox x:Name="SampleCombo"
-                      AutomationProperties.AutomationId="SampleCombo"
-                      Margin="0,0,0,16"
-                      DisplayMemberPath="Name"
-                      SelectionChanged="SampleCombo_OnSelectionChanged">
-                <ComboBox.ItemContainerStyle>
-                    <Style TargetType="ComboBoxItem">
-                        <Setter Property="AutomationProperties.AutomationId"
-                                Value="{Binding AutomationId}" />
-                    </Style>
-                </ComboBox.ItemContainerStyle>
-            </ComboBox>
-
-            <TextBlock Text="Tree" Margin="0,0,0,4" />
-            <TreeView x:Name="SampleTree"
-                      AutomationProperties.AutomationId="SampleTree"
-                      Height="120"
-                      Margin="0,0,0,8">
-                <TreeViewItem x:Name="SampleTreeRoot"
-                              AutomationProperties.AutomationId="SampleTreeRoot"
-                              Header="Root"
-                              Expanded="SampleTreeRoot_OnExpanded"
-                              Collapsed="SampleTreeRoot_OnCollapsed">
-                    <TreeViewItem Header="Child A"
-                                  AutomationProperties.AutomationId="SampleTreeChildA">
-                        <TreeViewItem Header="Grandchild"
-                                      AutomationProperties.AutomationId="SampleTreeGrandchild" />
-                    </TreeViewItem>
-                    <TreeViewItem Header="Child B"
-                                  AutomationProperties.AutomationId="SampleTreeChildB" />
-                </TreeViewItem>
-            </TreeView>
-
-            <TextBlock Text="Relative host" Margin="0,0,0,4" />
-            <StackPanel x:Name="RelativeHost"
-                        AutomationProperties.AutomationId="RelativeHost"
-                        Orientation="Horizontal"
-                        Margin="0,0,0,16">
-                <Button x:Name="RelativeChildA"
-                        AutomationProperties.AutomationId="RelativeChildA"
-                        AutomationProperties.Name="RelA"
-                        Content="RelA"
-                        Margin="0,0,8,0"
-                        Click="RelativeChildA_OnClick" />
-                <Button x:Name="RelativeChildB"
-                        AutomationProperties.AutomationId="RelativeChildB"
-                        AutomationProperties.Name="RelB"
-                        Content="RelB"
-                        Click="RelativeChildB_OnClick" />
-            </StackPanel>
-
-            <TextBlock Text="DataGrid (row select)" Margin="0,8,0,4" />
-            <DataGrid x:Name="SampleGrid"
-                      AutomationProperties.AutomationId="SampleGrid"
-                      Height="120"
-                      Margin="0,0,0,16"
-                      AutoGenerateColumns="False"
-                      CanUserAddRows="False"
-                      IsReadOnly="False"
-                      SelectionUnit="FullRow"
-                      SelectionMode="Single"
-                      EnableRowVirtualization="True"
-                      VirtualizingPanel.IsVirtualizing="True"
-                      VirtualizingPanel.VirtualizationMode="Recycling"
-                      ScrollViewer.CanContentScroll="True"
-                      SelectionChanged="SampleGrid_OnSelectionChanged">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Name"
-                                        Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                        Width="*" />
-                    <DataGridCheckBoxColumn Header="Active"
-                                           Binding="{Binding Active, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                           Width="60" />
-                </DataGrid.Columns>
-                <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
-                        <Setter Property="AutomationProperties.AutomationId"
-                                Value="{Binding AutomationId}" />
-                        <Setter Property="AutomationProperties.Name"
-                                Value="{Binding Name}" />
-                    </Style>
-                </DataGrid.RowStyle>
-            </DataGrid>
-
-            <TextBlock Text="DataGrid (Phase 28)" Margin="0,0,0,4" />
-            <DataGrid x:Name="SamplePhase28Grid"
-                      AutomationProperties.AutomationId="SamplePhase28Grid"
-                      Height="140"
-                      Margin="0,0,0,16"
-                      AutoGenerateColumns="False"
-                      CanUserAddRows="True"
-                      CanUserDeleteRows="True"
-                      CanUserSortColumns="True"
-                      IsReadOnly="False"
-                      SelectionUnit="CellOrRowHeader"
-                      SelectionMode="Extended"
-                      EnableRowVirtualization="True"
-                      VirtualizingPanel.IsVirtualizing="True"
-                      SelectionChanged="SamplePhase28Grid_OnSelectionChanged"
-                      CurrentCellChanged="SamplePhase28Grid_OnCurrentCellChanged">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Name"
-                                        Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                        SortMemberPath="Name"
-                                        Width="*" />
-                    <DataGridCheckBoxColumn Header="Active"
-                                           Binding="{Binding Active, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                           SortMemberPath="Active"
-                                           Width="60" />
-                    <DataGridTemplateColumn Header="Notes"
-                                            SortMemberPath="Notes"
-                                            Width="100">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Notes}" />
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                        <DataGridTemplateColumn.CellEditingTemplate>
-                            <DataTemplate>
-                                <TextBox Text="{Binding Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellEditingTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-                <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
-                        <Setter Property="AutomationProperties.AutomationId"
-                                Value="{Binding AutomationId}" />
-                        <Setter Property="AutomationProperties.Name"
-                                Value="{Binding Name}" />
-                    </Style>
-                </DataGrid.RowStyle>
-            </DataGrid>
-
-            <TextBlock Text="DataGrid (multi-select)" Margin="0,0,0,4" />
-            <DataGrid x:Name="SampleMultiGrid"
-                      AutomationProperties.AutomationId="SampleMultiGrid"
-                      Height="100"
-                      Margin="0,0,0,16"
-                      AutoGenerateColumns="False"
-                      CanUserAddRows="False"
-                      IsReadOnly="True"
-                      SelectionUnit="FullRow"
-                      SelectionMode="Extended"
-                      SelectionChanged="SampleMultiGrid_OnSelectionChanged">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Name"
-                                        Binding="{Binding Name}"
-                                        Width="*" />
-                </DataGrid.Columns>
-                <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
-                        <Setter Property="AutomationProperties.AutomationId"
-                                Value="{Binding AutomationId}" />
-                        <Setter Property="AutomationProperties.Name"
-                                Value="{Binding Name}" />
-                    </Style>
-                </DataGrid.RowStyle>
-            </DataGrid>
-
-            <TextBlock Text="Phase 29a controls" Margin="0,8,0,4" />
-            <PasswordBox x:Name="SamplePhase29aPassword"
-                         AutomationProperties.AutomationId="SamplePhase29aPassword"
-                         Width="200"
-                         Margin="0,0,0,8"
-                         HorizontalAlignment="Left"
-                         PasswordChanged="SamplePhase29aPassword_OnPasswordChanged" />
-            <RichTextBox x:Name="SamplePhase29aRichText"
-                         AutomationProperties.AutomationId="SamplePhase29aRichText"
-                         Height="60"
-                         Width="280"
-                         Margin="0,0,0,8"
-                         HorizontalAlignment="Left"
-                         AcceptsReturn="True" />
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <RadioButton x:Name="SamplePhase29aRadioA"
-                             AutomationProperties.AutomationId="SamplePhase29aRadioA"
-                             GroupName="Phase29a"
-                             Content="Radio A"
-                             Margin="0,0,12,0"
-                             IsChecked="True" />
-                <RadioButton x:Name="SamplePhase29aRadioB"
-                             AutomationProperties.AutomationId="SamplePhase29aRadioB"
-                             GroupName="Phase29a"
-                             Content="Radio B"
-                             Margin="0,0,12,0" />
-                <ToggleButton x:Name="SamplePhase29aToggle"
-                              AutomationProperties.AutomationId="SamplePhase29aToggle"
-                              Content="Toggle"
-                              Padding="8,4" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                <TextBox x:Name="SamplePhase29aFocusA"
-                         AutomationProperties.AutomationId="SamplePhase29aFocusA"
-                         Width="120"
-                         Margin="0,0,8,0"
-                         Text="FocusA"
-                         TabIndex="100" />
-                <TextBox x:Name="SamplePhase29aFocusB"
-                         AutomationProperties.AutomationId="SamplePhase29aFocusB"
-                         Width="120"
-                         Text="FocusB"
-                         TabIndex="101" />
-            </StackPanel>
-
-            <TextBlock Text="Phase 29b controls" Margin="0,8,0,4" />
-            <DatePicker x:Name="SamplePhase29bDate"
-                        AutomationProperties.AutomationId="SamplePhase29bDate"
-                        Width="200"
-                        Margin="0,0,0,8"
-                        HorizontalAlignment="Left" />
-            <ComboBox x:Name="SamplePhase29bCombo"
-                      AutomationProperties.AutomationId="SamplePhase29bCombo"
-                      Width="200"
-                      Margin="0,0,0,8"
-                      HorizontalAlignment="Left"
-                      DisplayMemberPath="Name" />
-            <ListView x:Name="SamplePhase29bListView"
-                      AutomationProperties.AutomationId="SamplePhase29bListView"
-                      Height="100"
-                      Margin="0,0,0,8"
-                      HorizontalAlignment="Left"
-                      Width="280">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header="Name"
-                                        Width="140"
-                                        DisplayMemberBinding="{Binding Name}" />
-                        <GridViewColumn Header="Notes"
-                                        Width="100"
-                                        DisplayMemberBinding="{Binding Notes}" />
-                    </GridView>
-                </ListView.View>
-            </ListView>
-            <StackPanel x:Name="SamplePhase29bTipSection"
-                        AutomationProperties.AutomationId="SamplePhase29bTipSection"
-                        HorizontalAlignment="Left"
-                        Margin="0,0,0,8">
-                <TextBlock Text="Tip section" Margin="0,0,0,4" />
-                <Button x:Name="SamplePhase29bTipHost"
-                        AutomationProperties.AutomationId="SamplePhase29bTipHost"
-                        Content="Hover tip"
-                        Padding="12,6"
-                        HorizontalAlignment="Left">
-                    <Button.ToolTip>
-                        <ToolTip Content="Phase29bTip" />
-                    </Button.ToolTip>
-                </Button>
-            </StackPanel>
-            <ToolBar Margin="0,0,0,8" HorizontalAlignment="Left">
-                <Button x:Name="SamplePhase29bToolBarButton"
-                        AutomationProperties.AutomationId="SamplePhase29bToolBarButton"
-                        Content="TB"
-                        Click="SamplePhase29bToolBarButton_OnClick" />
-            </ToolBar>
-            <StatusBar Margin="0,0,0,8">
-                <StatusBarItem>
-                    <TextBlock x:Name="SamplePhase29bStatusBarText"
-                               AutomationProperties.AutomationId="SamplePhase29bStatusBarText"
-                               Text="Ready29b" />
-                </StatusBarItem>
-            </StatusBar>
-            <Grid Margin="0,0,0,8" HorizontalAlignment="Left">
-                <Button x:Name="SamplePhase29bOpenPopup"
-                        AutomationProperties.AutomationId="SamplePhase29bOpenPopup"
-                        Content="Open Popup"
-                        Padding="12,6"
-                        Click="SamplePhase29bOpenPopup_OnClick" />
-                <Popup x:Name="SamplePhase29bPopup"
-                       Placement="Bottom"
-                       PlacementTarget="{Binding ElementName=SamplePhase29bOpenPopup}"
-                       StaysOpen="True">
-                    <Border Background="White"
-                            BorderBrush="Gray"
-                            BorderThickness="1"
-                            Padding="8">
-                        <Button x:Name="SamplePhase29bPopupButton"
-                                AutomationProperties.AutomationId="SamplePhase29bPopupButton"
-                                Content="PopupBtn"
-                                Click="SamplePhase29bPopupButton_OnClick" />
-                    </Border>
-                </Popup>
-    </Grid>
-            <TextBlock Margin="0,0,0,16" HorizontalAlignment="Left">
-                <Hyperlink x:Name="SamplePhase29bHyperlink"
-                           AutomationProperties.AutomationId="SamplePhase29bHyperlink"
-                           Click="SamplePhase29bHyperlink_OnClick">
-                    Phase29bLink
-                </Hyperlink>
-            </TextBlock>
-
-            <TextBlock Text="Frame navigation" Margin="0,8,0,4" />
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <Button x:Name="NavigateFrameHomeButton"
-                        AutomationProperties.AutomationId="NavigateFrameHomeButton"
-                        Content="Frame Home"
-                        Padding="12,6"
-                        Margin="0,0,8,0"
-                        Click="NavigateFrameHomeButton_OnClick" />
-                <Button x:Name="NavigateFrameAlphaButton"
-                        AutomationProperties.AutomationId="NavigateFrameAlphaButton"
-                        Content="Frame Alpha"
-                        Padding="12,6"
-                        Margin="0,0,8,0"
-                        Click="NavigateFrameAlphaButton_OnClick" />
-                <Button x:Name="NavigateFrameBetaButton"
-                        AutomationProperties.AutomationId="NavigateFrameBetaButton"
-                        Content="Frame Beta"
-                        Padding="12,6"
-                        Click="NavigateFrameBetaButton_OnClick" />
-            </StackPanel>
-            <Frame x:Name="SampleFrame"
-                   AutomationProperties.AutomationId="SampleFrame"
-                   NavigationUIVisibility="Hidden"
-                   JournalOwnership="OwnsJournal"
-                   Height="96"
-                   Margin="0,0,0,16"
-                   BorderBrush="#FFCCCCCC"
-                   BorderThickness="1" />
-
-            <TextBlock Text="Windows" Margin="0,8,0,4" />
-            <Button x:Name="OpenChildWindowButton"
-                    AutomationProperties.AutomationId="OpenChildWindowButton"
-                    Content="Open Child Window"
-                    Padding="12,6"
-                    HorizontalAlignment="Left"
-                    Margin="0,0,0,8"
-                    Click="OpenChildWindowButton_OnClick" />
-            <Button x:Name="OpenModalWindowButton"
-                    AutomationProperties.AutomationId="OpenModalWindowButton"
-                    Content="Open Modal Window"
-                    Padding="12,6"
-                    HorizontalAlignment="Left"
-                    Margin="0,0,0,8"
-                    Click="OpenModalWindowButton_OnClick" />
-            <Button x:Name="OpenProgressWindowButton"
-                    AutomationProperties.AutomationId="OpenProgressWindowButton"
-                    Content="Open Progress Window"
-                    Padding="12,6"
-                    HorizontalAlignment="Left"
-                    Margin="0,0,0,8"
-                    Click="OpenProgressWindowButton_OnClick" />
-            <StackPanel x:Name="NextScreenPanel"
-                        AutomationProperties.AutomationId="NextScreenPanel"
-                        Visibility="Collapsed"
-                        Margin="0,0,0,8">
-                <TextBlock Text="Next screen" Margin="0,0,0,4" />
-                <TextBlock x:Name="NextScreenLabel"
-                           AutomationProperties.AutomationId="NextScreenLabel"
-                           Text="NextScreenReady"
-                           FontSize="16" />
-            </StackPanel>
-            <Button x:Name="OpenFileButton"
-                    AutomationProperties.AutomationId="OpenFileButton"
-                    Content="Open File"
-                    Padding="12,6"
-                    HorizontalAlignment="Left"
-                    Margin="0,0,0,8"
-                    Click="OpenFileButton_OnClick" />
-            <Button x:Name="SaveFileButton"
-                    AutomationProperties.AutomationId="SaveFileButton"
-                    Content="Save File"
-                    Padding="12,6"
-                    HorizontalAlignment="Left"
-                    Margin="0,0,0,8"
-                    Click="SaveFileButton_OnClick" />
-            <Button x:Name="OpenFolderButton"
-                    AutomationProperties.AutomationId="OpenFolderButton"
-                    Content="Open Folder"
-                    Padding="12,6"
-                    HorizontalAlignment="Left"
-                    Margin="0,0,0,8"
-                    Click="OpenFolderButton_OnClick" />
-            <Button x:Name="MessageBoxButton"
-                    AutomationProperties.AutomationId="MessageBoxButton"
-                    Content="Message Box"
-                    Padding="12,6"
-                    HorizontalAlignment="Left"
-                    Margin="0,0,0,8"
-                    Click="MessageBoxButton_OnClick" />
+      <TextBlock Text="Mouse advanced" Margin="0,0,0,4" />
+      <Button
+        x:Name="DoubleClickTarget"
+        AutomationProperties.AutomationId="DoubleClickTarget"
+        AutomationProperties.Name="DoubleClickReady"
+        Background="#FFFFE0B2"
+        Height="36"
+        Margin="0,0,0,8"
+        Padding="12,0"
+        HorizontalAlignment="Left"
+        Cursor="Hand"
+        Content="Double-click target"
+      />
+      <Border
+        x:Name="HoverTarget"
+        AutomationProperties.AutomationId="HoverTarget"
+        AutomationProperties.Name="HoverReady"
+        Background="#FFE1BEE7"
+        Height="36"
+        Margin="0,0,0,8"
+        Cursor="Hand"
+        MouseEnter="HoverTarget_OnMouseEnter"
+      >
+        <TextBlock Text="Hover target" VerticalAlignment="Center" HorizontalAlignment="Center" />
+      </Border>
+      <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+        <Border
+          x:Name="DragSource"
+          AutomationProperties.AutomationId="DragSource"
+          Background="#FFBBDEFB"
+          Width="120"
+          Height="48"
+          Margin="0,0,12,0"
+          Cursor="Hand"
+          AllowDrop="False"
+          MouseMove="DragSource_OnMouseMove"
+        >
+          <TextBlock Text="Drag source" VerticalAlignment="Center" HorizontalAlignment="Center" />
+        </Border>
+        <Border
+          x:Name="DropTarget"
+          AutomationProperties.AutomationId="DropTarget"
+          AutomationProperties.Name="DropReady"
+          Background="#FFC8E6C9"
+          Width="120"
+          Height="48"
+          AllowDrop="True"
+          Drop="DropTarget_OnDrop"
+          DragOver="DropTarget_OnDragOver"
+        >
+          <TextBlock Text="Drop target" VerticalAlignment="Center" HorizontalAlignment="Center" />
+        </Border>
+      </StackPanel>
+      <Border
+        x:Name="ClickAtPad"
+        AutomationProperties.AutomationId="ClickAtPad"
+        Background="#FFFFCDD2"
+        Width="160"
+        Height="80"
+        HorizontalAlignment="Left"
+        Margin="0,0,0,8"
+        Cursor="Hand"
+        MouseLeftButtonDown="ClickAtPad_OnMouseLeftButtonDown"
+      >
+        <TextBlock Text="ClickAt pad (L/R)" VerticalAlignment="Center" HorizontalAlignment="Center" />
+      </Border>
+      <ScrollViewer
+        x:Name="WheelScroller"
+        AutomationProperties.AutomationId="WheelScroller"
+        Height="80"
+        Margin="0,0,0,16"
+        VerticalScrollBarVisibility="Auto"
+        ScrollChanged="WheelScroller_OnScrollChanged"
+      >
+        <StackPanel>
+          <TextBlock Text="Wheel top" Margin="0,0,0,40" />
+          <TextBlock x:Name="WheelBottomLabel" AutomationProperties.AutomationId="WheelBottomLabel" Text="WheelBottom" Margin="0,120,0,0" />
         </StackPanel>
-    </ScrollViewer>
+      </ScrollViewer>
+
+      <Border
+        x:Name="ContextMenuTarget"
+        AutomationProperties.AutomationId="ContextMenuTarget"
+        Background="#FFE8F0FF"
+        Height="36"
+        Margin="0,0,0,16"
+        Cursor="Hand"
+      >
+        <Border.ContextMenu>
+          <ContextMenu x:Name="SampleContextMenu" AutomationProperties.AutomationId="SampleContextMenu">
+            <MenuItem x:Name="ContextMenuPing" AutomationProperties.AutomationId="ContextMenuPing" Header="Ping" Click="ContextMenuPing_OnClick" />
+            <MenuItem x:Name="ContextMenuMore" AutomationProperties.AutomationId="ContextMenuMore" Header="More">
+              <MenuItem
+                x:Name="ContextMenuSubPing"
+                AutomationProperties.AutomationId="ContextMenuSubPing"
+                Header="Sub ping"
+                Click="ContextMenuSubPing_OnClick"
+              />
+            </MenuItem>
+          </ContextMenu>
+        </Border.ContextMenu>
+        <TextBlock Text="Context menu target" VerticalAlignment="Center" HorizontalAlignment="Center" />
+      </Border>
+
+      <TextBlock Text="Slider" Margin="0,0,0,4" />
+      <Slider
+        x:Name="SampleSlider"
+        AutomationProperties.AutomationId="SampleSlider"
+        Minimum="0"
+        Maximum="100"
+        Value="0"
+        TickFrequency="1"
+        IsSnapToTickEnabled="True"
+        Margin="0,0,0,16"
+        ValueChanged="SampleSlider_OnValueChanged"
+      />
+
+      <TextBlock Text="Tabs" Margin="0,0,0,4" />
+      <TabControl
+        x:Name="SampleTabs"
+        AutomationProperties.AutomationId="SampleTabs"
+        Height="100"
+        Margin="0,0,0,16"
+        SelectionChanged="SampleTabs_OnSelectionChanged"
+      >
+        <TabItem x:Name="SampleTabA" AutomationProperties.AutomationId="SampleTabA" Header="A">
+          <TextBlock Text="Content A" Margin="8" />
+        </TabItem>
+        <TabItem x:Name="SampleTabB" AutomationProperties.AutomationId="SampleTabB" Header="B">
+          <TextBlock Text="Content B" Margin="8" />
+        </TabItem>
+      </TabControl>
+
+      <TextBlock Text="Virtualized list" Margin="0,0,0,4" />
+      <ListBox
+        x:Name="SampleList"
+        AutomationProperties.AutomationId="SampleList"
+        Height="120"
+        Margin="0,0,0,16"
+        DisplayMemberPath="Name"
+        VirtualizingStackPanel.IsVirtualizing="True"
+        VirtualizingStackPanel.VirtualizationMode="Recycling"
+        ScrollViewer.CanContentScroll="True"
+        SelectionChanged="SampleList_OnSelectionChanged"
+      >
+        <ListBox.ItemContainerStyle>
+          <Style TargetType="ListBoxItem">
+            <Setter Property="AutomationProperties.AutomationId" Value="{Binding AutomationId}" />
+            <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+          </Style>
+        </ListBox.ItemContainerStyle>
+      </ListBox>
+
+      <TextBlock Text="Multi-select list" Margin="0,0,0,4" />
+      <ListBox
+        x:Name="SampleMultiList"
+        AutomationProperties.AutomationId="SampleMultiList"
+        Height="100"
+        Margin="0,0,0,16"
+        DisplayMemberPath="Name"
+        SelectionMode="Extended"
+        SelectionChanged="SampleMultiList_OnSelectionChanged"
+      >
+        <ListBox.ItemContainerStyle>
+          <Style TargetType="ListBoxItem">
+            <Setter Property="AutomationProperties.AutomationId" Value="{Binding AutomationId}" />
+            <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+          </Style>
+        </ListBox.ItemContainerStyle>
+      </ListBox>
+
+      <TextBlock Text="Combo" Margin="0,0,0,4" />
+      <ComboBox
+        x:Name="SampleCombo"
+        AutomationProperties.AutomationId="SampleCombo"
+        Margin="0,0,0,16"
+        DisplayMemberPath="Name"
+        SelectionChanged="SampleCombo_OnSelectionChanged"
+      >
+        <ComboBox.ItemContainerStyle>
+          <Style TargetType="ComboBoxItem">
+            <Setter Property="AutomationProperties.AutomationId" Value="{Binding AutomationId}" />
+          </Style>
+        </ComboBox.ItemContainerStyle>
+      </ComboBox>
+
+      <TextBlock Text="Tree" Margin="0,0,0,4" />
+      <TreeView x:Name="SampleTree" AutomationProperties.AutomationId="SampleTree" Height="120" Margin="0,0,0,8">
+        <TreeViewItem
+          x:Name="SampleTreeRoot"
+          AutomationProperties.AutomationId="SampleTreeRoot"
+          Header="Root"
+          Expanded="SampleTreeRoot_OnExpanded"
+          Collapsed="SampleTreeRoot_OnCollapsed"
+        >
+          <TreeViewItem Header="Child A" AutomationProperties.AutomationId="SampleTreeChildA">
+            <TreeViewItem Header="Grandchild" AutomationProperties.AutomationId="SampleTreeGrandchild" />
+          </TreeViewItem>
+          <TreeViewItem Header="Child B" AutomationProperties.AutomationId="SampleTreeChildB" />
+        </TreeViewItem>
+      </TreeView>
+
+      <TextBlock Text="Relative host" Margin="0,0,0,4" />
+      <StackPanel x:Name="RelativeHost" AutomationProperties.AutomationId="RelativeHost" Orientation="Horizontal" Margin="0,0,0,16">
+        <Button
+          x:Name="RelativeChildA"
+          AutomationProperties.AutomationId="RelativeChildA"
+          AutomationProperties.Name="RelA"
+          Content="RelA"
+          Margin="0,0,8,0"
+          Click="RelativeChildA_OnClick"
+        />
+        <Button
+          x:Name="RelativeChildB"
+          AutomationProperties.AutomationId="RelativeChildB"
+          AutomationProperties.Name="RelB"
+          Content="RelB"
+          Click="RelativeChildB_OnClick"
+        />
+      </StackPanel>
+
+      <TextBlock Text="DataGrid (row select)" Margin="0,8,0,4" />
+      <DataGrid
+        x:Name="SampleGrid"
+        AutomationProperties.AutomationId="SampleGrid"
+        Height="120"
+        Margin="0,0,0,16"
+        AutoGenerateColumns="False"
+        CanUserAddRows="False"
+        IsReadOnly="False"
+        SelectionUnit="FullRow"
+        SelectionMode="Single"
+        EnableRowVirtualization="True"
+        VirtualizingPanel.IsVirtualizing="True"
+        VirtualizingPanel.VirtualizationMode="Recycling"
+        ScrollViewer.CanContentScroll="True"
+        SelectionChanged="SampleGrid_OnSelectionChanged"
+      >
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Name" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+          <DataGridCheckBoxColumn Header="Active" Binding="{Binding Active, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="60" />
+        </DataGrid.Columns>
+        <DataGrid.RowStyle>
+          <Style TargetType="DataGridRow">
+            <Setter Property="AutomationProperties.AutomationId" Value="{Binding AutomationId}" />
+            <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+          </Style>
+        </DataGrid.RowStyle>
+      </DataGrid>
+
+      <TextBlock Text="DataGrid (Phase 28)" Margin="0,0,0,4" />
+      <DataGrid
+        x:Name="SamplePhase28Grid"
+        AutomationProperties.AutomationId="SamplePhase28Grid"
+        Height="140"
+        Margin="0,0,0,16"
+        AutoGenerateColumns="False"
+        CanUserAddRows="True"
+        CanUserDeleteRows="True"
+        CanUserSortColumns="True"
+        IsReadOnly="False"
+        SelectionUnit="CellOrRowHeader"
+        SelectionMode="Extended"
+        EnableRowVirtualization="True"
+        VirtualizingPanel.IsVirtualizing="True"
+        SelectionChanged="SamplePhase28Grid_OnSelectionChanged"
+        CurrentCellChanged="SamplePhase28Grid_OnCurrentCellChanged"
+      >
+        <DataGrid.Columns>
+          <DataGridTextColumn
+            Header="Name"
+            Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            SortMemberPath="Name"
+            Width="*"
+          />
+          <DataGridCheckBoxColumn
+            Header="Active"
+            Binding="{Binding Active, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            SortMemberPath="Active"
+            Width="60"
+          />
+          <DataGridTemplateColumn Header="Notes" SortMemberPath="Notes" Width="100">
+            <DataGridTemplateColumn.CellTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding Notes}" />
+              </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+            <DataGridTemplateColumn.CellEditingTemplate>
+              <DataTemplate>
+                <TextBox Text="{Binding Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+              </DataTemplate>
+            </DataGridTemplateColumn.CellEditingTemplate>
+          </DataGridTemplateColumn>
+        </DataGrid.Columns>
+        <DataGrid.RowStyle>
+          <Style TargetType="DataGridRow">
+            <Setter Property="AutomationProperties.AutomationId" Value="{Binding AutomationId}" />
+            <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+          </Style>
+        </DataGrid.RowStyle>
+      </DataGrid>
+
+      <TextBlock Text="DataGrid (multi-select)" Margin="0,0,0,4" />
+      <DataGrid
+        x:Name="SampleMultiGrid"
+        AutomationProperties.AutomationId="SampleMultiGrid"
+        Height="100"
+        Margin="0,0,0,16"
+        AutoGenerateColumns="False"
+        CanUserAddRows="False"
+        IsReadOnly="True"
+        SelectionUnit="FullRow"
+        SelectionMode="Extended"
+        SelectionChanged="SampleMultiGrid_OnSelectionChanged"
+      >
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+        </DataGrid.Columns>
+        <DataGrid.RowStyle>
+          <Style TargetType="DataGridRow">
+            <Setter Property="AutomationProperties.AutomationId" Value="{Binding AutomationId}" />
+            <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+          </Style>
+        </DataGrid.RowStyle>
+      </DataGrid>
+
+      <TextBlock Text="Phase 29a controls" Margin="0,8,0,4" />
+      <PasswordBox
+        x:Name="SamplePhase29aPassword"
+        AutomationProperties.AutomationId="SamplePhase29aPassword"
+        Width="200"
+        Margin="0,0,0,8"
+        HorizontalAlignment="Left"
+        PasswordChanged="SamplePhase29aPassword_OnPasswordChanged"
+      />
+      <RichTextBox
+        x:Name="SamplePhase29aRichText"
+        AutomationProperties.AutomationId="SamplePhase29aRichText"
+        Height="60"
+        Width="280"
+        Margin="0,0,0,8"
+        HorizontalAlignment="Left"
+        AcceptsReturn="True"
+      />
+      <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+        <RadioButton
+          x:Name="SamplePhase29aRadioA"
+          AutomationProperties.AutomationId="SamplePhase29aRadioA"
+          GroupName="Phase29a"
+          Content="Radio A"
+          Margin="0,0,12,0"
+          IsChecked="True"
+        />
+        <RadioButton
+          x:Name="SamplePhase29aRadioB"
+          AutomationProperties.AutomationId="SamplePhase29aRadioB"
+          GroupName="Phase29a"
+          Content="Radio B"
+          Margin="0,0,12,0"
+        />
+        <ToggleButton x:Name="SamplePhase29aToggle" AutomationProperties.AutomationId="SamplePhase29aToggle" Content="Toggle" Padding="8,4" />
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+        <TextBox
+          x:Name="SamplePhase29aFocusA"
+          AutomationProperties.AutomationId="SamplePhase29aFocusA"
+          Width="120"
+          Margin="0,0,8,0"
+          Text="FocusA"
+          TabIndex="100"
+        />
+        <TextBox x:Name="SamplePhase29aFocusB" AutomationProperties.AutomationId="SamplePhase29aFocusB" Width="120" Text="FocusB" TabIndex="101" />
+      </StackPanel>
+
+      <TextBlock Text="Phase 29b controls" Margin="0,8,0,4" />
+      <DatePicker
+        x:Name="SamplePhase29bDate"
+        AutomationProperties.AutomationId="SamplePhase29bDate"
+        Width="200"
+        Margin="0,0,0,8"
+        HorizontalAlignment="Left"
+      />
+      <ComboBox
+        x:Name="SamplePhase29bCombo"
+        AutomationProperties.AutomationId="SamplePhase29bCombo"
+        Width="200"
+        Margin="0,0,0,8"
+        HorizontalAlignment="Left"
+        DisplayMemberPath="Name"
+      />
+      <ListView
+        x:Name="SamplePhase29bListView"
+        AutomationProperties.AutomationId="SamplePhase29bListView"
+        Height="100"
+        Margin="0,0,0,8"
+        HorizontalAlignment="Left"
+        Width="280"
+      >
+        <ListView.View>
+          <GridView>
+            <GridViewColumn Header="Name" Width="140" DisplayMemberBinding="{Binding Name}" />
+            <GridViewColumn Header="Notes" Width="100" DisplayMemberBinding="{Binding Notes}" />
+          </GridView>
+        </ListView.View>
+      </ListView>
+      <StackPanel
+        x:Name="SamplePhase29bTipSection"
+        AutomationProperties.AutomationId="SamplePhase29bTipSection"
+        HorizontalAlignment="Left"
+        Margin="0,0,0,8"
+      >
+        <TextBlock Text="Tip section" Margin="0,0,0,4" />
+        <Button
+          x:Name="SamplePhase29bTipHost"
+          AutomationProperties.AutomationId="SamplePhase29bTipHost"
+          Content="Hover tip"
+          Padding="12,6"
+          HorizontalAlignment="Left"
+        >
+          <Button.ToolTip>
+            <ToolTip Content="Phase29bTip" />
+          </Button.ToolTip>
+        </Button>
+      </StackPanel>
+      <ToolBar Margin="0,0,0,8" HorizontalAlignment="Left">
+        <Button
+          x:Name="SamplePhase29bToolBarButton"
+          AutomationProperties.AutomationId="SamplePhase29bToolBarButton"
+          Content="TB"
+          Click="SamplePhase29bToolBarButton_OnClick"
+        />
+      </ToolBar>
+      <StatusBar Margin="0,0,0,8">
+        <StatusBarItem>
+          <TextBlock x:Name="SamplePhase29bStatusBarText" AutomationProperties.AutomationId="SamplePhase29bStatusBarText" Text="Ready29b" />
+        </StatusBarItem>
+      </StatusBar>
+      <Grid Margin="0,0,0,8" HorizontalAlignment="Left">
+        <Button
+          x:Name="SamplePhase29bOpenPopup"
+          AutomationProperties.AutomationId="SamplePhase29bOpenPopup"
+          Content="Open Popup"
+          Padding="12,6"
+          Click="SamplePhase29bOpenPopup_OnClick"
+        />
+        <Popup x:Name="SamplePhase29bPopup" Placement="Bottom" PlacementTarget="{Binding ElementName=SamplePhase29bOpenPopup}" StaysOpen="True">
+          <Border Background="White" BorderBrush="Gray" BorderThickness="1" Padding="8">
+            <Button
+              x:Name="SamplePhase29bPopupButton"
+              AutomationProperties.AutomationId="SamplePhase29bPopupButton"
+              Content="PopupBtn"
+              Click="SamplePhase29bPopupButton_OnClick"
+            />
+          </Border>
+        </Popup>
+      </Grid>
+      <TextBlock Margin="0,0,0,16" HorizontalAlignment="Left">
+        <Hyperlink
+          x:Name="SamplePhase29bHyperlink"
+          AutomationProperties.AutomationId="SamplePhase29bHyperlink"
+          Click="SamplePhase29bHyperlink_OnClick"
+        >
+          Phase29bLink
+        </Hyperlink>
+      </TextBlock>
+
+      <TextBlock Text="Frame navigation" Margin="0,8,0,4" />
+      <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+        <Button
+          x:Name="NavigateFrameHomeButton"
+          AutomationProperties.AutomationId="NavigateFrameHomeButton"
+          Content="Frame Home"
+          Padding="12,6"
+          Margin="0,0,8,0"
+          Click="NavigateFrameHomeButton_OnClick"
+        />
+        <Button
+          x:Name="NavigateFrameAlphaButton"
+          AutomationProperties.AutomationId="NavigateFrameAlphaButton"
+          Content="Frame Alpha"
+          Padding="12,6"
+          Margin="0,0,8,0"
+          Click="NavigateFrameAlphaButton_OnClick"
+        />
+        <Button
+          x:Name="NavigateFrameBetaButton"
+          AutomationProperties.AutomationId="NavigateFrameBetaButton"
+          Content="Frame Beta"
+          Padding="12,6"
+          Click="NavigateFrameBetaButton_OnClick"
+        />
+      </StackPanel>
+      <Frame
+        x:Name="SampleFrame"
+        AutomationProperties.AutomationId="SampleFrame"
+        NavigationUIVisibility="Hidden"
+        JournalOwnership="OwnsJournal"
+        Height="96"
+        Margin="0,0,0,16"
+        BorderBrush="#FFCCCCCC"
+        BorderThickness="1"
+      />
+
+      <TextBlock Text="Windows" Margin="0,8,0,4" />
+      <Button
+        x:Name="OpenChildWindowButton"
+        AutomationProperties.AutomationId="OpenChildWindowButton"
+        Content="Open Child Window"
+        Padding="12,6"
+        HorizontalAlignment="Left"
+        Margin="0,0,0,8"
+        Click="OpenChildWindowButton_OnClick"
+      />
+      <Button
+        x:Name="OpenModalWindowButton"
+        AutomationProperties.AutomationId="OpenModalWindowButton"
+        Content="Open Modal Window"
+        Padding="12,6"
+        HorizontalAlignment="Left"
+        Margin="0,0,0,8"
+        Click="OpenModalWindowButton_OnClick"
+      />
+      <Button
+        x:Name="OpenProgressWindowButton"
+        AutomationProperties.AutomationId="OpenProgressWindowButton"
+        Content="Open Progress Window"
+        Padding="12,6"
+        HorizontalAlignment="Left"
+        Margin="0,0,0,8"
+        Click="OpenProgressWindowButton_OnClick"
+      />
+      <StackPanel x:Name="NextScreenPanel" AutomationProperties.AutomationId="NextScreenPanel" Visibility="Collapsed" Margin="0,0,0,8">
+        <TextBlock Text="Next screen" Margin="0,0,0,4" />
+        <TextBlock x:Name="NextScreenLabel" AutomationProperties.AutomationId="NextScreenLabel" Text="NextScreenReady" FontSize="16" />
+      </StackPanel>
+      <Button
+        x:Name="OpenFileButton"
+        AutomationProperties.AutomationId="OpenFileButton"
+        Content="Open File"
+        Padding="12,6"
+        HorizontalAlignment="Left"
+        Margin="0,0,0,8"
+        Click="OpenFileButton_OnClick"
+      />
+      <Button
+        x:Name="SaveFileButton"
+        AutomationProperties.AutomationId="SaveFileButton"
+        Content="Save File"
+        Padding="12,6"
+        HorizontalAlignment="Left"
+        Margin="0,0,0,8"
+        Click="SaveFileButton_OnClick"
+      />
+      <Button
+        x:Name="OpenFolderButton"
+        AutomationProperties.AutomationId="OpenFolderButton"
+        Content="Open Folder"
+        Padding="12,6"
+        HorizontalAlignment="Left"
+        Margin="0,0,0,8"
+        Click="OpenFolderButton_OnClick"
+      />
+      <Button
+        x:Name="MessageBoxButton"
+        AutomationProperties.AutomationId="MessageBoxButton"
+        Content="Message Box"
+        Padding="12,6"
+        HorizontalAlignment="Left"
+        Margin="0,0,0,8"
+        Click="MessageBoxButton_OnClick"
+      />
+    </StackPanel>
+  </ScrollViewer>
 </Window>
