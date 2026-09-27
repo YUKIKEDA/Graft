@@ -101,6 +101,45 @@ public sealed class GraftAppFixtureTests
         Assert.False(fixture.LaunchCalled);
     }
 
+    /// <summary>
+    /// A failed dispose keeps the session so a later DisposeAsync can try again.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Fixture owns a disposable that throws on the first DisposeAsync
+    ///
+    /// Steps:
+    /// - DisposeAsync, expect the failure
+    /// - DisposeAsync again
+    /// - DisposeAsync once more
+    ///
+    /// Expected:
+    /// - First call throws and OwnsSession stays true
+    /// - Second call disposes and clears ownership
+    /// - Third call does not dispose again
+    /// </remarks>
+    [Fact]
+    public async Task DisposeAsync_WhenDisposeThrows_KeepsSessionUntilSuccess()
+    {
+        var owned = new FlakyDisposable();
+        var fixture = new ProbeFixture();
+        fixture.AdoptForTests(owned);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.DisposeAsync());
+
+        Assert.Equal(1, owned.Calls);
+        Assert.True(fixture.OwnsSession);
+
+        await fixture.DisposeAsync();
+
+        Assert.Equal(2, owned.Calls);
+        Assert.False(fixture.OwnsSession);
+
+        await fixture.DisposeAsync();
+
+        Assert.Equal(2, owned.Calls);
+    }
+
     private sealed class ProbeFixture : GraftAppFixture
     {
         public const string AppPath = "probe.csproj";
@@ -133,5 +172,21 @@ public sealed class GraftAppFixtureTests
         }
 
         public string AppPath { get; }
+    }
+
+    private sealed class FlakyDisposable : IAsyncDisposable
+    {
+        public int Calls { get; private set; }
+
+        public ValueTask DisposeAsync()
+        {
+            Calls++;
+            if (Calls == 1)
+            {
+                throw new InvalidOperationException("dispose failed");
+            }
+
+            return ValueTask.CompletedTask;
+        }
     }
 }

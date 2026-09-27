@@ -31,40 +31,47 @@ namespace Graft.TestUtilities;
 /// </remarks>
 public abstract class GraftAppFixture : IAsyncLifetime
 {
-    private GraftSession? _session;
+    private IAsyncDisposable? _owned;
 
     /// <summary>
     /// Gets the launched session. Available after the collection has started.
     /// </summary>
     /// <exception cref="InvalidOperationException">The collection has not started, or launch failed.</exception>
     public GraftSession Session =>
-        _session ?? throw new InvalidOperationException("GraftAppFixture.Session is available after the xUnit collection starts.");
+        _owned as GraftSession ?? throw new InvalidOperationException("GraftAppFixture.Session is available after the xUnit collection starts.");
 
     /// <inheritdoc />
     public async Task InitializeAsync()
     {
-        if (_session is not null)
+        if (_owned is not null)
         {
             return;
         }
 
         var options = CreateLaunchOptions();
         ArgumentNullException.ThrowIfNull(options);
-        _session = await LaunchAsync(options, CancellationToken.None).ConfigureAwait(false);
+        _owned = await LaunchAsync(options, CancellationToken.None).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task DisposeAsync()
     {
-        if (_session is null)
+        if (_owned is null)
         {
             return;
         }
 
-        var session = _session;
-        _session = null;
-        await session.DisposeAsync().ConfigureAwait(false);
+        await _owned.DisposeAsync().ConfigureAwait(false);
+        _owned = null;
     }
+
+    internal void AdoptForTests(IAsyncDisposable owned)
+    {
+        ArgumentNullException.ThrowIfNull(owned);
+        _owned = owned;
+    }
+
+    internal bool OwnsSession => _owned is not null;
 
     /// <summary>
     /// Builds launch options for the app under test.
