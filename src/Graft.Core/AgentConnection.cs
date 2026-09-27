@@ -104,7 +104,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.GetTree,
-                    Params = JsonSerializer.SerializeToElement(new { depth = 25, maxNodes = 2000 }),
+                    Params = JsonMessageCodec.SerializeParams(new GetTreeParams { Depth = 25, MaxNodes = 2000 }),
                 },
                 cancellationToken
             )
@@ -138,7 +138,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.Invoke,
-                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                    Params = JsonMessageCodec.SerializeParams(new ElementTargetParams { AutomationId = automationId }),
                 },
                 cancellationToken
             )
@@ -165,7 +165,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.RightClick,
-                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                    Params = JsonMessageCodec.SerializeParams(new ElementTargetParams { AutomationId = automationId }),
                 },
                 cancellationToken
             )
@@ -191,7 +191,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.DoubleClick,
-                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                    Params = JsonMessageCodec.SerializeParams(new ElementTargetParams { AutomationId = automationId }),
                 },
                 cancellationToken
             )
@@ -217,7 +217,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.Hover,
-                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                    Params = JsonMessageCodec.SerializeParams(new ElementTargetParams { AutomationId = automationId }),
                 },
                 cancellationToken
             )
@@ -245,7 +245,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.Drag,
-                    Params = JsonSerializer.SerializeToElement(new { automationId, toAutomationId }),
+                    Params = JsonMessageCodec.SerializeParams(new DragParams { AutomationId = automationId, ToAutomationId = toAutomationId }),
                 },
                 cancellationToken
             )
@@ -273,12 +273,12 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.ClickAt,
-                    Params = JsonSerializer.SerializeToElement(
-                        new
+                    Params = JsonMessageCodec.SerializeParams(
+                        new ClickAtParams
                         {
-                            automationId,
-                            offsetX,
-                            offsetY,
+                            AutomationId = automationId,
+                            OffsetX = offsetX,
+                            OffsetY = offsetY,
                         }
                     ),
                 },
@@ -307,7 +307,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.Wheel,
-                    Params = JsonSerializer.SerializeToElement(new { automationId, delta }),
+                    Params = JsonMessageCodec.SerializeParams(new WheelParams { AutomationId = automationId, Delta = delta }),
                 },
                 cancellationToken
             )
@@ -336,7 +336,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.SetValue,
-                    Params = JsonSerializer.SerializeToElement(new { automationId, value }),
+                    Params = JsonMessageCodec.SerializeParams(new SetValueParams { AutomationId = automationId, Value = value }),
                 },
                 cancellationToken
             )
@@ -363,7 +363,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.Toggle,
-                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                    Params = JsonMessageCodec.SerializeParams(new ElementTargetParams { AutomationId = automationId }),
                 },
                 cancellationToken
             )
@@ -392,7 +392,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.SendKeys,
-                    Params = JsonSerializer.SerializeToElement(new { automationId, text }),
+                    Params = JsonMessageCodec.SerializeParams(new SendKeysParams { AutomationId = automationId, Text = text }),
                 },
                 cancellationToken
             )
@@ -423,12 +423,12 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.TypeHuman,
-                    Params = JsonSerializer.SerializeToElement(
-                        new
+                    Params = JsonMessageCodec.SerializeParams(
+                        new TypeHumanParams
                         {
-                            automationId,
-                            text,
-                            delayMs,
+                            AutomationId = automationId,
+                            Text = text,
+                            DelayMs = delayMs,
                         }
                     ),
                 },
@@ -459,7 +459,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.PressKeys,
-                    Params = JsonSerializer.SerializeToElement(new { automationId, keys }),
+                    Params = JsonMessageCodec.SerializeParams(new PressKeysParams { AutomationId = automationId, Keys = keys }),
                 },
                 cancellationToken
             )
@@ -481,15 +481,13 @@ public sealed class AgentConnection : IAsyncDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
 
-        object payload = index is null ? new { automationId } : new { automationId, index = index.Value };
-
         var response = await SendAsync(
                 new RequestMessage
                 {
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.ScrollIntoView,
-                    Params = JsonSerializer.SerializeToElement(payload),
+                    Params = JsonMessageCodec.SerializeParams(new ScrollIntoViewParams { AutomationId = automationId, Index = index }),
                 },
                 cancellationToken
             )
@@ -524,7 +522,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.Select,
-                    Params = JsonSerializer.SerializeToElement(new { automationId, index }),
+                    Params = JsonMessageCodec.SerializeParams(new SelectParams { AutomationId = automationId, Index = index }),
                 },
                 cancellationToken
             )
@@ -552,7 +550,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.Select,
-                    Params = JsonSerializer.SerializeToElement(new { automationId, key }),
+                    Params = JsonMessageCodec.SerializeParams(new SelectParams { AutomationId = automationId, Key = key }),
                 },
                 cancellationToken
             )
@@ -580,7 +578,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.SelectTree,
-                    Params = JsonSerializer.SerializeToElement(new { automationId, path }),
+                    Params = JsonMessageCodec.SerializeParams(new ElementPathParams { AutomationId = automationId, Path = path }),
                 },
                 cancellationToken
             )
@@ -609,7 +607,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.SelectMany,
-                    Params = JsonSerializer.SerializeToElement(new { automationId, indexes }),
+                    Params = JsonMessageCodec.SerializeParams(new SelectManyParams { AutomationId = automationId, Indexes = indexes }),
                 },
                 cancellationToken
             )
@@ -638,7 +636,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.SelectMenu,
-                    Params = JsonSerializer.SerializeToElement(new { automationId, path }),
+                    Params = JsonMessageCodec.SerializeParams(new ElementPathParams { AutomationId = automationId, Path = path }),
                 },
                 cancellationToken
             )
@@ -749,12 +747,12 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.SelectRow,
-                    Params = JsonSerializer.SerializeToElement(
-                        new
+                    Params = JsonMessageCodec.SerializeParams(
+                        new SelectRowParams
                         {
-                            automationId,
-                            columnKey,
-                            value,
+                            AutomationId = automationId,
+                            ColumnKey = columnKey,
+                            Value = value,
                         }
                     ),
                 },
@@ -784,7 +782,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.ClickColumnHeader,
-                    Params = JsonSerializer.SerializeToElement(new { automationId, columnKey }),
+                    Params = JsonMessageCodec.SerializeParams(new ColumnKeyParams { AutomationId = automationId, ColumnKey = columnKey }),
                 },
                 cancellationToken
             )
@@ -810,7 +808,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.AddRow,
-                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                    Params = JsonMessageCodec.SerializeParams(new ElementTargetParams { AutomationId = automationId }),
                 },
                 cancellationToken
             )
@@ -836,7 +834,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.DeleteSelectedRows,
-                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                    Params = JsonMessageCodec.SerializeParams(new ElementTargetParams { AutomationId = automationId }),
                 },
                 cancellationToken
             )
@@ -863,7 +861,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.Expand,
-                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                    Params = JsonMessageCodec.SerializeParams(new ElementTargetParams { AutomationId = automationId }),
                 },
                 cancellationToken
             )
@@ -890,7 +888,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.Collapse,
-                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                    Params = JsonMessageCodec.SerializeParams(new ElementTargetParams { AutomationId = automationId }),
                 },
                 cancellationToken
             )
@@ -945,7 +943,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.SwitchWindow,
-                    Params = JsonSerializer.SerializeToElement(new { windowId }),
+                    Params = JsonMessageCodec.SerializeParams(new WindowIdParams { WindowId = windowId }),
                 },
                 cancellationToken
             )
@@ -972,7 +970,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.InvokeOpeningWindow,
-                    Params = JsonSerializer.SerializeToElement(new { automationId }),
+                    Params = JsonMessageCodec.SerializeParams(new ElementTargetParams { AutomationId = automationId }),
                 },
                 cancellationToken
             )
@@ -999,7 +997,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.ArmOpenFile,
-                    Params = JsonSerializer.SerializeToElement(new { path }),
+                    Params = JsonMessageCodec.SerializeParams(new DialogPathParams { Path = path }),
                 },
                 cancellationToken
             )
@@ -1024,7 +1022,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.ArmOpenFileCancel,
-                    Params = JsonSerializer.SerializeToElement(new { }),
+                    Params = JsonMessageCodec.SerializeParams(new EmptyParams()),
                 },
                 cancellationToken
             )
@@ -1051,7 +1049,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.ArmSaveFile,
-                    Params = JsonSerializer.SerializeToElement(new { path }),
+                    Params = JsonMessageCodec.SerializeParams(new DialogPathParams { Path = path }),
                 },
                 cancellationToken
             )
@@ -1076,7 +1074,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.ArmSaveFileCancel,
-                    Params = JsonSerializer.SerializeToElement(new { }),
+                    Params = JsonMessageCodec.SerializeParams(new EmptyParams()),
                 },
                 cancellationToken
             )
@@ -1103,7 +1101,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.ArmOpenFolder,
-                    Params = JsonSerializer.SerializeToElement(new { path }),
+                    Params = JsonMessageCodec.SerializeParams(new DialogPathParams { Path = path }),
                 },
                 cancellationToken
             )
@@ -1128,7 +1126,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.ArmOpenFolderCancel,
-                    Params = JsonSerializer.SerializeToElement(new { }),
+                    Params = JsonMessageCodec.SerializeParams(new EmptyParams()),
                 },
                 cancellationToken
             )
@@ -1155,7 +1153,7 @@ public sealed class AgentConnection : IAsyncDisposable
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.ArmMessageBox,
-                    Params = JsonSerializer.SerializeToElement(new { result }),
+                    Params = JsonMessageCodec.SerializeParams(new MessageBoxArmParams { Result = result }),
                 },
                 cancellationToken
             )
@@ -1192,7 +1190,7 @@ public sealed class AgentConnection : IAsyncDisposable
         JsonElement? paramsElement = null;
         if (!string.IsNullOrWhiteSpace(automationId) || runtimeId is not null)
         {
-            paramsElement = JsonSerializer.SerializeToElement(new { automationId, runtimeId }, JsonMessageCodec.Options);
+            paramsElement = JsonMessageCodec.SerializeParams(new ElementTargetParams { AutomationId = automationId, RuntimeId = runtimeId });
         }
 
         var (response, binary) = await SendCoreAsync(
@@ -1258,27 +1256,21 @@ public sealed class AgentConnection : IAsyncDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
 
-        object payload = columnKey is null
-            ? new
-            {
-                automationId,
-                row,
-                column,
-            }
-            : new
-            {
-                automationId,
-                row,
-                columnKey,
-            };
-
         var response = await SendAsync(
                 new RequestMessage
                 {
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.GetCellText,
-                    Params = JsonSerializer.SerializeToElement(payload),
+                    Params = JsonMessageCodec.SerializeParams(
+                        new CellParams
+                        {
+                            AutomationId = automationId,
+                            Row = row,
+                            Column = column,
+                            ColumnKey = columnKey,
+                        }
+                    ),
                 },
                 cancellationToken
             )
@@ -1309,29 +1301,22 @@ public sealed class AgentConnection : IAsyncDisposable
         ArgumentNullException.ThrowIfNull(value);
         ThrowIfDisposed();
 
-        object payload = columnKey is null
-            ? new
-            {
-                automationId,
-                row,
-                column,
-                value,
-            }
-            : new
-            {
-                automationId,
-                row,
-                columnKey,
-                value,
-            };
-
         var response = await SendAsync(
                 new RequestMessage
                 {
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.SetCellValue,
-                    Params = JsonSerializer.SerializeToElement(payload),
+                    Params = JsonMessageCodec.SerializeParams(
+                        new CellParams
+                        {
+                            AutomationId = automationId,
+                            Row = row,
+                            Column = column,
+                            ColumnKey = columnKey,
+                            Value = value,
+                        }
+                    ),
                 },
                 cancellationToken
             )
@@ -1345,27 +1330,21 @@ public sealed class AgentConnection : IAsyncDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
         ThrowIfDisposed();
 
-        object payload = columnKey is null
-            ? new
-            {
-                automationId,
-                row,
-                column,
-            }
-            : new
-            {
-                automationId,
-                row,
-                columnKey,
-            };
-
         var response = await SendAsync(
                 new RequestMessage
                 {
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.SelectCell,
-                    Params = JsonSerializer.SerializeToElement(payload),
+                    Params = JsonMessageCodec.SerializeParams(
+                        new CellParams
+                        {
+                            AutomationId = automationId,
+                            Row = row,
+                            Column = column,
+                            ColumnKey = columnKey,
+                        }
+                    ),
                 },
                 cancellationToken
             )
@@ -1376,14 +1355,13 @@ public sealed class AgentConnection : IAsyncDisposable
 
     private async Task HandshakeAsync(string token, CancellationToken cancellationToken)
     {
-        using var paramsDoc = JsonDocument.Parse($"{{\"token\":{JsonSerializer.Serialize(token)}}}");
         var response = await SendAsync(
                 new RequestMessage
                 {
                     V = ProtocolVersion.Current,
                     Id = NextId(),
                     Method = ProtocolMethods.Handshake,
-                    Params = paramsDoc.RootElement.Clone(),
+                    Params = JsonMessageCodec.SerializeParams(new HandshakeParams { Token = token }),
                 },
                 cancellationToken
             )
