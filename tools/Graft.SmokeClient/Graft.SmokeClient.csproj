@@ -6,6 +6,7 @@
     <AssemblyName>Graft.SmokeClient</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Graft.Core\Graft.Core.csproj" />
     <ProjectReference Include="..\..\src\Graft.Protocol\Graft.Protocol.csproj" />
   </ItemGroup>
 </Project>

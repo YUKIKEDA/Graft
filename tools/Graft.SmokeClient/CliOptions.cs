@@ -158,7 +158,8 @@ internal sealed class CliOptions
               Graft.SmokeClient launch [--app <csproj|exe>] [--pipe-name <name>] [--token <secret>] [--timeout-sec <n>] [--screenshot-out <path>]
               Graft.SmokeClient connect --pipe-name <name> [--token <secret>] [--timeout-sec <n>] [--screenshot-out <path>]
 
-            Launch starts SampleWpfApp (GraftTest) with GRAFT_* env vars, then:
-            Handshake → screenshot (PNG) → invoke(SampleButton) → GetTree StatusText == "Clicked 1".
+            Launch starts SampleWpfApp (GraftTest) through Graft.Core, then:
+            screenshot (PNG) → invoke(SampleButton) → StatusText name == "Clicked 1".
+            Connect attaches to a running agent (Graft.Core Connect + Handshake).
             """;
 }
