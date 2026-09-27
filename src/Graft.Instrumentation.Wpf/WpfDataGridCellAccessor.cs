@@ -7,7 +7,6 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Elements;
-using Graft.Instrumentation.Tree;
 using Graft.Protocol;
 
 namespace Graft.Instrumentation.Wpf;
@@ -159,13 +158,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
         }
 
         var dataGrid = (DataGrid)host;
-        if (!dataGrid.IsEnabled || !dataGrid.IsVisible)
-        {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotActionable,
-                $"DataGrid '{selector.AutomationId}' is not actionable (enabled={dataGrid.IsEnabled}, visible={dataGrid.IsVisible})."
-            );
-        }
+        WpfElementResolve.RequireActionable(dataGrid, selector.AutomationId ?? string.Empty, "DataGrid");
 
         var columnIndex = ResolveColumnIndex(dataGrid, column, columnKey);
         EnsureRowIndex(dataGrid, row);
@@ -316,14 +309,7 @@ internal sealed class WpfDataGridCellAccessor : IElementCellAccessor
 
     private static FrameworkElement ResolveCellHost(ElementSelector selector)
     {
-        var resolver =
-            AgentServices.ElementResolver
-            ?? throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "No element resolver is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
-
-        var resolved = resolver.Resolve(selector);
+        var resolved = WpfElementResolve.Lookup(selector);
         return resolved.Target switch
         {
             DataGrid dataGrid => dataGrid,

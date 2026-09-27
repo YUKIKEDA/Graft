@@ -7,7 +7,6 @@ using System.Windows.Documents;
 using System.Windows.Threading;
 using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Elements;
-using Graft.Instrumentation.Tree;
 using Graft.Protocol;
 
 namespace Graft.Instrumentation.Wpf;
@@ -141,14 +140,7 @@ internal sealed class WpfElementInvoker : IElementInvoker
 
     private static void InvokeOnUiThread(ElementSelector selector)
     {
-        var resolver =
-            AgentServices.ElementResolver
-            ?? throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "No element resolver is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
-
-        var resolved = resolver.Resolve(selector);
+        var resolved = WpfElementResolve.Lookup(selector);
         if (resolved.Target is Hyperlink hyperlink)
         {
             if (!hyperlink.IsEnabled)
@@ -163,22 +155,7 @@ internal sealed class WpfElementInvoker : IElementInvoker
             return;
         }
 
-        if (resolved.Target is not FrameworkElement element)
-        {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"Resolved target is not a FrameworkElement (got {resolved.Target.GetType().Name})."
-            );
-        }
-
-        if (!element.IsEnabled || !element.IsVisible)
-        {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotActionable,
-                $"Element '{resolved.AutomationId}' is not actionable (enabled={element.IsEnabled}, visible={element.IsVisible})."
-            );
-        }
-
+        var (element, _) = WpfElementResolve.CastActionable(resolved);
         if (WpfControlActions.TryInvoke(element))
         {
             return;
@@ -231,34 +208,8 @@ internal sealed class WpfElementInvoker : IElementInvoker
         WpfInputInjection.RightClickElement(element);
     }
 
-    private static FrameworkElement ResolveActionableFrameworkElement(ElementSelector selector)
-    {
-        var resolver =
-            AgentServices.ElementResolver
-            ?? throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "No element resolver is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
-
-        var resolved = resolver.Resolve(selector);
-        if (resolved.Target is not FrameworkElement element)
-        {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"Resolved target is not a FrameworkElement (got {resolved.Target.GetType().Name})."
-            );
-        }
-
-        if (!element.IsEnabled || !element.IsVisible)
-        {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotActionable,
-                $"Element '{resolved.AutomationId}' is not actionable (enabled={element.IsEnabled}, visible={element.IsVisible})."
-            );
-        }
-
-        return element;
-    }
+    private static FrameworkElement ResolveActionableFrameworkElement(ElementSelector selector) =>
+        WpfElementResolve.ResolveActionable(selector).Element;
 
     private static bool TryInvokeViaAutomationPeer(FrameworkElement element)
     {

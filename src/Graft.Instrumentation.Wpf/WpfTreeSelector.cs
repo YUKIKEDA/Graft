@@ -4,7 +4,6 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Elements;
-using Graft.Instrumentation.Tree;
 using Graft.Protocol;
 
 namespace Graft.Instrumentation.Wpf;
@@ -83,35 +82,13 @@ internal sealed class WpfTreeSelector : ITreeSelector
 
     private static TreeView ResolveTreeRoot(ElementSelector selector)
     {
-        var resolver =
-            AgentServices.ElementResolver
-            ?? throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "No element resolver is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
-
-        var resolved = resolver.Resolve(selector);
-        if (resolved.Target is not FrameworkElement element)
-        {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"Resolved target is not a FrameworkElement (got {resolved.Target.GetType().Name})."
-            );
-        }
-
+        var (element, automationId) = WpfElementResolve.Resolve(selector);
         if (element is not TreeView treeView)
         {
             throw new ElementActionException(GraftErrorCodes.ActionFailed, $"selectTree root must be TreeView (got {element.GetType().Name}).");
         }
 
-        if (!treeView.IsEnabled || !treeView.IsVisible)
-        {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotActionable,
-                $"Element '{resolved.AutomationId}' is not actionable (enabled={treeView.IsEnabled}, visible={treeView.IsVisible})."
-            );
-        }
-
+        WpfElementResolve.RequireActionable(treeView, automationId);
         return treeView;
     }
 
