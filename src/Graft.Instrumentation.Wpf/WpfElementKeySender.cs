@@ -17,7 +17,7 @@ internal sealed class WpfElementKeySender : IElementKeySender
     {
         ArgumentNullException.ThrowIfNull(selector);
         ArgumentNullException.ThrowIfNull(text);
-        RunOnUiThread(() => SendKeysOnUiThread(selector, text), "sendKeys");
+        RunOnUiThread(() => SendKeysOnUiThread(selector, text), ProtocolMethods.SendKeys);
     }
 
     /// <inheritdoc />
@@ -37,7 +37,7 @@ internal sealed class WpfElementKeySender : IElementKeySender
                 element = ResolveActionableFrameworkElement(selector);
                 WpfInputInjection.FocusAndType(element, string.Empty, clearFirst: false);
             },
-            "typeHuman"
+            ProtocolMethods.TypeHuman
         );
 
         var started = false;
@@ -50,7 +50,7 @@ internal sealed class WpfElementKeySender : IElementKeySender
 
             started = true;
             var piece = rune.ToString();
-            RunOnUiThread(() => WpfInputInjection.TypeIntoFocused(element, piece), "typeHuman");
+            RunOnUiThread(() => WpfInputInjection.TypeIntoFocused(element, piece), ProtocolMethods.TypeHuman);
         }
     }
 
@@ -59,7 +59,7 @@ internal sealed class WpfElementKeySender : IElementKeySender
     {
         ArgumentNullException.ThrowIfNull(selector);
         ArgumentNullException.ThrowIfNull(keys);
-        RunOnUiThread(() => PressKeysOnUiThread(selector, keys), "pressKeys");
+        RunOnUiThread(() => PressKeysOnUiThread(selector, keys), ProtocolMethods.PressKeys);
     }
 
     private static void RunOnUiThread(Action action, string operation)

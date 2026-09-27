@@ -535,7 +535,7 @@ public static class ScenarioJson
     private static GetCellTextOperation CompileGetCellText(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
-        var (column, columnKey) = RequireColumnOrColumnKey(step, index, "getCellText");
+        var (column, columnKey) = RequireColumnOrColumnKey(step, index, ScenarioActions.GetCellText);
         return new GetCellTextOperation(automationId, RequireNonNegativeInt(step, "row", index), column, columnKey);
     }
 
@@ -544,10 +544,10 @@ public static class ScenarioJson
         var automationId = RequireNonEmptyString(step, "automationId", index);
         if (!step.TryGetProperty("value", out var valueElement) || valueElement.ValueKind != JsonValueKind.String)
         {
-            throw Invalid($"steps[{index}] setCellValue requires string property 'value'.");
+            throw Invalid($"steps[{index}] {ScenarioActions.SetCellValue} requires string property 'value'.");
         }
 
-        var (column, columnKey) = RequireColumnOrColumnKey(step, index, "setCellValue");
+        var (column, columnKey) = RequireColumnOrColumnKey(step, index, ScenarioActions.SetCellValue);
         return new SetCellValueOperation(
             automationId,
             RequireNonNegativeInt(step, "row", index),
@@ -560,7 +560,7 @@ public static class ScenarioJson
     private static SelectCellOperation CompileSelectCell(JsonElement step, int index)
     {
         var automationId = RequireNonEmptyString(step, "automationId", index);
-        var (column, columnKey) = RequireColumnOrColumnKey(step, index, "selectCell");
+        var (column, columnKey) = RequireColumnOrColumnKey(step, index, ScenarioActions.SelectCell);
         return new SelectCellOperation(automationId, RequireNonNegativeInt(step, "row", index), column, columnKey);
     }
 
@@ -570,7 +570,7 @@ public static class ScenarioJson
         var columnKey = RequireNonEmptyString(step, "columnKey", index);
         if (!step.TryGetProperty("value", out var valueElement) || valueElement.ValueKind != JsonValueKind.String)
         {
-            throw Invalid($"steps[{index}] selectRow requires string property 'value'.");
+            throw Invalid($"steps[{index}] {ScenarioActions.SelectRow} requires string property 'value'.");
         }
 
         return new SelectRowOperation(automationId, columnKey, valueElement.GetString() ?? string.Empty);
@@ -596,7 +596,7 @@ public static class ScenarioJson
             throw Invalid($"steps[{index}] expectCellText requires string property 'text'.");
         }
 
-        var (column, columnKey) = RequireColumnOrColumnKey(step, index, "expectCellText");
+        var (column, columnKey) = RequireColumnOrColumnKey(step, index, ScenarioActions.ExpectCellText);
         return new ExpectCellTextOperation(
             automationId,
             RequireNonNegativeInt(step, "row", index),
