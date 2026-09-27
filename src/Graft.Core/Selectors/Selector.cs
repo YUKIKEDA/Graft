@@ -1,3 +1,5 @@
+using Graft.Protocol;
+
 namespace Graft.Core.Selectors;
 
 /// <summary>
@@ -62,6 +64,16 @@ public sealed class Selector
         ArgumentException.ThrowIfNullOrWhiteSpace(controlType);
         return new Selector { ControlType = controlType };
     }
+
+    internal SelectorQuery ToQuery() =>
+        new()
+        {
+            AutomationId = AutomationId,
+            Name = Name,
+            ControlType = ControlType,
+            NearAutomationId = NearAutomationId,
+            Nth = Nth,
+        };
 
     internal bool HasAnyCriterion() =>
         !string.IsNullOrWhiteSpace(AutomationId)

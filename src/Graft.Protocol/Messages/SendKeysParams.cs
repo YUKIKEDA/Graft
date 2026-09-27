@@ -5,14 +5,8 @@ namespace Graft.Protocol.Messages;
 /// <summary>
 /// Params for <c>sendKeys</c>.
 /// </summary>
-public sealed class SendKeysParams
+public sealed class SendKeysParams : ElementTargetParams
 {
-    /// <summary>
-    /// Gets the target automation id.
-    /// </summary>
-    [JsonPropertyName("automationId")]
-    public string? AutomationId { get; init; }
-
     /// <summary>
     /// Gets the literal text. JSON null is an empty string. Omitted means the field is missing.
     /// </summary>

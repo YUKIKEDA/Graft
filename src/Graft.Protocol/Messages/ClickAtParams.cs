@@ -5,14 +5,8 @@ namespace Graft.Protocol.Messages;
 /// <summary>
 /// Params for <c>clickAt</c>.
 /// </summary>
-public sealed class ClickAtParams
+public sealed class ClickAtParams : ElementTargetParams
 {
-    /// <summary>
-    /// Gets the target automation id.
-    /// </summary>
-    [JsonPropertyName("automationId")]
-    public string? AutomationId { get; init; }
-
     /// <summary>
     /// Gets the horizontal DIP offset from the clickable point.
     /// </summary>

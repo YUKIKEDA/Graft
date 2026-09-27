@@ -5,14 +5,8 @@ namespace Graft.Protocol.Messages;
 /// <summary>
 /// Params for <c>selectMany</c>.
 /// </summary>
-public sealed class SelectManyParams
+public sealed class SelectManyParams : ElementTargetParams
 {
-    /// <summary>
-    /// Gets the target automation id.
-    /// </summary>
-    [JsonPropertyName("automationId")]
-    public string? AutomationId { get; init; }
-
     /// <summary>
     /// Gets the item indexes. An empty list clears the selection.
     /// </summary>

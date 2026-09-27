@@ -40,7 +40,7 @@ internal static class RequestParamsReader
     public static ElementSelector ReadSelector(JsonElement? paramsElement)
     {
         var parsed = Read<ElementTargetParams>(paramsElement);
-        return ToSelector(parsed.Value.AutomationId, parsed.Value.RuntimeId);
+        return ToSelector(parsed.Value);
     }
 
     public static GetTreeOptions ReadGetTreeOptions(JsonElement? paramsElement)
@@ -84,19 +84,24 @@ internal static class RequestParamsReader
             return ScreenshotOptions.Default;
         }
 
-        if (string.IsNullOrWhiteSpace(target.AutomationId) && target.RuntimeId is null)
+        if (!target.ToQuery().HasCriterion && target.RuntimeId is null)
         {
             return ScreenshotOptions.Default;
         }
 
-        return new ScreenshotOptions { Selector = ToSelector(target.AutomationId, target.RuntimeId) };
+        return new ScreenshotOptions { Selector = ToSelector(target) };
     }
 
-    public static (ElementSelector Selector, string ToAutomationId) ReadDrag(JsonElement? paramsElement)
+    public static (ElementSelector Selector, SelectorQuery To) ReadDrag(JsonElement? paramsElement)
     {
         var parsed = Read<DragParams>(paramsElement);
-        var toAutomationId = RequireString(parsed.Value.ToAutomationId, "toAutomationId", allowEmpty: false);
-        return (ToSelector(parsed.Value.AutomationId, runtimeId: null), toAutomationId);
+        var to = parsed.Value.ToTargetQuery();
+        if (!to.HasCriterion)
+        {
+            throw new InvalidParamsException("Drag destination must set automationId, name, controlType, or nearAutomationId.");
+        }
+
+        return (ToSelector(parsed.Value), to);
     }
 
     public static (ElementSelector Selector, double OffsetX, double OffsetY) ReadClickAt(JsonElement? paramsElement)
@@ -117,28 +122,28 @@ internal static class RequestParamsReader
             throw new InvalidParamsException("params.offsetY must be a number.");
         }
 
-        return (ToSelector(parsed.Value.AutomationId, runtimeId: null), offsetX, offsetY);
+        return (ToSelector(parsed.Value), offsetX, offsetY);
     }
 
     public static (ElementSelector Selector, int Delta) ReadWheel(JsonElement? paramsElement)
     {
         var parsed = Read<WheelParams>(paramsElement);
         var delta = RequireInt(parsed, parsed.Value.Delta, "delta");
-        return (ToSelector(parsed.Value.AutomationId, runtimeId: null), delta);
+        return (ToSelector(parsed.Value), delta);
     }
 
     public static (ElementSelector Selector, string Value) ReadSetValue(JsonElement? paramsElement)
     {
         var parsed = Read<SetValueParams>(paramsElement);
         var value = RequireString(parsed.Value.Value, "value", allowEmpty: true);
-        return (ToSelector(parsed.Value.AutomationId, runtimeId: null), value);
+        return (ToSelector(parsed.Value), value);
     }
 
     public static (ElementSelector Selector, string Text) ReadSendKeys(JsonElement? paramsElement)
     {
         var parsed = Read<SendKeysParams>(paramsElement);
         var text = RequireString(parsed.Value.Text, "text", allowEmpty: true);
-        return (ToSelector(parsed.Value.AutomationId, runtimeId: null), text);
+        return (ToSelector(parsed.Value), text);
     }
 
     public static (ElementSelector Selector, string Text, TimeSpan Delay) ReadTypeHuman(JsonElement? paramsElement)
@@ -150,20 +155,20 @@ internal static class RequestParamsReader
             throw new InvalidParamsException("params.delayMs must be a non-negative integer.");
         }
 
-        return (ToSelector(parsed.Value.AutomationId, runtimeId: null), text, TimeSpan.FromMilliseconds(delayMs));
+        return (ToSelector(parsed.Value), text, TimeSpan.FromMilliseconds(delayMs));
     }
 
     public static (ElementSelector Selector, string Keys) ReadPressKeys(JsonElement? paramsElement)
     {
         var parsed = Read<PressKeysParams>(paramsElement);
         var keys = RequireString(parsed.Value.Keys, "keys", allowEmpty: false, emptyMessage: "params.keys must be a non-empty chord string.");
-        return (ToSelector(parsed.Value.AutomationId, runtimeId: null), keys);
+        return (ToSelector(parsed.Value), keys);
     }
 
     public static (ElementSelector Selector, int? Index) ReadScrollIntoView(JsonElement? paramsElement)
     {
         var parsed = Read<ScrollIntoViewParams>(paramsElement);
-        return (ToSelector(parsed.Value.AutomationId, runtimeId: null), parsed.Value.Index);
+        return (ToSelector(parsed.Value), parsed.Value.Index);
     }
 
     public static (ElementSelector Selector, int? Index, string? Key) ReadSelect(JsonElement? paramsElement)
@@ -178,7 +183,7 @@ internal static class RequestParamsReader
 
         if (hasIndex)
         {
-            return (ToSelector(parsed.Value.AutomationId, runtimeId: null), parsed.Value.Index, null);
+            return (ToSelector(parsed.Value), parsed.Value.Index, null);
         }
 
         if (string.IsNullOrWhiteSpace(parsed.Value.Key))
@@ -186,7 +191,7 @@ internal static class RequestParamsReader
             throw new InvalidParamsException("params.key must be a non-empty string.");
         }
 
-        return (ToSelector(parsed.Value.AutomationId, runtimeId: null), null, parsed.Value.Key);
+        return (ToSelector(parsed.Value), null, parsed.Value.Key);
     }
 
     public static (ElementSelector Selector, IReadOnlyList<int> Indexes) ReadSelectMany(JsonElement? paramsElement)
@@ -197,14 +202,14 @@ internal static class RequestParamsReader
             throw new InvalidParamsException("params.indexes is required.");
         }
 
-        return (ToSelector(parsed.Value.AutomationId, runtimeId: null), parsed.Value.Indexes);
+        return (ToSelector(parsed.Value), parsed.Value.Indexes);
     }
 
     public static (ElementSelector Selector, string Path) ReadElementPath(JsonElement? paramsElement)
     {
         var parsed = Read<ElementPathParams>(paramsElement);
         var path = RequireString(parsed.Value.Path, "path", allowEmpty: false);
-        return (ToSelector(parsed.Value.AutomationId, runtimeId: null), path);
+        return (ToSelector(parsed.Value), path);
     }
 
     public static (ElementSelector Selector, int Row, int? Column, string? ColumnKey) ReadCell(JsonElement? paramsElement)
@@ -227,12 +232,7 @@ internal static class RequestParamsReader
             throw new InvalidParamsException("Exactly one of params.column or params.columnKey is required.");
         }
 
-        return (
-            ToSelector(parsed.Value.AutomationId, runtimeId: null),
-            row,
-            hasColumn ? parsed.Value.Column : null,
-            hasKey ? parsed.Value.ColumnKey : null
-        );
+        return (ToSelector(parsed.Value), row, hasColumn ? parsed.Value.Column : null, hasKey ? parsed.Value.ColumnKey : null);
     }
 
     public static (ElementSelector Selector, int Row, int? Column, string? ColumnKey, string Value) ReadSetCellValue(JsonElement? paramsElement)
@@ -248,14 +248,14 @@ internal static class RequestParamsReader
         var parsed = Read<SelectRowParams>(paramsElement);
         var columnKey = RequireString(parsed.Value.ColumnKey, "columnKey", allowEmpty: false);
         var value = RequireString(parsed.Value.Value, "value", allowEmpty: false);
-        return (ToSelector(parsed.Value.AutomationId, runtimeId: null), columnKey, value);
+        return (ToSelector(parsed.Value), columnKey, value);
     }
 
     public static (ElementSelector Selector, string ColumnKey) ReadColumnKey(JsonElement? paramsElement)
     {
         var parsed = Read<ColumnKeyParams>(paramsElement);
         var columnKey = RequireString(parsed.Value.ColumnKey, "columnKey", allowEmpty: false);
-        return (ToSelector(parsed.Value.AutomationId, runtimeId: null), columnKey);
+        return (ToSelector(parsed.Value), columnKey);
     }
 
     public static int ReadWindowId(JsonElement? paramsElement)
@@ -276,7 +276,19 @@ internal static class RequestParamsReader
         return RequireString(parsed.Value.Result, "result", allowEmpty: false);
     }
 
-    private static ElementSelector ToSelector(string? automationId, int? runtimeId) => new() { AutomationId = automationId, RuntimeId = runtimeId };
+    private static ElementSelector ToSelector(ElementTargetParams target)
+    {
+        var selector = ElementSelector.FromQuery(target.ToQuery());
+        return new ElementSelector
+        {
+            AutomationId = selector.AutomationId,
+            Name = selector.Name,
+            ControlType = selector.ControlType,
+            NearAutomationId = selector.NearAutomationId,
+            Nth = selector.Nth,
+            RuntimeId = target.RuntimeId,
+        };
+    }
 
     private static string RequireString(string? value, string propertyName, bool allowEmpty, string? emptyMessage = null)
     {

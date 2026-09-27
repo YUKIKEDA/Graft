@@ -5,14 +5,8 @@ namespace Graft.Protocol.Messages;
 /// <summary>
 /// Params for <c>getCellText</c>, <c>setCellValue</c>, and <c>selectCell</c>.
 /// </summary>
-public sealed class CellParams
+public sealed class CellParams : ElementTargetParams
 {
-    /// <summary>
-    /// Gets the DataGrid automation id.
-    /// </summary>
-    [JsonPropertyName("automationId")]
-    public string? AutomationId { get; init; }
-
     /// <summary>
     /// Gets the zero-based row index.
     /// </summary>

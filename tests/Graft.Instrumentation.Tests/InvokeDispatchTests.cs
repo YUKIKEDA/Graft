@@ -80,6 +80,44 @@ public sealed class InvokeDispatchTests : IDisposable
     }
 
     /// <summary>
+    /// invoke with a name and no automation id reaches the invoker.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Fake IElementInvoker registered
+    ///
+    /// Steps:
+    /// - Handshake then invoke with params name Save
+    ///
+    /// Expected:
+    /// - ok=true and the fake invoker received name Save
+    /// </remarks>
+    [Fact]
+    public async Task Invoke_WithName_CallsInvoke()
+    {
+        var fake = new FakeElementInvoker();
+        Agent.Use(new AgentBackend { ElementInvoker = fake });
+        PipeTestClient.Start(_pipeName);
+
+        await using var client = await PipeTestClient.ConnectAsync(_pipeName);
+        Assert.True((await PipeTestClient.HandshakeAsync(client)).Ok);
+
+        var response = await PipeTestClient.SendAsync(
+            client,
+            new RequestMessage
+            {
+                V = ProtocolVersion.Current,
+                Id = "9",
+                Method = ProtocolMethods.Invoke,
+                Params = JsonSerializer.SerializeToElement(new { name = "Save" }),
+            }
+        );
+        Assert.True(response.Ok, response.Error?.Message);
+        Assert.Equal("Save", fake.LastName);
+        Assert.True(string.IsNullOrEmpty(fake.LastAutomationId));
+    }
+
+    /// <summary>
     /// rightClick dispatches to the registered invoker.
     /// </summary>
     /// <remarks>

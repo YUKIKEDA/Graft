@@ -43,7 +43,16 @@ internal static class WpfVisualTreeWalker
     /// <param name="selector">automationId required; runtimeId optional.</param>
     /// <returns>The unique match.</returns>
     /// <exception cref="ElementResolveException">Invalid selector, not found, or ambiguous.</exception>
-    public static ResolvedElement Resolve(Window root, ElementSelector selector) => ResolveCore(root, selector, requireAutomationId: true);
+    public static ResolvedElement Resolve(Window root, ElementSelector selector)
+    {
+        ArgumentNullException.ThrowIfNull(selector);
+        if (selector.HasScoringField)
+        {
+            return ResolveScored(root, selector);
+        }
+
+        return ResolveCore(root, selector, requireAutomationId: true);
+    }
 
     /// <summary>
     /// Resolves a live element for screenshot: <c>automationId</c> and/or <c>runtimeId</c>.
@@ -52,8 +61,16 @@ internal static class WpfVisualTreeWalker
     /// <param name="selector">automationId and/or runtimeId.</param>
     /// <returns>The unique match.</returns>
     /// <exception cref="ElementResolveException">Invalid selector, not found, or ambiguous.</exception>
-    public static ResolvedElement ResolveForScreenshot(Window root, ElementSelector selector) =>
-        ResolveCore(root, selector, requireAutomationId: false);
+    public static ResolvedElement ResolveForScreenshot(Window root, ElementSelector selector)
+    {
+        ArgumentNullException.ThrowIfNull(selector);
+        if (selector.HasScoringField)
+        {
+            return ResolveScored(root, selector);
+        }
+
+        return ResolveCore(root, selector, requireAutomationId: false);
+    }
 
     /// <summary>
     /// Returns the <c>runtimeId</c> that <c>getTree</c> (default depth / maxNodes) assigns to <paramref name="target"/>.
@@ -78,6 +95,46 @@ internal static class WpfVisualTreeWalker
         }
 
         return null;
+    }
+
+    private static ResolvedElement ResolveScored(Window root, ElementSelector selector)
+    {
+        ArgumentNullException.ThrowIfNull(root);
+        var state = new WalkState(new GetTreeOptions()) { LiveByRuntimeId = new Dictionary<int, object>() };
+        var boundsOrigin = root.Content as Visual ?? root;
+        var tree = BuildNode(root, root, boundsOrigin, depth: 0, state);
+        TreeNode node;
+        try
+        {
+            node = SelectorScoring.Resolve(
+                tree,
+                new SelectorQuery
+                {
+                    AutomationId = selector.AutomationId,
+                    Name = selector.Name,
+                    ControlType = selector.ControlType,
+                    NearAutomationId = selector.NearAutomationId,
+                    Nth = selector.Nth,
+                }
+            );
+        }
+        catch (SelectorMatchException ex)
+        {
+            throw new ElementResolveException(ex.Code, ex.Message);
+        }
+
+        if (state.LiveByRuntimeId is null || !state.LiveByRuntimeId.TryGetValue(node.RuntimeId, out var target))
+        {
+            throw new ElementResolveException(GraftErrorCodes.ElementNotFound, "No element scored at or above the selector threshold.");
+        }
+
+        return new ResolvedElement
+        {
+            Target = target,
+            AutomationId = node.AutomationId,
+            RuntimeId = node.RuntimeId,
+            ControlType = node.ControlType,
+        };
     }
 
     private static ResolvedElement ResolveCore(Window root, ElementSelector selector, bool requireAutomationId)
@@ -217,6 +274,7 @@ internal static class WpfVisualTreeWalker
     {
         state.NodeCount++;
         var runtimeId = state.NextRuntimeId++;
+        state.LiveByRuntimeId?.Add(runtimeId, element);
         var children = new List<TreeNode>();
         CollectFrameworkChildren(element, depth + 1, state, child => children.Add(BuildNode(child, window, boundsOrigin, depth + 1, state)));
 
@@ -266,6 +324,7 @@ internal static class WpfVisualTreeWalker
 
             state.NodeCount++;
             var runtimeId = state.NextRuntimeId++;
+            state.LiveByRuntimeId?.Add(runtimeId, hyperlink);
             children.Add(
                 new TreeNode
                 {
@@ -569,5 +628,7 @@ internal static class WpfVisualTreeWalker
         public int NodeCount { get; set; }
 
         public bool Truncated { get; set; }
+
+        public Dictionary<int, object>? LiveByRuntimeId { get; init; }
     }
 }

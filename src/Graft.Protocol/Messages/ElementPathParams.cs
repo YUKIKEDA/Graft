@@ -5,14 +5,8 @@ namespace Graft.Protocol.Messages;
 /// <summary>
 /// Params for <c>selectMenu</c> and <c>selectTree</c>.
 /// </summary>
-public sealed class ElementPathParams
+public sealed class ElementPathParams : ElementTargetParams
 {
-    /// <summary>
-    /// Gets the root automation id.
-    /// </summary>
-    [JsonPropertyName("automationId")]
-    public string? AutomationId { get; init; }
-
     /// <summary>
     /// Gets the slash-separated path.
     /// </summary>

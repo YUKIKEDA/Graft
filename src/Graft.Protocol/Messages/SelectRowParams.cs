@@ -5,14 +5,8 @@ namespace Graft.Protocol.Messages;
 /// <summary>
 /// Params for <c>selectRow</c>.
 /// </summary>
-public sealed class SelectRowParams
+public sealed class SelectRowParams : ElementTargetParams
 {
-    /// <summary>
-    /// Gets the DataGrid automation id.
-    /// </summary>
-    [JsonPropertyName("automationId")]
-    public string? AutomationId { get; init; }
-
     /// <summary>
     /// Gets the column Header key.
     /// </summary>

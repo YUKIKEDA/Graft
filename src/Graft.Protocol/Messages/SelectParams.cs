@@ -5,14 +5,8 @@ namespace Graft.Protocol.Messages;
 /// <summary>
 /// Params for <c>select</c>. Exactly one of <see cref="Index"/> or <see cref="Key"/> is set.
 /// </summary>
-public sealed class SelectParams
+public sealed class SelectParams : ElementTargetParams
 {
-    /// <summary>
-    /// Gets the target automation id.
-    /// </summary>
-    [JsonPropertyName("automationId")]
-    public string? AutomationId { get; init; }
-
     /// <summary>
     /// Gets the item index when selecting by position.
     /// </summary>
