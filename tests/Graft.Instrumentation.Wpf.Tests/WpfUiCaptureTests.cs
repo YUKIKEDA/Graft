@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Threading;
 using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Elements;
@@ -37,6 +38,7 @@ public sealed class WpfUiCaptureTests
     /// - Toggle SampleCheckBox then expect name On
     /// - Resolve SampleMouseTarget (SendInput click is covered by SampleWpfApp.Tests E2E)
     /// - Invoke a disabled button
+    /// - setCellValue on a disabled DataGrid and on a collapsed DataGrid
     /// - Exercise per-type WpfControlActions on a vendor control and a Button
     ///
     /// Expected:
@@ -46,7 +48,7 @@ public sealed class WpfUiCaptureTests
     /// - After setValue, SampleTextBox name matches the set text
     /// - After toggle, SampleCheckBox name is On
     /// - SampleMouseTarget resolves as Border
-    /// - Disabled button → element.notActionable
+    /// - Disabled button, disabled DataGrid, and collapsed DataGrid → element.notActionable
     /// - VendorGrid handlers run; a declining Button handler still clicks; an accepting one does not
     /// </remarks>
     [StaFact]
@@ -304,6 +306,32 @@ public sealed class WpfUiCaptureTests
             var notActionable = Assert.Throws<ElementActionException>(() => invoker.Invoke(new ElementSelector { AutomationId = "DisabledButton" }));
             Assert.Equal(GraftErrorCodes.ElementNotActionable, notActionable.Code);
 
+            var gridRow = new CellRow { Name = "Ada" };
+            var grid = new DataGrid
+            {
+                IsEnabled = false,
+                AutoGenerateColumns = false,
+                Height = 80,
+            };
+            AutomationProperties.SetAutomationId(grid, "DisabledGrid");
+            grid.Columns.Add(new DataGridTextColumn { Header = "Name", Binding = new Binding(nameof(CellRow.Name)) });
+            grid.ItemsSource = new[] { gridRow };
+            ((StackPanel)window.Content).Children.Add(grid);
+            window.UpdateLayout();
+
+            var cellAccessor = AgentServices.ElementCellAccessor ?? throw new InvalidOperationException("Cell accessor was not registered.");
+            var disabledGrid = new ElementSelector { AutomationId = "DisabledGrid" };
+            var disabledWrite = Assert.Throws<ElementActionException>(() => cellAccessor.SetCellValue(disabledGrid, 0, 0, null, "Bob"));
+            Assert.Equal(GraftErrorCodes.ElementNotActionable, disabledWrite.Code);
+            Assert.Equal("Ada", gridRow.Name);
+
+            grid.IsEnabled = true;
+            grid.Visibility = Visibility.Collapsed;
+            window.UpdateLayout();
+            var hiddenWrite = Assert.Throws<ElementActionException>(() => cellAccessor.SetCellValue(disabledGrid, 0, 0, null, "Bob"));
+            Assert.Equal(GraftErrorCodes.ElementNotActionable, hiddenWrite.Code);
+            Assert.Equal("Ada", gridRow.Name);
+
             // Duplicate automationIds → ambiguous.
             var dupA = new Button { Content = "A" };
             AutomationProperties.SetAutomationId(dupA, "DupId");
@@ -421,5 +449,10 @@ public sealed class WpfUiCaptureTests
         }
 
         return null;
+    }
+
+    private sealed class CellRow
+    {
+        public string Name { get; set; } = string.Empty;
     }
 }

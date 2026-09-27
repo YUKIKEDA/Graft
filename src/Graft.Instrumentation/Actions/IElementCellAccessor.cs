@@ -33,7 +33,7 @@ public interface IElementCellAccessor
     /// <param name="columnKey">Column Header string, or <see langword="null"/> when using index.</param>
     /// <param name="value">Replacement text (CheckBox: <c>True</c>/<c>False</c>).</param>
     /// <exception cref="ElementResolveException">Selector / resolve failures.</exception>
-    /// <exception cref="ElementActionException">Read-only / unsupported column or edit failed.</exception>
+    /// <exception cref="ElementActionException">Not actionable, read-only, unsupported column, or the edit failed.</exception>
     void SetCellValue(ElementSelector selector, int row, int? column, string? columnKey, string value);
 }
 
