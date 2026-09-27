@@ -172,7 +172,9 @@ TestComplete相当の精度を狙う、という位置づけ。
   `scrollIntoView` / `select` / `expand`・`collapse` は **Phase 5**（詳細は Q66 / `task_phase5.md`）。
   ツリー `selected` / `expanded` と状態 Expect は **Phase 6**（詳細は Q67〜 / `task_phase6.md`）
 - `setValue`: ネイティブ代入（置き換え）優先。失敗時はクリア＋SendInput。
-  `append` / `typeHuman` は後付けオプション
+  `append` は後付け。`typeHuman` は `TypeHumanAsync(text, delay)`（wire `typeHuman`、`delayMs`）。
+  1 Unicode スカラーずつ SendInput し、間隔の待ちはエージェントの要求スレッドで行うので UI のデバウンスが文字の間に動く。
+  既存文字は消さない。`SetValueAsync` / `SendKeysAsync` は即時のまま
 - SendInput クリック点: Peer のクリック可能点 → なければ bounds 中心。オフセットはオプション
 - DPI/座標変換はエージェント側で一元化し、外部には論理座標系のみを見せる
 - ツリー走査・パターン・スクショを含む操作は **UI ディスパッチャへマーシャリングし同期待機**。

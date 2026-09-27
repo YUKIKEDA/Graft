@@ -113,6 +113,39 @@ public sealed class ScenarioParserTests
     }
 
     /// <summary>
+    /// typeHuman compiles text and a non-negative delay.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Minimal JSON with launch + typeHuman
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - TypeHumanOperation with matching automationId, text, and delayMs
+    /// </remarks>
+    [Fact]
+    public void Parse_TypeHumanStep_CompilesDelay()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "App.csproj" },
+                { "action": "typeHuman", "automationId": "SampleTextBox", "text": "ab", "delayMs": 40 }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var typeHuman = Assert.IsType<TypeHumanOperation>(scenario.Operations[1]);
+        Assert.Equal("SampleTextBox", typeHuman.AutomationId);
+        Assert.Equal("ab", typeHuman.Text);
+        Assert.Equal(40, typeHuman.DelayMs);
+    }
+
+    /// <summary>
     /// rightClick steps compile with automationId.
     /// </summary>
     /// <remarks>

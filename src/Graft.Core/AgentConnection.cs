@@ -402,6 +402,44 @@ public sealed class AgentConnection : IAsyncDisposable
     }
 
     /// <summary>
+    /// Calls <c>typeHuman</c> for the element with the given automation id.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="text">Literal text to type.</param>
+    /// <param name="delayMs">Milliseconds to wait between Unicode scalars.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when typeHuman succeeds.</returns>
+    /// <exception cref="GraftException">RPC failed.</exception>
+    public async Task TypeHumanAsync(string automationId, string text, int delayMs, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(automationId);
+        ArgumentNullException.ThrowIfNull(text);
+        ArgumentOutOfRangeException.ThrowIfNegative(delayMs);
+        ThrowIfDisposed();
+
+        var response = await SendAsync(
+                new RequestMessage
+                {
+                    V = ProtocolVersion.Current,
+                    Id = NextId(),
+                    Method = ProtocolMethods.TypeHuman,
+                    Params = JsonSerializer.SerializeToElement(
+                        new
+                        {
+                            automationId,
+                            text,
+                            delayMs,
+                        }
+                    ),
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        EnsureOk(response, "typeHuman failed.");
+    }
+
+    /// <summary>
     /// Calls <c>pressKeys</c> for one keyboard chord on an element.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>

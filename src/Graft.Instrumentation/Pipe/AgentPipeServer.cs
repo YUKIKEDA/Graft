@@ -290,6 +290,11 @@ internal sealed class AgentPipeServer : IDisposable
             return (HandleSendKeys(request), CloseAfterWrite: false, BinaryFollowUp: null);
         }
 
+        if (request.Method == ProtocolMethods.TypeHuman)
+        {
+            return (HandleTypeHuman(request), CloseAfterWrite: false, BinaryFollowUp: null);
+        }
+
         if (request.Method == ProtocolMethods.PressKeys)
         {
             return (HandlePressKeys(request), CloseAfterWrite: false, BinaryFollowUp: null);
@@ -735,6 +740,34 @@ internal sealed class AgentPipeServer : IDisposable
         {
             var (selector, text) = ReadSendKeysParams(request.Params);
             keySender.SendKeys(selector, text);
+            return Ok(request.Id);
+        }
+        catch (ElementResolveException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (ElementActionException ex)
+        {
+            return Error(request.Id, ex.Code, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, ex.Message);
+        }
+    }
+
+    private static ResponseMessage HandleTypeHuman(RequestMessage request)
+    {
+        var keySender = AgentServices.ElementKeySender;
+        if (keySender is null)
+        {
+            return Error(request.Id, GraftErrorCodes.ActionFailed, "No element key sender is registered. Call WpfGraft.Use() before Agent.Start().");
+        }
+
+        try
+        {
+            var (selector, text, delay) = ReadTypeHumanParams(request.Params);
+            keySender.TypeHuman(selector, text, delay);
             return Ok(request.Id);
         }
         catch (ElementResolveException ex)
@@ -1630,6 +1663,27 @@ internal sealed class AgentPipeServer : IDisposable
         };
 
         return (selector, text);
+    }
+
+    private static (ElementSelector Selector, string Text, TimeSpan Delay) ReadTypeHumanParams(JsonElement? paramsElement)
+    {
+        var (selector, text) = ReadSendKeysParams(paramsElement);
+        if (paramsElement is not { } element || element.ValueKind != JsonValueKind.Object)
+        {
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.delayMs is required.");
+        }
+
+        if (!element.TryGetProperty("delayMs", out var delayProperty) || !delayProperty.TryGetInt32(out var delayMs))
+        {
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.delayMs must be a non-negative integer.");
+        }
+
+        if (delayMs < 0)
+        {
+            throw new ElementResolveException(GraftErrorCodes.SelectorInvalid, "params.delayMs must be a non-negative integer.");
+        }
+
+        return (selector, text, TimeSpan.FromMilliseconds(delayMs));
     }
 
     private static (ElementSelector Selector, string Keys) ReadPressKeysParams(JsonElement? paramsElement)

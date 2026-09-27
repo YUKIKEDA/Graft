@@ -40,6 +40,9 @@ public static class ScenarioActions
     /// <summary>Type literal text into an element.</summary>
     public const string SendKeys = FailureSteps.SendKeys;
 
+    /// <summary>Type literal text one Unicode scalar at a time, with a delay between scalars.</summary>
+    public const string TypeHuman = FailureSteps.TypeHuman;
+
     /// <summary>Press one keyboard chord on an element.</summary>
     public const string PressKeys = FailureSteps.PressKeys;
 

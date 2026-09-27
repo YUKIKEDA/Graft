@@ -209,6 +209,12 @@ await using (var soft = app.SoftAssert())
 }
 ```
 
+`SetValueAsync` と `SendKeysAsync` は待ちません。入力の途中でデバウンスを動かしたいときは `TypeHumanAsync` を使います。1文字ずつ送り、文字の間だけ待ちます。その待ちは UI スレッドの外なので、`TextChanged` のタイマーが文字の間に動きます。既存の文字は消しません。
+
+```csharp
+await app.GetByAutomationId("SearchBox").TypeHumanAsync("tokyo", TimeSpan.FromMilliseconds(40));
+```
+
 ### 操作タイムライン（任意）
 
 ```csharp

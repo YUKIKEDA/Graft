@@ -37,6 +37,7 @@
         { "$ref": "#/$defs/setValue" },
         { "$ref": "#/$defs/toggle" },
         { "$ref": "#/$defs/sendKeys" },
+        { "$ref": "#/$defs/typeHuman" },
         { "$ref": "#/$defs/pressKeys" },
         { "$ref": "#/$defs/screenshot" },
         { "$ref": "#/$defs/scrollIntoView" },
@@ -186,6 +187,17 @@
         "action": { "const": "sendKeys" },
         "automationId": { "type": "string", "minLength": 1 },
         "text": { "type": "string" }
+      }
+    },
+    "typeHuman": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "automationId", "text", "delayMs"],
+      "properties": {
+        "action": { "const": "typeHuman" },
+        "automationId": { "type": "string", "minLength": 1 },
+        "text": { "type": "string" },
+        "delayMs": { "type": "integer", "minimum": 0 }
       }
     },
     "pressKeys": {

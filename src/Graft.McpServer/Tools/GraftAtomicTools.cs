@@ -310,6 +310,41 @@ public sealed partial class GraftAtomicTools
         );
 
     /// <summary>
+    /// Types literal text one Unicode scalar at a time, waiting between scalars.
+    /// </summary>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="text">Literal text (no chord DSL).</param>
+    /// <param name="delayMs">Milliseconds to wait between scalars. Zero is allowed.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON tool result.</returns>
+    [McpServerTool(Name = "graft_type_human")]
+    [Description("typeHuman (literal text with a delay between characters) on an element by automationId in the open session.")]
+    public partial Task<CallToolResult> TypeHuman(
+        [Description("Target automation id.")] string automationId,
+        [Description("Literal text to type.")] string text,
+        [Description("Milliseconds to wait between characters. Zero types one character at a time with no extra pause.")] int delayMs,
+        CancellationToken cancellationToken = default
+    ) =>
+        WithSessionAsync(
+            async session =>
+            {
+                await session
+                    .GetByAutomationId(automationId)
+                    .TypeHumanAsync(text, TimeSpan.FromMilliseconds(delayMs), cancellationToken)
+                    .ConfigureAwait(false);
+                return ToolResults.Ok(
+                    new JsonObject
+                    {
+                        ["automationId"] = automationId,
+                        ["text"] = text,
+                        ["delayMs"] = delayMs,
+                    }
+                );
+            },
+            cancellationToken
+        );
+
+    /// <summary>
     /// Presses one keyboard chord on an element by automation id.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>

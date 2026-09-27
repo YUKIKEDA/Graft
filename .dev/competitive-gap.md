@@ -84,7 +84,7 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | K02 | Chord（Ctrl+A 等）                  | Yes  | OK    | Done | —       | `PressAsync` / `pressKeys` |
 | K03 | Tab / フォーカス移動の検証          | Yes  | OK    | Done | 29a     | `ExpectFocusedAsync`       |
 | K04 | 特殊キー網羅（F1–F12, Win, NumPad） | Yes  | PART  | Done | 29a     | F1–F12 + NumPad。**Win 除外** |
-| K05 | typeHuman（遅延付き人間風）         | PART | NO    | 任意 | —       |                            |
+| K05 | typeHuman（遅延付き人間風）         | PART | OK    | Done | —       | `TypeHumanAsync(text, delay)`。間隔は要求スレッドで待つ |
 
 ---
 

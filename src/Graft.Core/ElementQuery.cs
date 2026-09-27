@@ -589,6 +589,61 @@ public sealed class ElementQuery
     }
 
     /// <summary>
+    /// Waits until the element is present and actionable, then types text one character at a time.
+    /// </summary>
+    /// <param name="text">Literal text (no chord DSL). Existing text is left in place.</param>
+    /// <param name="delay">Wait between Unicode scalars. Zero still types one scalar per input.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when typeHuman succeeds.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="delay"/> is negative or longer than <see cref="int.MaxValue"/> milliseconds.</exception>
+    /// <exception cref="GraftException">Wait, resolve, or typeHuman failed (may include <see cref="GraftException.Report"/>).</exception>
+    /// <remarks>
+    /// The agent waits on its request thread, so the UI dispatcher can run debounce between characters.
+    /// <see cref="SetValueAsync"/> and <see cref="SendKeysAsync"/> stay immediate.
+    /// </remarks>
+    public async Task TypeHumanAsync(string text, TimeSpan delay, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        if (delay < TimeSpan.Zero || delay.TotalMilliseconds > int.MaxValue)
+        {
+            throw new ArgumentOutOfRangeException(nameof(delay));
+        }
+
+        var delayMs = (int)delay.TotalMilliseconds;
+        var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            throw await CreateFailureAsync(
+                    GraftErrorCodes.ActionFailed,
+                    "Resolved element has no automationId; cannot typeHuman over the wire.",
+                    FailureSteps.TypeHuman,
+                    expected: text,
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        try
+        {
+            await _connection.TypeHumanAsync(node.AutomationId, text, delayMs, cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(FailureSteps.TypeHuman, $"{node.AutomationId}={text};delayMs={delayMs}", cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await CreateFailureAsync(
+                    ex.Code,
+                    ex.Message,
+                    FailureSteps.TypeHuman,
+                    expected: text,
+                    cancellationToken: cancellationToken,
+                    innerException: ex
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
     /// Waits until the element is present and actionable, then presses one keyboard chord.
     /// </summary>
     /// <param name="keys">Chord DSL (e.g. <c>Control+A</c>, <c>Delete</c>). One call = one chord.</param>

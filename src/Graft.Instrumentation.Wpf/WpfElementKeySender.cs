@@ -21,6 +21,40 @@ internal sealed class WpfElementKeySender : IElementKeySender
     }
 
     /// <inheritdoc />
+    public void TypeHuman(ElementSelector selector, string text, TimeSpan delay)
+    {
+        ArgumentNullException.ThrowIfNull(selector);
+        ArgumentNullException.ThrowIfNull(text);
+        if (delay < TimeSpan.Zero)
+        {
+            throw new ElementActionException(GraftErrorCodes.ActionFailed, "typeHuman delay must be zero or positive.");
+        }
+
+        FrameworkElement element = null!;
+        RunOnUiThread(
+            () =>
+            {
+                element = ResolveActionableFrameworkElement(selector);
+                WpfInputInjection.FocusAndType(element, string.Empty, clearFirst: false);
+            },
+            "typeHuman"
+        );
+
+        var started = false;
+        foreach (var rune in text.EnumerateRunes())
+        {
+            if (started && delay > TimeSpan.Zero)
+            {
+                Thread.Sleep(delay);
+            }
+
+            started = true;
+            var piece = rune.ToString();
+            RunOnUiThread(() => WpfInputInjection.TypeIntoFocused(element, piece), "typeHuman");
+        }
+    }
+
+    /// <inheritdoc />
     public void PressKeys(ElementSelector selector, string keys)
     {
         ArgumentNullException.ThrowIfNull(selector);

@@ -106,6 +106,14 @@ public static class ScenarioRunner
                         await session!.GetByAutomationId(sendKeys.AutomationId).SendKeysAsync(sendKeys.Text, cancellationToken).ConfigureAwait(false);
                         break;
 
+                    case TypeHumanOperation typeHuman:
+                        EnsureSession(session);
+                        await session!
+                            .GetByAutomationId(typeHuman.AutomationId)
+                            .TypeHumanAsync(typeHuman.Text, TimeSpan.FromMilliseconds(typeHuman.DelayMs), cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+
                     case PressKeysOperation pressKeys:
                         EnsureSession(session);
                         await session!.GetByAutomationId(pressKeys.AutomationId).PressAsync(pressKeys.Keys, cancellationToken).ConfigureAwait(false);

@@ -51,6 +51,7 @@ public sealed class McpAtomicToolsTests
         Assert.Contains(tools, t => t.Name == "graft_set_value");
         Assert.Contains(tools, t => t.Name == "graft_toggle");
         Assert.Contains(tools, t => t.Name == "graft_send_keys");
+        Assert.Contains(tools, t => t.Name == "graft_type_human");
         Assert.Contains(tools, t => t.Name == "graft_press_keys");
         Assert.Contains(tools, t => t.Name == "graft_screenshot");
         Assert.Contains(tools, t => t.Name == "graft_expect_name");
