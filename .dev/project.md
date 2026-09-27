@@ -255,6 +255,7 @@ Graft/
 - Scenario は初期は `Graft.Core` 内。MCP のみ `Graft.McpServer` に分離
 - 自己修復セレクタは **Core 側**。Instrumentation は現在ツリーとヒント提供に徹する
 - `Graft.TestUtilities` は xUnit 向け。`GraftAppFixture` がコレクション単位で Launch / Dispose する。直列化の `[CollectionDefinition(DisableParallelization = true)]` はテストアセンブリ側に置く（属性は継承されない）。アセンブリをまたぐ SendInput は引き続き `dotnet test -m:1`
+- NuGet は全 `Graft.*` パッケージを同一バージョンで出す（最初は 0.1.0。1.0 未満は公開 API を壊してよい）。ワイヤ互換の正本は `ProtocolVersion.Current`（整数の完全一致）。公開物の Instrumentation / WPF は `Configuration=GraftTest` で pack し、DLL に Agent を含める。GRAFT001 は同じ nupkg の `analyzers/dotnet/cs` に入れる（ProjectReference の依存は nuspec で Analyzers が除外される）。公開はタグ `v*` と NuGet.org
 
 ## 6. プロダクト名
 

@@ -77,3 +77,46 @@ jobs:
 
       - name: Test McpServer (stdio, no launched app)
         run: dotnet test tests/Graft.McpServer.Tests/Graft.McpServer.Tests.csproj --no-build --no-restore -c Debug --filter "Category!=UI" --logger "trx;LogFileName=mcp.trx"
+
+      - name: Pack GraftTest packages
+        shell: pwsh
+        run: |
+          $projects = @(
+            "src/Graft.Protocol/Graft.Protocol.csproj",
+            "src/Graft.Core/Graft.Core.csproj",
+            "src/Graft.Instrumentation/Graft.Instrumentation.csproj",
+            "src/Graft.Instrumentation.Analyzer/Graft.Instrumentation.Analyzer.csproj",
+            "src/Graft.Instrumentation.Wpf/Graft.Instrumentation.Wpf.csproj",
+            "src/Graft.TestUtilities/Graft.TestUtilities.csproj"
+          )
+          foreach ($project in $projects) {
+            dotnet pack $project -c GraftTest --no-restore -o artifacts --nologo
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $instrumentation = Get-ChildItem artifacts -Filter *.nupkg | Where-Object { $_.Name -match '^Graft\.Instrumentation\.\d' } | Select-Object -First 1
+          if ($null -eq $instrumentation) { throw "Graft.Instrumentation nupkg was not produced" }
+          $zip = [System.IO.Compression.ZipFile]::OpenRead($instrumentation.FullName)
+          try {
+            $dll = $zip.Entries | Where-Object { $_.Name -eq "Graft.Instrumentation.dll" -and $_.FullName -like "lib/*" } | Select-Object -First 1
+            if ($null -eq $dll) { throw "Graft.Instrumentation package is missing lib/**/Graft.Instrumentation.dll" }
+            $analyzer = $zip.Entries | Where-Object { $_.FullName -eq "analyzers/dotnet/cs/Graft.Instrumentation.Analyzer.dll" } | Select-Object -First 1
+            if ($null -eq $analyzer) { throw "Graft.Instrumentation package is missing analyzers/dotnet/cs/Graft.Instrumentation.Analyzer.dll" }
+            $temp = Join-Path $env:RUNNER_TEMP "graft-pack-check.dll"
+            [System.IO.Compression.ZipFileExtensions]::ExtractToFile($dll, $temp, $true)
+          }
+          finally {
+            $zip.Dispose()
+          }
+          cmd /c "findstr /M /C:AgentPipeServer `"$temp`""
+          if ($LASTEXITCODE -ne 0) { throw "Packed Graft.Instrumentation.dll was built without the agent" }
+          $wpf = Get-ChildItem artifacts -Filter *.nupkg | Where-Object { $_.Name -match '^Graft\.Instrumentation\.Wpf\.\d' } | Select-Object -First 1
+          if ($null -eq $wpf) { throw "Graft.Instrumentation.Wpf nupkg was not produced" }
+          $wpfZip = [System.IO.Compression.ZipFile]::OpenRead($wpf.FullName)
+          try {
+            $wpfAnalyzer = $wpfZip.Entries | Where-Object { $_.FullName -eq "analyzers/dotnet/cs/Graft.Instrumentation.Analyzer.dll" } | Select-Object -First 1
+            if ($null -eq $wpfAnalyzer) { throw "Graft.Instrumentation.Wpf package is missing analyzers/dotnet/cs/Graft.Instrumentation.Analyzer.dll" }
+          }
+          finally {
+            $wpfZip.Dispose()
+          }

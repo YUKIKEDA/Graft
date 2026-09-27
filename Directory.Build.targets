@@ -18,4 +18,20 @@
       </ProjectReference>
     </ItemGroup>
   </Target>
+  <!--
+    Project references exclude analyzer assets from the generated nuspec, so
+    pack the GRAFT001 DLL into the packages that apps actually reference.
+  -->
+  <Target Name="IncludeGraftAnalyzerInPackage" BeforeTargets="_GetPackageFiles" Condition="'$(GraftEmbedAnalyzer)' == 'true'">
+    <PropertyGroup>
+      <_GraftAnalyzerDll>$(MSBuildProjectDirectory)\..\Graft.Instrumentation.Analyzer\bin\$(Configuration)\netstandard2.0\Graft.Instrumentation.Analyzer.dll</_GraftAnalyzerDll>
+    </PropertyGroup>
+    <Error
+      Condition="!Exists('$(_GraftAnalyzerDll)')"
+      Text="Graft.Instrumentation.Analyzer.dll is missing for $(Configuration). Pack with -c GraftTest."
+    />
+    <ItemGroup>
+      <None Include="$(_GraftAnalyzerDll)" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    </ItemGroup>
+  </Target>
 </Project>

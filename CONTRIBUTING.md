@@ -43,7 +43,8 @@ Avalonia アダプタは WPF の残 Must 完了後です。詳細は [`.dev/comp
 
 | Workflow | Runner | 内容 |
 | -------- | ------ | ---- |
-| [`ci.yml`](.github/workflows/ci.yml) | `windows-latest` | フォーマット、ビルド、アプリ起動なしのテスト（PR 含む） |
+| [`ci.yml`](.github/workflows/ci.yml) | `windows-latest` | フォーマット、ビルド、pack、アプリ起動なしのテスト（PR 含む） |
+| [`pack.yml`](.github/workflows/pack.yml) | `windows-latest` | タグ `v*` で `GraftTest` 構成を pack し、secret `NUGET_API_KEY` があれば NuGet.org へ push |
 | [`ui.yml`](.github/workflows/ui.yml) | セルフホスト（任意） | `dotnet test Graft.slnx -m:1`。`main` への push または手動。**fork PR では動かない**（公開リポジトリのセルフホスト安全策） |
 
 Graft は仮想ディスプレイを提供しません。GitHub-hosted の Windows runner では SendInput / 前景ウィンドウ前提の E2E を必須ゲートにしません（[`.dev/project.md`](.dev/project.md) Q27）。
@@ -56,3 +57,13 @@ Graft は仮想ディスプレイを提供しません。GitHub-hosted の Windo
 4. リポジトリの Actions variable `GRAFT_ENABLE_UI_CI` を `true` にする
 
 variable が無いときは `ui.yml` はスキップされます。`workflow_dispatch` でも同じ runner が必要です。
+
+## NuGet
+
+公開パッケージの版は `src/Directory.Build.props` の `Version`（現在 0.1.0）で揃えます。タグ `v0.1.0` のように `v` + その版を push すると [pack.yml](.github/workflows/pack.yml) が `Configuration=GraftTest` で pack し、リポジトリ secret `NUGET_API_KEY`（nuget.org の API キー）があれば push します。secret が無いタグ push は pack までで止まります。
+
+ローカル確認:
+
+```powershell
+dotnet pack src/Graft.Core/Graft.Core.csproj -c GraftTest -o artifacts
+```

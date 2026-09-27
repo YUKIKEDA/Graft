@@ -4,6 +4,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <!-- Samples, tools, and tests are not packages. src/ overrides this for libraries. -->
+    <IsPackable>false</IsPackable>
     <!-- Libraries default to net8.0; WPF projects override to net8.0-windows. -->
     <TargetFramework Condition="'$(TargetFramework)' == ''">net8.0</TargetFramework>
   </PropertyGroup>
