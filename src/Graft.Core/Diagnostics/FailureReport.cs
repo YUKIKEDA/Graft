@@ -7,9 +7,10 @@ namespace Graft.Core.Diagnostics;
 /// Structured failure diagnostics (project.md Phase 2).
 /// </summary>
 /// <remarks>
-/// Assembled by <c>Graft.Core</c> when Expect / Wait / actions fail.
+/// Assembled by <c>Graft.Core</c> when an element query or a session operation fails.
 /// The in-process agent does not attach this on every RPC response.
 /// Optional attachments (operation log, tree, screenshot path) are best-effort on failure.
+/// A session operation that has no element selector stores an empty selector.
 /// </remarks>
 public sealed class FailureReport
 {
@@ -56,8 +57,12 @@ public sealed class FailureReport
     public TreeNode? Tree { get; init; }
 
     /// <summary>
-    /// Gets a temp-file path to a PNG screenshot captured on failure, when available.
+    /// Gets the path of a PNG captured on failure, when available.
     /// </summary>
+    /// <remarks>
+    /// The file is <c>%TEMP%\graft-fail-&lt;guid&gt;.png</c>. Graft does not delete it.
+    /// This path is separate from the timeline output directory.
+    /// </remarks>
     [JsonPropertyName("screenshotPath")]
     public string? ScreenshotPath { get; init; }
 

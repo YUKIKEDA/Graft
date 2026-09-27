@@ -19,6 +19,7 @@ public sealed class GraftSession : IAsyncDisposable
     private readonly OperationLog _operationLog = new();
     private readonly TreeBaseline _treeBaseline = new();
     private readonly OperationTimeline? _timeline;
+    private readonly FailureReportFactory _reports;
     private bool _disposed;
 
     internal GraftSession(Process process, AgentConnection connection, TimelineOptions? timeline = null)
@@ -36,6 +37,8 @@ public sealed class GraftSession : IAsyncDisposable
                 }
             );
         }
+
+        _reports = new FailureReportFactory(_connection, _operationLog, _treeBaseline, _timeline);
     }
 
     /// <summary>
@@ -91,7 +94,7 @@ public sealed class GraftSession : IAsyncDisposable
     public ElementQuery GetBy(Selector selector)
     {
         ArgumentNullException.ThrowIfNull(selector);
-        return new ElementQuery(new SessionContext(_connection, WaitOptions, _operationLog, _treeBaseline, _timeline), selector);
+        return new ElementQuery(new SessionContext(_connection, WaitOptions, _operationLog, _treeBaseline, _timeline, _reports), selector);
     }
 
     /// <summary>
@@ -120,7 +123,7 @@ public sealed class GraftSession : IAsyncDisposable
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Window list result.</returns>
-    /// <exception cref="GraftException">RPC failed.</exception>
+    /// <exception cref="GraftException">RPC failed (may include <see cref="GraftException.Report"/>).</exception>
     public async Task<ListWindowsResult> ListWindowsAsync(CancellationToken cancellationToken = default)
     {
         try
@@ -129,10 +132,9 @@ public sealed class GraftSession : IAsyncDisposable
             await RecordSuccessAsync(FailureSteps.ListWindows, $"{result.Windows.Count} window(s)", cancellationToken).ConfigureAwait(false);
             return result;
         }
-        catch (GraftException)
+        catch (GraftException ex) when (ex.Report is null)
         {
-            _timeline?.MarkFailed();
-            throw;
+            throw await FailAsync(ex.Code, ex.Message, FailureSteps.ListWindows, cancellationToken, innerException: ex).ConfigureAwait(false);
         }
     }
 
@@ -142,7 +144,7 @@ public sealed class GraftSession : IAsyncDisposable
     /// <param name="windowId">Session-local window id from <see cref="ListWindowsAsync"/>.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when the switch succeeds.</returns>
-    /// <exception cref="GraftException">RPC failed.</exception>
+    /// <exception cref="GraftException">RPC failed (may include <see cref="GraftException.Report"/>).</exception>
     public async Task SwitchToWindowAsync(int windowId, CancellationToken cancellationToken = default)
     {
         try
@@ -151,10 +153,9 @@ public sealed class GraftSession : IAsyncDisposable
             _treeBaseline.Clear();
             await RecordSuccessAsync(FailureSteps.SwitchWindow, $"windowId={windowId}", cancellationToken).ConfigureAwait(false);
         }
-        catch (GraftException)
+        catch (GraftException ex) when (ex.Report is null)
         {
-            _timeline?.MarkFailed();
-            throw;
+            throw await FailAsync(ex.Code, ex.Message, FailureSteps.SwitchWindow, cancellationToken, innerException: ex).ConfigureAwait(false);
         }
     }
 
@@ -167,7 +168,7 @@ public sealed class GraftSession : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The matched window descriptor.</returns>
     /// <exception cref="ArgumentException">Neither title nor automationId was provided.</exception>
-    /// <exception cref="GraftException">Timed out or RPC failed.</exception>
+    /// <exception cref="GraftException">Timed out or RPC failed (may include <see cref="GraftException.Report"/>).</exception>
     public async Task<WindowInfo> WaitForWindowAsync(
         string? title = null,
         string? automationId = null,
@@ -189,7 +190,7 @@ public sealed class GraftSession : IAsyncDisposable
         while (DateTime.UtcNow < deadline)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var listed = await _connection.ListWindowsAsync(cancellationToken).ConfigureAwait(false);
+            var listed = await ListForStepAsync(FailureSteps.WaitForWindow, cancellationToken).ConfigureAwait(false);
             var match = listed.Windows.FirstOrDefault(window =>
                 (!hasTitle || string.Equals(window.Title, title, StringComparison.Ordinal))
                 && (!hasAutomationId || string.Equals(window.AutomationId, automationId, StringComparison.Ordinal))
@@ -199,7 +200,16 @@ public sealed class GraftSession : IAsyncDisposable
             {
                 if (switchTo)
                 {
-                    await _connection.SwitchWindowAsync(match.WindowId, cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        await _connection.SwitchWindowAsync(match.WindowId, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (GraftException ex) when (ex.Report is null)
+                    {
+                        throw await FailAsync(ex.Code, ex.Message, FailureSteps.WaitForWindow, cancellationToken, innerException: ex)
+                            .ConfigureAwait(false);
+                    }
+
                     _treeBaseline.Clear();
                     await RecordSuccessAsync(FailureSteps.WaitForWindow, $"windowId={match.WindowId};switched", cancellationToken)
                         .ConfigureAwait(false);
@@ -226,8 +236,14 @@ public sealed class GraftSession : IAsyncDisposable
             : hasTitle ? $"title='{title}'"
             : $"automationId='{automationId}'";
 
-        _timeline?.MarkFailed();
-        throw new GraftException(GraftErrorCodes.ActionTimeout, $"Timed out after {timeout.TotalSeconds:0.###}s waiting for window ({criteria}).");
+        throw await FailAsync(
+                GraftErrorCodes.ActionTimeout,
+                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for window ({criteria}).",
+                FailureSteps.WaitForWindow,
+                cancellationToken,
+                timedOut: true
+            )
+            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -238,7 +254,7 @@ public sealed class GraftSession : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when the window is no longer listed.</returns>
     /// <exception cref="ArgumentException">Neither title nor automationId was provided.</exception>
-    /// <exception cref="GraftException">Timed out or RPC failed.</exception>
+    /// <exception cref="GraftException">Timed out or RPC failed (may include <see cref="GraftException.Report"/>).</exception>
     public async Task WaitForWindowClosedAsync(string? title = null, string? automationId = null, CancellationToken cancellationToken = default)
     {
         var hasTitle = !string.IsNullOrWhiteSpace(title);
@@ -255,7 +271,7 @@ public sealed class GraftSession : IAsyncDisposable
         while (DateTime.UtcNow < deadline)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var listed = await _connection.ListWindowsAsync(cancellationToken).ConfigureAwait(false);
+            var listed = await ListForStepAsync(FailureSteps.WaitForWindowClosed, cancellationToken).ConfigureAwait(false);
             var match = listed.Windows.FirstOrDefault(window =>
                 (!hasTitle || string.Equals(window.Title, title, StringComparison.Ordinal))
                 && (!hasAutomationId || string.Equals(window.AutomationId, automationId, StringComparison.Ordinal))
@@ -285,11 +301,14 @@ public sealed class GraftSession : IAsyncDisposable
             : hasTitle ? $"title='{title}'"
             : $"automationId='{automationId}'";
 
-        _timeline?.MarkFailed();
-        throw new GraftException(
-            GraftErrorCodes.ActionTimeout,
-            $"Timed out after {timeout.TotalSeconds:0.###}s waiting for window to close ({criteria})."
-        );
+        throw await FailAsync(
+                GraftErrorCodes.ActionTimeout,
+                $"Timed out after {timeout.TotalSeconds:0.###}s waiting for window to close ({criteria}).",
+                FailureSteps.WaitForWindowClosed,
+                cancellationToken,
+                timedOut: true
+            )
+            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -298,20 +317,11 @@ public sealed class GraftSession : IAsyncDisposable
     /// <param name="path">File path to return.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when arming succeeds.</returns>
-    /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task ArmOpenFileAsync(string path, CancellationToken cancellationToken = default)
+    /// <exception cref="GraftException">RPC failed (may include <see cref="GraftException.Report"/>).</exception>
+    public Task ArmOpenFileAsync(string path, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
-        try
-        {
-            await _connection.ArmOpenFileAsync(path, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.ArmOpenFile, path, cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException)
-        {
-            _timeline?.MarkFailed();
-            throw;
-        }
+        return RunArmAsync(FailureSteps.ArmOpenFile, path, ct => _connection.ArmOpenFileAsync(path, ct), cancellationToken);
     }
 
     /// <summary>
@@ -319,20 +329,9 @@ public sealed class GraftSession : IAsyncDisposable
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when arming succeeds.</returns>
-    /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task ArmOpenFileCancelAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            await _connection.ArmOpenFileCancelAsync(cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.ArmOpenFileCancel, "cancel", cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException)
-        {
-            _timeline?.MarkFailed();
-            throw;
-        }
-    }
+    /// <exception cref="GraftException">RPC failed (may include <see cref="GraftException.Report"/>).</exception>
+    public Task ArmOpenFileCancelAsync(CancellationToken cancellationToken = default) =>
+        RunArmAsync(FailureSteps.ArmOpenFileCancel, "cancel", ct => _connection.ArmOpenFileCancelAsync(ct), cancellationToken);
 
     /// <summary>
     /// Arms the next <c>SaveFileDialog.ShowDialog</c> (via RunDialog seam) to return <paramref name="path"/> (one-shot).
@@ -340,20 +339,11 @@ public sealed class GraftSession : IAsyncDisposable
     /// <param name="path">File path to return.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when arming succeeds.</returns>
-    /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task ArmSaveFileAsync(string path, CancellationToken cancellationToken = default)
+    /// <exception cref="GraftException">RPC failed (may include <see cref="GraftException.Report"/>).</exception>
+    public Task ArmSaveFileAsync(string path, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
-        try
-        {
-            await _connection.ArmSaveFileAsync(path, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.ArmSaveFile, path, cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException)
-        {
-            _timeline?.MarkFailed();
-            throw;
-        }
+        return RunArmAsync(FailureSteps.ArmSaveFile, path, ct => _connection.ArmSaveFileAsync(path, ct), cancellationToken);
     }
 
     /// <summary>
@@ -361,20 +351,9 @@ public sealed class GraftSession : IAsyncDisposable
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when arming succeeds.</returns>
-    /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task ArmSaveFileCancelAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            await _connection.ArmSaveFileCancelAsync(cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.ArmSaveFileCancel, "cancel", cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException)
-        {
-            _timeline?.MarkFailed();
-            throw;
-        }
-    }
+    /// <exception cref="GraftException">RPC failed (may include <see cref="GraftException.Report"/>).</exception>
+    public Task ArmSaveFileCancelAsync(CancellationToken cancellationToken = default) =>
+        RunArmAsync(FailureSteps.ArmSaveFileCancel, "cancel", ct => _connection.ArmSaveFileCancelAsync(ct), cancellationToken);
 
     /// <summary>
     /// Arms the next <c>OpenFolderDialog.ShowDialog</c> (via RunDialog seam) to return <paramref name="path"/> (one-shot).
@@ -382,20 +361,11 @@ public sealed class GraftSession : IAsyncDisposable
     /// <param name="path">Folder path to return.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when arming succeeds.</returns>
-    /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task ArmOpenFolderAsync(string path, CancellationToken cancellationToken = default)
+    /// <exception cref="GraftException">RPC failed (may include <see cref="GraftException.Report"/>).</exception>
+    public Task ArmOpenFolderAsync(string path, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
-        try
-        {
-            await _connection.ArmOpenFolderAsync(path, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.ArmOpenFolder, path, cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException)
-        {
-            _timeline?.MarkFailed();
-            throw;
-        }
+        return RunArmAsync(FailureSteps.ArmOpenFolder, path, ct => _connection.ArmOpenFolderAsync(path, ct), cancellationToken);
     }
 
     /// <summary>
@@ -403,20 +373,9 @@ public sealed class GraftSession : IAsyncDisposable
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when arming succeeds.</returns>
-    /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task ArmOpenFolderCancelAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            await _connection.ArmOpenFolderCancelAsync(cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.ArmOpenFolderCancel, "cancel", cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException)
-        {
-            _timeline?.MarkFailed();
-            throw;
-        }
-    }
+    /// <exception cref="GraftException">RPC failed (may include <see cref="GraftException.Report"/>).</exception>
+    public Task ArmOpenFolderCancelAsync(CancellationToken cancellationToken = default) =>
+        RunArmAsync(FailureSteps.ArmOpenFolderCancel, "cancel", ct => _connection.ArmOpenFolderCancelAsync(ct), cancellationToken);
 
     /// <summary>
     /// Arms the next <c>MessageBox.Show</c> (via seam) to return <paramref name="result"/> (one-shot).
@@ -424,20 +383,11 @@ public sealed class GraftSession : IAsyncDisposable
     /// <param name="result">MessageBoxResult name: None, OK, Cancel, Yes, or No.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when arming succeeds.</returns>
-    /// <exception cref="GraftException">RPC failed.</exception>
-    public async Task ArmMessageBoxAsync(string result, CancellationToken cancellationToken = default)
+    /// <exception cref="GraftException">RPC failed (may include <see cref="GraftException.Report"/>).</exception>
+    public Task ArmMessageBoxAsync(string result, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(result);
-        try
-        {
-            await _connection.ArmMessageBoxAsync(result, cancellationToken).ConfigureAwait(false);
-            await RecordSuccessAsync(FailureSteps.ArmMessageBox, result, cancellationToken).ConfigureAwait(false);
-        }
-        catch (GraftException)
-        {
-            _timeline?.MarkFailed();
-            throw;
-        }
+        return RunArmAsync(FailureSteps.ArmMessageBox, result, ct => _connection.ArmMessageBoxAsync(result, ct), cancellationToken);
     }
 
     /// <summary>
@@ -446,7 +396,7 @@ public sealed class GraftSession : IAsyncDisposable
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Screenshot meta and PNG bytes.</returns>
-    /// <exception cref="GraftException">RPC failed.</exception>
+    /// <exception cref="GraftException">RPC failed (may include <see cref="GraftException.Report"/>).</exception>
     public async Task<Screenshot> ScreenshotAsync(CancellationToken cancellationToken = default)
     {
         try
@@ -457,10 +407,9 @@ public sealed class GraftSession : IAsyncDisposable
                 .ConfigureAwait(false);
             return shot;
         }
-        catch (GraftException)
+        catch (GraftException ex) when (ex.Report is null)
         {
-            _timeline?.MarkFailed();
-            throw;
+            throw await FailAsync(ex.Code, ex.Message, FailureSteps.Screenshot, cancellationToken, innerException: ex).ConfigureAwait(false);
         }
     }
 
@@ -511,6 +460,49 @@ public sealed class GraftSession : IAsyncDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         return _timeline?.FinalizeArtifacts();
+    }
+
+    private async Task<ListWindowsResult> ListForStepAsync(string step, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await _connection.ListWindowsAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await FailAsync(ex.Code, ex.Message, step, cancellationToken, innerException: ex).ConfigureAwait(false);
+        }
+    }
+
+    private Task<GraftException> FailAsync(
+        string code,
+        string message,
+        string step,
+        CancellationToken cancellationToken,
+        bool timedOut = false,
+        Exception? innerException = null
+    ) =>
+        _reports.CreateAsync(
+            code,
+            message,
+            step,
+            new FailureReportSelector(),
+            timedOut: timedOut,
+            innerException: innerException,
+            cancellationToken: cancellationToken
+        );
+
+    private async Task RunArmAsync(string step, string? detail, Func<CancellationToken, Task> action, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await action(cancellationToken).ConfigureAwait(false);
+            await RecordSuccessAsync(step, detail, cancellationToken).ConfigureAwait(false);
+        }
+        catch (GraftException ex) when (ex.Report is null)
+        {
+            throw await FailAsync(ex.Code, ex.Message, step, cancellationToken, innerException: ex).ConfigureAwait(false);
+        }
     }
 
     private async Task RecordSuccessAsync(string action, string? detail, CancellationToken cancellationToken, byte[]? pngBytes = null)

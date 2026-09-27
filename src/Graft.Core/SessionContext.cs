@@ -15,12 +15,14 @@ internal sealed class SessionContext
     /// <param name="operationLog">Recent operations attached to failure reports.</param>
     /// <param name="treeBaseline">Last successful visual tree, used for tree diff.</param>
     /// <param name="timeline">Optional operation timeline. <see langword="null"/> when timeline capture is off.</param>
+    /// <param name="reports">Shared failure-report factory for this session.</param>
     internal SessionContext(
         AgentConnection connection,
         WaitOptions waitOptions,
         OperationLog operationLog,
         TreeBaseline treeBaseline,
-        OperationTimeline? timeline
+        OperationTimeline? timeline,
+        FailureReportFactory reports
     )
     {
         Connection = connection;
@@ -28,6 +30,7 @@ internal sealed class SessionContext
         OperationLog = operationLog;
         TreeBaseline = treeBaseline;
         Timeline = timeline;
+        Reports = reports;
     }
 
     /// <summary>
@@ -54,4 +57,9 @@ internal sealed class SessionContext
     /// Gets the operation timeline, or <see langword="null"/> when timeline capture is off.
     /// </summary>
     internal OperationTimeline? Timeline { get; }
+
+    /// <summary>
+    /// Gets the shared failure-report factory.
+    /// </summary>
+    internal FailureReportFactory Reports { get; }
 }
