@@ -75,6 +75,15 @@ public sealed class GraftSession : IAsyncDisposable
     }
 
     /// <summary>
+    /// Starts a scope that collects <see cref="GraftException"/> failures from <see cref="SoftAssertScope.Check"/>.
+    /// </summary>
+    /// <returns>A scope that throws one aggregate <see cref="GraftException"/> on dispose when any check failed.</returns>
+    /// <remarks>
+    /// Expect and actions outside <see cref="SoftAssertScope.Check"/> still fail immediately.
+    /// </remarks>
+    public SoftAssertScope SoftAssert() => new();
+
+    /// <summary>
     /// Creates an element query for the given selector (resolved via getTree scoring).
     /// </summary>
     /// <param name="selector">Composite selector.</param>

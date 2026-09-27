@@ -187,6 +187,16 @@ await app.WaitForWindowAsync(automationId: "Main");
 
 失敗時は `GraftException.Report` にステップ・期待値・セレクタ・直近操作・ツリー・スクリーンショット参照が付きます。直前に成功した操作があるときは `treeDiff`（追加・削除・属性変更）も付きます。`GraftSession.IncludeTreeDiff = false` で外せます。セレクタ解決に失敗すると、信頼できる代替がある場合だけ一度自己修復します。
 
+複数の Expect を 1 回の実行でまとめて見るときは `SoftAssert` を使います。`Check` は `GraftException` だけを貯め、スコープの破棄時に `expect.failed` を 1 回投げます。集約レポートの `failures` に個別の `FailureReport` が入ります。`Check` の外は従来どおり最初の失敗で止まります。
+
+```csharp
+await using (var soft = app.SoftAssert())
+{
+    await soft.Check(app.GetByAutomationId("StatusText").ExpectNameAsync("Saved"));
+    await soft.Check(app.GetByAutomationId("CountText").ExpectNameAsync("1"));
+}
+```
+
 ### 操作タイムライン（任意）
 
 ```csharp

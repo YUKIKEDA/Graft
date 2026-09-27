@@ -230,7 +230,7 @@ Inspector（F08）は自社アプリ + `getTree` 前提では使い所が薄い�
 | A05 | ExpectVisible / Hidden              | Yes  | OK   | Done | 24      |      |
 | A06 | テキスト部分一致 / Regex            | Yes  | OK   | Done | 24      | Contains / Matches |
 | A07 | ExpectValue（Slider 等を tree で）  | PART | OK   | Done | 24      | `TreeNode.value` |
-| A08 | ソフトアサート（失敗を貯める）      | PART | NO    | 任意 | —       |      |
+| A08 | ソフトアサート（失敗を貯める）      | PART | OK    | Done | —       | `GraftSession.SoftAssert` + `Check`。破棄時に `expect.failed`。個別は `failures` |
 
 ---
 

@@ -163,4 +163,7 @@ public static class FailureSteps
 
     /// <summary>invokeOpeningWindow failed or timed out waiting for a new window.</summary>
     public const string InvokeOpeningWindow = "invokeOpeningWindow";
+
+    /// <summary>Soft-assert scope disposed with one or more collected failures.</summary>
+    public const string SoftAssert = "softAssert";
 }
