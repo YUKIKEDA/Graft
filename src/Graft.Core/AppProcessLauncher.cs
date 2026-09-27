@@ -85,6 +85,9 @@ internal static class AppProcessLauncher
 
         var process = Process.Start(psi) ?? throw new GraftException(GraftErrorCodes.ActionFailed, "Failed to start application process.");
 
+        // Kill the app (and anything it spawns) if this controller process dies without disposing the session.
+        _ = ChildProcessJob.TryAssign(process);
+
         // Drain stdout/stderr so the child cannot block on full pipes, keeping the last lines for
         // diagnostics when the app exits before the handshake. Event-based reads never throw into
         // an unobserved task.
