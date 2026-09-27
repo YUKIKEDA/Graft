@@ -33,10 +33,20 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
       - name: Restore local tools
         run: dotnet tool restore
 
       - name: Test solution
-        run: dotnet test Graft.slnx -m:1 -c Debug --logger "trx;LogFileName=ui.trx"
+        run: |
+          $gallery = "tests/wpfui/src/Wpf.Ui.Gallery/Wpf.Ui.Gallery.csproj"
+          if (Test-Path $gallery) {
+            dotnet test Graft.slnx -m:1 -c Debug --logger "trx;LogFileName=ui.trx"
+          }
+          else {
+            Write-Host "tests/wpfui Gallery missing — excluding WpfUi.Gallery.Graft.Tests (see .dev/task_wpfui-gallery-e2e.md)"
+            dotnet test Graft.slnx -m:1 -c Debug --filter "FullyQualifiedName!~WpfUi.Gallery.Graft.Tests" --logger "trx;LogFileName=ui.trx"
+          }
