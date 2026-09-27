@@ -28,15 +28,7 @@ public sealed class TimelineE2ETests
         try
         {
             await using (
-                var app = await Application.LaunchAsync(
-                    new LaunchOptions
-                    {
-                        AppPath = SampleAppLocator.ResolveProjectPath(),
-                        Configuration = "GraftTest",
-                        Timeout = TimeSpan.FromSeconds(60),
-                        Timeline = new TimelineOptions { OutputDirectory = outDir, Retention = TimelineRetention.Always },
-                    }
-                )
+                var app = await SampleWpfLaunch.LaunchAsync(new TimelineOptions { OutputDirectory = outDir, Retention = TimelineRetention.Always })
             )
             {
                 await app.GetByAutomationId("StatusText").ExpectNameAsync("Ready");

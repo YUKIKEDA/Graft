@@ -18,6 +18,9 @@
     <Using Include="Xunit" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\support\SampleWpfAppLocator.cs" Link="Support\SampleWpfAppLocator.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Graft.McpServer\Graft.McpServer.csproj" />
   </ItemGroup>
   <ItemGroup>

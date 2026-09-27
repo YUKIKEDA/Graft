@@ -30,7 +30,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -79,7 +79,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -103,7 +103,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -127,7 +127,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -151,7 +151,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -175,7 +175,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -199,7 +199,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -223,7 +223,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -247,7 +247,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -271,7 +271,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -295,7 +295,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -319,7 +319,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -343,7 +343,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -367,7 +367,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -391,7 +391,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -415,7 +415,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -439,7 +439,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -463,7 +463,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -487,7 +487,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -511,7 +511,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -535,7 +535,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -559,7 +559,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -583,7 +583,7 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 
     /// <summary>
@@ -618,7 +618,7 @@ public sealed class ScenarioE2ETests
         try
         {
             Directory.SetCurrentDirectory(AppContext.BaseDirectory);
-            await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+            await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
         }
         finally
         {
@@ -666,7 +666,7 @@ public sealed class ScenarioE2ETests
         try
         {
             Directory.SetCurrentDirectory(AppContext.BaseDirectory);
-            await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+            await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
         }
         finally
         {
@@ -703,6 +703,6 @@ public sealed class ScenarioE2ETests
         Assert.True(File.Exists(scenarioPath), $"Missing scenario: {scenarioPath}");
 
         var scenario = ScenarioJson.ParseFile(scenarioPath);
-        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleAppLocator.ResolveProjectPath() });
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
     }
 }

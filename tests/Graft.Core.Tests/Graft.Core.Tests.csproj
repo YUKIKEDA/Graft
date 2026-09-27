@@ -22,6 +22,7 @@
     <Compile Include="..\Graft.Instrumentation.Tests\Support\FakeTreeProvider.cs" Link="Support\FakeTreeProvider.cs" />
     <Compile Include="..\Graft.Instrumentation.Tests\Support\FakeElementInvoker.cs" Link="Support\FakeElementInvoker.cs" />
     <Compile Include="..\Graft.Instrumentation.Tests\Support\FakeElementValueSetter.cs" Link="Support\FakeElementValueSetter.cs" />
+    <Compile Include="..\support\SampleWpfAppLocator.cs" Link="Support\SampleWpfAppLocator.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Graft.Core\Graft.Core.csproj" />

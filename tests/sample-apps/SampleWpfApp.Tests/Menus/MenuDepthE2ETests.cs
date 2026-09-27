@@ -27,14 +27,7 @@ public sealed class MenuDepthE2ETests
     [Fact]
     public async Task SelectMenu_MenuBarDeepPath_UpdatesStatusText()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleMenu").SelectMenuAsync("SampleMenuFile/SampleMenuRecent/SampleMenuOpenRecent");
         await app.GetByAutomationId("StatusText").ExpectNameAsync("MenuOpenRecent");
@@ -58,14 +51,7 @@ public sealed class MenuDepthE2ETests
     [Fact]
     public async Task SelectMenu_ContextMenuSubPath_UpdatesStatusText()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("ContextMenuTarget").RightClickAsync();
         await app.GetByAutomationId("SampleContextMenu").SelectMenuAsync("ContextMenuMore/ContextMenuSubPing");
@@ -88,14 +74,7 @@ public sealed class MenuDepthE2ETests
     [Fact]
     public async Task SelectMenu_DisabledItem_ThrowsElementNotActionable()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         var ex = await Assert.ThrowsAsync<GraftException>(() =>
             app.GetByAutomationId("SampleMenu").SelectMenuAsync("SampleMenuFile/SampleMenuDisabled")

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Graft.McpServer.Security;
+using Graft.TestSupport;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
 
@@ -37,7 +38,7 @@ public sealed class McpAtomicToolsTests
                 Arguments = ["exec", serverDll],
                 EnvironmentVariables = new Dictionary<string, string?>
                 {
-                    [McpPathPolicy.AllowedRootsEnvironmentVariable] = SampleAppLocator.ResolveRepoRoot(),
+                    [McpPathPolicy.AllowedRootsEnvironmentVariable] = SampleWpfAppLocator.ResolveRepoRoot(),
                 },
             }
         );
@@ -68,7 +69,7 @@ public sealed class McpAtomicToolsTests
         Assert.Contains(tools, t => t.Name == "graft_arm_message_box");
         Assert.Contains(tools, t => t.Name == "graft_dispose");
 
-        var appPath = SampleAppLocator.ResolveProjectPath();
+        var appPath = SampleWpfAppLocator.ResolveProjectPath();
 
         await AssertOkAsync(
             client,
@@ -113,7 +114,7 @@ public sealed class McpAtomicToolsTests
                 Arguments = ["exec", serverDll],
                 EnvironmentVariables = new Dictionary<string, string?>
                 {
-                    [McpPathPolicy.AllowedRootsEnvironmentVariable] = SampleAppLocator.ResolveRepoRoot(),
+                    [McpPathPolicy.AllowedRootsEnvironmentVariable] = SampleWpfAppLocator.ResolveRepoRoot(),
                 },
             }
         );

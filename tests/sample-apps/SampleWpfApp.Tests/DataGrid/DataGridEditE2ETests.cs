@@ -27,14 +27,7 @@ public sealed class DataGridEditE2ETests
     [Fact]
     public async Task Phase28_TemplateSelectSortCrud_Works()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         var grid = app.GetByAutomationId("SamplePhase28Grid");
 

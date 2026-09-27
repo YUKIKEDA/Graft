@@ -23,14 +23,7 @@ public sealed class DataGridRowsE2ETests
     [Fact]
     public async Task ScrollIntoView_VirtualizedGridRow_ReturnsIdentity()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         var identity = await app.GetByAutomationId("SampleGrid").ScrollIntoViewAsync(40);
         Assert.Equal("GridRow-40", identity.AutomationId);
@@ -55,14 +48,7 @@ public sealed class DataGridRowsE2ETests
     [Fact]
     public async Task Select_ThenExpectSelected_OnGridRow()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleGrid").SelectAsync(35);
         await app.GetByAutomationId("StatusText").ExpectNameAsync("Grid Row 35");
@@ -87,14 +73,7 @@ public sealed class DataGridRowsE2ETests
     [Fact]
     public async Task Toggle_ThenExpectChecked_OnCheckBox()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleCheckBox").ExpectCheckedAsync(false);
         await app.GetByAutomationId("SampleCheckBox").ToggleAsync();

@@ -24,14 +24,7 @@ public sealed class WindowsE2ETests
     [Fact]
     public async Task ModelessChild_ListWaitSwitch_ThenExpectOnChild()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("OpenChildWindowButton").InvokeAsync();
 
@@ -63,14 +56,7 @@ public sealed class WindowsE2ETests
     [Fact]
     public async Task Modal_InvokeOpeningWindow_ThenOperateAndClose()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         var modal = await app.GetByAutomationId("OpenModalWindowButton").InvokeOpeningWindowAsync();
         Assert.NotNull(modal);

@@ -1,6 +1,7 @@
 using Graft.Core.Diagnostics;
 using Graft.Core.Selectors;
 using Graft.Protocol;
+using Graft.TestSupport;
 
 namespace Graft.Core.Tests;
 
@@ -26,7 +27,7 @@ public sealed class SelfHealTests
     [Fact]
     public async Task Invoke_StaleAutomationId_AutoHealsAndClicks()
     {
-        var appPath = SampleAppPaths.ResolveSampleWpfAppProject();
+        var appPath = SampleWpfAppLocator.ResolveProjectPath();
         await using var session = await Application.LaunchAsync(new LaunchOptions { AppPath = appPath, Timeout = TimeSpan.FromSeconds(60) });
 
         await session
@@ -60,7 +61,7 @@ public sealed class SelfHealTests
     [Fact]
     public async Task Invoke_MissingAutomationId_FailureReportIncludesHealingCandidates()
     {
-        var appPath = SampleAppPaths.ResolveSampleWpfAppProject();
+        var appPath = SampleWpfAppLocator.ResolveProjectPath();
         await using var session = await Application.LaunchAsync(new LaunchOptions { AppPath = appPath, Timeout = TimeSpan.FromSeconds(60) });
         session.WaitOptions = new WaitOptions { ActionTimeout = TimeSpan.FromMilliseconds(600), PollInterval = TimeSpan.FromMilliseconds(50) };
 
@@ -91,7 +92,7 @@ public sealed class SelfHealTests
     [Fact]
     public async Task Invoke_ReusedQuery_HealsAgainLikeAFreshQuery()
     {
-        var appPath = SampleAppPaths.ResolveSampleWpfAppProject();
+        var appPath = SampleWpfAppLocator.ResolveProjectPath();
         await using var session = await Application.LaunchAsync(new LaunchOptions { AppPath = appPath, Timeout = TimeSpan.FromSeconds(60) });
         var selector = new Selector
         {

@@ -1,5 +1,6 @@
 using Graft.Core.Diagnostics;
 using Graft.Protocol;
+using Graft.TestSupport;
 
 namespace Graft.Core.Tests;
 
@@ -26,7 +27,7 @@ public sealed class WaitActionTests
     [Fact]
     public async Task ExpectName_WrongValue_ThrowsExpectFailedWithFailureReport()
     {
-        var appPath = SampleAppPaths.ResolveSampleWpfAppProject();
+        var appPath = SampleWpfAppLocator.ResolveProjectPath();
         await using var session = await Application.LaunchAsync(new LaunchOptions { AppPath = appPath, Timeout = TimeSpan.FromSeconds(60) });
         session.WaitOptions = new WaitOptions { ExpectTimeout = TimeSpan.FromMilliseconds(800), PollInterval = TimeSpan.FromMilliseconds(50) };
 

@@ -30,14 +30,7 @@ public sealed class PopupControlsE2ETests
     [Fact]
     public async Task Phase29b_ListAndMiscControls_Work()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SamplePhase29bDate").SetValueAsync("2026-08-11");
         await app.GetByAutomationId("SamplePhase29bDate").ExpectValueAsync("2026-08-11");

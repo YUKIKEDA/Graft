@@ -28,14 +28,7 @@ public sealed class MenuBarE2ETests
     [Fact]
     public async Task Invoke_MenuFilePing_UpdatesStatusText()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleMenuFile").InvokeAsync();
         await app.GetByAutomationId("SampleMenuPing").InvokeAsync();

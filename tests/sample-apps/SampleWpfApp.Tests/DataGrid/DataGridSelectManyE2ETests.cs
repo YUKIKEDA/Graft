@@ -29,14 +29,7 @@ public sealed class DataGridSelectManyE2ETests
     [Fact]
     public async Task SelectMany_SampleMultiGrid_SelectsTwoRows()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleMultiGrid").SelectManyAsync([1, 3]);
         await app.GetByAutomationId("MultiGridRow-01").ExpectSelectedAsync(true);
@@ -62,14 +55,7 @@ public sealed class DataGridSelectManyE2ETests
     [Fact]
     public async Task SelectMany_EmptyIndexes_ClearsSelection()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleMultiGrid").SelectManyAsync([0, 1]);
         await app.GetByAutomationId("SampleMultiGrid").SelectManyAsync([]);
@@ -93,14 +79,7 @@ public sealed class DataGridSelectManyE2ETests
     [Fact]
     public async Task SelectMany_SampleGridSingleMode_Fails()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         var ex = await Assert.ThrowsAsync<GraftException>(() => app.GetByAutomationId("SampleGrid").SelectManyAsync([1]));
         Assert.Equal(GraftErrorCodes.ActionFailed, ex.Code);

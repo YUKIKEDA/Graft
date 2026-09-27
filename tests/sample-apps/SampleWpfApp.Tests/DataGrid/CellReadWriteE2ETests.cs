@@ -21,14 +21,7 @@ public sealed class CellReadWriteE2ETests
     [Fact]
     public async Task GetCellText_VirtualizedRow_ReturnsDisplayText()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         var text = await app.GetByAutomationId("SampleGrid").GetCellTextAsync(40, 0);
         Assert.Equal("Row 40", text);
@@ -51,14 +44,7 @@ public sealed class CellReadWriteE2ETests
     [Fact]
     public async Task SetCellValue_ThenExpectCellText_UpdatesRow()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleGrid").SetCellValueAsync(35, 0, "Edited 35");
         await app.GetByAutomationId("SampleGrid").ExpectCellTextAsync(35, 0, "Edited 35");

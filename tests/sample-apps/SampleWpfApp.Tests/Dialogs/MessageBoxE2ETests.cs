@@ -23,14 +23,7 @@ public sealed class MessageBoxE2ETests
     [Fact]
     public async Task ArmYes_ThenInvoke_UpdatesStatusYes()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.ArmMessageBoxAsync("Yes");
         _ = await app.GetByAutomationId("MessageBoxButton").InvokeOpeningWindowAsync(waitForNewWindow: false);
@@ -55,14 +48,7 @@ public sealed class MessageBoxE2ETests
     [Fact]
     public async Task ArmNo_ThenInvoke_UpdatesStatusNo()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.ArmMessageBoxAsync("No");
         _ = await app.GetByAutomationId("MessageBoxButton").InvokeOpeningWindowAsync(waitForNewWindow: false);

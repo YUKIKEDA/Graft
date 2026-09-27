@@ -23,14 +23,7 @@ public sealed class TreeStateE2ETests
     [Fact]
     public async Task Select_ThenExpectSelected_OnListItem()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleList").SelectAsync(35);
         await app.GetByAutomationId("ListItem-35").ExpectSelectedAsync(true);
@@ -54,14 +47,7 @@ public sealed class TreeStateE2ETests
     [Fact]
     public async Task ExpandCollapse_ThenExpectExpanded_OnTreeRoot()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SampleTreeRoot").ExpectExpandedAsync(false);
         await app.GetByAutomationId("SampleTreeRoot").ExpandAsync();

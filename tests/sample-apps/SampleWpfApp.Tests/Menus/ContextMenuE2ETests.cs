@@ -28,14 +28,7 @@ public sealed class ContextMenuE2ETests
     [Fact]
     public async Task RightClick_ContextMenuPing_UpdatesStatusText()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("ContextMenuTarget").RightClickAsync();
         await app.GetByAutomationId("ContextMenuPing").InvokeAsync();

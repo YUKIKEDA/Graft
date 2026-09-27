@@ -1,5 +1,6 @@
 using Graft.Protocol;
 using Graft.Protocol.Messages;
+using Graft.TestSupport;
 
 namespace Graft.Core.Tests;
 
@@ -27,7 +28,7 @@ public sealed class LaunchTests
     [Fact]
     public async Task Launch_SampleWpfApp_GetTreeFindsSampleButton()
     {
-        var appPath = SampleAppPaths.ResolveSampleWpfAppProject();
+        var appPath = SampleWpfAppLocator.ResolveProjectPath();
         await using var session = await Application.LaunchAsync(new LaunchOptions { AppPath = appPath, Timeout = TimeSpan.FromSeconds(60) });
 
         var button = await WaitForSampleButtonAsync(session.Connection);

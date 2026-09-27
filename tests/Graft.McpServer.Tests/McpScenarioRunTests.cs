@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Graft.McpServer.Security;
 using Graft.McpServer.Tools;
+using Graft.TestSupport;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
 
@@ -65,7 +66,7 @@ public sealed class McpScenarioRunTests
                 Arguments = ["exec", serverDll],
                 EnvironmentVariables = new Dictionary<string, string?>
                 {
-                    [McpPathPolicy.AllowedRootsEnvironmentVariable] = SampleAppLocator.ResolveRepoRoot(),
+                    [McpPathPolicy.AllowedRootsEnvironmentVariable] = SampleWpfAppLocator.ResolveRepoRoot(),
                 },
             }
         );
@@ -74,7 +75,7 @@ public sealed class McpScenarioRunTests
 
         var result = await client.CallToolAsync(
             "graft_run_scenario",
-            new Dictionary<string, object?> { ["scenarioPath"] = scenarioPath, ["appPath"] = SampleAppLocator.ResolveProjectPath() },
+            new Dictionary<string, object?> { ["scenarioPath"] = scenarioPath, ["appPath"] = SampleWpfAppLocator.ResolveProjectPath() },
             cancellationToken: CancellationToken.None
         );
 

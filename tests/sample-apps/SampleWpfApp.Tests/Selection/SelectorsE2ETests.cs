@@ -26,7 +26,7 @@ public sealed class SelectorsE2ETests
     [Fact]
     public async Task GetByName_SampleClickMe_InvokesSampleButton()
     {
-        await using var app = await LaunchAsync();
+        await using var app = await SampleWpfLaunch.LaunchAsync();
         await app.GetByName("SampleClickMe").InvokeAsync();
         await app.GetByAutomationId("StatusText").ExpectNameAsync("Clicked 1");
     }
@@ -48,7 +48,7 @@ public sealed class SelectorsE2ETests
     [Fact]
     public async Task SelectByKey_ListItemName_UpdatesStatus()
     {
-        await using var app = await LaunchAsync();
+        await using var app = await SampleWpfLaunch.LaunchAsync();
         await app.GetByAutomationId("SampleList").SelectAsync("Item 35");
         await app.GetByAutomationId("StatusText").ExpectNameAsync("Selected Item 35");
     }
@@ -70,7 +70,7 @@ public sealed class SelectorsE2ETests
     [Fact]
     public async Task SelectTree_DeepPath_SelectsGrandchild()
     {
-        await using var app = await LaunchAsync();
+        await using var app = await SampleWpfLaunch.LaunchAsync();
         await app.GetByAutomationId("SampleTree").SelectTreeAsync("SampleTreeRoot/SampleTreeChildA/SampleTreeGrandchild");
         await app.GetByAutomationId("SampleTreeGrandchild").ExpectSelectedAsync(true);
     }
@@ -92,21 +92,11 @@ public sealed class SelectorsE2ETests
     [Fact]
     public async Task Relative_ChildAndNth_InvokesButtons()
     {
-        await using var app = await LaunchAsync();
+        await using var app = await SampleWpfLaunch.LaunchAsync();
         await app.GetByAutomationId("RelativeHost").ChildByName("RelA").InvokeAsync();
         await app.GetByAutomationId("StatusText").ExpectNameAsync("RelA");
 
         await app.GetByAutomationId("RelativeHost").Child(Selector.ByControlType("Button")).Nth(1).InvokeAsync();
         await app.GetByAutomationId("StatusText").ExpectNameAsync("RelB");
     }
-
-    private static Task<GraftSession> LaunchAsync() =>
-        Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
 }

@@ -28,14 +28,7 @@ public sealed class KeyboardControlsE2ETests
     [Fact]
     public async Task Phase29a_PasswordRichToggleFocusKeys_Works()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("SamplePhase29aPassword").SetValueAsync("secret");
         await app.GetByAutomationId("StatusText").ExpectNameAsync("Phase29aPassword len=6");

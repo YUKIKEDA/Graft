@@ -28,14 +28,7 @@ public sealed class FrameE2ETests
     [Fact]
     public async Task Frame_NavigatePages_WaitForAndExpectLabels()
     {
-        await using var app = await Application.LaunchAsync(
-            new LaunchOptions
-            {
-                AppPath = SampleAppLocator.ResolveProjectPath(),
-                Configuration = "GraftTest",
-                Timeout = TimeSpan.FromSeconds(60),
-            }
-        );
+        await using var app = await SampleWpfLaunch.LaunchAsync();
 
         await app.GetByAutomationId("FrameHomeLabel").WaitForAsync();
         await app.GetByAutomationId("FrameHomeLabel").ExpectNameAsync("FrameHomeReady");
