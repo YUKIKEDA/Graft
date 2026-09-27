@@ -4,7 +4,6 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Elements;
-using Graft.Instrumentation.Tree;
 using Graft.Protocol;
 using Graft.Protocol.Messages;
 
@@ -76,27 +75,13 @@ internal sealed class WpfElementScroller : IElementScroller
 
     private static ElementIdentity ScrollOnUiThread(ElementSelector selector, int? index)
     {
-        var resolver =
-            AgentServices.ElementResolver
-            ?? throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "No element resolver is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
-
-        var resolved = resolver.Resolve(selector);
-        if (resolved.Target is not FrameworkElement element)
-        {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"Resolved target is not a FrameworkElement (got {resolved.Target.GetType().Name})."
-            );
-        }
+        var (element, automationId) = WpfElementResolve.Resolve(selector);
 
         if (index is null)
         {
             element.BringIntoView();
             element.Dispatcher.Invoke(static () => { }, DispatcherPriority.ContextIdle);
-            return ToIdentity(element, resolved.AutomationId);
+            return ToIdentity(element, automationId);
         }
 
         return ScrollListItem(element, index.Value);

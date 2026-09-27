@@ -2,7 +2,6 @@ using System.Windows;
 using System.Windows.Threading;
 using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Elements;
-using Graft.Instrumentation.Tree;
 using Graft.Protocol;
 
 namespace Graft.Instrumentation.Wpf;
@@ -91,32 +90,6 @@ internal sealed class WpfElementKeySender : IElementKeySender
         WpfInputInjection.FocusAndPress(element, keys);
     }
 
-    private static FrameworkElement ResolveActionableFrameworkElement(ElementSelector selector)
-    {
-        var resolver =
-            AgentServices.ElementResolver
-            ?? throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "No element resolver is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
-
-        var resolved = resolver.Resolve(selector);
-        if (resolved.Target is not FrameworkElement element)
-        {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"Resolved target is not a FrameworkElement (got {resolved.Target.GetType().Name})."
-            );
-        }
-
-        if (!element.IsEnabled || !element.IsVisible)
-        {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotActionable,
-                $"Element '{resolved.AutomationId}' is not actionable (enabled={element.IsEnabled}, visible={element.IsVisible})."
-            );
-        }
-
-        return element;
-    }
+    private static FrameworkElement ResolveActionableFrameworkElement(ElementSelector selector) =>
+        WpfElementResolve.ResolveActionable(selector).Element;
 }

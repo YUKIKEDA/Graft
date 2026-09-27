@@ -9,7 +9,6 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Elements;
-using Graft.Instrumentation.Tree;
 using Graft.Protocol;
 
 namespace Graft.Instrumentation.Wpf;
@@ -318,30 +317,8 @@ internal sealed class WpfDataGridOperator : IDataGridOperator
 
     private static DataGrid ResolveActionableDataGrid(ElementSelector selector)
     {
-        var resolver =
-            AgentServices.ElementResolver
-            ?? throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "No element resolver is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
-
-        var resolved = resolver.Resolve(selector);
-        if (resolved.Target is not DataGrid dataGrid)
-        {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"DataGrid operation requires a DataGrid (got {resolved.Target.GetType().Name})."
-            );
-        }
-
-        if (!dataGrid.IsEnabled || !dataGrid.IsVisible)
-        {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotActionable,
-                $"DataGrid '{selector.AutomationId}' is not actionable (enabled={dataGrid.IsEnabled}, visible={dataGrid.IsVisible})."
-            );
-        }
-
+        var (dataGrid, _) = WpfElementResolve.Resolve<DataGrid>(selector, "DataGrid operation requires a DataGrid");
+        WpfElementResolve.RequireActionable(dataGrid, selector.AutomationId ?? string.Empty, "DataGrid");
         return dataGrid;
     }
 

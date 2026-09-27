@@ -6,7 +6,6 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using Graft.Instrumentation.Actions;
 using Graft.Instrumentation.Elements;
-using Graft.Instrumentation.Tree;
 using Graft.Protocol;
 
 namespace Graft.Instrumentation.Wpf;
@@ -83,22 +82,7 @@ internal sealed class WpfMenuSelector : IMenuSelector
 
     private static ItemsControl ResolveMenuRoot(ElementSelector selector)
     {
-        var resolver =
-            AgentServices.ElementResolver
-            ?? throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                "No element resolver is registered. Call WpfGraft.Use() before Agent.Start()."
-            );
-
-        var resolved = resolver.Resolve(selector);
-        if (resolved.Target is not FrameworkElement element)
-        {
-            throw new ElementActionException(
-                GraftErrorCodes.ActionFailed,
-                $"Resolved target is not a FrameworkElement (got {resolved.Target.GetType().Name})."
-            );
-        }
-
+        var (element, automationId) = WpfElementResolve.Resolve(selector);
         if (element is not Menu and not ContextMenu)
         {
             throw new ElementActionException(
@@ -111,18 +95,11 @@ internal sealed class WpfMenuSelector : IMenuSelector
         {
             throw new ElementActionException(
                 GraftErrorCodes.ElementNotActionable,
-                $"ContextMenu '{resolved.AutomationId}' is not open; RightClick the owner first."
+                $"ContextMenu '{automationId}' is not open; RightClick the owner first."
             );
         }
 
-        if (!element.IsEnabled || !element.IsVisible)
-        {
-            throw new ElementActionException(
-                GraftErrorCodes.ElementNotActionable,
-                $"Element '{resolved.AutomationId}' is not actionable (enabled={element.IsEnabled}, visible={element.IsVisible})."
-            );
-        }
-
+        WpfElementResolve.RequireActionable(element, automationId);
         return (ItemsControl)element;
     }
 
