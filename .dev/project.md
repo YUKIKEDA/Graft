@@ -147,11 +147,16 @@ TestComplete相当の精度を狙う、という位置づけ。
   物理/スクリーン変換はエージェント内部のみ（診断・Inspector の拡張フィールドには可）
 - GetTree はデフォルト上限あり（深さ 25 / ノード 2,000）。超過時は切り詰め＋`truncated: true`。
   depth/maxNodes/セレクタ起点を指定可能。診断・Inspector 用に expanded（50 / 10,000）
+- `HwndHost` 派生（`WebView2` を含む）の配下は WPF の Visual Tree の外なので走査しない。
+  `getTree` に出るのはホスト要素まで。内部の DOM やネイティブ子ウィンドウは `GetByAutomationId` の対象外。
+  CDP で DOM を Graft のツリーへ合流させるのは後回し（[#93](https://github.com/YUKIKEDA/Graft/issues/93)）
 - 仮想化リストは実現済み Visual Tree がデフォルト。`ScrollIntoView` / 実現 API を別途提供
 - ウィンドウ: API・スキーマは最初からマルチウィンドウ（`windowId` / 対象切替）。
   Phase 1 実装はメインウィンドウからでよい。**実装完遂は Phase 7**（詳細は Q72〜 / `task_phase7.md`）
 - ツリー差分は初期 **Core 側のみ**（エージェントは上限付き完全ツリー）。
-  デフォルト出力は診断向け差分（追加/削除/変更＋要素スナップショット）。JSON Patch は後回し
+  失敗レポートの `treeDiff` は診断向け（`added` / `removed` / `changed`。`changed.fields` は変わった属性名、`before` / `after` は子を含まないスナップショット）。
+  基準は直前の成功操作で使った getTree。基準が無い、または `GraftSession.IncludeTreeDiff == false` のときは付けない。対象窓を切り替えたら基準は捨てる。
+  要素の同一性はツリー内で一意な `automationId`。無い・重複のときは親からのパス（無名は `#ControlType@兄弟index`）。`runtimeId` は差分に使わない。JSON Patch は後回し
 
 ### 入力・待機・スレッド（決定済み）
 
@@ -383,7 +388,6 @@ GitHub Actions:
 - `Graft.props` / `Graft.targets` の具体 MSBuild 断片（サンプルへの落とし込み）
 - よくある型の対応表の具体行（WPF/Avalonia それぞれの型名）
 - セレクタ重みの実測チューニング、`details` スキーマのフィールド確定
-- 診断向けツリー差分 JSON のフィールド名の確定
 - scroll/select の項目キー・表示名指定（index 正本の次候補）
 - 実 OS コモンダイアログの UIA 操作（方針上非採用。必要なら別検討）
 - WPF 競合ギャップ（正本: [competitive-gap.md](./competitive-gap.md)。Must 確定済み → Phase 24+）

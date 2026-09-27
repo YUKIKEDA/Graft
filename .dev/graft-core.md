@@ -108,7 +108,7 @@ dotnet test tests/sample-apps/SampleTodoApp.FlaUI.Tests
 - SaveFile シーム（Phase 11）: 同上で素の `SaveFileDialog`。`ArmSaveFileAsync` / `ArmSaveFileCancelAsync`（OpenFile Arm と独立）
 - OpenFolder シーム（Phase 12）: 素の `OpenFolderDialog`。`ArmOpenFolderAsync` / `ArmOpenFolderCancelAsync`（結果は `FolderName`。他 Arm と独立）
 - MessageBox シーム（Phase 13）: 素の `MessageBox.Show`。`ArmMessageBoxAsync(result)`（`OK`/`Cancel`/`Yes`/`No`/`None`）。未アームは実 MessageBox
-- 失敗診断: Expect / Wait / 各アクション失敗時に `GraftException.Report`（最小: step / expected / actual / timedOut / selector。添付: `recentOperations` / `tree` / `screenshotPath` / `healingCandidates`）。エージェントは RPC ごとに常時添付しない。添付は失敗時ベストエフォート
+- 失敗診断: Expect / Wait / 各アクション失敗時に `GraftException.Report`（最小: step / expected / actual / timedOut / selector。添付: `recentOperations` / `tree` / `screenshotPath` / `healingCandidates` / `treeDiff`）。`treeDiff` は直前の成功 getTree との診断差分（added/removed/changed）。基準が無いときと `GraftSession.IncludeTreeDiff = false` のときは付かない。対象窓の切替で基準は捨てる。エージェントは RPC ごとに常時添付しない。添付は失敗時ベストエフォート
 - Scenario JSON: `ScenarioJson.ParseFile` → `ScenarioRunner.RunAsync`（上記に加え `armOpenFile` / `armSaveFile` / `armOpenFolder` / `armMessageBox` / セル・窓系）。契約は `.dev/scenario.schema.json`。例: `tests/sample-apps/SampleWpfApp.Tests/Scenarios/`
 - MCP: `Graft.McpServer`（stdio）。原子ツールにダイアログ Arm 系とセル・窓系を含む。失敗時は `IsError` + FailureReport JSON
 - invoke / setValue はネイティブ → Peer → SendInput フォールバック（クリック / クリア+タイプ）

@@ -15,16 +15,19 @@ public sealed class ElementQuery
     private readonly Selector _selector;
     private readonly WaitOptions _waitOptions;
     private readonly OperationLog _operationLog;
+    private readonly TreeBaseline _treeBaseline;
     private readonly OperationTimeline? _timeline;
     private readonly IReadOnlyList<RelativeStep> _relativeSteps;
     private Selector _effectiveSelector;
     private bool _healApplied;
+    private TreeNode? _successRoot;
 
     internal ElementQuery(
         AgentConnection connection,
         Selector selector,
         WaitOptions waitOptions,
         OperationLog operationLog,
+        TreeBaseline treeBaseline,
         IReadOnlyList<RelativeStep>? relativeSteps = null,
         OperationTimeline? timeline = null
     )
@@ -34,6 +37,7 @@ public sealed class ElementQuery
         _effectiveSelector = selector;
         _waitOptions = waitOptions;
         _operationLog = operationLog;
+        _treeBaseline = treeBaseline;
         _timeline = timeline;
         _relativeSteps = relativeSteps ?? [];
     }
@@ -107,6 +111,7 @@ public sealed class ElementQuery
                 },
                 _waitOptions,
                 _operationLog,
+                _treeBaseline,
                 _relativeSteps,
                 _timeline
             );
@@ -438,6 +443,8 @@ public sealed class ElementQuery
                         .ConfigureAwait(false);
                 }
 
+                _successRoot = null;
+                _treeBaseline.Clear();
                 await RecordSuccessAsync(FailureSteps.InvokeOpeningWindow, $"{node.AutomationId}->windowId={newborn.WindowId}", cancellationToken)
                     .ConfigureAwait(false);
                 return newborn;
@@ -2091,6 +2098,7 @@ public sealed class ElementQuery
     )
     {
         _timeline?.MarkFailed();
+        _successRoot = null;
         var tree = treeRoot;
         if (tree is null)
         {
@@ -2143,6 +2151,7 @@ public sealed class ElementQuery
                 Tree = tree,
                 ScreenshotPath = screenshotPath,
                 HealingCandidates = healingCandidates,
+                TreeDiff = tree is null ? null : _treeBaseline.Diff(tree),
             },
             innerException
         );
@@ -2178,6 +2187,12 @@ public sealed class ElementQuery
 
     private async Task RecordSuccessAsync(string action, string? detail, CancellationToken cancellationToken, byte[]? pngBytes = null)
     {
+        if (_successRoot is not null)
+        {
+            _treeBaseline.Remember(_successRoot);
+            _successRoot = null;
+        }
+
         _operationLog.Record(action, detail);
         if (_timeline is not null)
         {
@@ -2187,6 +2202,7 @@ public sealed class ElementQuery
 
     private TreeNode ResolveNode(TreeNode root)
     {
+        _successRoot = root;
         TreeNode node;
         try
         {
@@ -2239,7 +2255,7 @@ public sealed class ElementQuery
         var steps = new List<RelativeStep>(_relativeSteps.Count + 1);
         steps.AddRange(_relativeSteps);
         steps.Add(step);
-        return new ElementQuery(_connection, _selector, _waitOptions, _operationLog, steps, _timeline);
+        return new ElementQuery(_connection, _selector, _waitOptions, _operationLog, _treeBaseline, steps, _timeline);
     }
 
     internal abstract record RelativeStep;

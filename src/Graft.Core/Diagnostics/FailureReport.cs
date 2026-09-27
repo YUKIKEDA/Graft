@@ -66,4 +66,10 @@ public sealed class FailureReport
     /// </summary>
     [JsonPropertyName("healingCandidates")]
     public IReadOnlyList<HealingCandidate>? HealingCandidates { get; init; }
+
+    /// <summary>
+    /// Gets the diff against the last successful tree, when a baseline exists.
+    /// </summary>
+    [JsonPropertyName("treeDiff")]
+    public TreeDiff? TreeDiff { get; init; }
 }
