@@ -13,7 +13,7 @@ alwaysApply: true
 - Language: `docs/language.md`
 - Gap matrix: `docs/competitive-gap.md` (English only)
 - Caller notes: `docs/graft-core.md` (English only)
-- `.dev/task_*.md` are archived phase notes. Do not leave new lasting decisions only in `.dev/`
+- `.dev/` is local scratch and is gitignored. Do not put lasting decisions there
 
 ## Changing the design
 

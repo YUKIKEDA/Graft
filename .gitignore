@@ -68,6 +68,9 @@ Desktop.ini
 $RECYCLE.BIN/
 .DS_Store
 
+## Local scratch
+.dev/
+
 ## Local / secrets
 *.pfx
 *.p12

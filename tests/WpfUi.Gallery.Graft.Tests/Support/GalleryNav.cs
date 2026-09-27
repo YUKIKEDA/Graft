@@ -24,9 +24,7 @@ internal static class GalleryNav
     {
         if (!fixture.IsReady)
         {
-            throw new InvalidOperationException(
-                "Gallery was not launched. Ensure tests/wpfui is cloned and Graft-patched " + "(see .dev/task_wpfui-gallery-e2e.md)."
-            );
+            throw new InvalidOperationException("Gallery was not launched. Ensure tests/wpfui is cloned and Graft-patched.");
         }
     }
 

@@ -91,9 +91,7 @@ public sealed class ShellSmokeE2ETests
     {
         if (!_fixture.IsReady)
         {
-            throw new InvalidOperationException(
-                "Gallery was not launched. Ensure tests/wpfui is cloned and Graft-patched " + "(see .dev/task_wpfui-gallery-e2e.md)."
-            );
+            throw new InvalidOperationException("Gallery was not launched. Ensure tests/wpfui is cloned and Graft-patched.");
         }
     }
 }
