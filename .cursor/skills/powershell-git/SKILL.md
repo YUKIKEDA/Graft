@@ -17,7 +17,7 @@ Any `git commit`, `git push`, or `gh pr create` in this repository on Windows.
 1. Read `.cursor/rules/powershell-shell.mdc`, `.cursor/rules/conventional-commits.mdc`, and `.cursor/rules/pull-requests.mdc`.
 2. Never use bash heredoc (`cat <<'EOF'`).
 3. Always quote `'@{u}'` if you need upstream ref.
-4. Draft Conventional Commits messages (`type(scope): subject`; Japanese subject OK).
+4. Draft Conventional Commits messages (`type(scope): subject`, English subject).
 5. PR body must match `.github/pull_request_template.md` section headings.
 
 ## Commit sequence
@@ -42,14 +42,16 @@ git status -sb
 ```powershell
 git push -u origin HEAD
 
-$body = @"
+$body = @'
 ## Summary
 - point 1
 - point 2
 
 ## Related
+
+Closes #N
+
 - Batch / task: N/A
-- Issue: N/A
 - Docs: N/A
 
 ## Test plan
@@ -62,13 +64,13 @@ $body = @"
 
 ## Checklist
 - [ ] PR title follows Conventional Commits (`type(scope): subject`)
-- [ ] `dotnet build Graft.slnx` succeeds
+- [ ] `./build.ps1` succeeds when the change can affect the build or tests
 - [ ] CSharpier applied to touched C# (format on save or `dotnet csharpier format`)
 - [ ] Hosted CI (`.github/workflows/ci.yml`) is green
 - [ ] No unintentional new StyleCop warnings in touched files
 - [ ] If M0 work: linked the relevant Batch in **Related** / `task_m0.md` updated if needed
 - [ ] Docs updated when behavior or workflow changed (`AGENTS.md`, `.dev/*`, rules) — or N/A
-"@
+'@
 gh pr create --title "type(scope): subject" --body $body
 ```
 
