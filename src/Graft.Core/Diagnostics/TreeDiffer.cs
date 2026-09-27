@@ -7,6 +7,11 @@ namespace Graft.Core.Diagnostics;
 /// </summary>
 public static class TreeDiffer
 {
+    /// <summary>
+    /// DIP slack for bounds. Below one logical pixel, so transform noise is not a change.
+    /// </summary>
+    private const double BoundsTolerance = 0.01;
+
     private static readonly string[] FieldOrder =
     [
         "controlType",
@@ -166,5 +171,10 @@ public static class TreeDiffer
         };
 
     private static bool SameBounds(ElementBounds before, ElementBounds after) =>
-        before.X == after.X && before.Y == after.Y && before.Width == after.Width && before.Height == after.Height;
+        NearlyEqual(before.X, after.X)
+        && NearlyEqual(before.Y, after.Y)
+        && NearlyEqual(before.Width, after.Width)
+        && NearlyEqual(before.Height, after.Height);
+
+    private static bool NearlyEqual(double left, double right) => left == right || Math.Abs(left - right) <= BoundsTolerance;
 }

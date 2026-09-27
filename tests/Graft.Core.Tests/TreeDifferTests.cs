@@ -72,6 +72,35 @@ public sealed class TreeDifferTests
     }
 
     /// <summary>
+    /// Sub-pixel bounds noise is not a change, and a one-DIP move is.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Save bounds at (10, 20, 30, 40)
+    /// - A copy shifted by 1e-7 DIP, and a copy shifted by 1 DIP
+    ///
+    /// Steps:
+    /// - TreeDiffer.Diff for each copy
+    ///
+    /// Expected:
+    /// - the noisy copy has no changes
+    /// - the 1 DIP move reports field bounds
+    /// </remarks>
+    [Fact]
+    public void Diff_IgnoresSubPixelBoundsNoise()
+    {
+        var before = Window(Placed(10, 20, 30, 40));
+        var noisy = Window(Placed(10.0000001, 20, 30, 40));
+        var moved = Window(Placed(11, 20, 30, 40));
+
+        var noise = TreeDiffer.Diff(before, noisy);
+        Assert.Empty(noise.Changed);
+
+        var shift = TreeDiffer.Diff(before, moved);
+        Assert.Equal(["bounds"], Assert.Single(shift.Changed).Fields);
+    }
+
+    /// <summary>
     /// Nodes without a unique automation id are keyed by a path from the root.
     /// </summary>
     /// <remarks>
@@ -211,6 +240,24 @@ public sealed class TreeDifferTests
         Assert.Equal("Status", changed.Path);
         Assert.Equal(["name"], changed.Fields);
     }
+
+    private static TreeNode Placed(double x, double y, double width, double height) =>
+        new()
+        {
+            ControlType = "Button",
+            Name = "Save",
+            AutomationId = "Save",
+            Bounds = new ElementBounds
+            {
+                X = x,
+                Y = y,
+                Width = width,
+                Height = height,
+            },
+            Enabled = true,
+            Visible = true,
+            Children = [],
+        };
 
     private static TreeNode Window(params TreeNode[] children) => Node("Window", "Main", "Window", children);
 

@@ -156,7 +156,7 @@ TestComplete相当の精度を狙う、という位置づけ。
 - ツリー差分は初期 **Core 側のみ**（エージェントは上限付き完全ツリー）。
   失敗レポートの `treeDiff` は診断向け（`added` / `removed` / `changed`。`changed.fields` は変わった属性名、`before` / `after` は子を含まないスナップショット）。
   基準は直前の成功操作で使った getTree。基準が無い、または `GraftSession.IncludeTreeDiff == false` のときは付けない。対象窓を切り替えたら基準は捨てる。
-  要素の同一性はツリー内で一意な `automationId`。無い・重複のときは親からのパス（無名は `#ControlType@兄弟index`）。`runtimeId` は差分に使わない。JSON Patch は後回し
+  要素の同一性はツリー内で一意な `automationId`。無い・重複のときは親からのパス（無名は `#ControlType@兄弟index`）。`runtimeId` は差分に使わない。bounds は 0.01 DIP 以内の差を同じとみなす。JSON Patch は後回し
 
 ### 入力・待機・スレッド（決定済み）
 
