@@ -5,7 +5,10 @@
   "description": "Declarative UI E2E scenario (exchange format). Compiled by Graft.Core into an operation list.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["v", "steps"],
+  "required": [
+    "v",
+    "steps"
+  ],
   "properties": {
     "v": {
       "type": "integer",
@@ -20,632 +23,2525 @@
     "steps": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/step" }
+      "items": {
+        "$ref": "#/$defs/step"
+      }
     }
   },
   "$defs": {
     "step": {
       "oneOf": [
-        { "$ref": "#/$defs/launch" },
-        { "$ref": "#/$defs/invoke" },
-        { "$ref": "#/$defs/rightClick" },
-        { "$ref": "#/$defs/doubleClick" },
-        { "$ref": "#/$defs/hover" },
-        { "$ref": "#/$defs/drag" },
-        { "$ref": "#/$defs/clickAt" },
-        { "$ref": "#/$defs/wheel" },
-        { "$ref": "#/$defs/setValue" },
-        { "$ref": "#/$defs/toggle" },
-        { "$ref": "#/$defs/sendKeys" },
-        { "$ref": "#/$defs/typeHuman" },
-        { "$ref": "#/$defs/pressKeys" },
-        { "$ref": "#/$defs/screenshot" },
-        { "$ref": "#/$defs/scrollIntoView" },
-        { "$ref": "#/$defs/select" },
-        { "$ref": "#/$defs/selectMany" },
-        { "$ref": "#/$defs/selectMenu" },
-        { "$ref": "#/$defs/selectTree" },
-        { "$ref": "#/$defs/expand" },
-        { "$ref": "#/$defs/collapse" },
-        { "$ref": "#/$defs/expectName" },
-        { "$ref": "#/$defs/expectSelected" },
-        { "$ref": "#/$defs/expectExpanded" },
-        { "$ref": "#/$defs/expectChecked" },
-        { "$ref": "#/$defs/expectEnabled" },
-        { "$ref": "#/$defs/expectVisible" },
-        { "$ref": "#/$defs/expectFocused" },
-        { "$ref": "#/$defs/expectNameContains" },
-        { "$ref": "#/$defs/expectNameMatches" },
-        { "$ref": "#/$defs/expectValue" },
-        { "$ref": "#/$defs/expectToolTip" },
-        { "$ref": "#/$defs/waitFor" },
-        { "$ref": "#/$defs/expectGone" },
-        { "$ref": "#/$defs/getCellText" },
-        { "$ref": "#/$defs/setCellValue" },
-        { "$ref": "#/$defs/selectCell" },
-        { "$ref": "#/$defs/selectRow" },
-        { "$ref": "#/$defs/clickColumnHeader" },
-        { "$ref": "#/$defs/addRow" },
-        { "$ref": "#/$defs/deleteSelectedRows" },
-        { "$ref": "#/$defs/expectCellText" },
-        { "$ref": "#/$defs/armOpenFile" },
-        { "$ref": "#/$defs/armOpenFileCancel" },
-        { "$ref": "#/$defs/armSaveFile" },
-        { "$ref": "#/$defs/armSaveFileCancel" },
-        { "$ref": "#/$defs/armOpenFolder" },
-        { "$ref": "#/$defs/armOpenFolderCancel" },
-        { "$ref": "#/$defs/armMessageBox" },
-        { "$ref": "#/$defs/listWindows" },
-        { "$ref": "#/$defs/switchWindow" },
-        { "$ref": "#/$defs/waitForWindow" },
-        { "$ref": "#/$defs/waitForWindowClosed" },
-        { "$ref": "#/$defs/invokeOpeningWindow" }
+        {
+          "$ref": "#/$defs/launch"
+        },
+        {
+          "$ref": "#/$defs/invoke"
+        },
+        {
+          "$ref": "#/$defs/rightClick"
+        },
+        {
+          "$ref": "#/$defs/doubleClick"
+        },
+        {
+          "$ref": "#/$defs/hover"
+        },
+        {
+          "$ref": "#/$defs/drag"
+        },
+        {
+          "$ref": "#/$defs/clickAt"
+        },
+        {
+          "$ref": "#/$defs/wheel"
+        },
+        {
+          "$ref": "#/$defs/setValue"
+        },
+        {
+          "$ref": "#/$defs/toggle"
+        },
+        {
+          "$ref": "#/$defs/sendKeys"
+        },
+        {
+          "$ref": "#/$defs/typeHuman"
+        },
+        {
+          "$ref": "#/$defs/pressKeys"
+        },
+        {
+          "$ref": "#/$defs/screenshot"
+        },
+        {
+          "$ref": "#/$defs/scrollIntoView"
+        },
+        {
+          "$ref": "#/$defs/select"
+        },
+        {
+          "$ref": "#/$defs/selectMany"
+        },
+        {
+          "$ref": "#/$defs/selectMenu"
+        },
+        {
+          "$ref": "#/$defs/selectTree"
+        },
+        {
+          "$ref": "#/$defs/expand"
+        },
+        {
+          "$ref": "#/$defs/collapse"
+        },
+        {
+          "$ref": "#/$defs/expectName"
+        },
+        {
+          "$ref": "#/$defs/expectSelected"
+        },
+        {
+          "$ref": "#/$defs/expectExpanded"
+        },
+        {
+          "$ref": "#/$defs/expectChecked"
+        },
+        {
+          "$ref": "#/$defs/expectEnabled"
+        },
+        {
+          "$ref": "#/$defs/expectVisible"
+        },
+        {
+          "$ref": "#/$defs/expectFocused"
+        },
+        {
+          "$ref": "#/$defs/expectNameContains"
+        },
+        {
+          "$ref": "#/$defs/expectNameMatches"
+        },
+        {
+          "$ref": "#/$defs/expectValue"
+        },
+        {
+          "$ref": "#/$defs/expectToolTip"
+        },
+        {
+          "$ref": "#/$defs/waitFor"
+        },
+        {
+          "$ref": "#/$defs/expectGone"
+        },
+        {
+          "$ref": "#/$defs/getCellText"
+        },
+        {
+          "$ref": "#/$defs/setCellValue"
+        },
+        {
+          "$ref": "#/$defs/selectCell"
+        },
+        {
+          "$ref": "#/$defs/selectRow"
+        },
+        {
+          "$ref": "#/$defs/clickColumnHeader"
+        },
+        {
+          "$ref": "#/$defs/addRow"
+        },
+        {
+          "$ref": "#/$defs/deleteSelectedRows"
+        },
+        {
+          "$ref": "#/$defs/expectCellText"
+        },
+        {
+          "$ref": "#/$defs/armOpenFile"
+        },
+        {
+          "$ref": "#/$defs/armOpenFileCancel"
+        },
+        {
+          "$ref": "#/$defs/armSaveFile"
+        },
+        {
+          "$ref": "#/$defs/armSaveFileCancel"
+        },
+        {
+          "$ref": "#/$defs/armOpenFolder"
+        },
+        {
+          "$ref": "#/$defs/armOpenFolderCancel"
+        },
+        {
+          "$ref": "#/$defs/armMessageBox"
+        },
+        {
+          "$ref": "#/$defs/listWindows"
+        },
+        {
+          "$ref": "#/$defs/switchWindow"
+        },
+        {
+          "$ref": "#/$defs/waitForWindow"
+        },
+        {
+          "$ref": "#/$defs/waitForWindowClosed"
+        },
+        {
+          "$ref": "#/$defs/invokeOpeningWindow"
+        }
       ]
     },
     "launch": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "appPath"],
+      "required": [
+        "action",
+        "appPath"
+      ],
       "properties": {
-        "action": { "const": "launch" },
-        "appPath": { "type": "string", "minLength": 1 },
-        "configuration": { "type": "string", "minLength": 1 },
-        "timeoutSeconds": { "type": "number", "exclusiveMinimum": 0 }
+        "action": {
+          "const": "launch"
+        },
+        "appPath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "configuration": {
+          "type": "string",
+          "minLength": 1
+        },
+        "timeoutSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
       }
     },
     "invoke": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "invoke" },
-        "automationId": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "invoke"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "rightClick": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "rightClick" },
-        "automationId": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "rightClick"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "doubleClick": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "doubleClick" },
-        "automationId": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "doubleClick"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "hover": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "hover" },
-        "automationId": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "hover"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "drag": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "toAutomationId"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "drag" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "toAutomationId": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "drag"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "toAutomationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        },
+        "to": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "required": [
+                "automationId"
+              ],
+              "not": {
+                "required": [
+                  "target"
+                ]
+              }
+            },
+            {
+              "required": [
+                "target"
+              ],
+              "not": {
+                "required": [
+                  "automationId"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "oneOf": [
+            {
+              "required": [
+                "toAutomationId"
+              ],
+              "not": {
+                "required": [
+                  "to"
+                ]
+              }
+            },
+            {
+              "required": [
+                "to"
+              ],
+              "not": {
+                "required": [
+                  "toAutomationId"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     },
     "clickAt": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "offsetX", "offsetY"],
+      "required": [
+        "action",
+        "offsetX",
+        "offsetY"
+      ],
       "properties": {
-        "action": { "const": "clickAt" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "offsetX": { "type": "number" },
-        "offsetY": { "type": "number" }
-      }
+        "action": {
+          "const": "clickAt"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "offsetX": {
+          "type": "number"
+        },
+        "offsetY": {
+          "type": "number"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "wheel": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "delta"],
+      "required": [
+        "action",
+        "delta"
+      ],
       "properties": {
-        "action": { "const": "wheel" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "delta": { "type": "integer" }
-      }
+        "action": {
+          "const": "wheel"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "delta": {
+          "type": "integer"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "setValue": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "value"],
+      "required": [
+        "action",
+        "value"
+      ],
       "properties": {
-        "action": { "const": "setValue" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "value": { "type": "string" }
-      }
+        "action": {
+          "const": "setValue"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "toggle": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "toggle" },
-        "automationId": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "toggle"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "sendKeys": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "text"],
+      "required": [
+        "action",
+        "text"
+      ],
       "properties": {
-        "action": { "const": "sendKeys" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "text": { "type": "string" }
-      }
+        "action": {
+          "const": "sendKeys"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "typeHuman": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "text", "delayMs"],
+      "required": [
+        "action",
+        "text",
+        "delayMs"
+      ],
       "properties": {
-        "action": { "const": "typeHuman" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "text": { "type": "string" },
-        "delayMs": { "type": "integer", "minimum": 0 }
-      }
+        "action": {
+          "const": "typeHuman"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string"
+        },
+        "delayMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "pressKeys": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "keys"],
+      "required": [
+        "action",
+        "keys"
+      ],
       "properties": {
-        "action": { "const": "pressKeys" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "keys": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "pressKeys"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "keys": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "screenshot": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "path"],
+      "required": [
+        "action",
+        "path"
+      ],
       "properties": {
-        "action": { "const": "screenshot" },
-        "path": { "type": "string", "minLength": 1 },
-        "automationId": { "type": "string", "minLength": 1 }
+        "action": {
+          "const": "screenshot"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "not": {
+        "required": [
+          "automationId",
+          "target"
+        ]
       }
     },
     "scrollIntoView": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "scrollIntoView" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "index": { "type": "integer", "minimum": 0 }
-      }
+        "action": {
+          "const": "scrollIntoView"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "select": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "select" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "index": { "type": "integer", "minimum": 0 },
-        "key": { "type": "string", "minLength": 1 }
+        "action": {
+          "const": "select"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
       },
-      "oneOf": [
-        { "required": ["index"], "not": { "required": ["key"] } },
-        { "required": ["key"], "not": { "required": ["index"] } }
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "required": [
+                "index"
+              ],
+              "not": {
+                "required": [
+                  "key"
+                ]
+              }
+            },
+            {
+              "required": [
+                "key"
+              ],
+              "not": {
+                "required": [
+                  "index"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "oneOf": [
+            {
+              "required": [
+                "automationId"
+              ],
+              "not": {
+                "required": [
+                  "target"
+                ]
+              }
+            },
+            {
+              "required": [
+                "target"
+              ],
+              "not": {
+                "required": [
+                  "automationId"
+                ]
+              }
+            }
+          ]
+        }
       ]
     },
     "selectMany": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "indexes"],
+      "required": [
+        "action",
+        "indexes"
+      ],
       "properties": {
-        "action": { "const": "selectMany" },
-        "automationId": { "type": "string", "minLength": 1 },
+        "action": {
+          "const": "selectMany"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
         "indexes": {
           "type": "array",
-          "items": { "type": "integer", "minimum": 0 }
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "target": {
+          "$ref": "#/$defs/target"
         }
-      }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "selectMenu": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "path"],
+      "required": [
+        "action",
+        "path"
+      ],
       "properties": {
-        "action": { "const": "selectMenu" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "path": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "selectMenu"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "selectTree": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "path"],
+      "required": [
+        "action",
+        "path"
+      ],
       "properties": {
-        "action": { "const": "selectTree" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "path": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "selectTree"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "expand": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "expand" },
-        "automationId": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "expand"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "collapse": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "collapse" },
-        "automationId": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "collapse"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "expectName": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "name"],
+      "required": [
+        "action",
+        "name"
+      ],
       "properties": {
-        "action": { "const": "expectName" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string" }
-      }
+        "action": {
+          "const": "expectName"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "expectSelected": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "selected"],
+      "required": [
+        "action",
+        "selected"
+      ],
       "properties": {
-        "action": { "const": "expectSelected" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "selected": { "type": "boolean" }
-      }
+        "action": {
+          "const": "expectSelected"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "selected": {
+          "type": "boolean"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "expectExpanded": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "expanded"],
+      "required": [
+        "action",
+        "expanded"
+      ],
       "properties": {
-        "action": { "const": "expectExpanded" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "expanded": { "type": "boolean" }
-      }
+        "action": {
+          "const": "expectExpanded"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expanded": {
+          "type": "boolean"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "expectChecked": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "checked"],
+      "required": [
+        "action",
+        "checked"
+      ],
       "properties": {
-        "action": { "const": "expectChecked" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "checked": { "type": "boolean" }
-      }
+        "action": {
+          "const": "expectChecked"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checked": {
+          "type": "boolean"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "expectEnabled": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "enabled"],
+      "required": [
+        "action",
+        "enabled"
+      ],
       "properties": {
-        "action": { "const": "expectEnabled" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "enabled": { "type": "boolean" }
-      }
+        "action": {
+          "const": "expectEnabled"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "expectVisible": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "visible"],
+      "required": [
+        "action",
+        "visible"
+      ],
       "properties": {
-        "action": { "const": "expectVisible" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "visible": { "type": "boolean" }
-      }
+        "action": {
+          "const": "expectVisible"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "visible": {
+          "type": "boolean"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "expectFocused": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "expectFocused" },
-        "automationId": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "expectFocused"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "expectNameContains": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "substring"],
+      "required": [
+        "action",
+        "substring"
+      ],
       "properties": {
-        "action": { "const": "expectNameContains" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "substring": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "expectNameContains"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "substring": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "expectNameMatches": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "pattern"],
+      "required": [
+        "action",
+        "pattern"
+      ],
       "properties": {
-        "action": { "const": "expectNameMatches" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "pattern": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "expectNameMatches"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pattern": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "expectValue": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "value"],
+      "required": [
+        "action",
+        "value"
+      ],
       "properties": {
-        "action": { "const": "expectValue" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "value": { "type": "string" }
-      }
+        "action": {
+          "const": "expectValue"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "expectToolTip": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "toolTip"],
+      "required": [
+        "action",
+        "toolTip"
+      ],
       "properties": {
-        "action": { "const": "expectToolTip" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "toolTip": { "type": "string" }
-      }
+        "action": {
+          "const": "expectToolTip"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "toolTip": {
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "waitFor": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "waitFor" },
-        "automationId": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "waitFor"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "expectGone": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "expectGone" },
-        "automationId": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "expectGone"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "getCellText": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "row"],
+      "required": [
+        "action",
+        "row"
+      ],
       "properties": {
-        "action": { "const": "getCellText" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "row": { "type": "integer", "minimum": 0 },
-        "column": { "type": "integer", "minimum": 0 },
-        "columnKey": { "type": "string", "minLength": 1 }
+        "action": {
+          "const": "getCellText"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "row": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "columnKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
       },
-      "oneOf": [
-        { "required": ["column"], "not": { "required": ["columnKey"] } },
-        { "required": ["columnKey"], "not": { "required": ["column"] } }
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "required": [
+                "column"
+              ],
+              "not": {
+                "required": [
+                  "columnKey"
+                ]
+              }
+            },
+            {
+              "required": [
+                "columnKey"
+              ],
+              "not": {
+                "required": [
+                  "column"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "oneOf": [
+            {
+              "required": [
+                "automationId"
+              ],
+              "not": {
+                "required": [
+                  "target"
+                ]
+              }
+            },
+            {
+              "required": [
+                "target"
+              ],
+              "not": {
+                "required": [
+                  "automationId"
+                ]
+              }
+            }
+          ]
+        }
       ]
     },
     "setCellValue": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "row", "value"],
+      "required": [
+        "action",
+        "row",
+        "value"
+      ],
       "properties": {
-        "action": { "const": "setCellValue" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "row": { "type": "integer", "minimum": 0 },
-        "column": { "type": "integer", "minimum": 0 },
-        "columnKey": { "type": "string", "minLength": 1 },
-        "value": { "type": "string" }
+        "action": {
+          "const": "setCellValue"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "row": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "columnKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
       },
-      "oneOf": [
-        { "required": ["column"], "not": { "required": ["columnKey"] } },
-        { "required": ["columnKey"], "not": { "required": ["column"] } }
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "required": [
+                "column"
+              ],
+              "not": {
+                "required": [
+                  "columnKey"
+                ]
+              }
+            },
+            {
+              "required": [
+                "columnKey"
+              ],
+              "not": {
+                "required": [
+                  "column"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "oneOf": [
+            {
+              "required": [
+                "automationId"
+              ],
+              "not": {
+                "required": [
+                  "target"
+                ]
+              }
+            },
+            {
+              "required": [
+                "target"
+              ],
+              "not": {
+                "required": [
+                  "automationId"
+                ]
+              }
+            }
+          ]
+        }
       ]
     },
     "selectCell": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "row"],
+      "required": [
+        "action",
+        "row"
+      ],
       "properties": {
-        "action": { "const": "selectCell" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "row": { "type": "integer", "minimum": 0 },
-        "column": { "type": "integer", "minimum": 0 },
-        "columnKey": { "type": "string", "minLength": 1 }
+        "action": {
+          "const": "selectCell"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "row": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "columnKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
       },
-      "oneOf": [
-        { "required": ["column"], "not": { "required": ["columnKey"] } },
-        { "required": ["columnKey"], "not": { "required": ["column"] } }
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "required": [
+                "column"
+              ],
+              "not": {
+                "required": [
+                  "columnKey"
+                ]
+              }
+            },
+            {
+              "required": [
+                "columnKey"
+              ],
+              "not": {
+                "required": [
+                  "column"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "oneOf": [
+            {
+              "required": [
+                "automationId"
+              ],
+              "not": {
+                "required": [
+                  "target"
+                ]
+              }
+            },
+            {
+              "required": [
+                "target"
+              ],
+              "not": {
+                "required": [
+                  "automationId"
+                ]
+              }
+            }
+          ]
+        }
       ]
     },
     "selectRow": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "columnKey", "value"],
+      "required": [
+        "action",
+        "columnKey",
+        "value"
+      ],
       "properties": {
-        "action": { "const": "selectRow" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "columnKey": { "type": "string", "minLength": 1 },
-        "value": { "type": "string" }
-      }
+        "action": {
+          "const": "selectRow"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "columnKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "clickColumnHeader": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "columnKey"],
+      "required": [
+        "action",
+        "columnKey"
+      ],
       "properties": {
-        "action": { "const": "clickColumnHeader" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "columnKey": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "clickColumnHeader"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "columnKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "addRow": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "addRow" },
-        "automationId": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "addRow"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "deleteSelectedRows": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "deleteSelectedRows" },
-        "automationId": { "type": "string", "minLength": 1 }
-      }
+        "action": {
+          "const": "deleteSelectedRows"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
     },
     "expectCellText": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId", "row", "text"],
+      "required": [
+        "action",
+        "row",
+        "text"
+      ],
       "properties": {
-        "action": { "const": "expectCellText" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "row": { "type": "integer", "minimum": 0 },
-        "column": { "type": "integer", "minimum": 0 },
-        "columnKey": { "type": "string", "minLength": 1 },
-        "text": { "type": "string" }
+        "action": {
+          "const": "expectCellText"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "row": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "columnKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
       },
-      "oneOf": [
-        { "required": ["column"], "not": { "required": ["columnKey"] } },
-        { "required": ["columnKey"], "not": { "required": ["column"] } }
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "required": [
+                "column"
+              ],
+              "not": {
+                "required": [
+                  "columnKey"
+                ]
+              }
+            },
+            {
+              "required": [
+                "columnKey"
+              ],
+              "not": {
+                "required": [
+                  "column"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "oneOf": [
+            {
+              "required": [
+                "automationId"
+              ],
+              "not": {
+                "required": [
+                  "target"
+                ]
+              }
+            },
+            {
+              "required": [
+                "target"
+              ],
+              "not": {
+                "required": [
+                  "automationId"
+                ]
+              }
+            }
+          ]
+        }
       ]
     },
     "listWindows": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "listWindows" }
+        "action": {
+          "const": "listWindows"
+        }
       }
     },
     "switchWindow": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "windowId"],
+      "required": [
+        "action",
+        "windowId"
+      ],
       "properties": {
-        "action": { "const": "switchWindow" },
-        "windowId": { "type": "integer" }
+        "action": {
+          "const": "switchWindow"
+        },
+        "windowId": {
+          "type": "integer"
+        }
       }
     },
     "waitForWindow": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "waitForWindow" },
-        "title": { "type": "string", "minLength": 1 },
-        "automationId": { "type": "string", "minLength": 1 },
-        "switchTo": { "type": "boolean" }
+        "action": {
+          "const": "waitForWindow"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "switchTo": {
+          "type": "boolean"
+        }
       },
       "anyOf": [
-        { "required": ["title"] },
-        { "required": ["automationId"] }
+        {
+          "required": [
+            "title"
+          ]
+        },
+        {
+          "required": [
+            "automationId"
+          ]
+        }
       ]
     },
     "waitForWindowClosed": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "waitForWindowClosed" },
-        "title": { "type": "string", "minLength": 1 },
-        "automationId": { "type": "string", "minLength": 1 }
+        "action": {
+          "const": "waitForWindowClosed"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        }
       },
       "anyOf": [
-        { "required": ["title"] },
-        { "required": ["automationId"] }
+        {
+          "required": [
+            "title"
+          ]
+        },
+        {
+          "required": [
+            "automationId"
+          ]
+        }
       ]
     },
     "armOpenFile": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "path"],
+      "required": [
+        "action",
+        "path"
+      ],
       "properties": {
-        "action": { "const": "armOpenFile" },
-        "path": { "type": "string", "minLength": 1 }
+        "action": {
+          "const": "armOpenFile"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "armOpenFileCancel": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "armOpenFileCancel" }
+        "action": {
+          "const": "armOpenFileCancel"
+        }
       }
     },
     "armSaveFile": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "path"],
+      "required": [
+        "action",
+        "path"
+      ],
       "properties": {
-        "action": { "const": "armSaveFile" },
-        "path": { "type": "string", "minLength": 1 }
+        "action": {
+          "const": "armSaveFile"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "armSaveFileCancel": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "armSaveFileCancel" }
+        "action": {
+          "const": "armSaveFileCancel"
+        }
       }
     },
     "armOpenFolder": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "path"],
+      "required": [
+        "action",
+        "path"
+      ],
       "properties": {
-        "action": { "const": "armOpenFolder" },
-        "path": { "type": "string", "minLength": 1 }
+        "action": {
+          "const": "armOpenFolder"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "armOpenFolderCancel": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "armOpenFolderCancel" }
+        "action": {
+          "const": "armOpenFolderCancel"
+        }
       }
     },
     "armMessageBox": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "result"],
+      "required": [
+        "action",
+        "result"
+      ],
       "properties": {
-        "action": { "const": "armMessageBox" },
+        "action": {
+          "const": "armMessageBox"
+        },
         "result": {
           "type": "string",
-          "enum": ["None", "OK", "Cancel", "Yes", "No"]
+          "enum": [
+            "None",
+            "OK",
+            "Cancel",
+            "Yes",
+            "No"
+          ]
         }
       }
     },
     "invokeOpeningWindow": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "automationId"],
+      "required": [
+        "action"
+      ],
       "properties": {
-        "action": { "const": "invokeOpeningWindow" },
-        "automationId": { "type": "string", "minLength": 1 },
-        "waitForNewWindow": { "type": "boolean" }
-      }
+        "action": {
+          "const": "invokeOpeningWindow"
+        },
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "waitForNewWindow": {
+          "type": "boolean"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "automationId"
+          ],
+          "not": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "required": [
+            "target"
+          ],
+          "not": {
+            "required": [
+              "automationId"
+            ]
+          }
+        }
+      ]
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Public element selector. Sets at least one string criterion.",
+      "properties": {
+        "automationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "controlType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nearAutomationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nth": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "automationId"
+          ]
+        },
+        {
+          "required": [
+            "name"
+          ]
+        },
+        {
+          "required": [
+            "controlType"
+          ]
+        },
+        {
+          "required": [
+            "nearAutomationId"
+          ]
+        }
+      ]
     }
   }
 }

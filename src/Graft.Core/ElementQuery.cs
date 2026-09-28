@@ -144,11 +144,24 @@ public sealed class ElementQuery
     public Task DragAsync(string toAutomationId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(toAutomationId);
+        return DragAsync(Selector.ByAutomationId(toAutomationId), cancellationToken);
+    }
+
+    /// <summary>
+    /// Waits until this element is actionable, then drags to <paramref name="to"/> (SendInput).
+    /// </summary>
+    /// <param name="to">Drop target selector.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that completes when drag succeeds.</returns>
+    public Task DragAsync(Selector to, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(to);
+        var label = !string.IsNullOrWhiteSpace(to.AutomationId) ? to.AutomationId : to.Name ?? to.ControlType ?? "(selector)";
         return RunActionAsync(
             FailureSteps.Drag,
-            target => _session.Connection.DragAsync(target, new SelectorQuery { AutomationId = toAutomationId }, cancellationToken),
+            target => _session.Connection.DragAsync(target, to.ToQuery(), cancellationToken),
             cancellationToken,
-            detail: id => $"{id}->{toAutomationId}"
+            detail: id => $"{id}->{label}"
         );
     }
 

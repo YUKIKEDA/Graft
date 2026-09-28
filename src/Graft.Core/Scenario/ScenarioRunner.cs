@@ -52,77 +52,71 @@ public static class ScenarioRunner
 
                     case InvokeOperation invoke:
                         EnsureSession(session);
-                        await session!.GetByAutomationId(invoke.AutomationId).InvokeAsync(cancellationToken).ConfigureAwait(false);
+                        await session!.GetBy(invoke.Target).InvokeAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case RightClickOperation rightClick:
                         EnsureSession(session);
-                        await session!.GetByAutomationId(rightClick.AutomationId).RightClickAsync(cancellationToken).ConfigureAwait(false);
+                        await session!.GetBy(rightClick.Target).RightClickAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case DoubleClickOperation doubleClick:
                         EnsureSession(session);
-                        await session!.GetByAutomationId(doubleClick.AutomationId).DoubleClickAsync(cancellationToken).ConfigureAwait(false);
+                        await session!.GetBy(doubleClick.Target).DoubleClickAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case HoverOperation hover:
                         EnsureSession(session);
-                        await session!.GetByAutomationId(hover.AutomationId).HoverAsync(cancellationToken).ConfigureAwait(false);
+                        await session!.GetBy(hover.Target).HoverAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case DragOperation drag:
                         EnsureSession(session);
-                        await session!.GetByAutomationId(drag.AutomationId).DragAsync(drag.ToAutomationId, cancellationToken).ConfigureAwait(false);
+                        await session!.GetBy(drag.Target).DragAsync(drag.To, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ClickAtOperation clickAt:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(clickAt.AutomationId)
-                            .ClickAtAsync(clickAt.OffsetX, clickAt.OffsetY, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetBy(clickAt.Target).ClickAtAsync(clickAt.OffsetX, clickAt.OffsetY, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case WheelOperation wheel:
                         EnsureSession(session);
-                        await session!.GetByAutomationId(wheel.AutomationId).WheelAsync(wheel.Delta, cancellationToken).ConfigureAwait(false);
+                        await session!.GetBy(wheel.Target).WheelAsync(wheel.Delta, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case SetValueOperation setValue:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(setValue.AutomationId)
-                            .SetValueAsync(setValue.Value, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetBy(setValue.Target).SetValueAsync(setValue.Value, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ToggleOperation toggle:
                         EnsureSession(session);
-                        await session!.GetByAutomationId(toggle.AutomationId).ToggleAsync(cancellationToken).ConfigureAwait(false);
+                        await session!.GetBy(toggle.Target).ToggleAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case SendKeysOperation sendKeys:
                         EnsureSession(session);
-                        await session!.GetByAutomationId(sendKeys.AutomationId).SendKeysAsync(sendKeys.Text, cancellationToken).ConfigureAwait(false);
+                        await session!.GetBy(sendKeys.Target).SendKeysAsync(sendKeys.Text, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case TypeHumanOperation typeHuman:
                         EnsureSession(session);
                         await session!
-                            .GetByAutomationId(typeHuman.AutomationId)
+                            .GetBy(typeHuman.Target)
                             .TypeHumanAsync(typeHuman.Text, TimeSpan.FromMilliseconds(typeHuman.DelayMs), cancellationToken)
                             .ConfigureAwait(false);
                         break;
 
                     case PressKeysOperation pressKeys:
                         EnsureSession(session);
-                        await session!.GetByAutomationId(pressKeys.AutomationId).PressAsync(pressKeys.Keys, cancellationToken).ConfigureAwait(false);
+                        await session!.GetBy(pressKeys.Target).PressAsync(pressKeys.Keys, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ScreenshotOperation screenshot:
                         EnsureSession(session);
-                        var shot = screenshot.AutomationId is { } shotId
-                            ? await session!.GetByAutomationId(shotId).ScreenshotAsync(cancellationToken).ConfigureAwait(false)
+                        var shot = screenshot.Target is { } shotTarget
+                            ? await session!.GetBy(shotTarget).ScreenshotAsync(cancellationToken).ConfigureAwait(false)
                             : await session!.ScreenshotAsync(cancellationToken).ConfigureAwait(false);
                         await shot.SaveAsync(screenshot.Path, cancellationToken).ConfigureAwait(false);
                         break;
@@ -131,14 +125,11 @@ public static class ScenarioRunner
                         EnsureSession(session);
                         if (scroll.Index is { } scrollIndex)
                         {
-                            await session!
-                                .GetByAutomationId(scroll.AutomationId)
-                                .ScrollIntoViewAsync(scrollIndex, cancellationToken)
-                                .ConfigureAwait(false);
+                            await session!.GetBy(scroll.Target).ScrollIntoViewAsync(scrollIndex, cancellationToken).ConfigureAwait(false);
                         }
                         else
                         {
-                            await session!.GetByAutomationId(scroll.AutomationId).ScrollIntoViewAsync(cancellationToken).ConfigureAwait(false);
+                            await session!.GetBy(scroll.Target).ScrollIntoViewAsync(cancellationToken).ConfigureAwait(false);
                         }
 
                         break;
@@ -147,64 +138,49 @@ public static class ScenarioRunner
                         EnsureSession(session);
                         if (select.Key is not null)
                         {
-                            await session!.GetByAutomationId(select.AutomationId).SelectAsync(select.Key, cancellationToken).ConfigureAwait(false);
+                            await session!.GetBy(select.Target).SelectAsync(select.Key, cancellationToken).ConfigureAwait(false);
                         }
                         else
                         {
-                            await session!
-                                .GetByAutomationId(select.AutomationId)
-                                .SelectAsync(select.Index!.Value, cancellationToken)
-                                .ConfigureAwait(false);
+                            await session!.GetBy(select.Target).SelectAsync(select.Index!.Value, cancellationToken).ConfigureAwait(false);
                         }
 
                         break;
 
                     case SelectManyOperation selectMany:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(selectMany.AutomationId)
-                            .SelectManyAsync(selectMany.Indexes, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetBy(selectMany.Target).SelectManyAsync(selectMany.Indexes, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case SelectMenuOperation selectMenu:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(selectMenu.AutomationId)
-                            .SelectMenuAsync(selectMenu.Path, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetBy(selectMenu.Target).SelectMenuAsync(selectMenu.Path, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case SelectTreeOperation selectTree:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(selectTree.AutomationId)
-                            .SelectTreeAsync(selectTree.Path, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetBy(selectTree.Target).SelectTreeAsync(selectTree.Path, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ExpandOperation expand:
                         EnsureSession(session);
-                        await session!.GetByAutomationId(expand.AutomationId).ExpandAsync(cancellationToken).ConfigureAwait(false);
+                        await session!.GetBy(expand.Target).ExpandAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case CollapseOperation collapse:
                         EnsureSession(session);
-                        await session!.GetByAutomationId(collapse.AutomationId).CollapseAsync(cancellationToken).ConfigureAwait(false);
+                        await session!.GetBy(collapse.Target).CollapseAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ExpectNameOperation expectName:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(expectName.AutomationId)
-                            .ExpectNameAsync(expectName.Name, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetBy(expectName.Target).ExpectNameAsync(expectName.Name, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ExpectSelectedOperation expectSelected:
                         EnsureSession(session);
                         await session!
-                            .GetByAutomationId(expectSelected.AutomationId)
+                            .GetBy(expectSelected.Target)
                             .ExpectSelectedAsync(expectSelected.Selected, cancellationToken)
                             .ConfigureAwait(false);
                         break;
@@ -212,44 +188,35 @@ public static class ScenarioRunner
                     case ExpectExpandedOperation expectExpanded:
                         EnsureSession(session);
                         await session!
-                            .GetByAutomationId(expectExpanded.AutomationId)
+                            .GetBy(expectExpanded.Target)
                             .ExpectExpandedAsync(expectExpanded.Expanded, cancellationToken)
                             .ConfigureAwait(false);
                         break;
 
                     case ExpectCheckedOperation expectChecked:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(expectChecked.AutomationId)
-                            .ExpectCheckedAsync(expectChecked.Checked, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetBy(expectChecked.Target).ExpectCheckedAsync(expectChecked.Checked, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ExpectEnabledOperation expectEnabled:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(expectEnabled.AutomationId)
-                            .ExpectEnabledAsync(expectEnabled.Enabled, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetBy(expectEnabled.Target).ExpectEnabledAsync(expectEnabled.Enabled, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ExpectVisibleOperation expectVisible:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(expectVisible.AutomationId)
-                            .ExpectVisibleAsync(expectVisible.Visible, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetBy(expectVisible.Target).ExpectVisibleAsync(expectVisible.Visible, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ExpectFocusedOperation expectFocused:
                         EnsureSession(session);
-                        await session!.GetByAutomationId(expectFocused.AutomationId).ExpectFocusedAsync(cancellationToken).ConfigureAwait(false);
+                        await session!.GetBy(expectFocused.Target).ExpectFocusedAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ExpectNameContainsOperation expectNameContains:
                         EnsureSession(session);
                         await session!
-                            .GetByAutomationId(expectNameContains.AutomationId)
+                            .GetBy(expectNameContains.Target)
                             .ExpectNameContainsAsync(expectNameContains.Substring, cancellationToken)
                             .ConfigureAwait(false);
                         break;
@@ -257,46 +224,40 @@ public static class ScenarioRunner
                     case ExpectNameMatchesOperation expectNameMatches:
                         EnsureSession(session);
                         await session!
-                            .GetByAutomationId(expectNameMatches.AutomationId)
+                            .GetBy(expectNameMatches.Target)
                             .ExpectNameMatchesAsync(expectNameMatches.Pattern, cancellationToken)
                             .ConfigureAwait(false);
                         break;
 
                     case ExpectValueOperation expectValue:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(expectValue.AutomationId)
-                            .ExpectValueAsync(expectValue.Value, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetBy(expectValue.Target).ExpectValueAsync(expectValue.Value, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ExpectToolTipOperation expectToolTip:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(expectToolTip.AutomationId)
-                            .ExpectToolTipAsync(expectToolTip.ToolTip, cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetBy(expectToolTip.Target).ExpectToolTipAsync(expectToolTip.ToolTip, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case WaitForOperation waitFor:
                         EnsureSession(session);
-                        await session!.GetByAutomationId(waitFor.AutomationId).WaitForAsync(cancellationToken).ConfigureAwait(false);
+                        await session!.GetBy(waitFor.Target).WaitForAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ExpectGoneOperation expectGone:
                         EnsureSession(session);
-                        await session!.GetByAutomationId(expectGone.AutomationId).ExpectGoneAsync(cancellationToken).ConfigureAwait(false);
+                        await session!.GetBy(expectGone.Target).ExpectGoneAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case GetCellTextOperation getCellText:
                         EnsureSession(session);
                         _ = getCellText.ColumnKey is null
                             ? await session!
-                                .GetByAutomationId(getCellText.AutomationId)
+                                .GetBy(getCellText.Target)
                                 .GetCellTextAsync(getCellText.Row, getCellText.Column!.Value, cancellationToken)
                                 .ConfigureAwait(false)
                             : await session!
-                                .GetByAutomationId(getCellText.AutomationId)
+                                .GetBy(getCellText.Target)
                                 .GetCellTextAsync(getCellText.Row, getCellText.ColumnKey, cancellationToken)
                                 .ConfigureAwait(false);
                         break;
@@ -306,14 +267,14 @@ public static class ScenarioRunner
                         if (setCellValue.ColumnKey is null)
                         {
                             await session!
-                                .GetByAutomationId(setCellValue.AutomationId)
+                                .GetBy(setCellValue.Target)
                                 .SetCellValueAsync(setCellValue.Row, setCellValue.Column!.Value, setCellValue.Value, cancellationToken)
                                 .ConfigureAwait(false);
                         }
                         else
                         {
                             await session!
-                                .GetByAutomationId(setCellValue.AutomationId)
+                                .GetBy(setCellValue.Target)
                                 .SetCellValueAsync(setCellValue.Row, setCellValue.ColumnKey, setCellValue.Value, cancellationToken)
                                 .ConfigureAwait(false);
                         }
@@ -325,14 +286,14 @@ public static class ScenarioRunner
                         if (selectCell.ColumnKey is null)
                         {
                             await session!
-                                .GetByAutomationId(selectCell.AutomationId)
+                                .GetBy(selectCell.Target)
                                 .SelectCellAsync(selectCell.Row, selectCell.Column!.Value, cancellationToken)
                                 .ConfigureAwait(false);
                         }
                         else
                         {
                             await session!
-                                .GetByAutomationId(selectCell.AutomationId)
+                                .GetBy(selectCell.Target)
                                 .SelectCellAsync(selectCell.Row, selectCell.ColumnKey, cancellationToken)
                                 .ConfigureAwait(false);
                         }
@@ -342,7 +303,7 @@ public static class ScenarioRunner
                     case SelectRowOperation selectRow:
                         EnsureSession(session);
                         await session!
-                            .GetByAutomationId(selectRow.AutomationId)
+                            .GetBy(selectRow.Target)
                             .SelectRowAsync(selectRow.ColumnKey, selectRow.Value, cancellationToken)
                             .ConfigureAwait(false);
                         break;
@@ -350,22 +311,19 @@ public static class ScenarioRunner
                     case ClickColumnHeaderOperation clickColumnHeader:
                         EnsureSession(session);
                         await session!
-                            .GetByAutomationId(clickColumnHeader.AutomationId)
+                            .GetBy(clickColumnHeader.Target)
                             .ClickColumnHeaderAsync(clickColumnHeader.ColumnKey, cancellationToken)
                             .ConfigureAwait(false);
                         break;
 
                     case AddRowOperation addRow:
                         EnsureSession(session);
-                        await session!.GetByAutomationId(addRow.AutomationId).AddRowAsync(cancellationToken).ConfigureAwait(false);
+                        await session!.GetBy(addRow.Target).AddRowAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case DeleteSelectedRowsOperation deleteSelectedRows:
                         EnsureSession(session);
-                        await session!
-                            .GetByAutomationId(deleteSelectedRows.AutomationId)
-                            .DeleteSelectedRowsAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        await session!.GetBy(deleteSelectedRows.Target).DeleteSelectedRowsAsync(cancellationToken).ConfigureAwait(false);
                         break;
 
                     case ExpectCellTextOperation expectCellText:
@@ -373,14 +331,14 @@ public static class ScenarioRunner
                         if (expectCellText.ColumnKey is null)
                         {
                             await session!
-                                .GetByAutomationId(expectCellText.AutomationId)
+                                .GetBy(expectCellText.Target)
                                 .ExpectCellTextAsync(expectCellText.Row, expectCellText.Column!.Value, expectCellText.Text, cancellationToken)
                                 .ConfigureAwait(false);
                         }
                         else
                         {
                             await session!
-                                .GetByAutomationId(expectCellText.AutomationId)
+                                .GetBy(expectCellText.Target)
                                 .ExpectCellTextAsync(expectCellText.Row, expectCellText.ColumnKey, expectCellText.Text, cancellationToken)
                                 .ConfigureAwait(false);
                         }
@@ -449,7 +407,7 @@ public static class ScenarioRunner
                     case InvokeOpeningWindowOperation invokeOpening:
                         EnsureSession(session);
                         _ = await session!
-                            .GetByAutomationId(invokeOpening.AutomationId)
+                            .GetBy(invokeOpening.Target)
                             .InvokeOpeningWindowAsync(invokeOpening.WaitForNewWindow, cancellationToken)
                             .ConfigureAwait(false);
                         break;
