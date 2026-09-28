@@ -1,7 +1,9 @@
+using Graft.Core.Selectors;
+
 namespace Graft.Core.Scenario;
 
 /// <summary>
 /// Invoke an element by automation id.
 /// </summary>
-/// <param name="AutomationId">Target automation id.</param>
-public sealed record InvokeOperation(string AutomationId) : ScenarioOperation(ScenarioActions.Invoke);
+/// <param name="Target">Target automation id.</param>
+public sealed record InvokeOperation(Selector Target) : ScenarioOperation(ScenarioActions.Invoke);

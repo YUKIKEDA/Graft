@@ -34,6 +34,39 @@ public sealed class ScenarioE2ETests
     }
 
     /// <summary>
+    /// A nested target invokes SampleClickMe and expects StatusText.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - SampleWpfApp.csproj can build with Configuration=GraftTest
+    /// - SampleButton exposes the accessible name SampleClickMe
+    ///
+    /// Steps:
+    /// - Parse an inline scenario that invokes by name and control type
+    /// - ScenarioRunner.RunAsync with AppPath override
+    ///
+    /// Expected:
+    /// - Scenario completes without GraftException
+    /// </remarks>
+    [Fact]
+    public async Task Invoke_ByName_Passes()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "launch", "appPath": "SampleWpfApp.csproj" },
+                { "action": "invoke", "target": { "name": "SampleClickMe", "controlType": "Button" } },
+                { "action": "expectName", "automationId": "StatusText", "name": "Clicked 1" }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        await ScenarioRunner.RunAsync(scenario, new ScenarioRunOptions { AppPath = SampleWpfLaunch.AppPath });
+    }
+
+    /// <summary>
     /// actions.scenario.json exercises scrollIntoView / select / expand / collapse.
     /// </summary>
     /// <remarks>

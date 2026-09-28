@@ -90,6 +90,69 @@ public sealed class McpAtomicToolsTests
     }
 
     /// <summary>
+    /// graft_invoke accepts a nested target name and control type.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - Graft.McpServer.dll is built next to the test output
+    /// - SampleWpfApp.csproj can build with GraftTest
+    /// - SampleButton exposes the accessible name SampleClickMe
+    ///
+    /// Steps:
+    /// - graft_launch → graft_invoke(target name SampleClickMe) → graft_expect_name(StatusText, Clicked 1) → graft_dispose
+    ///
+    /// Expected:
+    /// - Each CallToolResult IsError is false and ok=true
+    /// </remarks>
+    [Fact]
+    [Trait("Category", "UI")]
+    public async Task Launch_InvokeByName_Expect_Dispose_Succeeds()
+    {
+        var serverDll = Path.Combine(AppContext.BaseDirectory, "Graft.McpServer.dll");
+        Assert.True(File.Exists(serverDll), $"Missing server assembly: {serverDll}");
+
+        var transport = new StdioClientTransport(
+            new StdioClientTransportOptions
+            {
+                Name = "Graft.McpServer",
+                Command = "dotnet",
+                Arguments = ["exec", serverDll],
+                EnvironmentVariables = new Dictionary<string, string?>
+                {
+                    [McpPathPolicy.AllowedRootsEnvironmentVariable] = SampleWpfAppLocator.ResolveRepoRoot(),
+                },
+            }
+        );
+
+        await using var client = await McpClient.CreateAsync(transport);
+        var appPath = SampleWpfAppLocator.ResolveProjectPath();
+
+        await AssertOkAsync(
+            client,
+            "graft_launch",
+            new Dictionary<string, object?>
+            {
+                ["appPath"] = appPath,
+                ["configuration"] = "GraftTest",
+                ["timeoutSeconds"] = 60,
+            }
+        );
+
+        await AssertOkAsync(
+            client,
+            "graft_invoke",
+            new Dictionary<string, object?>
+            {
+                ["target"] = new Dictionary<string, object?> { ["name"] = "SampleClickMe", ["controlType"] = "Button" },
+            }
+        );
+
+        await AssertOkAsync(client, "graft_expect_name", new Dictionary<string, object?> { ["automationId"] = "StatusText", ["name"] = "Clicked 1" });
+
+        await AssertOkAsync(client, "graft_dispose", new Dictionary<string, object?>());
+    }
+
+    /// <summary>
     /// graft_invoke without launch returns IsError.
     /// </summary>
     /// <remarks>

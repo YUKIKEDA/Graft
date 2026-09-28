@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Text.Json.Nodes;
 using Graft.Core;
+using Graft.Core.Selectors;
 using Graft.McpServer.Security;
 using Graft.McpServer.Session;
 using Graft.Protocol;
@@ -84,18 +85,20 @@ public sealed partial class GraftAtomicTools
     /// Invokes an element by automation id.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_invoke")]
     [Description("Invoke (click) an element by automationId in the open session.")]
     public partial Task<CallToolResult> Invoke(
-        [Description("Target automation id.")] string automationId,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).InvokeAsync(cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).InvokeAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -105,18 +108,20 @@ public sealed partial class GraftAtomicTools
     /// Right-clicks an element by automation id.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_right_click")]
     [Description("rightClick an element by automationId in the open session.")]
     public partial Task<CallToolResult> RightClick(
-        [Description("Target automation id.")] string automationId,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).RightClickAsync(cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).RightClickAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -126,18 +131,20 @@ public sealed partial class GraftAtomicTools
     /// Double-clicks an element by automation id.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_double_click")]
     [Description("doubleClick an element by automationId in the open session.")]
     public partial Task<CallToolResult> DoubleClick(
-        [Description("Target automation id.")] string automationId,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).DoubleClickAsync(cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).DoubleClickAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -147,18 +154,20 @@ public sealed partial class GraftAtomicTools
     /// Hovers over an element by automation id.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_hover")]
     [Description("hover over an element by automationId in the open session.")]
     public partial Task<CallToolResult> Hover(
-        [Description("Target automation id.")] string automationId,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).HoverAsync(cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).HoverAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -168,20 +177,27 @@ public sealed partial class GraftAtomicTools
     /// Drags from one element to another by automation id.
     /// </summary>
     /// <param name="automationId">Source automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="toAutomationId">Target automation id.</param>
+    /// <param name="to">Destination selector. Omit when <paramref name="toAutomationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_drag")]
     [Description("drag from automationId to toAutomationId in the open session.")]
     public partial Task<CallToolResult> Drag(
-        [Description("Source automation id.")] string automationId,
-        [Description("Target automation id.")] string toAutomationId,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
+        [Description("Destination automation id. Omit when to is set.")] string? toAutomationId = null,
+        [Description("Destination selector. Omit when toAutomationId is set.")] Selector? to = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).DragAsync(toAutomationId, cancellationToken).ConfigureAwait(false);
+                await session
+                    .GetBy(McpSelectors.Require(automationId, target))
+                    .DragAsync(McpSelectors.RequireSide(toAutomationId, to, "toAutomationId", "to"), cancellationToken)
+                    .ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["toAutomationId"] = toAutomationId });
             },
             cancellationToken
@@ -190,23 +206,28 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Left-clicks at clickable point plus DIP offsets.
     /// </summary>
-    /// <param name="automationId">Target automation id.</param>
     /// <param name="offsetX">Horizontal DIP offset from clickable point.</param>
     /// <param name="offsetY">Vertical DIP offset from clickable point.</param>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_click_at")]
     [Description("clickAt an element with DIP offsets in the open session.")]
     public partial Task<CallToolResult> ClickAt(
-        [Description("Target automation id.")] string automationId,
         [Description("Horizontal DIP offset from clickable point.")] double offsetX,
         [Description("Vertical DIP offset from clickable point.")] double offsetY,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).ClickAtAsync(offsetX, offsetY, cancellationToken).ConfigureAwait(false);
+                await session
+                    .GetBy(McpSelectors.Require(automationId, target))
+                    .ClickAtAsync(offsetX, offsetY, cancellationToken)
+                    .ConfigureAwait(false);
                 return ToolResults.Ok(
                     new JsonObject
                     {
@@ -222,21 +243,23 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Scrolls the mouse wheel over an element.
     /// </summary>
-    /// <param name="automationId">Target automation id.</param>
     /// <param name="delta">Wheel delta (typically multiples of 120).</param>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_wheel")]
     [Description("wheel over an element by automationId in the open session.")]
     public partial Task<CallToolResult> Wheel(
-        [Description("Target automation id.")] string automationId,
         [Description("Wheel delta (typically multiples of 120).")] int delta,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).WheelAsync(delta, cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).WheelAsync(delta, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["delta"] = delta });
             },
             cancellationToken
@@ -245,21 +268,23 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Sets an element's value by automation id.
     /// </summary>
-    /// <param name="automationId">Target automation id.</param>
     /// <param name="value">Replacement text.</param>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_set_value")]
     [Description("setValue on an element by automationId in the open session.")]
     public partial Task<CallToolResult> SetValue(
-        [Description("Target automation id.")] string automationId,
         [Description("Replacement text.")] string value,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).SetValueAsync(value, cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).SetValueAsync(value, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["value"] = value });
             },
             cancellationToken
@@ -269,18 +294,20 @@ public sealed partial class GraftAtomicTools
     /// Toggles an element by automation id.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_toggle")]
     [Description("Toggle an element by automationId in the open session.")]
     public partial Task<CallToolResult> Toggle(
-        [Description("Target automation id.")] string automationId,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).ToggleAsync(cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).ToggleAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -289,21 +316,23 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Types literal text into an element by automation id.
     /// </summary>
-    /// <param name="automationId">Target automation id.</param>
     /// <param name="text">Literal text (no chord DSL).</param>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_send_keys")]
     [Description("sendKeys (literal text) to an element by automationId in the open session.")]
     public partial Task<CallToolResult> SendKeys(
-        [Description("Target automation id.")] string automationId,
         [Description("Literal text to type.")] string text,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).SendKeysAsync(text, cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).SendKeysAsync(text, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["text"] = text });
             },
             cancellationToken
@@ -312,24 +341,26 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Types literal text one Unicode scalar at a time, waiting between scalars.
     /// </summary>
-    /// <param name="automationId">Target automation id.</param>
     /// <param name="text">Literal text (no chord DSL).</param>
     /// <param name="delayMs">Milliseconds to wait between scalars. Zero is allowed.</param>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_type_human")]
     [Description("typeHuman (literal text with a delay between characters) on an element by automationId in the open session.")]
     public partial Task<CallToolResult> TypeHuman(
-        [Description("Target automation id.")] string automationId,
         [Description("Literal text to type.")] string text,
         [Description("Milliseconds to wait between characters. Zero types one character at a time with no extra pause.")] int delayMs,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
                 await session
-                    .GetByAutomationId(automationId)
+                    .GetBy(McpSelectors.Require(automationId, target))
                     .TypeHumanAsync(text, TimeSpan.FromMilliseconds(delayMs), cancellationToken)
                     .ConfigureAwait(false);
                 return ToolResults.Ok(
@@ -347,21 +378,23 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Presses one keyboard chord on an element by automation id.
     /// </summary>
-    /// <param name="automationId">Target automation id.</param>
     /// <param name="keys">Chord DSL (e.g. <c>Control+A</c>).</param>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_press_keys")]
     [Description("pressKeys: one keyboard chord (e.g. Control+A, Delete) on an element by automationId.")]
     public partial Task<CallToolResult> PressKeys(
-        [Description("Target automation id.")] string automationId,
         [Description("Chord DSL (one chord per call).")] string keys,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).PressAsync(keys, cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).PressAsync(keys, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["keys"] = keys });
             },
             cancellationToken
@@ -371,20 +404,22 @@ public sealed partial class GraftAtomicTools
     /// Scrolls an element or list item into view.
     /// </summary>
     /// <param name="automationId">Element or list automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="index">Optional list item index.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result including realized identity.</returns>
     [McpServerTool(Name = "graft_scroll_into_view")]
     [Description("scrollIntoView for an element or list item (optional index) in the open session.")]
     public partial Task<CallToolResult> ScrollIntoView(
-        [Description("Target element or list automation id.")] string automationId,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         [Description("Optional zero-based list item index.")] int? index = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                var query = session.GetByAutomationId(automationId);
+                var query = session.GetBy(McpSelectors.Require(automationId, target));
                 var identity = index is null
                     ? await query.ScrollIntoViewAsync(cancellationToken).ConfigureAwait(false)
                     : await query.ScrollIntoViewAsync(index.Value, cancellationToken).ConfigureAwait(false);
@@ -407,21 +442,23 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Selects a list/combo item by index.
     /// </summary>
-    /// <param name="automationId">List or combo automation id.</param>
     /// <param name="index">Zero-based item index.</param>
+    /// <param name="automationId">List or combo automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_select")]
     [Description("Select a single list/combo item by index in the open session.")]
     public partial Task<CallToolResult> Select(
-        [Description("List or combo automation id.")] string automationId,
         [Description("Zero-based item index.")] int index,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).SelectAsync(index, cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).SelectAsync(index, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["index"] = index });
             },
             cancellationToken
@@ -430,21 +467,23 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Selects a list/combo/tab item by display name key.
     /// </summary>
-    /// <param name="automationId">List or combo automation id.</param>
     /// <param name="key">Item name key.</param>
+    /// <param name="automationId">List or combo automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_select_by_key")]
     [Description("Select a list/combo/tab item by name key in the open session.")]
     public partial Task<CallToolResult> SelectByKey(
-        [Description("List or combo automation id.")] string automationId,
         [Description("Item display / automation name.")] string key,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).SelectAsync(key, cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).SelectAsync(key, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["key"] = key });
             },
             cancellationToken
@@ -453,21 +492,23 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Selects a TreeView path under a TreeView root.
     /// </summary>
-    /// <param name="automationId">TreeView automation id.</param>
     /// <param name="path">Slash-separated AutomationId path.</param>
+    /// <param name="automationId">TreeView automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_select_tree")]
     [Description("selectTree under TreeView automationId via slash-separated AutomationId path.")]
     public partial Task<CallToolResult> SelectTree(
-        [Description("TreeView automation id.")] string automationId,
         [Description("Slash-separated AutomationId path (root not included).")] string path,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).SelectTreeAsync(path, cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).SelectTreeAsync(path, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["path"] = path });
             },
             cancellationToken
@@ -476,22 +517,24 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Replaces ListBox or DataGrid multi-selection by indexes (empty clears).
     /// </summary>
-    /// <param name="automationId">ListBox or DataGrid automation id.</param>
     /// <param name="indexes">Zero-based item/row indexes.</param>
+    /// <param name="automationId">ListBox or DataGrid automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_select_many")]
     [Description("Replace ListBox or DataGrid multi-selection by indexes in the open session (empty clears).")]
     public partial Task<CallToolResult> SelectMany(
-        [Description("ListBox or DataGrid automation id.")] string automationId,
         [Description("Zero-based item/row indexes (empty clears selection).")] int[] indexes,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
                 ArgumentNullException.ThrowIfNull(indexes);
-                await session.GetByAutomationId(automationId).SelectManyAsync(indexes, cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).SelectManyAsync(indexes, cancellationToken).ConfigureAwait(false);
                 var indexesJson = new JsonArray();
                 foreach (var index in indexes)
                 {
@@ -506,21 +549,23 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Selects a menu path under a Menu or open ContextMenu by automation id.
     /// </summary>
-    /// <param name="automationId">Menu or open ContextMenu automation id.</param>
     /// <param name="path">Slash-separated AutomationId segments (root not included).</param>
+    /// <param name="automationId">Menu or open ContextMenu automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_select_menu")]
     [Description("selectMenu under Menu/ContextMenu automationId via slash-separated AutomationId path.")]
     public partial Task<CallToolResult> SelectMenu(
-        [Description("Menu or open ContextMenu automation id.")] string automationId,
         [Description("Slash-separated AutomationId path (root not included).")] string path,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).SelectMenuAsync(path, cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).SelectMenuAsync(path, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["path"] = path });
             },
             cancellationToken
@@ -529,8 +574,9 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Reads DataGrid cell display text by row and column index or Header key.
     /// </summary>
-    /// <param name="automationId">DataGrid automation id.</param>
     /// <param name="row">Zero-based row index.</param>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="column">Zero-based column index (xor columnKey).</param>
     /// <param name="columnKey">Column Header string (xor column).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -538,8 +584,9 @@ public sealed partial class GraftAtomicTools
     [McpServerTool(Name = "graft_get_cell_text")]
     [Description("Get DataGrid cell text by row and column index or columnKey (Header) in the open session.")]
     public partial Task<CallToolResult> GetCellText(
-        [Description("DataGrid automation id.")] string automationId,
         [Description("Zero-based row index.")] int row,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         [Description("Column index (xor columnKey).")] int? column = null,
         [Description("Column Header (xor column).")] string? columnKey = null,
         CancellationToken cancellationToken = default
@@ -549,8 +596,14 @@ public sealed partial class GraftAtomicTools
             {
                 EnsureColumnXor(column, columnKey);
                 var text = columnKey is null
-                    ? await session.GetByAutomationId(automationId).GetCellTextAsync(row, column!.Value, cancellationToken).ConfigureAwait(false)
-                    : await session.GetByAutomationId(automationId).GetCellTextAsync(row, columnKey, cancellationToken).ConfigureAwait(false);
+                    ? await session
+                        .GetBy(McpSelectors.Require(automationId, target))
+                        .GetCellTextAsync(row, column!.Value, cancellationToken)
+                        .ConfigureAwait(false)
+                    : await session
+                        .GetBy(McpSelectors.Require(automationId, target))
+                        .GetCellTextAsync(row, columnKey, cancellationToken)
+                        .ConfigureAwait(false);
                 var payload = new JsonObject
                 {
                     ["automationId"] = automationId,
@@ -574,9 +627,10 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Sets a DataGrid cell value by row and column index or Header key.
     /// </summary>
-    /// <param name="automationId">DataGrid automation id.</param>
     /// <param name="row">Zero-based row index.</param>
     /// <param name="value">Replacement text (CheckBox: True/False).</param>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="column">Zero-based column index (xor columnKey).</param>
     /// <param name="columnKey">Column Header string (xor column).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -584,9 +638,10 @@ public sealed partial class GraftAtomicTools
     [McpServerTool(Name = "graft_set_cell_value")]
     [Description("Set DataGrid cell value by row and column index or columnKey (Header) in the open session.")]
     public partial Task<CallToolResult> SetCellValue(
-        [Description("DataGrid automation id.")] string automationId,
         [Description("Zero-based row index.")] int row,
         [Description("Replacement text (CheckBox: True/False).")] string value,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         [Description("Column index (xor columnKey).")] int? column = null,
         [Description("Column Header (xor column).")] string? columnKey = null,
         CancellationToken cancellationToken = default
@@ -598,13 +653,16 @@ public sealed partial class GraftAtomicTools
                 if (columnKey is null)
                 {
                     await session
-                        .GetByAutomationId(automationId)
+                        .GetBy(McpSelectors.Require(automationId, target))
                         .SetCellValueAsync(row, column!.Value, value, cancellationToken)
                         .ConfigureAwait(false);
                 }
                 else
                 {
-                    await session.GetByAutomationId(automationId).SetCellValueAsync(row, columnKey, value, cancellationToken).ConfigureAwait(false);
+                    await session
+                        .GetBy(McpSelectors.Require(automationId, target))
+                        .SetCellValueAsync(row, columnKey, value, cancellationToken)
+                        .ConfigureAwait(false);
                 }
 
                 var payload = new JsonObject
@@ -630,8 +688,9 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Selects a DataGrid cell by row and column index or Header key.
     /// </summary>
-    /// <param name="automationId">DataGrid automation id.</param>
     /// <param name="row">Zero-based row index.</param>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="column">Zero-based column index (xor columnKey).</param>
     /// <param name="columnKey">Column Header string (xor column).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -639,8 +698,9 @@ public sealed partial class GraftAtomicTools
     [McpServerTool(Name = "graft_select_cell")]
     [Description("selectCell on a DataGrid by row and column/columnKey in the open session.")]
     public Task<CallToolResult> SelectCell(
-        [Description("DataGrid automation id.")] string automationId,
         [Description("Zero-based row index.")] int row,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         [Description("Column index (xor columnKey).")] int? column = null,
         [Description("Column Header (xor column).")] string? columnKey = null,
         CancellationToken cancellationToken = default
@@ -651,11 +711,17 @@ public sealed partial class GraftAtomicTools
                 EnsureColumnXor(column, columnKey);
                 if (columnKey is null)
                 {
-                    await session.GetByAutomationId(automationId).SelectCellAsync(row, column!.Value, cancellationToken).ConfigureAwait(false);
+                    await session
+                        .GetBy(McpSelectors.Require(automationId, target))
+                        .SelectCellAsync(row, column!.Value, cancellationToken)
+                        .ConfigureAwait(false);
                 }
                 else
                 {
-                    await session.GetByAutomationId(automationId).SelectCellAsync(row, columnKey, cancellationToken).ConfigureAwait(false);
+                    await session
+                        .GetBy(McpSelectors.Require(automationId, target))
+                        .SelectCellAsync(row, columnKey, cancellationToken)
+                        .ConfigureAwait(false);
                 }
 
                 var payload = new JsonObject { ["automationId"] = automationId, ["row"] = row };
@@ -676,23 +742,28 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Selects a DataGrid row by column Header key and cell value.
     /// </summary>
-    /// <param name="automationId">DataGrid automation id.</param>
     /// <param name="columnKey">Column Header string.</param>
     /// <param name="value">Exact cell display text.</param>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_select_row")]
     [Description("selectRow on a DataGrid by columnKey + value in the open session.")]
     public Task<CallToolResult> SelectRow(
-        [Description("DataGrid automation id.")] string automationId,
         [Description("Column Header.")] string columnKey,
         [Description("Exact cell display text.")] string value,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).SelectRowAsync(columnKey, value, cancellationToken).ConfigureAwait(false);
+                await session
+                    .GetBy(McpSelectors.Require(automationId, target))
+                    .SelectRowAsync(columnKey, value, cancellationToken)
+                    .ConfigureAwait(false);
                 return ToolResults.Ok(
                     new JsonObject
                     {
@@ -708,21 +779,26 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Clicks a DataGrid column header (sort UI).
     /// </summary>
-    /// <param name="automationId">DataGrid automation id.</param>
     /// <param name="columnKey">Column Header string.</param>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_click_column_header")]
     [Description("clickColumnHeader on a DataGrid in the open session.")]
     public Task<CallToolResult> ClickColumnHeader(
-        [Description("DataGrid automation id.")] string automationId,
         [Description("Column Header.")] string columnKey,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).ClickColumnHeaderAsync(columnKey, cancellationToken).ConfigureAwait(false);
+                await session
+                    .GetBy(McpSelectors.Require(automationId, target))
+                    .ClickColumnHeaderAsync(columnKey, cancellationToken)
+                    .ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["columnKey"] = columnKey });
             },
             cancellationToken
@@ -732,15 +808,20 @@ public sealed partial class GraftAtomicTools
     /// Adds a DataGrid row.
     /// </summary>
     /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_add_row")]
     [Description("addRow on a DataGrid in the open session.")]
-    public Task<CallToolResult> AddRow([Description("DataGrid automation id.")] string automationId, CancellationToken cancellationToken = default) =>
+    public Task<CallToolResult> AddRow(
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
+        CancellationToken cancellationToken = default
+    ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).AddRowAsync(cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).AddRowAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -750,18 +831,20 @@ public sealed partial class GraftAtomicTools
     /// Deletes selected DataGrid rows.
     /// </summary>
     /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_delete_selected_rows")]
     [Description("deleteSelectedRows on a DataGrid in the open session.")]
     public Task<CallToolResult> DeleteSelectedRows(
-        [Description("DataGrid automation id.")] string automationId,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).DeleteSelectedRowsAsync(cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).DeleteSelectedRowsAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -770,9 +853,10 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Expects DataGrid cell display text by row and column index or Header key.
     /// </summary>
-    /// <param name="automationId">DataGrid automation id.</param>
     /// <param name="row">Zero-based row index.</param>
     /// <param name="text">Expected cell text.</param>
+    /// <param name="automationId">DataGrid automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="column">Zero-based column index (xor columnKey).</param>
     /// <param name="columnKey">Column Header string (xor column).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -780,9 +864,10 @@ public sealed partial class GraftAtomicTools
     [McpServerTool(Name = "graft_expect_cell_text")]
     [Description("Expect DataGrid cell text by row and column index or columnKey (Header) in the open session.")]
     public partial Task<CallToolResult> ExpectCellText(
-        [Description("DataGrid automation id.")] string automationId,
         [Description("Zero-based row index.")] int row,
         [Description("Expected cell text.")] string text,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         [Description("Column index (xor columnKey).")] int? column = null,
         [Description("Column Header (xor column).")] string? columnKey = null,
         CancellationToken cancellationToken = default
@@ -794,13 +879,16 @@ public sealed partial class GraftAtomicTools
                 if (columnKey is null)
                 {
                     await session
-                        .GetByAutomationId(automationId)
+                        .GetBy(McpSelectors.Require(automationId, target))
                         .ExpectCellTextAsync(row, column!.Value, text, cancellationToken)
                         .ConfigureAwait(false);
                 }
                 else
                 {
-                    await session.GetByAutomationId(automationId).ExpectCellTextAsync(row, columnKey, text, cancellationToken).ConfigureAwait(false);
+                    await session
+                        .GetBy(McpSelectors.Require(automationId, target))
+                        .ExpectCellTextAsync(row, columnKey, text, cancellationToken)
+                        .ConfigureAwait(false);
                 }
 
                 var payload = new JsonObject
@@ -827,18 +915,20 @@ public sealed partial class GraftAtomicTools
     /// Expands an element by automation id.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expand")]
     [Description("Expand an element by automationId in the open session.")]
     public partial Task<CallToolResult> Expand(
-        [Description("Target automation id.")] string automationId,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).ExpandAsync(cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).ExpandAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -848,18 +938,20 @@ public sealed partial class GraftAtomicTools
     /// Collapses an element by automation id.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_collapse")]
     [Description("Collapse an element by automationId in the open session.")]
     public partial Task<CallToolResult> Collapse(
-        [Description("Target automation id.")] string automationId,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).CollapseAsync(cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).CollapseAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -868,21 +960,23 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Expects an element's tree name.
     /// </summary>
-    /// <param name="automationId">Target automation id.</param>
     /// <param name="name">Expected name.</param>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_name")]
     [Description("Expect an element's tree name in the open session.")]
     public partial Task<CallToolResult> ExpectName(
-        [Description("Target automation id.")] string automationId,
         [Description("Expected tree name.")] string name,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).ExpectNameAsync(name, cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).ExpectNameAsync(name, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["name"] = name });
             },
             cancellationToken
@@ -891,21 +985,26 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Expects an element's tree selected state.
     /// </summary>
-    /// <param name="automationId">Target automation id.</param>
     /// <param name="selected">Expected selection state.</param>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_selected")]
     [Description("Expect an element's tree selected state in the open session.")]
     public partial Task<CallToolResult> ExpectSelected(
-        [Description("Target automation id.")] string automationId,
         [Description("Expected selected state.")] bool selected,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).ExpectSelectedAsync(selected, cancellationToken).ConfigureAwait(false);
+                await session
+                    .GetBy(McpSelectors.Require(automationId, target))
+                    .ExpectSelectedAsync(selected, cancellationToken)
+                    .ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["selected"] = selected });
             },
             cancellationToken
@@ -914,21 +1013,26 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Expects an element's tree expanded state.
     /// </summary>
-    /// <param name="automationId">Target automation id.</param>
     /// <param name="expanded">Expected expand state.</param>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_expanded")]
     [Description("Expect an element's tree expanded state in the open session.")]
     public partial Task<CallToolResult> ExpectExpanded(
-        [Description("Target automation id.")] string automationId,
         [Description("Expected expanded state.")] bool expanded,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).ExpectExpandedAsync(expanded, cancellationToken).ConfigureAwait(false);
+                await session
+                    .GetBy(McpSelectors.Require(automationId, target))
+                    .ExpectExpandedAsync(expanded, cancellationToken)
+                    .ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["expanded"] = expanded });
             },
             cancellationToken
@@ -937,21 +1041,26 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Expects an element's tree checked state.
     /// </summary>
-    /// <param name="automationId">Target automation id.</param>
     /// <param name="checkedState">Expected checked state.</param>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_checked")]
     [Description("Expect an element's tree checked state in the open session.")]
     public partial Task<CallToolResult> ExpectChecked(
-        [Description("Target automation id.")] string automationId,
         [Description("Expected checked state.")] bool checkedState,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).ExpectCheckedAsync(checkedState, cancellationToken).ConfigureAwait(false);
+                await session
+                    .GetBy(McpSelectors.Require(automationId, target))
+                    .ExpectCheckedAsync(checkedState, cancellationToken)
+                    .ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["checked"] = checkedState });
             },
             cancellationToken
@@ -960,21 +1069,23 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Expects an element's tree enabled state.
     /// </summary>
-    /// <param name="automationId">Target automation id.</param>
     /// <param name="enabled">Expected enabled state.</param>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_enabled")]
     [Description("Expect an element's tree enabled state in the open session.")]
     public partial Task<CallToolResult> ExpectEnabled(
-        [Description("Target automation id.")] string automationId,
         [Description("Expected enabled state.")] bool enabled,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).ExpectEnabledAsync(enabled, cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).ExpectEnabledAsync(enabled, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["enabled"] = enabled });
             },
             cancellationToken
@@ -983,21 +1094,23 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Expects an element's tree visible state.
     /// </summary>
-    /// <param name="automationId">Target automation id.</param>
     /// <param name="visible">Expected visible state.</param>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_visible")]
     [Description("Expect an element's tree visible state in the open session.")]
     public partial Task<CallToolResult> ExpectVisible(
-        [Description("Target automation id.")] string automationId,
         [Description("Expected visible state.")] bool visible,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).ExpectVisibleAsync(visible, cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).ExpectVisibleAsync(visible, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["visible"] = visible });
             },
             cancellationToken
@@ -1007,18 +1120,20 @@ public sealed partial class GraftAtomicTools
     /// Expects an element to be focused.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_focused")]
     [Description("Expect an element to be focused in the open session.")]
     public partial Task<CallToolResult> ExpectFocused(
-        [Description("Target automation id.")] string automationId,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).ExpectFocusedAsync(cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).ExpectFocusedAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -1027,21 +1142,23 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Expects an element's open ToolTip display text.
     /// </summary>
-    /// <param name="automationId">Target automation id.</param>
     /// <param name="toolTip">Expected ToolTip text.</param>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_tooltip")]
     [Description("Expect an element's open ToolTip text in the open session.")]
     public partial Task<CallToolResult> ExpectToolTip(
-        [Description("Target automation id.")] string automationId,
         [Description("Expected ToolTip text.")] string toolTip,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).ExpectToolTipAsync(toolTip, cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).ExpectToolTipAsync(toolTip, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["toolTip"] = toolTip });
             },
             cancellationToken
@@ -1050,21 +1167,26 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Expects an element's tree name contains a substring.
     /// </summary>
-    /// <param name="automationId">Target automation id.</param>
     /// <param name="substring">Expected ordinal substring.</param>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_name_contains")]
     [Description("Expect an element's tree name contains a substring in the open session.")]
     public partial Task<CallToolResult> ExpectNameContains(
-        [Description("Target automation id.")] string automationId,
         [Description("Expected ordinal substring.")] string substring,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).ExpectNameContainsAsync(substring, cancellationToken).ConfigureAwait(false);
+                await session
+                    .GetBy(McpSelectors.Require(automationId, target))
+                    .ExpectNameContainsAsync(substring, cancellationToken)
+                    .ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["substring"] = substring });
             },
             cancellationToken
@@ -1073,21 +1195,26 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Expects an element's tree name matches a regex pattern.
     /// </summary>
-    /// <param name="automationId">Target automation id.</param>
     /// <param name="pattern">.NET regular expression pattern.</param>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_name_matches")]
     [Description("Expect an element's tree name matches a regex in the open session.")]
     public partial Task<CallToolResult> ExpectNameMatches(
-        [Description("Target automation id.")] string automationId,
         [Description(".NET regular expression pattern.")] string pattern,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).ExpectNameMatchesAsync(pattern, cancellationToken).ConfigureAwait(false);
+                await session
+                    .GetBy(McpSelectors.Require(automationId, target))
+                    .ExpectNameMatchesAsync(pattern, cancellationToken)
+                    .ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["pattern"] = pattern });
             },
             cancellationToken
@@ -1096,21 +1223,23 @@ public sealed partial class GraftAtomicTools
     /// <summary>
     /// Expects an element's tree value.
     /// </summary>
-    /// <param name="automationId">Target automation id.</param>
     /// <param name="value">Expected tree value.</param>
+    /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_value")]
     [Description("Expect an element's tree value in the open session.")]
     public partial Task<CallToolResult> ExpectValue(
-        [Description("Target automation id.")] string automationId,
         [Description("Expected tree value.")] string value,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).ExpectValueAsync(value, cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).ExpectValueAsync(value, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId, ["value"] = value });
             },
             cancellationToken
@@ -1120,18 +1249,20 @@ public sealed partial class GraftAtomicTools
     /// Waits until an element is present in the visual tree.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_wait_for")]
     [Description("Wait until an element is present in the open session.")]
     public partial Task<CallToolResult> WaitFor(
-        [Description("Target automation id.")] string automationId,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).WaitForAsync(cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).WaitForAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -1141,18 +1272,20 @@ public sealed partial class GraftAtomicTools
     /// Waits until an element is not found or not visible.
     /// </summary>
     /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
     [McpServerTool(Name = "graft_expect_gone")]
     [Description("Wait until an element is gone or not visible in the open session.")]
     public partial Task<CallToolResult> ExpectGone(
-        [Description("Target automation id.")] string automationId,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
             async session =>
             {
-                await session.GetByAutomationId(automationId).ExpectGoneAsync(cancellationToken).ConfigureAwait(false);
+                await session.GetBy(McpSelectors.Require(automationId, target)).ExpectGoneAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(new JsonObject { ["automationId"] = automationId });
             },
             cancellationToken
@@ -1163,15 +1296,17 @@ public sealed partial class GraftAtomicTools
     /// </summary>
     /// <param name="path">Destination PNG path (optional; temp file when omitted).</param>
     /// <param name="automationId">Optional element to clip; window when omitted.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result with meta and path.</returns>
     [McpServerTool(Name = "graft_screenshot")]
     [Description(
-        "Capture the current target window, or an element when automationId is set, as PNG. Optional path (inside the allowed roots); when omitted writes a temp file."
+        "Capture the current target window, or an element when automationId or target is set, as PNG. Optional path (inside the allowed roots); when omitted writes a temp file."
     )]
     public partial Task<CallToolResult> Screenshot(
         [Description("Destination PNG path inside the allowed roots (optional; temp when omitted).")] string? path = null,
-        [Description("Optional automationId to clip; window when omitted.")] string? automationId = null,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         CancellationToken cancellationToken = default
     ) =>
         WithSessionAsync(
@@ -1181,9 +1316,10 @@ public sealed partial class GraftAtomicTools
                 var dest = string.IsNullOrWhiteSpace(path)
                     ? Path.Combine(Path.GetTempPath(), $"graft-mcp-{Guid.NewGuid():N}.png")
                     : McpPathPolicy.EnsureAllowed(path, "path");
-                var shot = string.IsNullOrWhiteSpace(automationId)
+                var clip = McpSelectors.Optional(automationId, target);
+                var shot = clip is null
                     ? await session.ScreenshotAsync(cancellationToken).ConfigureAwait(false)
-                    : await session.GetByAutomationId(automationId).ScreenshotAsync(cancellationToken).ConfigureAwait(false);
+                    : await session.GetBy(clip).ScreenshotAsync(cancellationToken).ConfigureAwait(false);
                 await shot.SaveAsync(dest, cancellationToken).ConfigureAwait(false);
                 return ToolResults.Ok(
                     new JsonObject
@@ -1321,6 +1457,7 @@ public sealed partial class GraftAtomicTools
     /// Invokes an element that may open a window (modal-safe BeginInvoke path).
     /// </summary>
     /// <param name="automationId">Target automation id.</param>
+    /// <param name="target">Public selector. Omit when <paramref name="automationId"/> is set.</param>
     /// <param name="waitForNewWindow">When true (default), wait for a new WPF window and switch.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON tool result.</returns>
@@ -1329,7 +1466,8 @@ public sealed partial class GraftAtomicTools
         "Invoke an element that may open a window (BeginInvoke). By default waits for a new WPF window. Set waitForNewWindow=false for Graft OpenFile seam."
     )]
     public partial Task<CallToolResult> InvokeOpeningWindow(
-        [Description("Target automation id.")] string automationId,
+        [Description("Target automation id. Omit when target is set.")] string? automationId = null,
+        [Description("Public selector. Omit when automationId is set.")] Selector? target = null,
         [Description("Wait for new WPF window (default true).")] bool waitForNewWindow = true,
         CancellationToken cancellationToken = default
     ) =>
@@ -1337,7 +1475,7 @@ public sealed partial class GraftAtomicTools
             async session =>
             {
                 var window = await session
-                    .GetByAutomationId(automationId)
+                    .GetBy(McpSelectors.Require(automationId, target))
                     .InvokeOpeningWindowAsync(waitForNewWindow, cancellationToken)
                     .ConfigureAwait(false);
                 if (window is null)

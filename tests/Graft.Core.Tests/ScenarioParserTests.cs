@@ -37,10 +37,10 @@ public sealed class ScenarioParserTests
         Assert.Equal(TimeSpan.FromSeconds(60), launch.Timeout);
 
         var invoke = Assert.IsType<InvokeOperation>(scenario.Operations[1]);
-        Assert.Equal("SampleButton", invoke.AutomationId);
+        Assert.Equal("SampleButton", invoke.Target.AutomationId);
 
         var expect = Assert.IsType<ExpectNameOperation>(scenario.Operations[2]);
-        Assert.Equal("StatusText", expect.AutomationId);
+        Assert.Equal("StatusText", expect.Target.AutomationId);
         Assert.Equal("Clicked 1", expect.Name);
     }
 
@@ -73,7 +73,7 @@ public sealed class ScenarioParserTests
         var scenario = ScenarioJson.Parse(json);
         var setValue = Assert.IsType<SetValueOperation>(scenario.Operations[1]);
         Assert.Equal(ScenarioActions.SetValue, setValue.Action);
-        Assert.Equal("SampleTextBox", setValue.AutomationId);
+        Assert.Equal("SampleTextBox", setValue.Target.AutomationId);
         Assert.Equal("hello-graft", setValue.Value);
     }
 
@@ -106,9 +106,9 @@ public sealed class ScenarioParserTests
 
         var scenario = ScenarioJson.Parse(json);
         var toggle = Assert.IsType<ToggleOperation>(scenario.Operations[1]);
-        Assert.Equal("SampleCheckBox", toggle.AutomationId);
+        Assert.Equal("SampleCheckBox", toggle.Target.AutomationId);
         var sendKeys = Assert.IsType<SendKeysOperation>(scenario.Operations[2]);
-        Assert.Equal("SampleTextBox", sendKeys.AutomationId);
+        Assert.Equal("SampleTextBox", sendKeys.Target.AutomationId);
         Assert.Equal("abc", sendKeys.Text);
     }
 
@@ -140,7 +140,7 @@ public sealed class ScenarioParserTests
 
         var scenario = ScenarioJson.Parse(json);
         var typeHuman = Assert.IsType<TypeHumanOperation>(scenario.Operations[1]);
-        Assert.Equal("SampleTextBox", typeHuman.AutomationId);
+        Assert.Equal("SampleTextBox", typeHuman.Target.AutomationId);
         Assert.Equal("ab", typeHuman.Text);
         Assert.Equal(40, typeHuman.DelayMs);
     }
@@ -174,7 +174,7 @@ public sealed class ScenarioParserTests
         var scenario = ScenarioJson.Parse(json);
         var rightClick = Assert.IsType<RightClickOperation>(scenario.Operations[1]);
         Assert.Equal(ScenarioActions.RightClick, rightClick.Action);
-        Assert.Equal("ContextMenuTarget", rightClick.AutomationId);
+        Assert.Equal("ContextMenuTarget", rightClick.Target.AutomationId);
     }
 
     /// <summary>
@@ -207,7 +207,7 @@ public sealed class ScenarioParserTests
         var shot = Assert.IsType<ScreenshotOperation>(scenario.Operations[1]);
         Assert.Equal(ScenarioActions.Screenshot, shot.Action);
         Assert.Equal("out/shot.png", shot.Path);
-        Assert.Null(shot.AutomationId);
+        Assert.Null(shot.Target);
     }
 
     /// <summary>
@@ -239,7 +239,8 @@ public sealed class ScenarioParserTests
         var scenario = ScenarioJson.Parse(json);
         var shot = Assert.IsType<ScreenshotOperation>(scenario.Operations[1]);
         Assert.Equal("out/clip.png", shot.Path);
-        Assert.Equal("SampleButton", shot.AutomationId);
+        Assert.NotNull(shot.Target);
+        Assert.Equal("SampleButton", shot.Target.AutomationId);
     }
 
     /// <summary>
@@ -271,7 +272,7 @@ public sealed class ScenarioParserTests
         var scenario = ScenarioJson.Parse(json);
         var press = Assert.IsType<PressKeysOperation>(scenario.Operations[1]);
         Assert.Equal(ScenarioActions.PressKeys, press.Action);
-        Assert.Equal("SampleTextBox", press.AutomationId);
+        Assert.Equal("SampleTextBox", press.Target.AutomationId);
         Assert.Equal("Control+A", press.Keys);
     }
 
@@ -308,22 +309,22 @@ public sealed class ScenarioParserTests
         var scenario = ScenarioJson.Parse(json);
 
         var scrollIndexed = Assert.IsType<ScrollIntoViewOperation>(scenario.Operations[1]);
-        Assert.Equal("SampleList", scrollIndexed.AutomationId);
+        Assert.Equal("SampleList", scrollIndexed.Target.AutomationId);
         Assert.Equal(40, scrollIndexed.Index);
 
         var scrollElement = Assert.IsType<ScrollIntoViewOperation>(scenario.Operations[2]);
-        Assert.Equal("StatusText", scrollElement.AutomationId);
+        Assert.Equal("StatusText", scrollElement.Target.AutomationId);
         Assert.Null(scrollElement.Index);
 
         var select = Assert.IsType<SelectOperation>(scenario.Operations[3]);
-        Assert.Equal("SampleList", select.AutomationId);
+        Assert.Equal("SampleList", select.Target.AutomationId);
         Assert.Equal(35, select.Index);
 
         var expand = Assert.IsType<ExpandOperation>(scenario.Operations[4]);
-        Assert.Equal("SampleTreeRoot", expand.AutomationId);
+        Assert.Equal("SampleTreeRoot", expand.Target.AutomationId);
 
         var collapse = Assert.IsType<CollapseOperation>(scenario.Operations[5]);
-        Assert.Equal("SampleTreeRoot", collapse.AutomationId);
+        Assert.Equal("SampleTreeRoot", collapse.Target.AutomationId);
     }
 
     /// <summary>
@@ -355,7 +356,7 @@ public sealed class ScenarioParserTests
         var scenario = ScenarioJson.Parse(json);
         var selectMany = Assert.IsType<SelectManyOperation>(scenario.Operations[1]);
         Assert.Equal(ScenarioActions.SelectMany, selectMany.Action);
-        Assert.Equal("SampleMultiList", selectMany.AutomationId);
+        Assert.Equal("SampleMultiList", selectMany.Target.AutomationId);
         Assert.Equal(new[] { 1, 3 }, selectMany.Indexes);
     }
 
@@ -392,7 +393,7 @@ public sealed class ScenarioParserTests
         var scenario = ScenarioJson.Parse(json);
         var selectMenu = Assert.IsType<SelectMenuOperation>(scenario.Operations[1]);
         Assert.Equal(ScenarioActions.SelectMenu, selectMenu.Action);
-        Assert.Equal("SampleMenu", selectMenu.AutomationId);
+        Assert.Equal("SampleMenu", selectMenu.Target.AutomationId);
         Assert.Equal("SampleMenuFile/SampleMenuPing", selectMenu.Path);
     }
 
@@ -522,10 +523,10 @@ public sealed class ScenarioParserTests
 
         var scenario = ScenarioJson.Parse(json);
         var selected = Assert.IsType<ExpectSelectedOperation>(scenario.Operations[1]);
-        Assert.Equal("ListItem-35", selected.AutomationId);
+        Assert.Equal("ListItem-35", selected.Target.AutomationId);
         Assert.True(selected.Selected);
         var expanded = Assert.IsType<ExpectExpandedOperation>(scenario.Operations[2]);
-        Assert.Equal("SampleTreeRoot", expanded.AutomationId);
+        Assert.Equal("SampleTreeRoot", expanded.Target.AutomationId);
         Assert.False(expanded.Expanded);
     }
 
@@ -557,7 +558,7 @@ public sealed class ScenarioParserTests
 
         var scenario = ScenarioJson.Parse(json);
         var expectChecked = Assert.IsType<ExpectCheckedOperation>(scenario.Operations[1]);
-        Assert.Equal("SampleCheckBox", expectChecked.AutomationId);
+        Assert.Equal("SampleCheckBox", expectChecked.Target.AutomationId);
         Assert.True(expectChecked.Checked);
     }
 
@@ -589,7 +590,7 @@ public sealed class ScenarioParserTests
 
         var scenario = ScenarioJson.Parse(json);
         var expectFocused = Assert.IsType<ExpectFocusedOperation>(scenario.Operations[1]);
-        Assert.Equal("SamplePhase29aFocusB", expectFocused.AutomationId);
+        Assert.Equal("SamplePhase29aFocusB", expectFocused.Target.AutomationId);
     }
 
     /// <summary>
@@ -622,7 +623,7 @@ public sealed class ScenarioParserTests
 
         var scenario = ScenarioJson.Parse(json);
         var get = Assert.IsType<GetCellTextOperation>(scenario.Operations[1]);
-        Assert.Equal("SampleGrid", get.AutomationId);
+        Assert.Equal("SampleGrid", get.Target.AutomationId);
         Assert.Equal(1, get.Row);
         Assert.Equal(0, get.Column);
         Assert.Null(get.ColumnKey);
@@ -842,7 +843,7 @@ public sealed class ScenarioParserTests
         Assert.Equal("ChildWindow", wait.AutomationId);
         Assert.True(wait.SwitchTo);
         var opening = Assert.IsType<InvokeOpeningWindowOperation>(scenario.Operations[3]);
-        Assert.Equal("OpenModalWindowButton", opening.AutomationId);
+        Assert.Equal("OpenModalWindowButton", opening.Target.AutomationId);
         var switchOp = Assert.IsType<SwitchWindowOperation>(scenario.Operations[4]);
         Assert.Equal(2, switchOp.WindowId);
     }
@@ -908,5 +909,189 @@ public sealed class ScenarioParserTests
         Assert.Equal(GraftErrorCodes.ActionFailed, ex.Code);
         Assert.Contains("substring", ex.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("non-empty", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// A nested target compiles to the public selector fields.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - JSON invoke step with target name and controlType
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - InvokeOperation.Target has that name and control type
+    /// </remarks>
+    [Fact]
+    public void Parse_InvokeTarget_CompilesSelector()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "invoke", "target": { "name": "SampleClickMe", "controlType": "Button", "nth": 0 } }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var invoke = Assert.IsType<InvokeOperation>(scenario.Operations[0]);
+        Assert.Equal("SampleClickMe", invoke.Target.Name);
+        Assert.Equal("Button", invoke.Target.ControlType);
+        Assert.Equal(0, invoke.Target.Nth);
+    }
+
+    /// <summary>
+    /// The same side rejects both the short form and the target object.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - JSON invoke step that sets automationId and target
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - GraftException action.failed mentioning both properties
+    /// </remarks>
+    [Fact]
+    public void Parse_Invoke_BothForms_Throws()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "invoke", "automationId": "SampleButton", "target": { "name": "SampleClickMe" } }
+              ]
+            }
+            """;
+
+        var ex = Assert.Throws<GraftException>(() => ScenarioJson.Parse(json));
+        Assert.Equal(GraftErrorCodes.ActionFailed, ex.Code);
+        Assert.Contains("both", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// A required element step rejects a missing target.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - JSON invoke step with only action
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - GraftException action.failed requiring automationId or target
+    /// </remarks>
+    [Fact]
+    public void Parse_Invoke_NeitherForm_Throws()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [ { "action": "invoke" } ]
+            }
+            """;
+
+        var ex = Assert.Throws<GraftException>(() => ScenarioJson.Parse(json));
+        Assert.Equal(GraftErrorCodes.ActionFailed, ex.Code);
+        Assert.Contains("automationId", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("target", ex.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// A target with no string criterion is rejected.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - JSON invoke step whose target sets only nth
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - GraftException action.failed requiring a string criterion
+    /// </remarks>
+    [Fact]
+    public void Parse_Invoke_NthOnlyTarget_Throws()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [ { "action": "invoke", "target": { "nth": 0 } } ]
+            }
+            """;
+
+        var ex = Assert.Throws<GraftException>(() => ScenarioJson.Parse(json));
+        Assert.Equal(GraftErrorCodes.ActionFailed, ex.Code);
+        Assert.Contains("nearAutomationId", ex.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Drag sides may mix the short form and the object.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - One drag uses automationId with to, and one uses target with toAutomationId
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - Each side keeps the form that was set
+    /// </remarks>
+    [Fact]
+    public void Parse_Drag_MixedSides_Compile()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "drag", "automationId": "Source", "to": { "name": "Drop" } },
+                { "action": "drag", "target": { "name": "Source" }, "toAutomationId": "DropTarget" }
+              ]
+            }
+            """;
+
+        var scenario = ScenarioJson.Parse(json);
+        var first = Assert.IsType<DragOperation>(scenario.Operations[0]);
+        Assert.Equal("Source", first.Target.AutomationId);
+        Assert.Equal("Drop", first.To.Name);
+        var second = Assert.IsType<DragOperation>(scenario.Operations[1]);
+        Assert.Equal("Source", second.Target.Name);
+        Assert.Equal("DropTarget", second.To.AutomationId);
+    }
+
+    /// <summary>
+    /// A drag destination rejects both toAutomationId and to.
+    /// </summary>
+    /// <remarks>
+    /// Preconditions:
+    /// - JSON drag step that sets both destination forms
+    ///
+    /// Steps:
+    /// - ScenarioJson.Parse
+    ///
+    /// Expected:
+    /// - GraftException action.failed mentioning both properties
+    /// </remarks>
+    [Fact]
+    public void Parse_Drag_BothDestinationForms_Throws()
+    {
+        const string json = """
+            {
+              "v": 1,
+              "steps": [
+                { "action": "drag", "automationId": "Source", "toAutomationId": "Drop", "to": { "name": "Drop" } }
+              ]
+            }
+            """;
+
+        var ex = Assert.Throws<GraftException>(() => ScenarioJson.Parse(json));
+        Assert.Equal(GraftErrorCodes.ActionFailed, ex.Code);
+        Assert.Contains("both", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 }
