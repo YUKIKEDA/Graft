@@ -145,6 +145,7 @@ TestComplete相当の精度を狙う、という位置づけ。
 - 要素操作は、既存 params の任意フィールドで公開セレクタを送る。フィールドは `automationId`、`name`、`controlType`、`nearAutomationId`、`nth`。`automationId` だけを置いた params はそのまま有効である。ドラッグのもう一方は `toAutomationId`、`toName`、`toControlType`、`toNearAutomationId`、`toNth` を使う
 - Core は待ち、その呼び出しの heal、失敗レポートのために `getTree` を見て、heal したあとのセレクタを送る。エージェントは heal しない。`getTree` と同じ順序、同じ重み、同じハードゲートでライブの木を1回解決し、その要素を操作する。automation id が無い要素も操作できる。`child` と `sibling` は送らない。スクリーンショットも同じフィールドを使う。`ProtocolVersion.Current` は 1 のまま
 - 採点は `Graft.Protocol` に置く。呼び出し側は `Graft.Core.Selectors.Selector` のまま書き、それをワイヤのフィールドへ写す。コード変更は #172
+- Scenario JSON と MCP は、そのセレクタを入れ子の `target` に置く。フィールドは `automationId`、`name`、`controlType`、`nearAutomationId`、`nth`。トップレベルの `automationId` は短い形として残る。同じ側にはどちらか一方だけ置く。対象が必須のステップは、どちらか一方を置く。ドラッグのもう一方は `toAutomationId` か、同じフィールドの `to` で、左右は独立する。`expectName` の `name` は期待する表示名のまま。`screenshot` は両方なければ窓全体。`waitForWindow` と `waitForWindowClosed` の `automationId` は窓の識別子のままで、`target` は足さない。`child` と `sibling` は置かない。文書の `v` は 1 のまま。コード変更は #140
 - Phase 1 必須ノード: `runtimeId`, `controlType`, `name`, `automationId`, `bounds`,
   `enabled`, `visible`, `focused`, `children`
   （パターン可否・現在値・セレクタ候補は早期追加するが Phase 1 完了条件外）
@@ -557,3 +558,4 @@ GitHub Actions:
 | Q142 | LaunchOptions.Environment 汎用（任意）。SampleTodo 保存先は UI/OpenFolder（settings.json）。E2E は ArmOpenFolder。ストーリー 1 本。R3（CommunityToolkit.Mvvm 不使用）。デモシードなし                                                |
 | Q143 | P02 を Must 昇格（Phase 35）。Avalonia 再禁止。`element.ScreenshotAsync`。窓 RTB 交差クリップ + Popup ルート RTB。開時 ToolTip 子ノード。開時 overlay は要素・窓 SS に合成。wire 任意 automationId/runtimeId。 |
 | Q144 | 要素操作のワイヤ宛先は、既存 params 上の公開セレクタ（`automationId`, `name`, `controlType`, `nearAutomationId`, `nth`。ドラッグは `toName`, `toControlType`, `toNearAutomationId`, `toNth` も）。Core は待ち・その呼び出しの heal・失敗レポートのために getTree を見て、heal 後のセレクタを送る。エージェントは heal せず、getTree 順・同一重みでライブの木を1回解決する。`child`/`sibling` は送らない。スクリーンショットも同じフィールド。`runtimeId` は走査の通し番号のままで、ワイヤ宛先にしない。`ProtocolVersion.Current` は 1。採点は Protocol へ移し、`Selector` は Core に残す。Q143 のスクリーンショット宛先（automationId/runtimeId）に代わる。コードは #172。 |
+| Q145 | Scenario JSON と MCP は、公開セレクタを入れ子の `target` に置く（`automationId`, `name`, `controlType`, `nearAutomationId`, `nth`）。トップレベルの `automationId` は短い形。同じ側はどちらか一方。対象必須のステップはどちらか一方。ドラッグの相手は `toAutomationId` か `to` で、左右は独立。`expectName.name` は期待する表示名のまま。screenshot は両方なければ窓全体。`waitForWindow` / `waitForWindowClosed` は窓の `automationId` のままで `target` は足さない。`child`/`sibling` は置かない。文書 `v` は 1。コードは #140。 |
