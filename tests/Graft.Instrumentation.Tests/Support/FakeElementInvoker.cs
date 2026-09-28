@@ -14,9 +14,12 @@ internal sealed class FakeElementInvoker : IElementInvoker
 
     public string? LastAutomationId { get; private set; }
 
+    public string? LastName { get; private set; }
+
     public void Invoke(ElementSelector selector)
     {
         LastAutomationId = selector.AutomationId;
+        LastName = selector.Name;
         if (_throwCode is not null)
         {
             throw new ElementResolveException(_throwCode, "fake failure");

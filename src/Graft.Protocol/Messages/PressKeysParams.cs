@@ -5,14 +5,8 @@ namespace Graft.Protocol.Messages;
 /// <summary>
 /// Params for <c>pressKeys</c>.
 /// </summary>
-public sealed class PressKeysParams
+public sealed class PressKeysParams : ElementTargetParams
 {
-    /// <summary>
-    /// Gets the target automation id.
-    /// </summary>
-    [JsonPropertyName("automationId")]
-    public string? AutomationId { get; init; }
-
     /// <summary>
     /// Gets the chord DSL string.
     /// </summary>

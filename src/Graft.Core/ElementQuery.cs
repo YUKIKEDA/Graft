@@ -146,7 +146,7 @@ public sealed class ElementQuery
         ArgumentException.ThrowIfNullOrWhiteSpace(toAutomationId);
         return RunActionAsync(
             FailureSteps.Drag,
-            id => _session.Connection.DragAsync(id, toAutomationId, cancellationToken),
+            target => _session.Connection.DragAsync(target, new SelectorQuery { AutomationId = toAutomationId }, cancellationToken),
             cancellationToken,
             detail: id => $"{id}->{toAutomationId}"
         );
@@ -937,11 +937,10 @@ public sealed class ElementQuery
         }
 
         var node = await WaitForAsync(cancellationToken).ConfigureAwait(false);
-        var automationId = string.IsNullOrWhiteSpace(node.AutomationId) ? null : node.AutomationId;
-        int? runtimeId = automationId is null ? node.RuntimeId : null;
+        var target = TargetFor(node);
         try
         {
-            var (meta, pngBytes) = await _session.Connection.ScreenshotAsync(automationId, runtimeId, cancellationToken).ConfigureAwait(false);
+            var (meta, pngBytes) = await _session.Connection.ScreenshotAsync(target, cancellationToken).ConfigureAwait(false);
             var shot = new Screenshot(meta.Format, meta.Width, meta.Height, pngBytes);
             await RecordSuccessAsync(FailureSteps.Screenshot, $"{shot.Width}x{shot.Height}:{shot.PngBytes.Length}", cancellationToken, shot.PngBytes)
                 .ConfigureAwait(false);
@@ -1078,7 +1077,7 @@ public sealed class ElementQuery
         }
 
         ArgumentNullException.ThrowIfNull(expectedText);
-        var hostId = await RequireAutomationIdAsync(FailureSteps.ExpectCellText, cancellationToken, expectedText).ConfigureAwait(false);
+        var host = await RequireTargetAsync(cancellationToken).ConfigureAwait(false);
         var timeout = _session.WaitOptions.ResolvedExpectTimeout;
         string? lastActual = null;
         var sawCell = false;
@@ -1089,8 +1088,8 @@ public sealed class ElementQuery
                     try
                     {
                         var actual = columnKey is null
-                            ? await _session.Connection.GetCellTextAsync(hostId, row, column!.Value, ct).ConfigureAwait(false)
-                            : await _session.Connection.GetCellTextAsync(hostId, row, columnKey, ct).ConfigureAwait(false);
+                            ? await _session.Connection.GetCellTextAsync(host, row, column!.Value, ct).ConfigureAwait(false)
+                            : await _session.Connection.GetCellTextAsync(host, row, columnKey, ct).ConfigureAwait(false);
                         sawCell = true;
                         if (string.Equals(actual, expectedText, StringComparison.Ordinal))
                         {
@@ -1274,16 +1273,16 @@ public sealed class ElementQuery
 
     private Task RunActionAsync(
         string step,
-        Func<string, Task> send,
+        Func<SelectorQuery, Task> send,
         CancellationToken cancellationToken,
         string? expected = null,
         Func<string, string>? detail = null
     ) =>
         RunActionAsync<object?>(
             step,
-            async id =>
+            async target =>
             {
-                await send(id).ConfigureAwait(false);
+                await send(target).ConfigureAwait(false);
                 return null;
             },
             cancellationToken,
@@ -1293,7 +1292,7 @@ public sealed class ElementQuery
 
     private async Task<T> RunActionAsync<T>(
         string step,
-        Func<string, Task<T>> send,
+        Func<SelectorQuery, Task<T>> send,
         CancellationToken cancellationToken,
         string? expected = null,
         Func<string, T, string>? detail = null,
@@ -1305,13 +1304,14 @@ public sealed class ElementQuery
             return await InCallAsync(() => RunActionAsync(step, send, cancellationToken, expected, detail, recordSuccess)).ConfigureAwait(false);
         }
 
-        var automationId = await RequireAutomationIdAsync(step, cancellationToken, expected).ConfigureAwait(false);
+        var target = await RequireTargetAsync(cancellationToken).ConfigureAwait(false);
+        var label = DescribeQuery(target);
         try
         {
-            var result = await send(automationId).ConfigureAwait(false);
+            var result = await send(target).ConfigureAwait(false);
             if (recordSuccess)
             {
-                await RecordSuccessAsync(step, detail?.Invoke(automationId, result) ?? automationId, cancellationToken).ConfigureAwait(false);
+                await RecordSuccessAsync(step, detail?.Invoke(label, result) ?? label, cancellationToken).ConfigureAwait(false);
             }
 
             return result;
@@ -1323,34 +1323,90 @@ public sealed class ElementQuery
         }
     }
 
-    private Task<string> SendActionAsync(string step, Func<string, Task> send, CancellationToken cancellationToken) =>
+    private Task<string> SendActionAsync(string step, Func<SelectorQuery, Task> send, CancellationToken cancellationToken) =>
         RunActionAsync(
             step,
-            async id =>
+            async target =>
             {
-                await send(id).ConfigureAwait(false);
-                return id;
+                await send(target).ConfigureAwait(false);
+                return DescribeQuery(target);
             },
             cancellationToken,
             recordSuccess: false
         );
 
-    private async Task<string> RequireAutomationIdAsync(string step, CancellationToken cancellationToken, string? expected = null)
+    private async Task<SelectorQuery> RequireTargetAsync(CancellationToken cancellationToken)
     {
         var node = await WaitForActionableAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(node.AutomationId))
+        return TargetFor(node);
+    }
+
+    private SelectorQuery TargetFor(TreeNode node)
+    {
+        if (_relativeSteps.Count == 0)
         {
-            throw await CreateFailureAsync(
-                    GraftErrorCodes.ActionFailed,
-                    $"Resolved element has no automationId; cannot {step} over the wire.",
-                    step,
-                    expected: expected,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
+            return Call.EffectiveSelector.ToQuery();
         }
 
-        return node.AutomationId;
+        if (!string.IsNullOrWhiteSpace(node.AutomationId))
+        {
+            return new SelectorQuery { AutomationId = node.AutomationId };
+        }
+
+        var query = new SelectorQuery
+        {
+            Name = string.IsNullOrWhiteSpace(node.Name) ? null : node.Name,
+            ControlType = string.IsNullOrWhiteSpace(node.ControlType) ? null : node.ControlType,
+        };
+        var root = Call.SuccessRoot;
+        if (root is null)
+        {
+            return query;
+        }
+
+        var (index, count) = SelectorScoring.Place(root, node, query);
+        if (count > 1 && index >= 0)
+        {
+            return new SelectorQuery
+            {
+                Name = query.Name,
+                ControlType = query.ControlType,
+                Nth = index,
+            };
+        }
+
+        return query;
+    }
+
+    private static string DescribeQuery(SelectorQuery query)
+    {
+        if (!string.IsNullOrWhiteSpace(query.AutomationId))
+        {
+            return query.AutomationId;
+        }
+
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(query.Name))
+        {
+            parts.Add($"name={query.Name}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.ControlType))
+        {
+            parts.Add($"controlType={query.ControlType}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.NearAutomationId))
+        {
+            parts.Add($"near={query.NearAutomationId}");
+        }
+
+        if (query.Nth is { } nth)
+        {
+            parts.Add($"nth={nth}");
+        }
+
+        return parts.Count == 0 ? "(selector)" : string.Join(',', parts);
     }
 
     private async Task<TreeNode> WaitForActionableAsync(CancellationToken cancellationToken)

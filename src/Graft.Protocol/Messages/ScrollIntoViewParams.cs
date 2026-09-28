@@ -5,14 +5,8 @@ namespace Graft.Protocol.Messages;
 /// <summary>
 /// Params for <c>scrollIntoView</c>.
 /// </summary>
-public sealed class ScrollIntoViewParams
+public sealed class ScrollIntoViewParams : ElementTargetParams
 {
-    /// <summary>
-    /// Gets the target automation id.
-    /// </summary>
-    [JsonPropertyName("automationId")]
-    public string? AutomationId { get; init; }
-
     /// <summary>
     /// Gets the optional list item index.
     /// </summary>

@@ -5,14 +5,8 @@ namespace Graft.Protocol.Messages;
 /// <summary>
 /// Params for <c>typeHuman</c>.
 /// </summary>
-public sealed class TypeHumanParams
+public sealed class TypeHumanParams : ElementTargetParams
 {
-    /// <summary>
-    /// Gets the target automation id.
-    /// </summary>
-    [JsonPropertyName("automationId")]
-    public string? AutomationId { get; init; }
-
     /// <summary>
     /// Gets the literal text. JSON null is an empty string. Omitted means the field is missing.
     /// </summary>

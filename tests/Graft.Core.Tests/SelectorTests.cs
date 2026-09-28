@@ -211,7 +211,13 @@ public sealed class SelectorTests
             },
             ancestorAutomationIds: ["Main"]
         );
-        Assert.Equal(SelectorWeights.AutomationId + SelectorWeights.Name + SelectorWeights.ControlType + SelectorWeights.NearPath, score);
+        Assert.Equal(
+            Graft.Core.Selectors.SelectorWeights.AutomationId
+                + Graft.Core.Selectors.SelectorWeights.Name
+                + Graft.Core.Selectors.SelectorWeights.ControlType
+                + Graft.Core.Selectors.SelectorWeights.NearPath,
+            score
+        );
     }
 
     private static TreeNode SampleTree() =>

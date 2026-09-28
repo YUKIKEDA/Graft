@@ -5,14 +5,8 @@ namespace Graft.Protocol.Messages;
 /// <summary>
 /// Params for <c>wheel</c>.
 /// </summary>
-public sealed class WheelParams
+public sealed class WheelParams : ElementTargetParams
 {
-    /// <summary>
-    /// Gets the target automation id.
-    /// </summary>
-    [JsonPropertyName("automationId")]
-    public string? AutomationId { get; init; }
-
     /// <summary>
     /// Gets the wheel delta.
     /// </summary>

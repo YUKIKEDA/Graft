@@ -170,8 +170,8 @@ internal sealed partial class AgentPipeServer
                     invokerMissing,
                     invoker =>
                     {
-                        var (from, toAutomationId) = RequestParamsReader.ReadDrag(request.Params);
-                        invoker.Drag(from, new ElementSelector { AutomationId = toAutomationId });
+                        var (from, to) = RequestParamsReader.ReadDrag(request.Params);
+                        invoker.Drag(from, ElementSelector.FromQuery(to));
                     }
                 ),
             [ProtocolMethods.ClickAt] = (server, request) =>

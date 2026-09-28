@@ -22,51 +22,14 @@ public static class TreeSelector
         ArgumentNullException.ThrowIfNull(root);
         ArgumentNullException.ThrowIfNull(selector);
 
-        if (
-            string.IsNullOrWhiteSpace(selector.AutomationId)
-            && string.IsNullOrWhiteSpace(selector.Name)
-            && string.IsNullOrWhiteSpace(selector.ControlType)
-            && string.IsNullOrWhiteSpace(selector.NearAutomationId)
-        )
+        try
         {
-            throw new GraftException(GraftErrorCodes.SelectorInvalid, "Selector must specify at least one criterion.");
+            return SelectorScoring.Resolve(root, selector.ToQuery());
         }
-
-        if (selector.Nth is < 0)
+        catch (SelectorMatchException ex)
         {
-            throw new GraftException(GraftErrorCodes.SelectorInvalid, "Selector.Nth must be >= 0 when specified.");
+            throw new GraftException(ex.Code, ex.Message);
         }
-
-        var candidates = new List<(TreeNode Node, int Score)>();
-        Walk(root, ancestors: [], selector, candidates);
-
-        var qualifying = candidates.Where(c => c.Score >= SelectorWeights.Threshold).OrderByDescending(c => c.Score).ToList();
-
-        if (qualifying.Count == 0)
-        {
-            throw new GraftException(GraftErrorCodes.ElementNotFound, "No element scored at or above the selector threshold.");
-        }
-
-        var bestScore = qualifying[0].Score;
-        var tied = qualifying.Where(c => c.Score == bestScore).ToList();
-
-        if (selector.Nth is { } nth)
-        {
-            // Tree order among best-score ties (DFS discovery order preserved in Walk).
-            if (nth >= tied.Count)
-            {
-                throw new GraftException(GraftErrorCodes.ElementNotFound, $"Selector.Nth {nth} is out of range (count={tied.Count}).");
-            }
-
-            return tied[nth].Node;
-        }
-
-        if (tied.Count > 1)
-        {
-            throw new GraftException(GraftErrorCodes.ElementAmbiguous, $"Multiple elements tied for best selector score ({bestScore}).");
-        }
-
-        return tied[0].Node;
     }
 
     /// <summary>
@@ -118,57 +81,7 @@ public static class TreeSelector
         ArgumentNullException.ThrowIfNull(node);
         ArgumentNullException.ThrowIfNull(selector);
 
-        // Hard gates: AutomationId / Name / ControlType fail closed when specified (Phase 27 F02).
-        if (!string.IsNullOrWhiteSpace(selector.AutomationId))
-        {
-            if (!string.Equals(node.AutomationId, selector.AutomationId, StringComparison.Ordinal))
-            {
-                return 0;
-            }
-        }
-
-        if (!string.IsNullOrWhiteSpace(selector.Name))
-        {
-            if (!string.Equals(node.Name, selector.Name, StringComparison.Ordinal))
-            {
-                return 0;
-            }
-        }
-
-        if (!string.IsNullOrWhiteSpace(selector.ControlType))
-        {
-            if (!string.Equals(node.ControlType, selector.ControlType, StringComparison.Ordinal))
-            {
-                return 0;
-            }
-        }
-
-        var score = 0;
-        if (!string.IsNullOrWhiteSpace(selector.AutomationId))
-        {
-            score += SelectorWeights.AutomationId;
-        }
-
-        if (!string.IsNullOrWhiteSpace(selector.Name))
-        {
-            score += SelectorWeights.Name;
-        }
-
-        if (!string.IsNullOrWhiteSpace(selector.ControlType))
-        {
-            score += SelectorWeights.ControlType;
-        }
-
-        if (
-            !string.IsNullOrWhiteSpace(selector.NearAutomationId)
-            && ancestorAutomationIds is not null
-            && ancestorAutomationIds.Any(id => string.Equals(id, selector.NearAutomationId, StringComparison.Ordinal))
-        )
-        {
-            score += SelectorWeights.NearPath;
-        }
-
-        return score;
+        return SelectorScoring.Score(node, selector.ToQuery(), ancestorAutomationIds);
     }
 
     private static TreeNode ResolveAmong(IReadOnlyList<TreeNode> nodes, Selector selector, int? nth, string label)
@@ -234,19 +147,4 @@ public static class TreeSelector
     private static bool SameNode(TreeNode a, TreeNode b) =>
         ReferenceEquals(a, b)
         || (a.RuntimeId != 0 && a.RuntimeId == b.RuntimeId && string.Equals(a.AutomationId, b.AutomationId, StringComparison.Ordinal));
-
-    private static void Walk(TreeNode node, List<string> ancestors, Selector selector, List<(TreeNode Node, int Score)> candidates)
-    {
-        var score = Score(node, selector, ancestors);
-        if (score > 0)
-        {
-            candidates.Add((node, score));
-        }
-
-        var nextAncestors = new List<string>(ancestors) { node.AutomationId };
-        foreach (var child in node.Children)
-        {
-            Walk(child, nextAncestors, selector, candidates);
-        }
-    }
 }
